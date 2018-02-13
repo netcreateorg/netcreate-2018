@@ -1,0 +1,7 @@
+# NetCreate ignored directories
+
+# Also ignore build system directories
+.npmignore
+/public
+/node_modules
+
