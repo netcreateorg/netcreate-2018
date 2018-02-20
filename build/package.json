@@ -3,10 +3,9 @@
   "version": "1.0.0",
   "description": "research project for network graph analysis",
   "scripts": {
-    "test"  : "echo \"Error: no test specified\" && exit 1",
-    "clean" : "rm -rf public/",
-    "build" : "brunch build",
-    "watch" : "brunch watch -s"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "LOGGY_STACKS=true brunch watch -s",
+    "clean": "rm -rf public/"
   },
   "repository": {
     "type": "git",

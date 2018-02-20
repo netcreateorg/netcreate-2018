@@ -9,6 +9,9 @@ module.exports = {
 				'netc-app.js'   : /^app/,
 				'netc-lib.js'   : /^(?!app)/
 			}
+		},
+		stylesheets: {
+			joinTo              : 'netc-app.css'
 		}
 	},
 
