@@ -1,0 +1,34 @@
+{
+  "name": "netcreate2018",
+  "version": "1.0.0",
+  "description": "research project for network graph analysis",
+  "scripts": {
+    "test"  : "echo \"Error: no test specified\" && exit 1",
+    "clean" : "rm -rf public/",
+    "build" : "brunch build",
+    "watch" : "brunch watch -s"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daveseah/netcreate-2018.git"
+  },
+  "author": "Inquirium LLC",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/daveseah/netcreate-2018/issues"
+  },
+  "homepage": "https://github.com/daveseah/netcreate-2018#readme",
+  "devDependencies": {
+    "auto-reload-brunch": "^2.7.1",
+    "babel-brunch": "github:babel/babel-brunch",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-react": "^6.24.1",
+    "brunch": "^2.10.12",
+    "clean-css-brunch": "^2.10.0",
+    "uglify-js-brunch": "^2.10.0"
+  },
+  "dependencies": {
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0"
+  }
+}
