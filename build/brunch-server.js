@@ -1,7 +1,7 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
 	NODE CUSTOM SERVER
-	brunch-server.js is automatically used by brunch if it exists
+	see brunch-config.js for more information
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 

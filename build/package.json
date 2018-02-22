@@ -27,6 +27,9 @@
     "uglify-js-brunch": "^2.10.0"
   },
   "dependencies": {
+    "bootstrap": "^4.0.0",
+    "jquery": "^3.3.1",
+    "popper.js": "^1.12.9",
     "react": "^16.2.0",
     "react-dom": "^16.2.0"
   }
