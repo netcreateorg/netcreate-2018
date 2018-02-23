@@ -4,7 +4,8 @@
   "description": "research project for network graph analysis",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "LOGGY_STACKS=true brunch watch -s",
+    "debug": "LOGGY_STACKS=true brunch watch -s",
+    "start": "brunch watch -s",
     "clean": "rm -rf public/"
   },
   "repository": {
@@ -33,6 +34,8 @@
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-popper": "^0.7.4",
+    "react-router": "^4.2.0",
+    "react-router-dom": "^4.2.2",
     "react-transition-group": "^2.2.1",
     "reactstrap": "^5.0.0-beta"
   }

@@ -1,5 +1,6 @@
-import React from 'react';
-import {
+const React        = require('react');
+const {
+	Alert,
 	Collapse,
 	Navbar,
 	NavbarToggler,
@@ -10,12 +11,47 @@ import {
 	UncontrolledDropdown,
 	DropdownToggle,
 	DropdownMenu,
-	DropdownItem } from 'reactstrap';
+	DropdownItem
+	} = require('reactstrap');
+const {
+	Switch,
+	Route,
+	Redirect,
+	Link
+	} = require('react-router-dom');
+// workaround name collision in ReactRouterNavLink with ReactStrap
+const RRNavLink = require('react-router-dom').NavLink;
 
-import AppDefault from 'view/AppDefault';
+const AppDefault = require('view/AppDefault');
 
+	// emit warning for unmatched routes
+	function NoMatch ( props ) {
+		let hash = props.location.pathname.substring(1);
+		return (
+			<Alert color="warning">No Match for route <tt>#{hash}</tt></Alert>
+		);
+	}
+	// test component
+	function About ( props ) {
+		return (
+			<p>This is the "About" Test Function</p>
+		);
+	}
+	// test component
+	function Install ( props ) {
+		return (
+			<p>This is the "Install" Test Function</p>
+		);
+	}
+	// test component
+	function Test ( props ) {
+		let loc = props.location.pathname.substring(1);
+		return (
+			<p>Requesting '{loc}'...</p>
+		);
+	}
 
-export default class App extends React.Component {
+module.exports = class App extends React.Component {
 	constructor(props) {
 		super(props);
 
@@ -32,37 +68,46 @@ export default class App extends React.Component {
 	render() {
 		return (
 			<div>
-				<Navbar fixed="top" color="dark" dark expand="md">
+				<Navbar fixed="top" light expand="md" style={{ backgroundColor:'#f0f0f0' }}>
 					<NavbarBrand href="#">NetCreate</NavbarBrand>
 					<NavbarToggler onClick={this.toggle} />
 					<Collapse isOpen={this.state.isOpen} navbar>
 						<Nav className="ml-auto" navbar>
 							<NavItem>
-								<NavLink href="#">About</NavLink>
+								<NavLink to="/about" activeClassName="active" tag={RRNavLink} replace>About</NavLink>
 							</NavItem>
 							<NavItem>
-								<NavLink href="#">Github</NavLink>
+								<NavLink to="/install" tag={RRNavLink} replace>Install</NavLink>
 							</NavItem>
-							<UncontrolledDropdown nav inNavbar>
+							<UncontrolledDropdown nav>
 								<DropdownToggle nav caret>
-									Dev Tests
+									Tests
 								</DropdownToggle>
-								<DropdownMenu >
+								<DropdownMenu>
 									<DropdownItem>
-										Test 1
+										<NavLink to="/test1" tag={RRNavLink} replace>Test 1</NavLink>
 									</DropdownItem>
 									<DropdownItem>
-										Test 2
+										<NavLink to="/test2" tag={RRNavLink} replace>Test 2</NavLink>
 									</DropdownItem>
 									<DropdownItem divider />
 									<DropdownItem>
-										Test 3
+										<NavLink to="/test3" tag={RRNavLink} replace>Test Descriptions</NavLink>
 									</DropdownItem>
 								</DropdownMenu>
 							</UncontrolledDropdown>
 						</Nav>
 					</Collapse>
 				</Navbar>
+				<Switch>
+					<Route path='/' exact component={AppDefault}/>
+					<Route path='/about' component={About}/>
+					<Route path='/install' component={Install}/>
+					<Route path='/test1' component={Test}/>
+					<Route path='/test2' component={Test}/>
+					<Route path='/test3' component={Test}/>
+					<Route component={NoMatch}/>
+				</Switch>
 			</div>
 		);
 	}
