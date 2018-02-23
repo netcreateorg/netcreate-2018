@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>SimpleHTML</title>
+		<script src="../netc-lib.js"></script>
+		<script src="../netc-app.js"></script>
+		<link rel="stylesheet" href="../netc-app.css" type="text/css">
+	</head>
+	<style>
+		body {
+			padding: 10px;
+		}
+	</style>
+	<body>
+		<h2>Simple HTML in an IFRAME</h2>
+		<p>This is a stand-alone webpage.</p>
+		<p>NetCreate Features are loaded but not initialized. You can use require() in your Javascript and access common system modules with Bootstrap styling. However, you can not access the same data from the rest of the web application because this page has its own instance of the system libraries.</p>
+	</body>
+	<script>
+		// demonstrate that NetCreate system libraries are available
+		const STORE = require('system/datastore');
+		STORE.Initialize();
+		const $ = require('jquery');
+		$('body').append('<p>JQUERY ADDED THIS</p>');
+	</script>
+</html>

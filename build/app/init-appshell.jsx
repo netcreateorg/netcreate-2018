@@ -50,6 +50,20 @@ const AppDefault = require('view/AppDefault');
 			<p>Requesting '{loc}'...</p>
 		);
 	}
+	// test component
+	function HTML ( props, width, height ) {
+		let loc = props.location.pathname.substring(1);
+		loc = '/'+loc+'/'+loc+'.html';
+		width = width || '100%';
+		height = height || '750px';
+		console.log('HTML',loc,width+' x '+height,props);
+		return (
+			<div style={{ padding: '10px' }}>
+				<iframe src={loc} height={height} width={width} />
+			</div>
+		);
+	}
+
 
 module.exports = class AppShell extends React.Component {
 	constructor(props) {
@@ -85,7 +99,7 @@ module.exports = class AppShell extends React.Component {
 								</DropdownToggle>
 								<DropdownMenu>
 									<DropdownItem>
-										<NavLink to="/test1" tag={RRNavLink} replace>Test 1</NavLink>
+										<NavLink to="/simple" tag={RRNavLink} replace>SimpleHTML</NavLink>
 									</DropdownItem>
 									<DropdownItem>
 										<NavLink to="/test2" tag={RRNavLink} replace>Test 2</NavLink>
@@ -103,7 +117,7 @@ module.exports = class AppShell extends React.Component {
 					<Route path='/' exact component={AppDefault}/>
 					<Route path='/about' component={About}/>
 					<Route path='/install' component={Install}/>
-					<Route path='/test1' component={Test}/>
+					<Route path='/simple' component={ (props) => {return HTML(props)} }/>
 					<Route path='/test2' component={Test}/>
 					<Route path='/test3' component={Test}/>
 					<Route component={NoMatch}/>
