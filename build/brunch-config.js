@@ -36,13 +36,13 @@ module.exports = {
 /*/ files: {
 		javascripts: {
 			joinTo: {
-				'netc-app.js'   : /^app/,
-				'netc-lib.js'   : /^(?!app)/
+				'scripts/netc-app.js'   : /^app/,
+				'scripts/netc-lib.js'   : /^(?!app)/
 			}
 		},
 		stylesheets: {
 			joinTo : {
-				'netc-app.css'  : [
+				'styles/netc-app.css'  : [
 					/^app/,
 					/^node_modules/
 				]

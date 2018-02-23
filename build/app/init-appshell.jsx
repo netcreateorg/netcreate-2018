@@ -53,10 +53,9 @@ const AppDefault = require('view/AppDefault');
 	// test component
 	function HTML ( props, width, height ) {
 		let loc = props.location.pathname.substring(1);
-		loc = '/'+loc+'/'+loc+'.html';
-		width = width || '100%';
+		loc    = '/htmldemos/'+loc+'/'+loc+'.html';
+		width  = width || '100%';
 		height = height || '750px';
-		console.log('HTML',loc,width+' x '+height,props);
 		return (
 			<div style={{ padding: '10px' }}>
 				<iframe src={loc} height={height} width={width} />
@@ -80,6 +79,11 @@ module.exports = class AppShell extends React.Component {
 		});
 	}
 	render() {
+
+		// demonstrate that STORE persists between clicks
+		const STORE = require('system/datastore');
+		STORE.Increment();
+
 		return (
 			<div>
 				<Navbar fixed="top" light expand="md" style={{ backgroundColor:'#f0f0f0' }}>

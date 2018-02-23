@@ -2,9 +2,9 @@
 <html>
 	<head>
 		<title>SimpleHTML</title>
-		<script src="../netc-lib.js"></script>
-		<script src="../netc-app.js"></script>
-		<link rel="stylesheet" href="../netc-app.css" type="text/css">
+		<script src="/scripts/netc-lib.js"></script>
+		<script src="/scripts/netc-app.js"></script>
+		<link rel="stylesheet" href="/styles/netc-app.css" type="text/css">
 	</head>
 	<style>
 		body {
@@ -20,6 +20,7 @@
 		// demonstrate that NetCreate system libraries are available
 		const STORE = require('system/datastore');
 		STORE.Initialize();
+		STORE.Increment();
 		const $ = require('jquery');
 		$('body').append('<p>JQUERY ADDED THIS</p>');
 	</script>
