@@ -1,20 +1,13 @@
-const ReactDOM      = require('react-dom');
-const React         = require('react');
-const HashRouter = require('react-router-dom').HashRouter;
+const ReactDOM    = require('react-dom');
+const React       = require('react');
+const HashRouter  = require('react-router-dom').HashRouter;
 
-const AppContainer  = require('component/AppContainer');
+const AppShell    = require('init-appshell');
 
-const UNISYS        = require('system/unisys');
-const DATASTORE     = require('system/datastore');
+const UNISYS      = require('system/unisys');
+const DATASTORE   = require('system/datastore');
 
-const SETTINGS      = require('settings');
-
-console.group('init.jsx module comparison');
-	console.log('ReactDOM',     ReactDOM);
-	console.log('UNISYS',       UNISYS);
-	console.log('HashRouter',   HashRouter);
-	console.log('AppContainer', AppContainer);
-console.groupEnd();
+const SETTINGS    = require('settings');
 
 console.log('> init.jsx loaded');
 
@@ -24,12 +17,12 @@ DATASTORE.Initialize();
 
 const APP_CONTAINER = '#app-container';
 
-// initialize AppContainer, which will load view/AppDefault to set up routing
+// initialize AppShell, which will load view/AppDefault to set up routing
 document.addEventListener('DOMContentLoaded', () => {
 	console.log('init.jsx initializing App into', APP_CONTAINER);
 	ReactDOM.render((
 		<HashRouter hashType="noslash">
-			<AppContainer />
+			<AppShell />
 		</HashRouter>
 		), document.querySelector( APP_CONTAINER ));
 });

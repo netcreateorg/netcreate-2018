@@ -1,4 +1,4 @@
-const React        = require('react');
+const React = require('react');
 const {
 	Alert,
 	Collapse,
@@ -51,7 +51,7 @@ const AppDefault = require('view/AppDefault');
 		);
 	}
 
-module.exports = class App extends React.Component {
+module.exports = class AppShell extends React.Component {
 	constructor(props) {
 		super(props);
 

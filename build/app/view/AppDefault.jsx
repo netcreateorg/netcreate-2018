@@ -1,4 +1,4 @@
-const React        = require('react');
+const React = require('react');
 
 module.exports = class AppDefault extends React.Component {
 	render() {
