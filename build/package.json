@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "research project for network graph analysis",
   "scripts": {
+    "dev": "brunch watch -s",
+    "build" : "echo \"Error: no build/deploy system yet\" && exit 1",
+    "clean": "rm -rf public/",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "debug": "LOGGY_STACKS=true brunch watch -s",
-    "start": "brunch watch -s",
-    "clean": "rm -rf public/"
+    "debug": "LOGGY_STACKS=true brunch watch -s"
   },
   "repository": {
     "type": "git",
