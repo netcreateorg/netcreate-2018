@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>D3 Force Demo</title>
+		<script src="/scripts/netc-lib.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.13.0/d3.min.js"></script>
+		<script src="/scripts/netc-app.js"></script>
+		<link rel="stylesheet" href="/styles/netc-app.css" type="text/css">
+
+	</head>
+	<style>
+
+		.links line {
+		  stroke: #999;
+		  stroke-opacity: 0.6;
+		}
+
+		.nodes circle {
+		  stroke: #fff;
+		  stroke-width: 1.5px;
+		}
+
+		.noselect {
+		  -webkit-touch-callout: none;
+		  -webkit-user-select: none;
+		  -khtml-user-select: none;
+		  -moz-user-select: none;
+		  -ms-user-select: none;
+		  user-select: none;
+		  pointer-events: none;
+		}
+
+	</style>
+	<body>
+		<h2>D3 Force Demo</h2>
+		<svg width="1280" height="1280"></svg>
+		<script>
+
+			var svg = d3.select("svg"),
+			    width = +svg.attr("width"),
+			    height = +svg.attr("height");
+
+			var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+			var simulation = d3.forceSimulation()
+			    .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(10).strength(2))
+			    .force("collide", d3.forceCollide().radius(function(d) { return d.size/4; }))
+			    .force("charge", d3.forceManyBody().strength(function(d) { return -200; }))
+			    .force("x", d3.forceX())
+			    .force("y", d3.forceY())
+			    .force("center", d3.forceCenter(width / 2, height / 2));
+
+			d3.json("data.json", function(error, graph) {
+			  if (error) throw error;
+
+			  var link = svg.append("g")
+			      .attr("class", "links")
+			    .selectAll("line")
+			    .data(graph.edges)
+			    .enter().append("line")
+			      .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+
+			  var node = svg.append("g")
+			      .classed("nodes", true)
+			    .selectAll("circle")
+			    .data(graph.nodes)
+			    .enter().append("g")
+			      .classed("nodes", true)
+			      .call( d3.drag()
+			          .on("start", dragstarted)
+			          .on("drag", dragged)
+			          .on("end", dragended));
+
+			  node.append("circle")
+			      .attr("r", function(d) { return d.size/10; })
+			      .attr("fill", function(d) { return d.color; })
+
+			  node.append("text")
+			      // .classed('noselect', true)
+			      .attr("font-size", 10)
+			      .attr("dx", 8)
+			      .attr("dy", ".15em")
+			      .text(function(d) { return d.label });
+
+			  simulation
+			      .nodes(graph.nodes)
+			      .on("tick", ticked);
+
+			  simulation.force("link")
+			      .links(graph.edges);
+
+			  function ticked() {
+			    link
+			        .attr("x1", function(d) { return d.source.x; })
+			        .attr("y1", function(d) { return d.source.y; })
+			        .attr("x2", function(d) { return d.target.x; })
+			        .attr("y2", function(d) { return d.target.y; });
+
+			    node.attr("transform", function(d) { return "translate("+d.x+","+d.y+")"; });
+			    // node
+			    //     .attr("cx", function(d) { return d.x; })
+			    //     .attr("cy", function(d) { return d.y; });
+			  }
+			});
+
+			function dragstarted(d) {
+			console.log('drag started on',d);
+			  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+			  d.fx = d.x;
+			  d.fy = d.y;
+			}
+
+			function dragged(d) {
+			console.log('dragged',d);
+			  d.fx = d3.event.x;
+			  d.fy = d3.event.y;
+			}
+
+			function dragended(d) {
+			console.log('drag ended on',d);
+			  if (!d3.event.active) simulation.alphaTarget(0);
+			  d.fx = null;
+			  d.fy = null;
+			}
+
+		</script>
+		<script>
+			// demonstrate that NetCreate system libraries are available
+			const STORE = require('system/datastore');
+			STORE.Initialize();
+			STORE.Increment();
+			const $ = require('jquery');
+			$('body').append('<p>JQUERY ADDED THIS. Now D3 will turn me red.</p>');
+			// d3 is loaded
+			// d3.select("body").style("background-color", "red");
+		</script>
+	</body>
+</html>

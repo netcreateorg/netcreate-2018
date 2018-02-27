@@ -98,6 +98,9 @@ module.exports = class AppShell extends React.Component {
 							<NavItem>
 								<NavLink to="/install" tag={RRNavLink} replace>Install</NavLink>
 							</NavItem>
+							<NavItem>
+								<NavLink to="/d3forcedemo" tag={RRNavLink} replace>D3 Force Demo</NavLink>
+							</NavItem>
 							<UncontrolledDropdown nav>
 								<DropdownToggle nav caret>
 									Tests
@@ -123,6 +126,7 @@ module.exports = class AppShell extends React.Component {
 					<Route path='/about' component={About}/>
 					<Route path='/install' component={Install}/>
 					<Route path='/simple' component={ (props) => {return HTML(props)} }/>
+					<Route path='/d3forcedemo' component={ (props) => {return HTML(props)} }/>
 					<Route path='/d3test' component={D3Test}/>
 					<Route path='/test3' component={Test}/>
 					<Route component={NoMatch}/>
