@@ -23,6 +23,7 @@ const {
 const RRNavLink = require('react-router-dom').NavLink;
 
 const AppDefault = require('view/AppDefault');
+const D3Test = require('view/d3test/d3test');
 
 	// emit warning for unmatched routes
 	function NoMatch ( props ) {
@@ -106,7 +107,7 @@ module.exports = class AppShell extends React.Component {
 										<NavLink to="/simple" tag={RRNavLink} replace>SimpleHTML</NavLink>
 									</DropdownItem>
 									<DropdownItem>
-										<NavLink to="/test2" tag={RRNavLink} replace>Test 2</NavLink>
+										<NavLink to="/d3test" tag={RRNavLink} replace>D3Test</NavLink>
 									</DropdownItem>
 									<DropdownItem divider />
 									<DropdownItem>
@@ -122,7 +123,7 @@ module.exports = class AppShell extends React.Component {
 					<Route path='/about' component={About}/>
 					<Route path='/install' component={Install}/>
 					<Route path='/simple' component={ (props) => {return HTML(props)} }/>
-					<Route path='/test2' component={Test}/>
+					<Route path='/d3test' component={D3Test}/>
 					<Route path='/test3' component={Test}/>
 					<Route component={NoMatch}/>
 				</Switch>
