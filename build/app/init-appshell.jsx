@@ -58,7 +58,6 @@ function HTML ( props, width, height ) {
 	height  = height || '750px';
 	return (
 		<div style={{display:'flex', flexFlow:'column nowrap', width:'100%', height:'100vh'}}>
-			<div style={{height:'3.5em'}}></div>
 			<iframe style={{flex:'1 0 auto',border:'0'}} src={loc} />
 		</div>
 	);
@@ -141,6 +140,7 @@ class AppShell extends React.Component {
 						</Nav>
 					</Collapse>
 				</Navbar>
+				<div style={{height:'3.5em'}}>{/*/ add space underneath the fixed navbar /*/}</div>
 				<Switch>
 				{/*/ (2) add route paths here /*/}
 					<Route path='/' exact component={AppDefault}/>
