@@ -1,7 +1,11 @@
+/// LIBRARIES /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const D3 = require('d3');
 
-module.exports = class AppDefault extends React.Component {
+/// React Component ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+class AppDefault extends React.Component {
 	render() {
 		return (
 			<p>AppDefault component</p>
@@ -12,3 +16,6 @@ module.exports = class AppDefault extends React.Component {
 	}
 }
 
+/// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+module.exports = AppDefault;
