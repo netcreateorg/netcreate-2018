@@ -9,67 +9,293 @@
 
 	</head>
 	<style>
+		/* HTML styles */
+		html{ width: 100%; }
+		body{ 
+		  width: 100%; 
+		  margin: 0; padding: 0; 
+		  display: flex; 
+		  font-family: sans-serif; font-size: 75%; }
+		.controls {
+		  flex-basis: 200px;
+		  padding: 0 5px;
+		}
+		.controls .force {
+		  background-color:#eee;
+		  border-radius: 3px;
+		  padding: 5px;
+		  margin: 5px 0;
+		}
+		.controls .force p label { margin-right: .5em; font-size: 120%; font-weight: bold;}
+		.controls .force p { margin-top: 0;}
+		.controls .force label { display: inline-block; }
+		.controls input[type="checkbox"] { transform: scale(1.2, 1.2); }
+		.controls input[type="range"] { margin: 0 5% 0.5em 5%; width: 90%; }
+		/* alpha viewer */
+		.controls .alpha p { margin-bottom: .25em; }
+		.controls .alpha .alpha_bar { height: .5em; border: 1px #777 solid; border-radius: 2px; padding: 1px; display: flex; }
+		.controls .alpha .alpha_bar #alpha_value { background-color: #555; border-radius: 1px; flex-basis: 100% }
+		.controls .alpha .alpha_bar:hover { border-width: 2px; margin:-1px; }
+		.controls .alpha .alpha_bar:active #alpha_value { background-color: #222 }
 
+		/* SVG styles */
+		svg {
+		  flex-basis: 100%;
+		  min-width: 200px;
+		}
 		.links line {
-		  stroke: #999;
-		  stroke-opacity: 0.6;
+		  stroke: #aaa;
 		}
-
 		.nodes circle {
-		  stroke: #fff;
-		  stroke-width: 1.5px;
+		  pointer-events: all;
 		}
-
-		.noselect {
-		  -webkit-touch-callout: none;
-		  -webkit-user-select: none;
-		  -khtml-user-select: none;
-		  -moz-user-select: none;
-		  -ms-user-select: none;
-		  user-select: none;
-		  pointer-events: none;
+		.nodes text {
+			stroke: #666;
+			stroke-width: 0px;
 		}
 
 	</style>
 	<body>
-		<h2>D3 Force Demo</h2>
+		<div class="controls">
+		  <h2>D3 Force Demo</h2>
+		  <div class="force alpha">
+		    <p><label>alpha</label> Simulation activity</p>
+		    <div class="alpha_bar" onclick="updateAll();"><div id="alpha_value"></div></div>
+		  </div>
+		  <div class="force">
+		    <p><label>center</label> Shifts the view, so the graph is centered at this location.</p>
+		    <label>
+		      x
+		      <output id="center_XSliderOutput">.5</output>
+		      <input type="range" min="0" max="1" value=".5" step="0.01" oninput="d3.select('#center_XSliderOutput').text(value); forceProperties.center.x=value; updateAll();">
+		    </label>
+		    <label>
+		      y
+		      <output id="center_YSliderOutput">.5</output>
+		      <input type="range" min="0" max="1" value=".5" step="0.01" oninput="d3.select('#center_YSliderOutput').text(value); forceProperties.center.y=value; updateAll();">
+		    </label>
+		  </div>
+
+		  <div class="force">
+		    <p><label><input type="checkbox" checked onchange="forceProperties.charge.enabled = this.checked; updateAll();"> charge</label> Attracts (+) or repels (-) nodes to/from each other.</p>
+		    <label title="Negative strength repels nodes. Positive strength attracts nodes.">
+		      strength
+		      <output id="charge_StrengthSliderOutput">-20</output>
+		      <input type="range" min="-200" max="50" value="-20" step=".1" oninput="d3.select('#charge_StrengthSliderOutput').text(value); forceProperties.charge.strength=value; updateAll();">
+		    </label>
+		    <label title="Minimum distance where force is applied">
+		      distanceMin
+		      <output id="charge_distanceMinSliderOutput">1</output>
+		      <input type="range" min="0" max="50" value="1" step=".1" oninput="d3.select('#charge_distanceMinSliderOutput').text(value); forceProperties.charge.distanceMin=value; updateAll();">
+		    </label>
+		    <label title="Maximum distance where force is applied">
+		      distanceMax
+		      <output id="charge_distanceMaxSliderOutput">2000</output>
+		      <input type="range" min="0" max="2000" value="2000" step=".1" oninput="d3.select('#charge_distanceMaxSliderOutput').text(value); forceProperties.charge.distanceMax=value; updateAll();">
+		    </label>
+		  </div>
+
+		  <div class="force">
+		    <p><label><input type="checkbox" checked onchange="forceProperties.collide.enabled = this.checked; updateAll();"> collide</label> Prevents nodes from overlapping</p>
+		    <label>
+		      strength
+		      <output id="collide_StrengthSliderOutput">.7</output>
+		      <input type="range" min="0" max="2" value=".7" step=".1" oninput="d3.select('#collide_StrengthSliderOutput').text(value); forceProperties.collide.strength=value; updateAll();">
+		    </label>
+		    <label title="Size of nodes">
+		      radius
+		      <output id="collide_radiusSliderOutput">4</output>
+		      <input type="range" min="0" max="100" value="4" step="1" oninput="d3.select('#collide_radiusSliderOutput').text(value); forceProperties.collide.radius=value; updateAll();">
+		    </label>
+		    <label title="Higher values increase rigidity of the nodes (WARNING: high values are computationally expensive)">
+		      iterations
+		      <output id="collide_iterationsSliderOutput">1</output>
+		      <input type="range" min="1" max="10" value="1" step="1" oninput="d3.select('#collide_iterationsSliderOutput').text(value); forceProperties.collide.iterations=value; updateAll();">
+		    </label>
+		  </div>
+
+		  <div class="force">
+		    <p><label><input type="checkbox" checked onchange="forceProperties.forceX.enabled = this.checked; updateAll();"> forceX</label> Acts like gravity. Pulls all points towards an X location.</p>
+		    <label>
+		      strength
+		      <output id="forceX_StrengthSliderOutput">.03</output>
+		      <input type="range" min="0" max="1" value="0.03" step="0.01" oninput="d3.select('#forceX_StrengthSliderOutput').text(value); forceProperties.forceX.strength=value; updateAll();">
+		    </label>
+		    <label title="The X location that the force will push the nodes to (NOTE: This demo multiplies by the svg width)">
+		      x
+		      <output id="forceX_XSliderOutput">.5</output>
+		      <input type="range" min="0" max="1" value=".5" step="0.01" oninput="d3.select('#forceX_XSliderOutput').text(value); forceProperties.forceX.x=value; updateAll();">
+		    </label>
+		  </div>
+
+		  <div class="force">
+		    <p><label><input type="checkbox" checked onchange="forceProperties.forceY.enabled = this.checked; updateAll();"> forceY</label> Acts like gravity. Pulls all points towards a Y location.</p>
+		    <label>
+		      strength
+		      <output id="forceY_StrengthSliderOutput">0.03</output>
+		      <input type="range" min="0" max="1" value=".03" step="0.01" oninput="d3.select('#forceY_StrengthSliderOutput').text(value); forceProperties.forceY.strength=value; updateAll();">
+		    </label>
+		    <label title="The Y location that the force will push the nodes to (NOTE: This demo multiplies by the svg height)">
+		      y
+		      <output id="forceY_YSliderOutput">.5</output>
+		      <input type="range" min="0" max="1" value=".5" step="0.01" oninput="d3.select('#forceY_YSliderOutput').text(value); forceProperties.forceY.y=value; updateAll();">
+		    </label>
+		  </div>
+
+		  <div class="force">
+		    <p><label><input type="checkbox" checked onchange="forceProperties.link.enabled = this.checked; updateAll();"> link</label> Sets link length</p>
+		    <label title="The force will push/pull nodes to make links this long">
+		      distance
+		      <output id="link_DistanceSliderOutput">30</output>
+		      <input type="range" min="0" max="100" value="30" step="1" oninput="d3.select('#link_DistanceSliderOutput').text(value); forceProperties.link.distance=value; updateAll();">
+		    </label>
+		    <label title="Higher values increase rigidity of the links (WARNING: high values are computationally expensive)">
+		      iterations
+		      <output id="link_IterationsSliderOutput">1</output>
+		      <input type="range" min="1" max="10" value="1" step="1" oninput="d3.select('#link_IterationsSliderOutput').text(value); forceProperties.link.iterations=value; updateAll();">
+		    </label>
+		  </div>
+		</div>
 		<svg width="1280" height="1280"></svg>
+
 		<script>
 
+			// UI Based on https://bl.ocks.org/steveharoz/8c3e2524079a8c440df60c1ab72b5d03
+
 			var svg = d3.select("svg"),
-			    width = +svg.attr("width"),
-			    height = +svg.attr("height");
+			    width = +svg.node().getBoundingClientRect().width,
+			    height = +svg.node().getBoundingClientRect().height;
 
-			var color = d3.scaleOrdinal(d3.schemeCategory20);
+			// svg objects
+			var link, node;
+			// the data - an object with nodes and links
+			var graph;
 
-			var simulation = d3.forceSimulation()
-			    .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(10).strength(2))
-			    .force("collide", d3.forceCollide().radius(function(d) { return d.size/4; }))
-			    .force("charge", d3.forceManyBody().strength(function(d) { return -200; }))
-			    .force("x", d3.forceX())
-			    .force("y", d3.forceY())
-			    .force("center", d3.forceCenter(width / 2, height / 2));
-
-			d3.json("data.json", function(error, graph) {
+			// load the data
+			d3.json("data.json", function(error, _graph) {
 			  if (error) throw error;
+			  graph = _graph;
+			  initializeDisplay();
+			  initializeSimulation();
+			});
 
-			  var link = svg.append("g")
-			      .attr("class", "links")
+
+
+			//////////// FORCE SIMULATION //////////// 
+
+			// force simulator
+			var simulation = d3.forceSimulation();
+
+			// set up the simulation and event to update locations after each tick
+			function initializeSimulation() {
+			  simulation.nodes(graph.nodes);
+			  initializeForces();
+			  simulation.on("tick", ticked);
+			}
+
+			// values for all forces
+			forceProperties = {
+			    center: {
+			        x: 0.5,
+			        y: 0.5
+			    },
+			    charge: {
+			        enabled: true,
+			        strength: -20,
+			        distanceMin: 1,
+			        distanceMax: 2000
+			    },
+			    collide: {
+			        enabled: true,
+			        strength: .7,
+			        iterations: 1,
+			        radius: 4
+			    },
+			    forceX: {
+			        enabled: true,
+			        strength: .03,
+			        x: .5
+			    },
+			    forceY: {
+			        enabled: true,
+			        strength: .03,
+			        y: .5
+			    },
+			    link: {
+			        enabled: true,
+			        distance: 30,
+			        iterations: 1
+			    }
+			}
+
+			// add forces to the simulation
+			function initializeForces() {
+			    // add forces and associate each with a name
+			    simulation
+			        .force("link", d3.forceLink())
+			        .force("charge", d3.forceManyBody())
+			        .force("collide", d3.forceCollide())
+			        .force("center", d3.forceCenter())
+			        .force("forceX", d3.forceX())
+			        .force("forceY", d3.forceY());
+			    // apply properties to each of the forces
+			    updateForces();
+			}
+
+			// apply new force properties
+			function updateForces() {
+			    // get each force by name and update the properties
+			    simulation.force("center")
+			        .x(width * forceProperties.center.x)
+			        .y(height * forceProperties.center.y);
+			    simulation.force("charge")
+			        .strength(forceProperties.charge.strength * forceProperties.charge.enabled)
+			        .distanceMin(forceProperties.charge.distanceMin)
+			        .distanceMax(forceProperties.charge.distanceMax);
+			    simulation.force("collide")
+			        .strength(forceProperties.collide.strength * forceProperties.collide.enabled)
+			        .radius(function(d){return d.size/forceProperties.collide.radius;})
+			        .iterations(forceProperties.collide.iterations);
+			    simulation.force("forceX")
+			        .strength(forceProperties.forceX.strength * forceProperties.forceX.enabled)
+			        .x(width * forceProperties.forceX.x);
+			    simulation.force("forceY")
+			        .strength(forceProperties.forceY.strength * forceProperties.forceY.enabled)
+			        .y(height * forceProperties.forceY.y);
+			    simulation.force("link")
+			        .id(function(d) {return d.id;})
+			        .distance(forceProperties.link.distance)
+			        .iterations(forceProperties.link.iterations)
+			        .links(forceProperties.link.enabled ? graph.edges : []);
+
+			    // updates ignored until this is run
+			    // restarts the simulation (important if simulation has already slowed down)
+			    simulation.alpha(1).restart();
+			}
+
+
+
+			//////////// DISPLAY ////////////
+
+			// generate the svg objects and force simulation
+			function initializeDisplay() {
+			  // set the data and properties of link lines
+			  link = svg.append("g")
+			        .attr("class", "links")
 			    .selectAll("line")
 			    .data(graph.edges)
-			    .enter().append("line")
-			      .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+			    .enter().append("line");
 
-			  var node = svg.append("g")
-			      .classed("nodes", true)
+			  // set the data and properties of node circles
+			  node = svg.append("g")
+			        .attr("class", "nodes")
 			    .selectAll("circle")
 			    .data(graph.nodes)
 			    .enter().append("g")
-			      .classed("nodes", true)
-			      .call( d3.drag()
-			          .on("start", dragstarted)
-			          .on("drag", dragged)
-			          .on("end", dragended));
+			        .call(d3.drag()
+			            .on("start", dragstarted)
+			            .on("drag", dragged)
+			            .on("end", dragended));
 
 			  node.append("circle")
 			      .attr("r", function(d) { return d.size/10; })
@@ -82,45 +308,74 @@
 			      .attr("dy", ".15em")
 			      .text(function(d) { return d.label });
 
-			  simulation
-			      .nodes(graph.nodes)
-			      .on("tick", ticked);
+			  // node tooltip
+			  node.append("title")
+			      .text(function(d) { return d.label; });
+			  // visualize the graph
+			  updateDisplay();
+			}
 
-			  simulation.force("link")
-			      .links(graph.edges);
+			// update the display based on the forces (but not positions)
+			function updateDisplay() {
+			    node
+			        .attr("r", forceProperties.collide.radius)
+			        .attr("stroke", forceProperties.charge.strength > 0 ? "blue" : "red")
+			        .attr("stroke-width", forceProperties.charge.enabled==false ? 0 : Math.abs(forceProperties.charge.strength)/15);
 
-			  function ticked() {
+			    link
+			        .attr("stroke-width", forceProperties.link.enabled ? 1 : .5)
+			        .attr("opacity", forceProperties.link.enabled ? 1 : 0);
+			}
+
+			// update the display positions after each simulation tick
+			function ticked() {
 			    link
 			        .attr("x1", function(d) { return d.source.x; })
 			        .attr("y1", function(d) { return d.source.y; })
 			        .attr("x2", function(d) { return d.target.x; })
 			        .attr("y2", function(d) { return d.target.y; });
-
 			    node.attr("transform", function(d) { return "translate("+d.x+","+d.y+")"; });
+
+			    // old transform code that doesn't work with text
+			    // and new "g" element
 			    // node
 			    //     .attr("cx", function(d) { return d.x; })
 			    //     .attr("cy", function(d) { return d.y; });
-			  }
-			});
+			    d3.select('#alpha_value').style('flex-basis', (simulation.alpha()*100) + '%');
+			}
+
+
+
+			//////////// UI EVENTS ////////////
 
 			function dragstarted(d) {
-			console.log('drag started on',d);
 			  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
 			  d.fx = d.x;
 			  d.fy = d.y;
 			}
 
 			function dragged(d) {
-			console.log('dragged',d);
 			  d.fx = d3.event.x;
 			  d.fy = d3.event.y;
 			}
 
 			function dragended(d) {
-			console.log('drag ended on',d);
-			  if (!d3.event.active) simulation.alphaTarget(0);
+			  if (!d3.event.active) simulation.alphaTarget(0.0001);
 			  d.fx = null;
 			  d.fy = null;
+			}
+
+			// update size-related forces
+			d3.select(window).on("resize", function(){
+			    width = +svg.node().getBoundingClientRect().width;
+			    height = +svg.node().getBoundingClientRect().height;
+			    updateForces();
+			});
+
+			// convenience function to update everything (run after UI input)
+			function updateAll() {
+			    updateForces();
+			    updateDisplay();
 			}
 
 		</script>
@@ -130,7 +385,7 @@
 			STORE.Initialize();
 			STORE.Increment();
 			const $ = require('jquery');
-			$('body').append('<p>JQUERY ADDED THIS. Now D3 will turn me red.</p>');
+			// $('body').append('<p>JQUERY ADDED THIS. Now D3 will turn me red.</p>');
 			// d3 is loaded
 			// d3.select("body").style("background-color", "red");
 		</script>
