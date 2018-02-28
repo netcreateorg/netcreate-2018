@@ -113,7 +113,7 @@ class AppShell extends React.Component {
 					<NavbarBrand href="#">NetCreate</NavbarBrand>
 					<NavbarToggler onClick={this.toggle} />
 					<Collapse isOpen={this.state.isOpen} navbar>
-					/// (1) add navigation links here
+					{/*/ (1) add navigation links here /*/}
 						<Nav className="ml-auto" navbar>
 							<NavItem>
 								<NavLink to="/about" activeClassName="active" tag={RRNavLink} replace>About</NavLink>
@@ -142,7 +142,7 @@ class AppShell extends React.Component {
 					</Collapse>
 				</Navbar>
 				<Switch>
-				/// (2) add route paths here
+				{/*/ (2) add route paths here /*/}
 					<Route path='/' exact component={AppDefault}/>
 					<Route path='/about' component={About}/>
 					<Route path='/simple' component={ (props) => {return HTML(props)} }/>
