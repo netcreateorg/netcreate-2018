@@ -55,7 +55,7 @@ function HTML ( props, width, height ) {
 	let loc = props.location.pathname.substring(1);
 	loc     = '/htmldemos/'+loc+'/'+loc+'.html';
 	return (
-		<div style={{display:'flex', flexFlow:'column nowrap', width:'100%'}}>
+		<div style={{display:'flex', flexFlow:'column nowrap', width:'100%', height:'100%'}}>
 			<iframe style={{flex:'1 0 auto',border:'0'}} src={loc} />
 		</div>
 	);
@@ -98,6 +98,14 @@ class AppShell extends React.Component {
 /*/ Draw top navbar w/ menus. Add route information
 	To add a new HTML, add the link to both the <Nav> and <Switch> staments.
 	To add a new VIEW, load the component
+
+	index.html           | body          min-height: 100%
+	index.html           | div#app
+	init-appshell        |   div         flex, column nowrap, width:100%, height:100vh
+	init-appshell        |     Navbar    position:fixed
+	init-appshell.HTML() |     div       flex, column nowrap, width:100%
+	init-appshell.HTML() |       iframe  flex:1 0 auto, border:0
+
 /*/ render() {
 		/// demonstrate that STORE persists between clicks
 		const STORE = require('system/datastore');
@@ -105,7 +113,7 @@ class AppShell extends React.Component {
 
 		/// return component with matching routed view
 		return (
-			<div style={{ display:'flex',flexFlow:'column nowrap',height:'100vh'}}>
+			<div style={{display:'flex', flexFlow:'column nowrap', width:'100%', height:'100vh'}}>
 				<Navbar fixed="top" light expand="md" style={{ backgroundColor:'#f0f0f0'}}>
 					<NavbarBrand href="#">NetCreate</NavbarBrand>
 					<NavbarToggler onClick={this.toggle} />
