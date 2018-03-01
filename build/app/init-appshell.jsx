@@ -35,33 +35,64 @@ const RRNavLink = require('react-router-dom').NavLink;
 
 
 
-/// REACT ROUTED COMPONENTS ///////////////////////////////////////////////////
-/// These are the top-level React components ("view") that are mapped to routes
-/// as seen in render() function's <Switch>. There are two styles:
-/// (1) a loaded React 'view' that is built entirely with our modular app API
-///     and displayed in this application shell.
-/// (2) a plain .html file loaded into an IFRAME, useful for adding stand-alone
-///     test code with access to the modular app API system, but not other web
-///     apps (e.g. can use the data storage module)
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** REACT ROUTING ************************************************************\
+
+	These are the top-level React components ("view") that are mapped to
+	routes as seen in render() function's <Switch>. There are three styles:
+	(1) a loaded React 'view' that is built entirely with our modular app API
+		and displayed in this application shell.
+	(2) a plain .html file loaded into an IFRAME, useful for adding stand-alone
+		test code with access to the modular app API system, but not other web
+		apps (e.g. can use the data storage module)
+	(3) a NO ROUTE FOUND component function.
+
+/** (1) ROUTED COMPONENTS ****************************************************\
+
+	Used by render()'s <Switch> to load a React component (what we call a
+	'view' in the NetCreate app). The component should return its elements
+	wrapped in a div with the suggested flexbox pr
+
+	index.html           | body          min-height: 100%
+	index.html           | div#app
+	init-appshell        |   div         display:flex, flex-flow:column nowrap,
+	                                     width:100%, height:100vh
+	init-appshell        |     Navbar    position:fixed
+	--- COMPONENT BELOW ---
+	<RequiredComponent>  |     div       this is a child of a flexbox
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 const AppDefault  = require('view/AppDefault');
 const D3Test      = require('view/d3test/d3test');
 const About       = require('view/about/about');
-/// REACT ROUTING FUNCTIONS ///////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Used by render()'s <Switch> to load a plain html page that is
-/// located at app/htmldemos/<route>/<route.html>
+
+/** (2) ROUTED FUNCTIONS *****************************************************\
+
+	Used by render()'s <Switch> to load a plain html page that is
+ 	located at app/htmldemos/<route>/<route.html>
+
+	index.html           | body          min-height: 100%
+	index.html           | div#app
+	init-appshell        |   div         display:flex, flex-flow:column nowrap,
+	                                     width:100%, height:100vh
+	init-appshell        |     Navbar    position:fixed
+	--- COMPONENT BELOW ---
+	init-appshell.HTML() |     div       display:flex, flex-flow:column nowrap,
+	                                     width:100%
+	init-appshell.HTML() |       iframe  flex:1 0 auto, border:0
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 function HTML ( props, width, height ) {
 	let loc = props.location.pathname.substring(1);
 	loc     = '/htmldemos/'+loc+'/'+loc+'.html';
 	return (
-		<div style={{display:'flex', flexFlow:'column nowrap', width:'100%', height:'100%'}}>
+		<div style={{display:'flex', flexFlow:'column nowrap',
+		     width:'100%', height:'100%'}}>
 			<iframe style={{flex:'1 0 auto',border:'0'}} src={loc} />
 		</div>
 	);
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Used by render()'s <Switch> when there are no matching routes
+/** (3) NO ROUTE *************************************************************\
+
+	Used by render()'s <Switch> when there are no matching routes
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 function NoMatch ( props ) {
 	let hash = props.location.pathname.substring(1);
 	return (
@@ -98,14 +129,6 @@ class AppShell extends React.Component {
 /*/ Draw top navbar w/ menus. Add route information
 	To add a new HTML, add the link to both the <Nav> and <Switch> staments.
 	To add a new VIEW, load the component
-
-	index.html           | body          min-height: 100%
-	index.html           | div#app
-	init-appshell        |   div         flex, column nowrap, width:100%, height:100vh
-	init-appshell        |     Navbar    position:fixed
-	init-appshell.HTML() |     div       flex, column nowrap, width:100%
-	init-appshell.HTML() |       iframe  flex:1 0 auto, border:0
-
 /*/ render() {
 		/// demonstrate that STORE persists between clicks
 		const STORE = require('system/datastore');
