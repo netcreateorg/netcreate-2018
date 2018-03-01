@@ -54,10 +54,8 @@ const About       = require('view/about/about');
 function HTML ( props, width, height ) {
 	let loc = props.location.pathname.substring(1);
 	loc     = '/htmldemos/'+loc+'/'+loc+'.html';
-	width   = width || '100%';
-	height  = height || '750px';
 	return (
-		<div style={{display:'flex', flexFlow:'column nowrap', width:'100%', height:'100vh'}}>
+		<div style={{display:'flex', flexFlow:'column nowrap', width:'100%'}}>
 			<iframe style={{flex:'1 0 auto',border:'0'}} src={loc} />
 		</div>
 	);
@@ -107,7 +105,7 @@ class AppShell extends React.Component {
 
 		/// return component with matching routed view
 		return (
-			<div style={{ display:'flex',flexFlow:'column nowrap'}}>
+			<div style={{ display:'flex',flexFlow:'column nowrap',height:'100vh'}}>
 				<Navbar fixed="top" light expand="md" style={{ backgroundColor:'#f0f0f0'}}>
 					<NavbarBrand href="#">NetCreate</NavbarBrand>
 					<NavbarToggler onClick={this.toggle} />
