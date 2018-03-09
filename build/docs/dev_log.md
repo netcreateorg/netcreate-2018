@@ -1,8 +1,105 @@
+DEV LOG for WEEK STARTING MAR 04 2018
+
+I've been sick all this week and haven't been productive. Been angry at the Internet and imperfection, and this negative energy robs me of initiative. To develop zen attitude to terrible development tools, processes, etc would go a LONG WAY toward being more productive instead of being annoyed all the time. How to convert ANNOYANCE into CLARITY?
+
+Q. There's a list of HTML input elements I need.
+A. Let's just lay them in using ReactStrap...seems to work
+
+Q. Now need to lay in some complete lists of stuff...wireframe!
+
+
+
+
+
 DEV LOG for WEEK STARTING FEB 26 2018
 
 Q. Can I easily add D3 to our framework?
 A. The Brunch way says just NPM it. This works within the view modules, but not in simplehtml.
 For that, load the library from CDN.
+
+Q. How to think about Forms and Data Entry
+A. Form Element Styling is less important now; we can assume on('event') is our main interface, and I need to look up FLEXBOXES
+
+FLEXBOX - HOW DO THEY WORK
+they are a single dimension collection
+parent: display:flex, flex-flow: row nowrap // direction, wrapping
+children: flex: 0 1 auto // grow shrink default size
+
+FLEXBOX - HOW DOES BOOTSTRAP AFFECT THIS?
+largely it doesn't if we are not using its grid layout, though I suspect there might be grid controls that do what we want.
+
+Q. What is the Javascript Event Declaration Standard?
+A. the current best practice is to use these:
+   btn.addEventListener('click', function(event) {});
+   btn.removeEventListener('click',function);
+   btn.dispatchEvent('click',event);
+A. See EventTarget interface: https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
+   these methods apply to certain high level objects.
+A. See Event interface: https://developer.mozilla.org/en-US/docs/Web/API/Event
+
+Q. What are the HTML5 Form Elements?
+A. here is the canonical list:
+   https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form
+
+Q. What about fancier components?
+A. catalog - https://github.com/brillout/awesome-react-components
+A. List virtualizer - https://react.rocks/example/react-virtualized
+A. A solution to rendering large lists is to use "virtualization"
+   https://blog.jscrambler.com/optimizing-react-rendering-through-virtualization/
+
+DEBUGGING IFRAME HEIGHT
+
+	index.html           | body          min-height: 100%
+	index.html           | div#app
+	init-appshell        |   div         display:flex, flex-flow:column nowrap,
+	                                     width:100%, height:100vh
+	init-appshell        |     Navbar    position:fixed
+	--- COMPONENT BELOW ---
+	init-appshell.HTML() |     div       display:flex, flex-flow:column nowrap,
+	                                     width:100%
+	init-appshell.HTML() |       iframe  flex:1 0 auto, border:0
+
+Q. How to control sizes in flexbox items?
+A. flex-grow, flex-shrink, flex-basis (shortcut: flex)
+
+flex-grow is set to 0 if no adaptive growing is desired.
+.. set it to positive value "how fast to grow" relative to other siblings.
+flex-shrink is set to 0 if no adaptive shrinking is desired.
+.. set it to positive for "how fast to shrink" relative to other siblings.
+flex-basis is the initial size of the box, and default to size of content.
+.. set it to a size like 200px if you want it to be a fixed size
+
+PREDICTIVE TYPING
+
+Q. Where is there a nice REACT PREDICTIVE example to garbage trial?
+A. https://github.com/moroshko/react-autosuggest#installation
+
+Q. What are the new-to-me javascript bits to familiarize self with?
+A. .map and .filter
+map - produces new array from output of a transforming function
+filter - produces new array from test result of filtering function
+
+Q. What is ARIA and why should I care?
+A. It's a set of assistive properties for devices like screenreaders. Properties describe what's happening with sliders of importance, for example, or what a button does.
+A. Some React components have ARIA support built-in, or provide a means of setting it?
+
+CSS GRID versus FLEXBOX
+
+FLEXBOX works in 1 dimension, and uses content as basis (size)
+GRID works in 2 dimensions, and uses layout as basis (size). It's newer.
+
+GRID lets you define relationships in fr units for columns and rows
+GRID defines sizes of grid element on numbered boundaries
+display:grid
+	grid-template-columns, grid-template-rows - uses sizes or new fr (fraction) units (explicit grid)
+	use repeat(count,1fr) macro to make large grids
+	grid-auto-rows and grid-auto-columns create new content that don't fit in explicit grid.
+	grid-auto-rows: minmax(min,max) where min is minimum size, max can be set to auto
+	grid-column-gap, grid-row-gap
+ITEMS:
+	for positioning, uses grid LINES, not the size of the grid tracks.
+	grid-column-start, grid-column-end, grid-row-start, grid-row-end
+	note: grid items can overlap, control stack with z-index
 
 
 DEV LOG for WEEK STARTING FEB 19 2018
@@ -22,6 +119,12 @@ A: ReactRouter has issues loading as an 'import' compatible library
 A: Changed all source to use CommonJS 'require'
 
 Now that routing and components are available, can start to lay D3 into it. However, it would be nice to also just jump to a plain html file.
+
+
+
+
+
+
 
 
 - - -

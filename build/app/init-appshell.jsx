@@ -60,8 +60,9 @@ const RRNavLink = require('react-router-dom').NavLink;
 	<RequiredComponent>  |     div       this is a child of a flexbox
 \* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 const AppDefault  = require('view/AppDefault');
-const D3Test      = require('view/d3test/d3test');
+const Prototype   = require('view/prototype/prototype');
 const About       = require('view/about/about');
+const D3Test      = require('view/d3test/d3test');
 
 /** (2) ROUTED FUNCTIONS *****************************************************\
 	Used by render()'s <Switch> to load a plain html page that is
@@ -77,7 +78,7 @@ const About       = require('view/about/about');
 	                                     width:100%
 	init-appshell.HTML() |       iframe  flex:1 0 auto, border:0
 \* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-function HTML ( props, width, height ) {
+function HTML ( props ) {
 	let loc = props.location.pathname.substring(1);
 	loc     = '/htmldemos/'+loc+'/'+loc+'.html';
 	return (
@@ -143,10 +144,13 @@ class AppShell extends React.Component {
 					{/*/ (1) add navigation links here /*/}
 						<Nav className="ml-auto" navbar>
 							<NavItem>
-								<NavLink to="/" activeClassName="active" tag={RRNavLink} replace>TestShell</NavLink>
+								<NavLink to="/" activeClassName="active" tag={RRNavLink} replace>Welcome</NavLink>
 							</NavItem>
 							<NavItem>
 								<NavLink to="/d3forcedemo" tag={RRNavLink} replace>D3 Force Demo</NavLink>
+							</NavItem>
+							<NavItem>
+								<NavLink to="/prototype" tag={RRNavLink} replace>Prototype</NavLink>
 							</NavItem>
 							<UncontrolledDropdown nav>
 								<DropdownToggle nav caret>
@@ -172,10 +176,10 @@ class AppShell extends React.Component {
 				<Switch>
 				{/*/ (2) add route paths here /*/}
 					<Route path='/' exact component={AppDefault}/>
-					<Route path='/about' exact component={About}/>
-					<Route path='/simple' exact component={ (props) => {return HTML(props)} }/>
+					<Route path='/prototype' exact component={Prototype}/>
 					<Route path='/d3forcedemo' exact component={ (props) => {return HTML(props)} }/>
-					<Route path='/d3test' exact component={D3Test}/>
+					<Route path='/simple' exact component={ (props) => {return HTML(props)} }/>
+					<Route path='/detest' exact component={D3Test}/>
 					<Route component={NoMatch}/>
 				</Switch>
 			</div>
