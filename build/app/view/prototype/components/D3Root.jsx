@@ -28,10 +28,15 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const ReactStrap = require('reactstrap');
+const { Row, Col, Card, CardTitle, CardText, Button } = ReactStrap;
+const { TabContent, TabPane } = ReactStrap;
+const { Nav, NavItem, NavLink } = ReactStrap;
+const classnames = require('classnames');
 
 /// OTHER COMPONENTS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const D3Chart = require('./D3ChartExample');
+const RSFormExample = require('./RSFormExample');
 
 
 
@@ -39,10 +44,55 @@ const D3Chart = require('./D3ChartExample');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
 class D3Root extends React.Component {
+
+	constructor(props) {
+		super(props);
+
+		this.toggle = this.toggle.bind(this);
+		this.state = {
+			activeTab: '1'
+		};
+	}
+
+	toggle(tab) {
+		if (this.state.activeTab !== tab) {
+			this.setState({
+				activeTab: tab
+			});
+		}
+	}
+
+
 	render() {
 		return (
 		<div>
-			<D3Chart />
+			<Nav pills>
+				<NavItem>
+					<NavLink
+					className={classnames({ active: this.state.activeTab === '1' })}
+					onClick={() => { this.toggle('1'); }}
+					>
+					D3 Chart Example
+					</NavLink>
+				</NavItem>
+				<NavItem>
+					<NavLink
+					className={classnames({ active: this.state.activeTab === '2' })}
+					onClick={() => { this.toggle('2'); }}
+					>
+					ReactStrap Form Example
+					</NavLink>
+				</NavItem>
+			</Nav>
+
+			<TabContent activeTab={this.state.activeTab}>
+				<TabPane tabId="1">
+					<D3Chart />
+				</TabPane>
+				<TabPane tabId="2">
+					<RSFormExample/>
+				</TabPane>
+			</TabContent>
 		</div>
 		);
 	}

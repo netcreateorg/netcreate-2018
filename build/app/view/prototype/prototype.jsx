@@ -8,7 +8,6 @@ const { ListGroup, ListGroupItem } = ReactStrap;
 
 /// OTHER COMPONENTS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const NodeEntry = require('./components/NodeEntry');
 const D3Root = require('./components/D3Root');
 
 

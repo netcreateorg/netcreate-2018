@@ -6,7 +6,7 @@ const { InputGroup, InputGroupAddon, InputGroupText, Input } = ReactStrap;
 const { Col, Button, Form, FormGroup, Label, FormText } = ReactStrap;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
-class NodeEntry extends React.Component {
+class RSFormExample extends React.Component {
 	render() {
 		return (
 		<div>
@@ -61,10 +61,10 @@ class NodeEntry extends React.Component {
 		);
 	}
 	componentDidMount () {
-		console.log('NodeEntry mounted');
+		console.log('RSFormExample mounted');
 	}
 }
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = NodeEntry;
+module.exports = RSFormExample;
