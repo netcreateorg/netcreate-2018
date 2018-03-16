@@ -1,3 +1,42 @@
+DEV LOG for WEEK STARTING MAR 11
+Another week of being sick. Friday started to pick it up again.
+
+FOCUS. We want to finish putting in the HTML skeletons.
+
+o  list of nodes
+o  list of edges
+o  visualization in middle
+o  node entry editing in middle (swappable)
+
+Q. How to make a list in React?
+A. Using the ReactStrap ListGroup.
+Q. How to convert data to stuff rendered in components?
+A. Use the array.map() function, which can be used to return another array of transformed stuff.
+
+Q. What is props.children?
+A. It's the contents of invoked component. React favors composition through props and props.children.
+<MyComponent attrib1 attrib2>
+	<p>the contents inside MyComponent (these p tags)</p>
+	<p>are passed as props.children</p>
+</MyComponent>
+
+Here's a helpful article:
+https://codeburst.io/a-quick-intro-to-reacts-props-children-cb3d2fce4891
+
+So between props childrenand array.map(), have the ability to create the list view.
+
+Q. How do you make something clickable in reactstrap?
+A. you pass as onClick, etc attributes (e.g. onClick={this.handlerFunction} )
+A. you get a React SyntheticEvent.
+
+Q. Integrated D3 and React Approaches
+A. https://medium.com/@tibotiber/4da35f912484 - INFORMATIVE!!!
+A. Picking this: https://github.com/Olical/react-faux-dom - allows D3 code to be independent
+
+
+
+
+
 DEV LOG for WEEK STARTING MAR 04 2018
 
 I've been sick all this week and haven't been productive. Been angry at the Internet and imperfection, and this negative energy robs me of initiative. To develop zen attitude to terrible development tools, processes, etc would go a LONG WAY toward being more productive instead of being annoyed all the time. How to convert ANNOYANCE into CLARITY?
@@ -6,7 +45,10 @@ Q. There's a list of HTML input elements I need.
 A. Let's just lay them in using ReactStrap...seems to work
 
 Q. Now need to lay in some complete lists of stuff...wireframe!
-
+Q. what is for="" used for in ReactStrap forms
+Q. does name and id props need to be there?
+Q. how to bind the react stuff to variables
+Q.
 
 
 

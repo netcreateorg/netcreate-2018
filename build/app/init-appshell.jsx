@@ -3,8 +3,16 @@
 	init-appshell.jsx
 	application shell loaded by init.jsx
 
-\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
+	These are the top-level React components ("view") that are mapped to
+	routes as seen in render() function's <Switch>. There are three styles:
+	(1) a loaded React 'view' that is built entirely with our modular app API
+		and displayed in this application shell.
+	(2) a plain .html file loaded into an IFRAME, useful for adding stand-alone
+		test code with access to the modular app API system, but not other web
+		apps (e.g. can use the data storage module)
+	(3) a NO ROUTE FOUND component function.
 
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 
 /// REACT LIBRARIES ///////////////////////////////////////////////////////////
@@ -34,18 +42,6 @@ const {
 const RRNavLink = require('react-router-dom').NavLink;
 
 
-
-/** REACT ROUTING ************************************************************\
-
-	These are the top-level React components ("view") that are mapped to
-	routes as seen in render() function's <Switch>. There are three styles:
-	(1) a loaded React 'view' that is built entirely with our modular app API
-		and displayed in this application shell.
-	(2) a plain .html file loaded into an IFRAME, useful for adding stand-alone
-		test code with access to the modular app API system, but not other web
-		apps (e.g. can use the data storage module)
-	(3) a NO ROUTE FOUND component function.
-
 /** (1) ROUTED COMPONENTS ****************************************************\
 	Used by render()'s <Switch> to load a React component (what we call a
 	'view' in the NetCreate app). The component should return its elements
@@ -60,9 +56,10 @@ const RRNavLink = require('react-router-dom').NavLink;
 	<RequiredComponent>  |     div       this is a child of a flexbox
 \* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 const AppDefault  = require('view/AppDefault');
-const Prototype   = require('view/prototype/prototype');
-const About       = require('view/about/about');
-const D3Test      = require('view/d3test/d3test');
+const Prototype   = require('view/prototype/Prototype');
+const About       = require('view/about/About');
+const D3Test      = require('view/d3test/D3Test');
+
 
 /** (2) ROUTED FUNCTIONS *****************************************************\
 	Used by render()'s <Switch> to load a plain html page that is
@@ -88,6 +85,8 @@ function HTML ( props ) {
 		</div>
 	);
 }
+
+
 /** (3) NO ROUTE *************************************************************\
 	Used by render()'s <Switch> when there are no matching routes
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

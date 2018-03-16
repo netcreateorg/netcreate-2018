@@ -5,8 +5,7 @@ const ReactStrap = require('reactstrap');
 const { InputGroup, InputGroupAddon, InputGroupText, Input } = ReactStrap;
 const { Col, Button, Form, FormGroup, Label, FormText } = ReactStrap;
 
-/** REACT COMPONENT **********************************************************\
-\* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// REACT COMPONENT ///////////////////////////////////////////////////////////
 class NodeEntry extends React.Component {
 	render() {
 		return (

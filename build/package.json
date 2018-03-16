@@ -4,7 +4,7 @@
   "description": "research project for network graph analysis",
   "scripts": {
     "dev": "brunch watch -s",
-    "build" : "echo \"Error: no build/deploy system yet\" && exit 1",
+    "build": "echo \"Error: no build/deploy system yet\" && exit 1",
     "clean": "rm -rf public/",
     "test": "echo \"Error: no test specified\" && exit 1",
     "debug": "LOGGY_STACKS=true brunch watch -s"
@@ -35,6 +35,7 @@
     "popper.js": "^1.12.9",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
+    "react-faux-dom": "^4.1.0",
     "react-popper": "^0.7.4",
     "react-router": "^4.2.0",
     "react-router-dom": "^4.2.2",
