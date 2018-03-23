@@ -1,7 +1,7 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-	init.jsx
-	system startup, loaded by app/assets/index.html at end of body.
+    init.jsx
+    system startup, loaded by app/assets/index.html at end of body.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -35,11 +35,11 @@ DATASTORE.Initialize();
 const APP_CONTAINER = '#app-container';
 
 document.addEventListener('DOMContentLoaded', () => {
-	console.log('init.jsx initializing AppShell into', APP_CONTAINER);
-	ReactDOM.render((
-		<HashRouter hashType="noslash">
-			<AppShell />
-		</HashRouter>
-		), document.querySelector( APP_CONTAINER ));
+  console.log('init.jsx initializing AppShell into', APP_CONTAINER);
+  ReactDOM.render((
+    <HashRouter hashType="noslash">
+      <AppShell />
+    </HashRouter>
+    ), document.querySelector( APP_CONTAINER ));
 });
 /// execution continues in init-appshell.jsx

@@ -1,7 +1,7 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-	SETTINGS
-	stub for testing module loading
+    SETTINGS
+    stub for testing module loading
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -18,16 +18,16 @@ let DATE    = new Date();
 /*/ settings.js returns a function as its module.exports value so
     syntax like let a = SETTINGS['key'] can be used.
 /*/ let MOD = ( a, b ) => {
-		if (a===undefined) throw ('SETTINGS requires key or key,value parms');
-		if (typeof a!=='string') throw ('SETTINGS parm1 must be key string');
+    if (a===undefined) throw ('SETTINGS requires key or key,value parms');
+    if (typeof a!=='string') throw ('SETTINGS parm1 must be key string');
 
-		if (b===undefined) {
-			return S[a];
-		} else {
-			S[a] = b;
-			return b;
-		}
-	}
+    if (b===undefined) {
+      return S[a];
+    } else {
+      S[a] = b;
+      return b;
+    }
+  }
 
 /// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,8 +39,8 @@ let DATE    = new Date();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ test time function
 /*/ MOD.CurrentTime = () => {
-		return DATE.toDateString();
-	};
+    return DATE.toDateString();
+  };
 
 
 

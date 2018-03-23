@@ -10,14 +10,14 @@ const D3Shell = require('./components/D3Shell');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
 class D3Test extends React.Component {
-	render() {
-		return (
-			<D3Shell />
-		);
-	}
-	componentDidMount () {
-		console.log('D3',D3);
-	}
+  render() {
+    return (
+      <D3Shell />
+    );
+  }
+  componentDidMount () {
+    console.log('D3',D3);
+  }
 }
 
 

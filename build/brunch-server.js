@@ -1,7 +1,7 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-	NODE CUSTOM SERVER
-	see brunch-config.js for more information
+    NODE CUSTOM SERVER
+    see brunch-config.js for more information
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -10,26 +10,26 @@ const app     = express();
 
 /// SERVER STATIC FILES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	app.use( express.static(__dirname + '/public') );
+    app.use( express.static(__dirname + '/public') );
 
 /// WEBSERVICE STUB ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	app.post('/action', (req, res, next) => {
-		res.send('POST action completed!');
-	});
+    app.post('/action', (req, res, next) => {
+      res.send('POST action completed!');
+    });
 
 /// MODULE EXPORT /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Export the module like this for Brunch.
 /*/ module.exports = (config, callback) => {
 
-		app.listen(config.port, function () {
-			console.log(`APP SERVER LISTENING on PORT ${config.port}`);
-			callback();
-		});
+      app.listen(config.port, function () {
+        console.log(`APP SERVER LISTENING on PORT ${config.port}`);
+        callback();
+      });
 
-		// Return the app; it has the `close()` method, which would be ran when
-		// Brunch server is terminated. This is a requirement.
-		return app;
+      // Return the app; it has the `close()` method, which would be ran when
+      // Brunch server is terminated. This is a requirement.
+      return app;
 
-	};
+    };

@@ -4,15 +4,15 @@ const React = require('react');
 
 
 
-/// React Component ///////////////////////////////////////////////////////////
+/// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
 class About extends React.Component {
-	render() {
-		return (
-			<p>About</p>
-		);
-	}
+  render() {
+    return (
+      <p>About</p>
+    );
+  }
 }
 
 

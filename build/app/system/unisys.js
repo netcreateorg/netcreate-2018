@@ -1,7 +1,7 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-	UNISYS
-	stub for testing module loading
+    UNISYS
+    stub for testing module loading
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -13,8 +13,8 @@ let time = SETTINGS.CurrentTime();
 console.log(`> ${MOD.module_name} system module loaded ${time}`);
 
 MOD.Initialize = () => {
-	console.log(`${MOD.module_name} initializing`);
-	SETTINGS('unisys','loaded');
+  console.log(`${MOD.module_name} initializing`);
+  SETTINGS('unisys','loaded');
 };
 
 module.exports = MOD;
