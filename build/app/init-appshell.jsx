@@ -58,6 +58,7 @@ const RRNavLink = require('react-router-dom').NavLink;
 const AppDefault  = require('view/AppDefault');
 const Prototype   = require('view/prototype/Prototype');
 const About       = require('view/about/About');
+const AutoCompleteDemo = require('view/autocompletedemo/AutoCompleteDemo');
 const D3Test      = require('view/d3test/D3Test');
 
 
@@ -149,6 +150,9 @@ class AppShell extends React.Component {
                   <NavLink to="/d3forcedemo" tag={RRNavLink} replace>D3 Force Demo</NavLink>
                 </NavItem>
                 <NavItem>
+                  <NavLink to="/autocompletedemo" tag={RRNavLink} replace>AutoComplete Demo</NavLink>
+                </NavItem>
+                <NavItem>
                   <NavLink to="/prototype" tag={RRNavLink} replace>Prototype</NavLink>
                 </NavItem>
                 <UncontrolledDropdown nav>
@@ -179,6 +183,7 @@ class AppShell extends React.Component {
             <Route path='/d3forcedemo' exact component={ (props) => {return HTML(props)} }/>
             <Route path='/simple' exact component={ (props) => {return HTML(props)} }/>
             <Route path='/d3test' exact component={D3Test}/>
+            <Route path='/autocompletedemo' exact component={AutoCompleteDemo}/>
             <Route component={NoMatch}/>
           </Switch>
         </div>
