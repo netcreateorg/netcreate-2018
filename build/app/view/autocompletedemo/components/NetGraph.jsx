@@ -1,5 +1,13 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+    D3 without FauxDom
+
+    Use React to create the base dom element and pass data updates,
+    but D3 handles the rendering and animation updates.
+
+    React is explicitly prevented from updating the component.
+
+
 
     BL NOTES
     
@@ -14,29 +22,6 @@
          out of React and letting D3 mutate that element."
 
 
-
-    EXAMPLE USE OF REACT-FAUX-DOM
-    https://codesandbox.io/s/github/tibotiber/rfd-animate-example/tree/master/
-
-    This is an example use of react-faux-dom. React provides the UI
-    scaffolding. How does it work?
-
-    (1) the component is exported through withFauxDOM( Component ),
-    which adds several new methods to props for use during the lifecycle.
-
-    (2) D3 makes the faux element available to react as a prop through
-    this call at the beginning of componentDidMount()
-      var faux = this.props.connectFauxDOM('div', 'chart')
-    where 'div' is the element to create, and 'chart' is what is stored
-    as a prop (see step 4)
-
-    (3) Use the faux DOM element with D3 using D3 conventions.
-
-    (4) render() with {this.props.chart} in the JSX wrapper.
-
-    You can have multiple faux nodes to D3 with! See the docs for
-    react-faux-dom connectFauxDOM().
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 
@@ -44,16 +29,18 @@
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
+const ReactDOM = require('react-dom')
 const d3 = require('d3');
-const { withFauxDOM } = require('react-faux-dom');
 
+
+
+/// Simulation Parameters
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var simulation, svg;
 var link, node;
 var width = 1024
 var height = 1024
-
-// values for all forces
-var forceProperties = {
+var forceProperties = {   // values for all forces
       center: {
         x: 0.5,
         y: 0.5
@@ -88,10 +75,13 @@ var forceProperties = {
     }
 
 
+/// Simulation Methods
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 // initializeDisplay
-// Call this after data has been loaded
-// generate the svg objects and force simulation
-// set the data and properties of link lines
+//     Call this after data has been loaded
+//     generate the svg objects and force simulation
+//     set the data and properties of link lines
 function initializeDisplay ( data ) {
   link = svg.append("g")
         .attr("class", "links")
@@ -128,7 +118,7 @@ function initializeDisplay ( data ) {
 }
 
 // visualize the graph
-// update the display based on the forces (but not positions)
+//     update the display based on the forces (but not positions)
 function updateDisplay () {
   node
       .attr("r", forceProperties.collide.radius)
@@ -141,7 +131,7 @@ function updateDisplay () {
 }
 
 // Initialize Simulation
-// Calla fter data has been loaded
+//    Call after data has been loaded
 function initializeSimulation ( data ) {
   simulation.nodes( data.nodes );
   //     add forces and associate each with a name
@@ -191,7 +181,6 @@ function updateForces ( data ) {
 
 // update the display positions after each simulation tick
 function ticked () {
-  console.log('ticked')
   link
       .attr("x1", function(d) { return d.source.x; })
       .attr("y1", function(d) { return d.source.y; })
@@ -199,11 +188,6 @@ function ticked () {
       .attr("y2", function(d) { return d.target.y; });
   node.attr("transform", function(d) { return "translate("+d.x+","+d.y+")"; });
 
-  // old transform code that doesn't work with text
-  // and new "g" element
-  // node
-  //     .attr("cx", function(d) { return d.x; })
-  //     .attr("cy", function(d) { return d.y; });
   d3.select('#alpha_value').style('flex-basis', (simulation.alpha()*100) + '%');
 }
 
@@ -234,7 +218,7 @@ function dragended (d) {
 //     updateForces();
 // });
 
-function ShowNodes ( data ) {
+function showNodes ( data ) {
   // Populate Data Nodes
   let nodes = data.nodes;
   d3.select('#data-nodes')
@@ -244,6 +228,8 @@ function ShowNodes ( data ) {
     .append('div')
     .text(function(d){return d.label;});
 }
+
+
 
 
 
@@ -267,35 +253,46 @@ class NetGraph extends React.Component {
     )
   }
 
-  onSimDataReceived (data) {
+  onSimDataReceived ( data ) {
     initializeDisplay( data )
     initializeSimulation( data )
-    ShowNodes( data )
+    showNodes( data )
   }
 
   componentDidMount () {
-    console.error('componentDidMount')
-    // This will create a faux div and store its virtual DOM
-    // in state.netgraph
-    const faux = this.props.connectFauxDOM('div', 'netgraph')
+    console.log('componentDidMount')
 
-    svg = d3.select(faux).append('svg')
+    let el = ReactDOM.findDOMNode(this)
+    svg = d3.select(el).append('svg')
       .attr('width',width)
       .attr('height',height)
 
     simulation = d3.forceSimulation()
 
-    this.props.animateFauxDOM(2000)
+    //this.props.animateFauxDOM(2000)
   }
 
   componentWillReceiveProps (nextProps) {
-    console.error('componentWillReceiveProps')
+    console.log('componentWillReceiveProps')
+    // Only update the simulation if new props have been received
+    // *** REVIEW: The test for changed data probably doesn't really work?
     if (nextProps && (nextProps.data != this.props.data) ) {
       console.error('...updating props!')
-      this.setState( {data: nextProps.data} )
       this.onSimDataReceived( nextProps.data )
     }
   }
+  
+  shouldComponentUpdate () {
+    // This prevents React from updating the component
+    // allowing D3 to handle the simulation animation updates
+    // This is also necessary for D3 to handle the
+    // drag events.
+    return false
+  }
+
+  componentWillUpdate () {}
+
+  // render() is called here
 
   componentDidUpdate () {
     console.log('componentDidUpdate')
@@ -308,14 +305,10 @@ class NetGraph extends React.Component {
     
   }
 
+  componentWillUnMount () {}
 
-}
-
-NetGraph.defaultProps = {
-  netgraph: 'loading'
 }
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const FauxNetGraph = withFauxDOM(NetGraph);
-module.exports = FauxNetGraph;
+module.exports = NetGraph;
