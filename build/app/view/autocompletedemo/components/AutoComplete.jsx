@@ -64,7 +64,7 @@ class AutoComplete extends React.Component {
       return this.state.value;
     }
     
-    return suggestion.name;
+    return suggestion;
   };
 
   renderSuggestion (suggestion) {
