@@ -1,3 +1,4 @@
+/* react-autosuggest styles */
 .react-autosuggest__container {
   position: relative;
 }
@@ -54,4 +55,26 @@
 
 .react-autosuggest__suggestion--highlighted {
   background-color: #ddd;
+}
+
+
+
+/* Data View Styles */
+}
+
+/* SVG styles */
+/* REVIEW!!!  These are global!!! */
+svg {
+  flex-basis: 100%;
+  min-width: 200px;
+}
+.links line {
+  stroke: #aaa;
+}
+.nodes circle {
+  pointer-events: all;
+}
+.nodes text {
+  stroke: #666;
+  stroke-width: 0px;
 }
