@@ -1,4 +1,5 @@
-const React = require('react');
+const React       = require('react');
+const d3          = require('d3');
 const Autosuggest = require('react-autosuggest');
 
 //////////// AUTO SUGGEST ////////////
@@ -6,69 +7,11 @@ const Autosuggest = require('react-autosuggest');
 // 
 // Example code from https://codepen.io/moroshko/pen/vpBzMr
 
-const languages = [
-  {
-    name: 'C',
-    year: 1972
-  },
-  {
-    name: 'C#',
-    year: 2000
-  },
-  {
-    name: 'C++',
-    year: 1983
-  },
-  {
-    name: 'Clojure',
-    year: 2007
-  },
-  {
-    name: 'Elm',
-    year: 2012
-  },
-  {
-    name: 'Go',
-    year: 2009
-  },
-  {
-    name: 'Haskell',
-    year: 1990
-  },
-  {
-    name: 'Java',
-    year: 1995
-  },
-  {
-    name: 'Javascript',
-    year: 1995
-  },
-  {
-    name: 'Perl',
-    year: 1987
-  },
-  {
-    name: 'PHP',
-    year: 1995
-  },
-  {
-    name: 'Python',
-    year: 1991
-  },
-  {
-    name: 'Ruby',
-    year: 1995
-  },
-  {
-    name: 'Scala',
-    year: 2003
-  }
-];
 
 // https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions#Using_Special_Characters
 const escapeRegexCharacters = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-const getSuggestions = value => {
+const getSuggestions = (value, lexicon) => {
   const escapedValue = escapeRegexCharacters(value.trim());
   
   if (escapedValue === '') {
@@ -76,14 +19,14 @@ const getSuggestions = value => {
   }
 
   const regex = new RegExp('^' + escapedValue, 'i');
-  const suggestions = languages.filter(language => regex.test(language.name));
+  const suggestions = lexicon.filter(phrase => regex.test(phrase));
   
   if (suggestions.length === 0) {
     return [
       { isAddNew: true }
     ];
   }
-  
+  console.log(suggestions);
   return suggestions;
 };
 
@@ -96,7 +39,6 @@ const getSuggestions = value => {
 class AutoComplete extends React.Component {
   constructor() {
     super();
-
     this.state = {
       value: '',
       suggestions: []
@@ -134,12 +76,12 @@ class AutoComplete extends React.Component {
       );
     }
 
-    return suggestion.name;
+    return suggestion;
   };
   
   onSuggestionsFetchRequested ({ value }) {
     this.setState({
-      suggestions: getSuggestions(value)
+      suggestions: getSuggestions(value, this.props.lexicon)
     });
   };
 
@@ -158,7 +100,7 @@ class AutoComplete extends React.Component {
   render() {
     const { value, suggestions } = this.state;
     const inputProps = {
-      placeholder: "Type 'c'",
+      placeholder: "Type node name...",
       value,
       onChange: this.onChange
     };
