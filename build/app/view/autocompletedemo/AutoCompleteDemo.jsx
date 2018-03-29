@@ -25,6 +25,7 @@ class AutoCompleteDemo extends React.Component {
     };
     this.handleJSONLoad = this.handleJSONLoad.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
+    this.setStateDataSelectedNode = this.setStateDataSelectedNode.bind(this)
   }
 
   handleJSONLoad ( error, _data ) {
@@ -48,6 +49,10 @@ class AutoCompleteDemo extends React.Component {
   // Set the `selected` flag for any nodes that match `value`, and update the state
   // This data is passed on to the NetGraph component for rendering
   setStateDataSelectedNode( value ) {
+    if (value==='') {
+      this.deselectAllNodes()
+      return
+    }
     let updatedData = this.state.data
     updatedData.nodes = this.state.data.nodes.map( node => {
       if (node.label.toLowerCase().startsWith( value.toLowerCase() )) {
