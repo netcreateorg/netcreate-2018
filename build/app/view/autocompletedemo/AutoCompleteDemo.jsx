@@ -17,24 +17,24 @@ const AutoComplete = require('./components/AutoComplete');
 /// export a class object for consumption by brunch/require
 class AutoCompleteDemo extends React.Component {
   constructor () {
-    super();
+    super()
     this.state = { 
       data:             {},    // nodes and edges data object
       lexicon:          [],    // string array of node labels
       nodeSearchString: ''     // node label search string set in AutoComplete input field
-    };
-    this.handleJSONLoad = this.handleJSONLoad.bind(this);
-    this.handleInputChange = this.handleInputChange.bind(this);
+    }
+    this.handleJSONLoad = this.handleJSONLoad.bind(this)
+    this.handleInputChange = this.handleInputChange.bind(this)
     this.setStateDataSelectedNode = this.setStateDataSelectedNode.bind(this)
   }
 
   handleJSONLoad ( error, _data ) {
-    if (error) throw error;
+    if (error) throw error
     // map nodes[].label to textList
     this.setState( {
       data:    _data,
-      lexicon: _data.nodes.map(function(d){return d.label;})
-    });
+      lexicon: _data.nodes.map(function(d){return d.label})
+    })
   }
 
   handleInputChange ( value ) {
@@ -43,7 +43,7 @@ class AutoCompleteDemo extends React.Component {
   }
 
   deselectAllNodes () {
-    for (let node of this.state.data.nodes) { node.selected = false; }
+    for (let node of this.state.data.nodes) { node.selected = false }
   }
 
   // Set the `selected` flag for any nodes that match `value`, and update the state
@@ -57,9 +57,9 @@ class AutoCompleteDemo extends React.Component {
     updatedData.nodes = this.state.data.nodes.map( node => {
       if (node.label.toLowerCase().startsWith( value.toLowerCase() )) {
         // console.log('...setting selected',node.label,'matches',value)
-        node.selected = true;
+        node.selected = true
       } else {
-        node.selected = false;
+        node.selected = false
       }
       return node
     })
@@ -67,12 +67,12 @@ class AutoCompleteDemo extends React.Component {
   }
 
   componentDidMount () {
-    // Verify D3 Loaded: console.log('D3',d3);
+    // Verify D3 Loaded: console.log('D3',d3)
     // Load Data
     // This loads data from the htmldemos/d3forcedemo data file for now.
     // Relative URLS don't seem to work.
     // The URL is constructed in http://localhost:3000/scripts/node_modules/url/url.js line 110.
-    d3.json("http://localhost:3000/htmldemos/d3forcedemo/data.json", this.handleJSONLoad);
+    d3.json("http://localhost:3000/htmldemos/d3forcedemo/data.json", this.handleJSONLoad)
   }
 
   render() {
@@ -103,7 +103,7 @@ class AutoCompleteDemo extends React.Component {
           </div>
         </div>
       </div>
-    );
+    )
   }
 }
 
@@ -111,4 +111,4 @@ class AutoCompleteDemo extends React.Component {
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = AutoCompleteDemo;
+module.exports = AutoCompleteDemo
