@@ -19,9 +19,9 @@ class AutoCompleteDemo extends React.Component {
   constructor () {
     super();
     this.state = { 
-      data:         {},    // nodes and edges data object
-      lexicon:      [],    // string array of node labels
-      selectedNode: ''     // node label set in AutoComplete input field
+      data:             {},    // nodes and edges data object
+      lexicon:          [],    // string array of node labels
+      nodeSearchString: ''     // node label search string set in AutoComplete input field
     };
     this.handleJSONLoad = this.handleJSONLoad.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
@@ -37,7 +37,7 @@ class AutoCompleteDemo extends React.Component {
   }
 
   handleInputChange ( value ) {
-    this.setState( {selectedNode: value} )
+    this.setState( {nodeSearchString: value} )
     this.setStateDataSelectedNode( value )
   }
 
@@ -90,7 +90,7 @@ class AutoCompleteDemo extends React.Component {
           <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 auto', padding:'10px'}}>
             <NetGraph 
               data={this.state.data}
-              selectedNode={this.state.selectedNode}
+              nodeSearchString={this.state.nodeSearchString}
             />
           </div>
           <div id="right" style={{backgroundColor:'#ffffE0', flex:'1 0 auto', padding:'10px'}}>
