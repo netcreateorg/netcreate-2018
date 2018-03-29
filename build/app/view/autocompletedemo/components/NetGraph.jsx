@@ -1,15 +1,33 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+
     D3 without FauxDom
 
     Use React to create the base dom element and pass data updates,
     but D3 handles the rendering and animation updates.
 
-    React is explicitly prevented from updating the component.
+    React is explicitly prevented from updating the component (see 
+    shouldComponentUpdate)
 
 
+    
+    State & Data & D3
 
-    BL NOTES
+    The graph data is maintained locally in this.state.data.
+
+    * The graph data is passed to the component via this.props.data.
+    * We handle the new props.data in componentWillReceiveProps, setting
+      this.state.data to the new props.
+    * this.setState is asynchronous, so setting this.state.data to the
+      nextProps value does not propagate immediately.  We have to use a
+      callback on setState to update the graph after this.state.data
+      is set.
+    * When d3 is updated, we use `merge` to update any existing nodes
+      with updated selection information.
+
+    
+
+    Why not use FauxDom?
     
     https://lab.oli.me.uk/react-faux-dom-state/
     This article suggests that maybe using force graphs with react-faux-dom
@@ -36,8 +54,9 @@ const d3 = require('d3');
 
 /// Simulation Parameters
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var simulation, svg;
-var link, node;
+var simulation, svg
+var linkGroup, nodeGroup
+var link, node
 var width = 1024
 var height = 1024
 var forceProperties = {   // values for all forces
@@ -75,6 +94,7 @@ var forceProperties = {   // values for all forces
     }
 
 
+
 /// Simulation Methods
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -83,36 +103,52 @@ var forceProperties = {   // values for all forces
 //     generate the svg objects and force simulation
 //     set the data and properties of link lines
 function initializeDisplay ( data ) {
-  link = svg.append("g")
-        .attr("class", "links")
+  link = linkGroup
     .selectAll("line")
     .data(data.edges)
     .enter().append("line");
 
   // set the data and properties of node circles
-  node = svg.append("g")
-        .attr("class", "nodes")
-    .selectAll("circle")
+  let nodeRoot = nodeGroup
+    .selectAll("g")
     .data(data.nodes)
-    .enter()
-        .append("g")                   // svg group object for each node
-        .call(d3.drag()
-            .on("start", dragstarted)
-            .on("drag", dragged)
-            .on("end", dragended))
-  // node here refers to the svg group object for each node created above
+
+  // ENTER
+  //  'node' here refers to the svg group object for each node created above
+  node = nodeRoot.enter()
+      .append("g")                   // svg group object for each node
+      .call(d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended))
+
+  // UPDATE SELECTION
+  node.merge(nodeRoot).selectAll("circle")
+      .attr("stroke", function(d) {
+        if (d.selected) return '#000';
+      })
+      .attr("stroke-width", function(d) {
+        if (d.selected) return '5px';
+      })
+  node.merge(nodeRoot).selectAll("text")
+      .attr("font-weight", function(d) { if (d.selected) return 'bold'; })
+      .attr("color", function(d) { if (d.selected) return '#000'; })
+
+  // ENTER Add Group Items
   node.append("circle")
       .attr("r", function(d) { return d.size/10; })
-      .attr("fill", function(d) { return d.color; });
+      .attr("fill", function(d) { return d.color; })
   node.append("text")
       // .classed('noselect', true)
       .attr("font-size", 10)
       .attr("dx", 8)
       .attr("dy", ".15em")
-      .text(function(d) { return d.label });
+      .text(function(d) { return d.label })
   // node tooltip
   node.append("title")
-      .text(function(d) { return d.label; });
+      .text(function(d) { return d.label; })
+
+  node.exit().remove()
 
   updateDisplay()
 }
@@ -122,9 +158,8 @@ function initializeDisplay ( data ) {
 function updateDisplay () {
   node
       .attr("r", forceProperties.collide.radius)
-      .attr("stroke", forceProperties.charge.strength > 0 ? "blue" : "red")
-      .attr("stroke-width", forceProperties.charge.enabled==false ? 0 : Math.abs(forceProperties.charge.strength)/15);
-
+      //.attr("stroke", forceProperties.charge.strength > 0 ? "blue" : "red")
+      //.attr("stroke-width", forceProperties.charge.enabled==false ? 0 : Math.abs(forceProperties.charge.strength)/15);
   link
       .attr("stroke-width", forceProperties.link.enabled ? 1 : .5)
       .attr("opacity", forceProperties.link.enabled ? 1 : 0);
@@ -218,7 +253,8 @@ function dragended (d) {
 //     updateForces();
 // });
 
-function showNodes ( data ) {
+function showNodes () {
+  let data = this.state.data
   // Populate Data Nodes
   let nodes = data.nodes;
   d3.select('#data-nodes')
@@ -231,10 +267,6 @@ function showNodes ( data ) {
 
 
 
-
-
-
-
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
@@ -242,68 +274,82 @@ class NetGraph extends React.Component {
 
   constructor (props) {
     super(props)
+    this.state = {
+      data: null
+    }
   }
 
-  render () {
-    return (
-      <div>
-        SVG
-        {this.props.netgraph}
-      </div>
-    )
+  onSimDataReceived () {
+    // console.error('simDataReceived',newData)
+    let data = this.state.data
+    if (data && data.nodes) {
+      // console.error('...initializing data')
+      initializeDisplay( data )
+      initializeSimulation( data )
+      this.showNodes( data )
+    }
   }
 
-  onSimDataReceived ( data ) {
-    initializeDisplay( data )
-    initializeSimulation( data )
-    showNodes( data )
+  showNodes () {
+    // console.error('......showNodes')
+    let data = this.state.data
+    // Populate Data Nodes
+    let nodes = data.nodes;
+    d3.select('#data-nodes')
+      .selectAll('div')
+      .data(nodes)
+      .enter()
+      .append('div')
+      .text(function(d){return d.label;});
   }
 
   componentDidMount () {
-    console.log('componentDidMount')
+    // console.log('componentDidMount')
 
-    let el = ReactDOM.findDOMNode(this)
+    // Constructor
+    let el = ReactDOM.findDOMNode( this )
     svg = d3.select(el).append('svg')
       .attr('width',width)
       .attr('height',height)
+    
+    linkGroup = svg.append("g")
+        .attr("class", "links")
+    nodeGroup = svg.append("g")
+        .attr("class", "nodes")
 
     simulation = d3.forceSimulation()
 
-    //this.props.animateFauxDOM(2000)
   }
 
   componentWillReceiveProps (nextProps) {
-    console.log('componentWillReceiveProps')
-    // Only update the simulation if new props have been received
-    // *** REVIEW: The test for changed data probably doesn't really work?
-    if (nextProps && (nextProps.data != this.props.data) ) {
-      console.error('...updating props!')
-      this.onSimDataReceived( nextProps.data )
-    }
+    // console.log('componentWillReceiveProps')
+    // Updates to the graph data are received here from the parent
+    // component via nextProps.data
+    // setState is asynchronous, so we have to wait for 
+    // the state to actually be set before processing the data
+    // Use a callback to update the data after state is set
+    this.setState(
+      {data: nextProps.data},
+      this.onSimDataReceived
+    )
   }
   
   shouldComponentUpdate () {
-    // This prevents React from updating the component
+    // This prevents React from updating the component,
     // allowing D3 to handle the simulation animation updates
     // This is also necessary for D3 to handle the
     // drag events.
+    //this.onSimDataReceived()
     return false
   }
 
   componentWillUpdate () {}
 
-  // render() is called here
-
-  componentDidUpdate () {
-    console.log('componentDidUpdate')
-    // Only update if this.props.data has been received
-    if (this.props.data===undefined || this.props.data.nodes===undefined) {
-      console.log('...no props yet, aborting')
-      return
-    }
-    console.log('...props received')
-    
+  render () {
+    return (<div>SVG</div>)
   }
+
+  componentDidUpdate () {}
 
   componentWillUnMount () {}
 
