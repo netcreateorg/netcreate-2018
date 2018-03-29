@@ -109,6 +109,13 @@ function initializeDisplay ( data ) {
     .enter().append("line");
 
   // set the data and properties of node circles
+  // 
+  //     The component `node` looks like this:
+  //         <g>
+  //            <circle>
+  //            <text>
+  //            <title>
+  //         </g>
   let nodeRoot = nodeGroup
     .selectAll("g")
     .data(data.nodes)
@@ -124,15 +131,11 @@ function initializeDisplay ( data ) {
 
   // UPDATE SELECTION
   node.merge(nodeRoot).selectAll("circle")
-      .attr("stroke", function(d) {
-        if (d.selected) return '#000';
-      })
-      .attr("stroke-width", function(d) {
-        if (d.selected) return '5px';
-      })
+      .attr("stroke",       function(d) { if (d.selected) return '#000'; })
+      .attr("stroke-width", function(d) { if (d.selected) return '5px'; })
   node.merge(nodeRoot).selectAll("text")
-      .attr("font-weight", function(d) { if (d.selected) return 'bold'; })
-      .attr("color", function(d) { if (d.selected) return '#000'; })
+      .attr("font-weight",  function(d) { if (d.selected) return 'bold'; })
+      .attr("color",        function(d) { if (d.selected) return '#000'; })
 
   // ENTER Add Group Items
   node.append("circle")
