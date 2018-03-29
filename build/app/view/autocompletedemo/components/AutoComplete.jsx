@@ -26,7 +26,7 @@ const getSuggestions = (value, lexicon) => {
       { isAddNew: true }
     ];
   }
-  console.log(suggestions);
+  // console.log(suggestions);
   return suggestions;
 };
 
@@ -57,6 +57,7 @@ class AutoComplete extends React.Component {
     this.setState({
       value: newValue
     });
+    this.props.onInputChange( newValue )
   };
 
   getSuggestionValue (suggestion) {
