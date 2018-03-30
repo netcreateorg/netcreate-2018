@@ -2,8 +2,9 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React        = require('react');
 const d3           = require('d3');
-const NetGraph     = require('./components/NetGraph');
 const AutoComplete = require('./components/AutoComplete');
+const NetGraph     = require('./components/NetGraph');
+const NodeDetail   = require('./components/NodeDetail');
 
 /// React Component ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -25,6 +26,7 @@ class AutoCompleteDemo extends React.Component {
     }
     this.handleJSONLoad = this.handleJSONLoad.bind(this)
     this.handleInputChange = this.handleInputChange.bind(this)
+    this.handleNodeSelection = this.handleNodeSelection.bind(this)
     this.setStateDataSelectedNode = this.setStateDataSelectedNode.bind(this)
   }
 
@@ -40,6 +42,19 @@ class AutoCompleteDemo extends React.Component {
   handleInputChange ( value ) {
     this.setState( {nodeSearchString: value} )
     this.setStateDataSelectedNode( value )
+  }
+
+  handleNodeSelection ( nodeLabel ) {
+    let nodes = this.state.data.nodes.filter( node => { return node.label == nodeLabel })
+    if ((nodes!==null) &&
+        (Array.isArray(nodes)) &&
+        (nodes.length>0) &&
+        (nodes[0]!==null)) {
+      console.log('nodeLabel is',nodeLabel,'node selected is', nodes)
+      this.setState( {selectedNode: nodes[0] })
+    } else {
+      console.error('Selected node',nodeLabel,'not found')
+  }
   }
 
   deselectAllNodes () {
@@ -85,12 +100,22 @@ class AutoCompleteDemo extends React.Component {
         <p>INSTRUCTIONS: Type in the "Nodes" input field to highlight nodes.</p>
         <div style={{display:'flex', flexFlow:'row nowrap',
              width:'100%', height:'100%'}}>
-          <div id="left" style={{backgroundColor:'#E0ffff', flex:'1 0 auto', padding:'10px'}}>
-            <h3>Nodes</h3>
-            <AutoComplete 
-              lexicon={this.state.lexicon}
-              onInputChange={this.handleInputChange}
-            />
+          <div id="left" style={{backgroundColor:'#E0ffff',flex:'1 0 auto',maxWidth:'300px',padding:'10px'}}>
+            <div style={{display:'flex', flexFlow:'column nowrap',height:100+'%'}}>
+              <div style={{flexGrow:1}}>
+                <h3>Nodes</h3>
+                <AutoComplete 
+                  lexicon={this.state.lexicon}
+                  onInputChange={this.handleInputChange}
+                  onSelection={this.handleNodeSelection}
+                />
+              </div>
+              <div>
+                <NodeDetail
+                  selectedNode={this.state.selectedNode}
+                />
+              </div>
+            </div>
           </div>
           <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 auto', padding:'10px'}}>
             <NetGraph 
