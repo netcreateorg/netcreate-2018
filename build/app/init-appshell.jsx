@@ -175,7 +175,7 @@ class AppShell extends React.Component {
             <Route path='/prototype' exact component={Prototype}/>
             <Route path='/d3forcedemo' exact component={ (props) => {return HTML(props)} }/>
             <Route path='/simple' exact component={ (props) => {return HTML(props)} }/>
-            <Route path='/detest' exact component={D3Test}/>
+            <Route path='/d3test' exact component={D3Test}/>
             <Route component={NoMatch}/>
           </Switch>
         </div>
