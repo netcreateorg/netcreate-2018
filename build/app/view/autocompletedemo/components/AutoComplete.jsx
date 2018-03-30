@@ -50,7 +50,7 @@ class AutoComplete extends React.Component {
     this.onSuggestionsFetchRequested = this.onSuggestionsFetchRequested.bind(this);
     this.onSuggestionsClearRequested = this.onSuggestionsClearRequested.bind(this);
     this.onSuggestionSelected = this.onSuggestionSelected.bind(this);
-    
+    this.onSuggestionHighlighted = this.onSuggestionHighlighted.bind(this);    
   };
 
   onChange (event, { newValue, method }) {
@@ -99,6 +99,10 @@ class AutoComplete extends React.Component {
     this.props.onSelection( suggestion )
   };
 
+  onSuggestionHighlighted ({ suggestion }) {
+    if (suggestion!==null) this.props.onSelection( suggestion )
+  };
+
   render() {
     const { value, suggestions } = this.state;
     const inputProps = {
@@ -115,6 +119,7 @@ class AutoComplete extends React.Component {
         getSuggestionValue={this.getSuggestionValue}
         renderSuggestion={this.renderSuggestion}
         onSuggestionSelected={this.onSuggestionSelected}
+        onSuggestionHighlighted={this.onSuggestionHighlighted}
         inputProps={inputProps} 
       />
     );
