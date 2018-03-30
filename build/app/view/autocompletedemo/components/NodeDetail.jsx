@@ -53,7 +53,7 @@ class NodeDetail extends React.Component {
 
   render () {
     return (
-      <div>
+      <div style={{minHeight:'300px',backgroundColor:'#c7f1f1',padding:'5px'}}>
         <b>NODE DETAIL</b>
         <table><tbody>
           <tr><td>Label:&nbsp;&nbsp;</td><td>{this.state.label}</td></tr>
