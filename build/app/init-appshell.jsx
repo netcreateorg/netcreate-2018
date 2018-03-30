@@ -129,9 +129,6 @@ class AppShell extends React.Component {
   To add a new HTML, add the link to both the <Nav> and <Switch> staments.
   To add a new VIEW, load the component
 /*/ render() {
-      /// demonstrate that STORE persists between clicks
-      const STORE = require('system/datastore');
-      STORE.Increment();
 
       /// return component with matching routed view
       return (

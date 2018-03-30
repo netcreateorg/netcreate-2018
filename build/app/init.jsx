@@ -5,6 +5,12 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+/// SYSTEM-WIDE LANGUAGE EXTENSIONS ///////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// these are loaded in init to make sure they are available everywhere
+/// you do not need to copy this to your own module files
+require("babel-polyfill"); // enables regenerators for async/await
+
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ReactDOM    = require('react-dom');
@@ -25,10 +31,6 @@ const DATASTORE   = require('system/datastore');
 /// MODULE INITIALIZATION /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 console.log('> init.jsx loaded');
-
-/// demo: initialization; this will likely be removed
-UNISYS.Initialize();
-DATASTORE.Initialize();
 
 /// INITIALIZE WHEN DOM HAS FINISHED LOADING //////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
