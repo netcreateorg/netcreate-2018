@@ -50,7 +50,7 @@ class AutoCompleteDemo extends React.Component {
         (Array.isArray(nodes)) &&
         (nodes.length>0) &&
         (nodes[0]!==null)) {
-      console.log('nodeLabel is',nodeLabel,'node selected is', nodes)
+      // console.log('nodeLabel is',nodeLabel,'node selected is', nodes)
       this.setState( {selectedNode: nodes[0] })
     } else {
       console.error('Selected node',nodeLabel,'not found')
