@@ -1,3 +1,56 @@
+DEV LOG for WEEK STARTING MAR 19
+Last week recovered from cold and executive function disorders! This week should be more productive. Got the HTML skeleton in, now to start porting the data into a placeholder data model from Ben's demo.
+
+- - -
+Q. How to load the data? What does it look like anyway?
+A. Currently it's a json file in htmldemo. It's just a bunch of properties. I'm going to remove the ones that are visual coding related (color, xy, etc)
+
+{
+  {
+      "label" : "Walter Wyman",
+      "id"    : "129",
+      "attributes": {
+        "Node_Type"         : "Person",
+        "Modularity Class"  : "42",
+        "Extra Info"        : "1897",
+        "Notes" : "published influential report,1897  argued that pestis bacteria traveled person to person  "
+      }
+  },
+  ...
+}
+
+- - -
+SIDE NOTE: Because the attributes are likely to change, this makes me think that I want to avoid using a relational database and use an object store instead. MongoDB seems to be the hotness, so we'll use that. It's also possible to use a pure NodeJS based approach, which might be convenient since it won't require installing an additional daemon, but the advantage of using MongoDB is that Kalani can do her own queries on it. That is probably useful. We'll explore using a Node-based NoSQL database (e.g. NoSQL on npm) just for local settings.
+
+For now, we'll implement just a data module that loads an arbitrary json file.
+
+- - -
+Q. Where do we load the system/datastore module?
+A. For our React primary view, this is routed by init-appshell.jsx into view/prototype/Prototype.jsx. We don't yet have a module initialization convention, so it's time to define one.
+
+- - -
+Q. Examples of Javascript Asynchronous Operations
+A. See Quiver INQ NETCREATE "RAW: Universal Events" for the working list I came up with. There are a LOT of them.
+A. See WIKI Design: Asynchronous Practices for writeup
+
+- - -
+Q. write unisys lifecycle support code?
+A. well, we're using .Hook() to get into the lifecycle stages.
+We want to create something like SYSLOOP. Starting to put it all together.
+
+I've made event/emitter, event/lifecycler, and network/messager all included as libraries in unisys.js
+
+- - -
+Q. How do I make these libraries return sane instances?
+A. Just gotta push through with it...
+
+
+
+
+
+
+
+
 DEV LOG for WEEK STARTING MAR 11
 Another week of being sick. Friday started to pick it up again.
 
@@ -16,8 +69,8 @@ A. Use the array.map() function, which can be used to return another array of tr
 Q. What is props.children?
 A. It's the contents of invoked component. React favors composition through props and props.children.
 <MyComponent attrib1 attrib2>
-	<p>the contents inside MyComponent (these p tags)</p>
-	<p>are passed as props.children</p>
+  <p>the contents inside MyComponent (these p tags)</p>
+  <p>are passed as props.children</p>
 </MyComponent>
 
 Here's a helpful article:
@@ -91,15 +144,15 @@ A. A solution to rendering large lists is to use "virtualization"
 
 DEBUGGING IFRAME HEIGHT
 
-	index.html           | body          min-height: 100%
-	index.html           | div#app
-	init-appshell        |   div         display:flex, flex-flow:column nowrap,
-	                                     width:100%, height:100vh
-	init-appshell        |     Navbar    position:fixed
-	--- COMPONENT BELOW ---
-	init-appshell.HTML() |     div       display:flex, flex-flow:column nowrap,
-	                                     width:100%
-	init-appshell.HTML() |       iframe  flex:1 0 auto, border:0
+  index.html           | body          min-height: 100%
+  index.html           | div#app
+  init-appshell        |   div         display:flex, flex-flow:column nowrap,
+                                       width:100%, height:100vh
+  init-appshell        |     Navbar    position:fixed
+  --- COMPONENT BELOW ---
+  init-appshell.HTML() |     div       display:flex, flex-flow:column nowrap,
+                                       width:100%
+  init-appshell.HTML() |       iframe  flex:1 0 auto, border:0
 
 Q. How to control sizes in flexbox items?
 A. flex-grow, flex-shrink, flex-basis (shortcut: flex)
@@ -133,15 +186,15 @@ GRID works in 2 dimensions, and uses layout as basis (size). It's newer.
 GRID lets you define relationships in fr units for columns and rows
 GRID defines sizes of grid element on numbered boundaries
 display:grid
-	grid-template-columns, grid-template-rows - uses sizes or new fr (fraction) units (explicit grid)
-	use repeat(count,1fr) macro to make large grids
-	grid-auto-rows and grid-auto-columns create new content that don't fit in explicit grid.
-	grid-auto-rows: minmax(min,max) where min is minimum size, max can be set to auto
-	grid-column-gap, grid-row-gap
+  grid-template-columns, grid-template-rows - uses sizes or new fr (fraction) units (explicit grid)
+  use repeat(count,1fr) macro to make large grids
+  grid-auto-rows and grid-auto-columns create new content that don't fit in explicit grid.
+  grid-auto-rows: minmax(min,max) where min is minimum size, max can be set to auto
+  grid-column-gap, grid-row-gap
 ITEMS:
-	for positioning, uses grid LINES, not the size of the grid tracks.
-	grid-column-start, grid-column-end, grid-row-start, grid-row-end
-	note: grid items can overlap, control stack with z-index
+  for positioning, uses grid LINES, not the size of the grid tracks.
+  grid-column-start, grid-column-end, grid-row-start, grid-row-end
+  note: grid items can overlap, control stack with z-index
 
 
 DEV LOG for WEEK STARTING FEB 19 2018
