@@ -3,9 +3,10 @@
 
     D3 NetGraph
 
-    Currently this class does not handle allowing more than one D3NetGraph
-    object per page.  The problem is that we're using a generic 'svg'
-    component.  We probably need to add an id.
+    This is designed to work with the NetGraph React component.
+
+    NetGraph calls SetData whenever it receives an updated data object.
+    This triggers D3NetGraph to redraw itself.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -244,21 +245,11 @@ class D3NetGraph {
   /// _Ticked
   ///       Update the display positions after each simulation tick
   _Ticked ( self ) {
-    // *** HACK *** NEED TO REVIEW ***
-    // _Ticked is running as an anonymous function in this context and does not
-    // have access to the D3NetGraph Class's link and node variables.
-    // So we select them up manually.
-    //
-    // This is problematic if there is more than one svg graph?!?
-
-    //let link = d3.select('svg').selectAll('line')
     self.link
         .attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; });
-
-    //let node = d3.select('svg').selectAll('.node')
     self.node.attr("transform", function(d) { return "translate("+d.x+","+d.y+")"; });
 
   }
