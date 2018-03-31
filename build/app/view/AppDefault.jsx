@@ -23,7 +23,7 @@ class AppDefault extends React.Component {
       <div id="left" style={{flex:'1 0 auto'}}>
       </div>
       <div id="middle" style={{flex:'3 0 auto'}}>
-        <p></p>
+        <p>AppDefault.jsx</p>
         <h4>NetCreate welcomes you</h4>
         <p>This is a work in progress.</p>
       </div>

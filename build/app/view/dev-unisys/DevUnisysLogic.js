@@ -1,7 +1,6 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    DATASTORE
-    stub for testing module loading
+    TEST REACT INTEGRATION through UNISYS
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -13,11 +12,26 @@ const UNISYS = require('system/unisys');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let MOD = UNISYS.NewModule({name:'DATASTORE'});
+let MOD = UNISYS.NewModule({name:'DevUNISYSLogic'});
 
 /// LIFECYCLE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  UNISYS.OnInitialize(function () {
+    let p = new Promise(function (resolve,reject) {
 
+      setTimeout(function() {
+          resolve(1);
+          console.log('P1 resolved');
+        },
+        1000);
+
+    });
+    return p;
+  });
+
+  UNISYS.OnInitialize(function() {
+    console.log('P2 resolve without promise');
+  });
 
 
 /// MODULE API ////////////////////////////////////////////////////////////////

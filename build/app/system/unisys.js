@@ -39,48 +39,35 @@ const DBG         = true;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: creates new umodule object and stores reference
-/*/ UNISYS.UModule = (config) => {
+/*/ UNISYS.NewModule = (config) => {
       return new UniModule(config);
     };
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: Expose LifeCycle Hook() functions
+/*/ UNISYS.OnInitialize = (executor) => {
+      LifeCycle.Hook('INITIALIZE',executor);
+    };
+    UNISYS.OnLoadAssets = (executor) => {
+      LifeCycle.Hook('LOADASSETS',executor);
+    };
+    UNISYS.OnConfigure = (executor) => {
+      LifeCycle.Hook('CONFIGURE',executor);
+    };
+    UNISYS.OnStart = (executor) => {
+      LifeCycle.Hook('START',executor);
+    };
 
-    /* example of trying hooks */
-
-    LifeCycle.Hook('INITIALIZE',()=>{
-      return new Promise((resolve,reject)=>{
-        // delay 1
-        setTimeout( ()=>{
-            resolve(1);
-            console.log('hook1 resolved');
-        },1000 )});
-    });
-
-    let reusablePromise = new Promise((resolve,reject)=>{
-      // delay 2
-      setTimeout(()=>{
-          resolve(2);
-          console.log('hook2 resolved');
-      },1500)});
-    LifeCycle.Hook('INITIALIZE',()=>{
-      return reusablePromise;
-    });
-
-    LifeCycle.Hook('INITIALIZE',()=>{
-      return new Promise((resolve,reject)=>{
-        // delay 3
-        setTimeout(()=>{
-            resolve(3);
-            console.log('hook3 resolved');
-        },1000)});
-    });
-
-    // this will execute the phases, but RERUNNING the phases
-    // doesn't restart the chain because they have been fulfilled
-    (async ()=>{
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: do the Startup lifecycle
+/*/ UNISYS.EnterStartup = async () => {
       await LifeCycle.Execute('INITIALIZE');
-      await LifeCycle.Execute('INITIALIZE');
+      await LifeCycle.Execute('LOADASSETS');
+      await LifeCycle.Execute('CONFIGURE');
       await LifeCycle.Execute('START');
-    })();
+      console.groupEnd();
+    };
+
 
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////

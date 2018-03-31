@@ -57,7 +57,7 @@ const RRNavLink = require('react-router-dom').NavLink;
 \* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 const AppDefault  = require('view/AppDefault');
 const Prototype   = require('view/prototype/Prototype');
-const About       = require('view/about/About');
+const DevUnisys   = require('view/dev-unisys/DevUnisys');
 const D3Test      = require('view/d3test/D3Test');
 
 
@@ -117,6 +117,7 @@ class AppShell extends React.Component {
         isOpen: false
       };
   }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle changes in state of his toggle switch
 /*/ toggle() {
@@ -143,7 +144,7 @@ class AppShell extends React.Component {
                   <NavLink to="/" activeClassName="active" tag={RRNavLink} replace>Welcome</NavLink>
                 </NavItem>
                 <NavItem>
-                  <NavLink to="/d3forcedemo" tag={RRNavLink} replace>D3 Force Demo</NavLink>
+                  <NavLink to="/d3forcedemo" tag={RRNavLink} replace>D3 ForceDemo</NavLink>
                 </NavItem>
                 <NavItem>
                   <NavLink to="/prototype" tag={RRNavLink} replace>Prototype</NavLink>
@@ -154,7 +155,10 @@ class AppShell extends React.Component {
                   </DropdownToggle>
                   <DropdownMenu>
                     <DropdownItem>
-                      <NavLink to="/simple" tag={RRNavLink} replace>SimpleHTML</NavLink>
+                      <NavLink to="/dev-unisys" tag={RRNavLink} replace>Dev ModuleLoader</NavLink>
+                    </DropdownItem>
+                    <DropdownItem>
+                      <NavLink to="/simple" tag={RRNavLink} replace>Dev SimpleHTML</NavLink>
                     </DropdownItem>
                     <DropdownItem>
                       <NavLink to="/d3test" tag={RRNavLink} replace>D3Test</NavLink>
@@ -176,6 +180,7 @@ class AppShell extends React.Component {
             <Route path='/d3forcedemo' exact component={ (props) => {return HTML(props)} }/>
             <Route path='/simple' exact component={ (props) => {return HTML(props)} }/>
             <Route path='/d3test' exact component={D3Test}/>
+            <Route path='/dev-unisys' exact component={DevUnisys}/>
             <Route component={NoMatch}/>
           </Switch>
         </div>
