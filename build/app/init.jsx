@@ -7,8 +7,8 @@
 
 /// SYSTEM-WIDE LANGUAGE EXTENSIONS ///////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// these are loaded in init to make sure they are available everywhere
-/// you do not need to copy this to your own module files
+/// These are loaded in init to make sure they are available globally!
+/// You do not need to copy these extensions to your own module files
 require("babel-polyfill"); // enables regenerators for async/await
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////

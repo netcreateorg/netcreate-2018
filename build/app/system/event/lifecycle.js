@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 'use strict';
-const DBG = true;
+const DBG = false;
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -14,11 +14,16 @@ const DBG = true;
     const PHASES = [                    // recognized phases
       'INITIALIZE',
       'LOADASSETS',
+      'RESET',
       'CONFIGURE',
       'START',
-      'RUN',
+      'UPDATE',
+      'PREPAUSE',
+      'PAUSE',
+      'POSTPAUSE',
       'STOP',
-      'RESTART'
+      'UNLOADASSETS',
+      'SHUTDOWN',
     ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     var PHASE = PHASES[0]+'_PENDING';   // current phase

@@ -3,39 +3,44 @@
     Emitter - Handle a collection of named events and their listeners
     https://en.wikipedia.org/wiki/Event-driven_architecture#JavaScript
 
-    .. on('eventName',listenerFunction) to add a listener
-    .. off('eventName',listenerFunction) to remove a listener
-    .. emit('eventName',args) to send the event to listeners
+    .. On('eventName',listenerFunction) to add a listener
+    .. Off('eventName',listenerFunction) to remove a listener
+    .. Emit('eventName',args) to send the event to listeners
+
+    When providing a listener, make sure that it is bound to a specific
+    'this' value using bind()
+    e.g. handlerFunction = handlerFunction.bind(this);
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 'use strict';
+const DBG        = false;
 
 class Emitter {
   constructor() {
     this.events = new Map();
   }
 
-  On( event, listener ) {
+  On( eventName, listener ) {
     if (typeof listener !== 'function') {
       throw new TypeError('The listener must be a function');
     }
-    let listeners = this.events.get(event);
+    let listeners = this.events.get(eventName);
     if (!listeners) {
       listeners = new Set();
-      this.events.set(event, listeners);
+      this.events.set(eventName, listeners);
     }
     listeners.add(listener);
     return this;
   }
 
-  Off( event, listener ) {
+  Off( eventName, listener ) {
     if (!arguments.length) {
       this.events.clear();
     } else if (arguments.length === 1) {
-      this.events.delete(event);
+      this.events.delete(eventName);
     } else {
-      const listeners = this.events.get(event);
+      const listeners = this.events.get(eventName);
       if (listeners) {
         listeners.delete(listener);
       }
@@ -43,17 +48,19 @@ class Emitter {
     return this;
   }
 
-  Emit( event, ...args ) {
-    const listeners = this.events.get(event);
+  Emit( eventName, data ) {
+    if (DBG) console.log(`EventEmitterClass: [${eventName}] data:`,data);
+    const listeners = this.events.get(eventName);
     if (listeners) {
       for (let listener of listeners) {
-        listener.apply(this, args);
+        // note: listener should have 'this' bound (see ABOUT)
+        listener(eventName, data);
       }
     }
     return this;
   }
 }
 
-/// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
+/// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = Emitter;
