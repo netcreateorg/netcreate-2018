@@ -44,6 +44,37 @@ I've made event/emitter, event/lifecycler, and network/messager all included as 
 Q. How do I make these libraries return sane instances?
 A. Just gotta push through with it...
 
+- - -
+Q. What's a clean structure for hooking lifecycles?
+
+In the old system we had a Register('PHASE',function(){}) design. It was straightforward except for asynch phases like LOADASSETS. In those cases, I passed a "checkin object" that could be used to create more checkin objects, and when they all completed they would call checkin.Notify() and LOADASSETS would end.
+
+In the new system, I attempted to use Promises as the general mechanism instead of passing a straightforward function, and the Promises would be executed in parallel through Promise.all(). However, there are two idiosyncracisies with Promises:
+* You have to provide a function called an executor, which accepts resolve and reject.
+* When you create a new Promise from the executor function, it is immediately executed. 
+
+Because of the second point, the interface has to return a promiseGenerator function that is executed at PHASE EXECUTION time. So you are passing a function that returns a Promise that wraps another executor function that itself may contains asynchronous function callbacks. 
+
+In LifeCycle.Execute(), the current mechanism grabs all the promise generator functions and creates an array of promises. It then does an await Promise.all()
+
+* a regular function can be invoked as-is, and its return value can be checked. If it's a promise, put it on the promise stack
+
+- - -
+Q. Now that LifeCycle is done, what is the next thing?
+A. Probably REACT integration!
+
+I had some code for UISTATE that I want to add to UNISYS because it was pretty great. There are essentially two calls to implement.
+
+UNISYS.SetState('NAMESPACE', stateObj);
+UNISYS.State('NAMESPACE');
+UNISYS.OnStateChange('NAMESPACE', (stateObj)=>{});
+
+Ok, I've added them...now we want to test it by using SetState() and OnStateChange()
+in both a module and in the React code.
+
+IT WORKS, but the originating code that calls SetState() is getting echoing back through the OnStateChange() handler. I added a UniBridge stub class to serve as the liason for instanced UNISYS functions, though for now it just maintains a unique UID (aka a UNISYS ID) which can be passed to the emitter so filtering is possible. 
+
+What I don't like is that you have to actually pass the UID in to both the OnStateChange() and SetState() calls for echo cancellation to work. Maybe a solution will come to me as I nap.
 
 
 
@@ -51,7 +82,7 @@ A. Just gotta push through with it...
 
 
 
-DEV LOG for WEEK STARTING MAR 11
+## DEV LOG for WEEK STARTING MAR 11
 Another week of being sick. Friday started to pick it up again.
 
 FOCUS. We want to finish putting in the HTML skeletons.
@@ -90,7 +121,7 @@ A. Picking this: https://github.com/Olical/react-faux-dom - allows D3 code to be
 
 
 
-DEV LOG for WEEK STARTING MAR 04 2018
+## DEV LOG for WEEK STARTING MAR 04 2018
 
 I've been sick all this week and haven't been productive. Been angry at the Internet and imperfection, and this negative energy robs me of initiative. To develop zen attitude to terrible development tools, processes, etc would go a LONG WAY toward being more productive instead of being annoyed all the time. How to convert ANNOYANCE into CLARITY?
 
@@ -106,7 +137,7 @@ Q.
 
 
 
-DEV LOG for WEEK STARTING FEB 26 2018
+## DEV LOG for WEEK STARTING FEB 26 2018
 
 Q. Can I easily add D3 to our framework?
 A. The Brunch way says just NPM it. This works within the view modules, but not in simplehtml.
@@ -197,7 +228,9 @@ ITEMS:
   note: grid items can overlap, control stack with z-index
 
 
-DEV LOG for WEEK STARTING FEB 19 2018
+
+
+## DEV LOG for WEEK STARTING FEB 19 2018
 
 Q: Now that I have the module stuff figured out, can I load hyperapp merely by importing it?
 A: No, hyperapp has some weird dependency on babel. there are no docs on brunch+hyperapp, and it looks like hyperapp may not even support JSX in future.

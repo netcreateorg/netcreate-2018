@@ -1,8 +1,6 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    UNISYS
-
-    API
+    UNISYS API
 
     [x] UnisysModule = UNISYS.NewModule(name);
     [x] UNISYS.Hook('PHASENAME',functionHandler)
@@ -24,10 +22,12 @@
 const DBG         = true;
 const BAD_NSPACE  = "namespace must be string without _ chars";
 const BAD_LISTENR = "listener must be function";
+const NO_UID_FLTR = "UNISYS.OnStateChange: pass DST_UID parameter to enable echo cancellation";
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UniModule   = require('system/object/unimodule_class');
+const UniBridge   = require('system/object/unibridge_class');
 const LifeCycle   = require('system/event/lifecycle');
 const Messager    = require('system/network/messager');
 const Emitter     = require('system/event/emitter_class');
@@ -39,7 +39,6 @@ var UNISYS        = {};
 var STATES        = new Map(); // namespace str => shallow state object
 var STATES_LISTEN = new Map(); // namespace str => emitter
 
-
 /// UNISYS MODULE MAKING //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: creates new umodule object for code modules that want access to
@@ -47,6 +46,13 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
 /*/ UNISYS.NewModule = (config) => {
       return new UniModule(config);
     };
+/*/ API: creates new umodule object solely for the purpose of getting a unique
+    UNISYS ID (UID) for use with event tracking
+/*/ UNISYS.NewBridge = (parent) => {
+      return new UniBridge(parent);
+    };
+/*/ API: retrieve a bridge instance by UID
+/*/ UNISYS.GetBridge = UniBridge.GetBridge;
 
 
 /// STATE /////////////////////////////////////////////////////////////////////
@@ -83,7 +89,7 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: update the selected namespace state with new state
-/*/ UNISYS.SetState = (namespace, newState) => {
+/*/ UNISYS.SetState = (namespace, newState, src_uid) => {
       namespace = m_ConformNamespace(namespace);
       if (!namespace) throw Error(BAD_NSPACE);
       // update old state by partially overwrite of oldstate
@@ -91,7 +97,7 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
       Object.assign(STATES.get(namespace),newState);
       // forward new state to namespace listeners
       let emitter = m_GetStateEmitter(namespace);
-      emitter.Emit(namespace,newState);
+      emitter.Emit(namespace,newState,src_uid);
       // future: forward also to network
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -103,12 +109,13 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: subscribe to namestate updates
-/*/ UNISYS.OnStateChange = (namespace, listener) => {
+/*/ UNISYS.OnStateChange = (namespace, listener, dst_uid) => {
       namespace = m_ConformNamespace(namespace);
       if (!namespace) throw Error(BAD_NSPACE);
       if (typeof listener!=='function') throw Error(BAD_LISTENR);
+      if (dst_uid===undefined) console.warn(NO_UID_FLTR);
       let namespaceEmitter = m_GetStateEmitter(namespace);
-      namespaceEmitter.On(namespace,listener);
+      namespaceEmitter.On(namespace,listener,dst_uid);
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: unsubscribe to namestate updates

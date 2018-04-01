@@ -7,6 +7,12 @@
     * EVENTS are local to the current webapp instance.
     * MESSAGES are potentially network-wide.
 
+    For REACT components, the NewModule() call can be made without
+    a config object to create an "anonymous module" useful to act as
+    a bridging interface to the UNISYS system. While UNISYS can be called
+    directly from REACT, using the module as the bridge interface allows
+    the event manager to not echo state changes back to the sender.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const DBG         = true;
@@ -20,6 +26,7 @@ const Emitter     = require('system/event/emitter_class');
 /// MODULE DECLARATIONS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var MODULES       = new Map();
+var MODULE_ID     = 100;
 
 /// UNISYS MODULE CLASS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,12 +39,13 @@ var MODULES       = new Map();
   /// CONSTRUCTOR
 
       constructor(config) {
+        // save unique id
+        this.uid = `UMD_${MODULE_ID++}`;
         // validate parameters
-        if(typeof config!=='object') throw Error(BAD_CONFIG);
+        config = config || {};
         // validate 'name' as unique identifier
         let { name } = config;
-        if(name===undefined) throw Error(BAD_NAME);
-        if (typeof name!=='string') throw Error(BAD_NAME);
+        name = name || `<ANON_${this.id}>`;
         if (MODULES.has(name)) throw Error(BAD_NAME);
 
         // successful name validation
@@ -50,6 +58,12 @@ var MODULES       = new Map();
         // save module in the global module list
         MODULES.set(name,this);
       }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// UNIQUE UNISYS ID for local application
+  /// this is used to differentiate sources of events so they don't echo
+
+      UID() { return this.uid; }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// EVENT SUBSCRIPTION CONTROL - Other modules subscribe to events

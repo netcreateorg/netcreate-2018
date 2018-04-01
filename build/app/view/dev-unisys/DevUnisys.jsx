@@ -25,11 +25,15 @@ const { Alert }   = ReactStrap;
       constructor(props) {
         super(props);
 
+        // the UID is used to identify this endpoint when sending data
+        // to the UNISYS subsystem. We just need the ID, but we can
+        // retrieve the UniBridge instance by ID
+        this.uni_id = UNISYS.NewBridge(this).UID();
+
         // UNISYS state may already be initialized from settings
         let state = UNISYS.State('VIEW');
         // UNISYS.State() returns a copy of state obj; mutate/assign freely
         state.description = state.description || 'uninitialized description';
-
         // REACT TIP: you can safely set state directly ONLY in constructor!
         this.state = state;
 
@@ -39,16 +43,16 @@ const { Alert }   = ReactStrap;
 
         // subscribe to UNISYS state change listeners
         // note: make sure that handlers are already bound to this
-        UNISYS.OnStateChange('VIEW', this.UnisysStateChange);
-        UNISYS.OnStateChange('LOGIC', this.UnisysStateChange);
+        UNISYS.OnStateChange('VIEW', this.UnisysStateChange, this.uni_id);
+        UNISYS.OnStateChange('LOGIC', this.UnisysStateChange, this.uni_id);
 
       } // constructor
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UNISYS state change handler - registered by UNISYS.OnStateChange()
   /// state is coming from UNISYS
-      UnisysStateChange(nspace,state) {
-        console.log(`.. REACT <- state`,state,`via NS '${nspace}'`);
+      UnisysStateChange(nspace,state,src_uid) {
+        console.log(`.. REACT <- state`,state,`via NS '${nspace} ${src_uid}'`);
         // update local react state, which should force an update
         this.setState(state);
       }
@@ -61,8 +65,8 @@ const { Alert }   = ReactStrap;
         let state = {
           description : target.value
         }
-        console.log(`REACT -> state`,state,`to NS 'VIEW'`);
-        UNISYS.SetState('VIEW',state);
+        console.log(`REACT -> state`,state,`to NS 'VIEW' ${this.uni_id}`);
+        UNISYS.SetState('VIEW',state, this.uni_id);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// COMPONENT this interface has composed
