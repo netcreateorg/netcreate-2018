@@ -10,20 +10,6 @@ var link, node;
 var graph;					// The complete set of data
 var filteredGraph;			// A subset of graph
 
-// load the data
-d3.json("data.json", function(error, _graph) {
-  if (error) throw error;
-  graph = _graph;
-  filteredGraph = _graph;
-  initializeDisplay();
-  initializeSimulation();
-
-  ShowNodes();
-
-});
-
-
-
 //////////// FORCE SIMULATION ////////////
 
 // force simulator
@@ -227,11 +213,11 @@ function updateAll() {
 
 //////////// DATA DISPLAY ////////////
 /******************************************************************************
-	
+
 	DATA TEMPLATE
 	=============
 
-	label 				A function for generating the display label, could be 
+	label 				A function for generating the display label, could be
 						based on nodeType.
 
 	radius				A function for calculating methods
@@ -246,7 +232,7 @@ function updateAll() {
 
 	There are two basic types of data: nodes and edges
 
-		data = { 
+		data = {
 				 nodes: [...],
 				 edges: [...]
 			   }
@@ -280,7 +266,7 @@ function updateAll() {
 		radius 			Radius of the displayed node, a calculated field
 
 		color 			Color of the displayed node, a calculated field
-	
+
 		x
 
 		y
@@ -289,7 +275,7 @@ function updateAll() {
 	EDGES
 	=====
 
-	Edges have 
+	Edges have
 
 	Required Parameters
 
