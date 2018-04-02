@@ -83,6 +83,12 @@ class D3NetGraph {
       .attr("class", "nodes")
 
     this.simulation = d3.forceSimulation()
+
+    this._Ticked = this._Ticked.bind(this)
+    this._Dragstarted = this._Dragstarted.bind(this)
+    this._Dragged = this._Dragged.bind(this)
+    this._Dragended = this._Dragended.bind(this)
+
   }
 
 
@@ -132,14 +138,13 @@ class D3NetGraph {
 
     // ENTER
     //  'node' here refers to the svg group object for each node created above
-    let self = this                    // reference for drag events
     this.node = nodeRoot.enter()
         .append("g")                   // svg group object for each node
           .attr("class", "node")
         .call(d3.drag()
-          .on("start", function(d){ return self._Dragstarted(d, self) })
+          .on("start", (d) => { this._Dragstarted(d, this) })
           .on("drag",  this._Dragged)
-          .on("end",   function(d){ return self._Dragended(d, self) }))
+          .on("end",   (d) => { this._Dragended(d, this) }))
 
     // UPDATE SELECTION
     this.node.merge(nodeRoot).selectAll("circle")
@@ -159,10 +164,10 @@ class D3NetGraph {
         .attr("dx", 8)
         .attr("dy", ".15em")
         .text(function(d) { return d.label })
-    // node tooltip
-    this.node.append("title")
+    this.node.append("title") // node tooltip
         .text(function(d) { return d.label; })
 
+    // EXIT
     this.node.exit().remove()
 
     this._UpdateDisplay()
@@ -200,8 +205,8 @@ class D3NetGraph {
     // apply properties to each of the forces
     this._UpdateForces( data )
 
-    let self = this
-    this.simulation.on("tick", function(){ return self._Ticked(self) })
+    this.simulation.on("tick", () => {this._Ticked(this)})
+
   }
 
 
