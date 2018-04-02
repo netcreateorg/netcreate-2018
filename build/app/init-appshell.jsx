@@ -55,11 +55,11 @@ const RRNavLink = require('react-router-dom').NavLink;
   --- COMPONENT BELOW ---
   <RequiredComponent>  |     div       this is a child of a flexbox
 \* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-const AppDefault  = require('view/AppDefault');
-const Prototype   = require('view/prototype/Prototype');
-const About       = require('view/about/About');
+const AppDefault       = require('view/AppDefault');
+const Prototype        = require('view/prototype/Prototype');
 const AutoCompleteDemo = require('view/autocompletedemo/AutoCompleteDemo');
-const D3Test      = require('view/d3test/D3Test');
+const DevUnisys        = require('view/dev-unisys/DevUnisys');
+const D3Test           = require('view/d3test/D3Test');
 
 
 /** (2) ROUTED FUNCTIONS *****************************************************\
@@ -118,6 +118,7 @@ class AppShell extends React.Component {
         isOpen: false
       };
   }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle changes in state of his toggle switch
 /*/ toggle() {
@@ -130,9 +131,6 @@ class AppShell extends React.Component {
   To add a new HTML, add the link to both the <Nav> and <Switch> staments.
   To add a new VIEW, load the component
 /*/ render() {
-      /// demonstrate that STORE persists between clicks
-      const STORE = require('system/datastore');
-      STORE.Increment();
 
       /// return component with matching routed view
       return (
@@ -147,7 +145,7 @@ class AppShell extends React.Component {
                   <NavLink to="/" activeClassName="active" tag={RRNavLink} replace>Welcome</NavLink>
                 </NavItem>
                 <NavItem>
-                  <NavLink to="/d3forcedemo" tag={RRNavLink} replace>D3 Force Demo</NavLink>
+                  <NavLink to="/d3forcedemo" tag={RRNavLink} replace>D3 ForceDemo</NavLink>
                 </NavItem>
                 <NavItem>
                   <NavLink to="/autocompletedemo" tag={RRNavLink} replace>AutoComplete Demo</NavLink>
@@ -161,7 +159,10 @@ class AppShell extends React.Component {
                   </DropdownToggle>
                   <DropdownMenu>
                     <DropdownItem>
-                      <NavLink to="/simple" tag={RRNavLink} replace>SimpleHTML</NavLink>
+                      <NavLink to="/dev-unisys" tag={RRNavLink} replace>Dev ModuleLoader</NavLink>
+                    </DropdownItem>
+                    <DropdownItem>
+                      <NavLink to="/simple" tag={RRNavLink} replace>Dev SimpleHTML</NavLink>
                     </DropdownItem>
                     <DropdownItem>
                       <NavLink to="/d3test" tag={RRNavLink} replace>D3Test</NavLink>
@@ -184,6 +185,7 @@ class AppShell extends React.Component {
             <Route path='/simple' exact component={ (props) => {return HTML(props)} }/>
             <Route path='/d3test' exact component={D3Test}/>
             <Route path='/autocompletedemo' exact component={AutoCompleteDemo}/>
+            <Route path='/dev-unisys' exact component={DevUnisys}/>
             <Route component={NoMatch}/>
           </Switch>
         </div>

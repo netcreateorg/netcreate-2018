@@ -9,6 +9,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+/// SYSTEM INTEGRATION ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const UNISYS = require('system/unisys');
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -83,14 +86,14 @@ class Prototype extends React.Component {
 /*/ REACT has completely composed its view. Since Prototype is the root view
   of the application, this is where we would initialize the rest of our system
 /*/ componentDidMount () {
-    console.log('Prototype mounted');
-  }
+      console.log('Prototype mounted');
+    }
 
 /** EVENT HANDLERS ***********************************************************/
 
-  handleClick ( event ) {
-    console.log(event);
-  }
+    handleClick ( event ) {
+      console.log(event);
+    }
 
 } // end of REACT component class
 
