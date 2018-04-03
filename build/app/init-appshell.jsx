@@ -55,10 +55,11 @@ const RRNavLink = require('react-router-dom').NavLink;
   --- COMPONENT BELOW ---
   <RequiredComponent>  |     div       this is a child of a flexbox
 \* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-const AppDefault  = require('view/AppDefault');
-const Prototype   = require('view/prototype/Prototype');
-const DevUnisys   = require('view/dev-unisys/DevUnisys');
-const D3Test      = require('view/d3test/D3Test');
+const AppDefault       = require('view/AppDefault');
+const Prototype        = require('view/prototype/Prototype');
+const AutoCompleteDemo = require('view/autocompletedemo/AutoCompleteDemo');
+const DevUnisys        = require('view/dev-unisys/DevUnisys');
+const D3Test           = require('view/d3test/D3Test');
 
 
 /** (2) ROUTED FUNCTIONS *****************************************************\
@@ -147,6 +148,9 @@ class AppShell extends React.Component {
                   <NavLink to="/d3forcedemo" tag={RRNavLink} replace>D3 ForceDemo</NavLink>
                 </NavItem>
                 <NavItem>
+                  <NavLink to="/autocompletedemo" tag={RRNavLink} replace>AutoComplete Demo</NavLink>
+                </NavItem>
+                <NavItem>
                   <NavLink to="/prototype" tag={RRNavLink} replace>Prototype</NavLink>
                 </NavItem>
                 <UncontrolledDropdown nav>
@@ -180,6 +184,7 @@ class AppShell extends React.Component {
             <Route path='/d3forcedemo' exact component={ (props) => {return HTML(props)} }/>
             <Route path='/simple' exact component={ (props) => {return HTML(props)} }/>
             <Route path='/d3test' exact component={D3Test}/>
+            <Route path='/autocompletedemo' exact component={AutoCompleteDemo}/>
             <Route path='/dev-unisys' exact component={DevUnisys}/>
             <Route component={NoMatch}/>
           </Switch>
