@@ -14,6 +14,8 @@
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react')
+const ReactStrap = require('reactstrap')
+const { Table } = ReactStrap
 
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
@@ -55,12 +57,12 @@ class NodeDetail extends React.Component {
     return (
       <div style={{minHeight:'300px',backgroundColor:'#c7f1f1',padding:'5px'}}>
         <b>NODE DETAIL</b>
-        <table><tbody>
+        <Table borderless striped size="sm"><tbody>
           <tr><td>Label:&nbsp;&nbsp;</td><td>{this.state.label}</td></tr>
           <tr><td>Type: </td><td>{this.state.type}</td></tr>
           <tr><td>Info: </td><td>{this.state.info}</td></tr>
           <tr><td>Notes:</td><td>{this.state.notes}</td></tr>
-        </tbody></table>
+        </tbody></Table>
       </div>
     )
   }
