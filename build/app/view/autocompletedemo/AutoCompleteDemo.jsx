@@ -71,8 +71,16 @@ class AutoCompleteDemo extends React.Component {
       // console.log('nodeLabel is',nodeLabel,'node selected is', nodes)
       this.setState( {selectedNode: nodes[0] })
     } else {
-      console.error('Selected node',nodeLabel,'not found')
-  }
+      if (nodeLabel && nodeLabel.isAddNew) {
+        // ignore
+      } else {
+        // New Node
+        // No node was found, so this is creating a new node.
+        let node = {label: nodeLabel, type:'', info:'', notes:''}
+        this.setState( {selectedNode: node } )
+        console.error('Selected node',nodeLabel,'not found')
+      }
+    }
   }
 
   deselectAllNodes () {
