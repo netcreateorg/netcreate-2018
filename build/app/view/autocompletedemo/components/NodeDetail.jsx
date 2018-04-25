@@ -6,6 +6,18 @@
     A display widget that shows all of the meta information contained in each 
     data node.
 
+    TO USE
+    Add the following to the render() of the parent component:
+
+      render() {
+        return (
+          ...
+                <NodeDetail
+                  selectedNode={this.state.selectedNode}
+                />
+          ...
+        )
+      }
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 

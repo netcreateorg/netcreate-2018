@@ -128,9 +128,6 @@ class AutoCompleteDemo extends React.Component {
                   onInputChange={this.handleInputChange}
                   onSelection={this.handleNodeSelection}
                 />
-                <NodeDetail
-                  selectedNode={this.state.selectedNode}
-                />
               </div>
               <div>
                 <NodeEntry 
