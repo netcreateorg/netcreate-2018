@@ -94,14 +94,16 @@ class NodeEntry extends React.Component {
         <FormText>NEW NODE</FormText>
         <hr/>
         <FormGroup>
-          <Label for="nodeLabel">Label</Label>
+          <Label for="nodeLabel" className="small text-muted">LABEL</Label>
           <Input type="text" name="nodeLabel" id="nodeLabel" 
+            value={this.state.label||''}    // necessary to prevent switching from controlled to uncontrolled
             onChange={this.onLabelChange}
             placeholder="person/group/place/thing/event" />
         </FormGroup>
         <FormGroup>
-          <Label for="type">Type</Label>
+          <Label for="type" className="small text-muted">TYPE</Label>
           <Input type="select" name="type" id="typeSelect"
+            value={this.state.type||''}
             onChange={this.onTypeChange}>
             <option>Person</option>
             <option>Group</option>
@@ -111,13 +113,15 @@ class NodeEntry extends React.Component {
           </Input>
         </FormGroup>
         <FormGroup>
-          <Label for="notes">Notes</Label>
+          <Label for="notes" className="small text-muted">NOTES</Label>
           <Input type="textarea" name="note" id="notesText" 
+            value={this.state.notes||''}
             onChange={this.onNotesChange}/>
         </FormGroup>
         <FormGroup>
-          <Label for="info">Geocode or Date</Label>
+          <Label for="info" className="small text-muted">GEOCODE or DATE</Label>
           <Input type="text" name="info" id="info" 
+            value={this.state.info||''}
             onChange={this.onInfoChange}/>
         </FormGroup>
         <Button>Create</Button>

@@ -25,19 +25,25 @@ class AutoCompleteDemo extends React.Component {
       lexicon:          [],    // string array of node labels
       nodeSearchString: ''     // node label search string set in AutoComplete input field
     }
-    this.handleJSONLoad = this.handleJSONLoad.bind(this)
-    this.handleInputChange = this.handleInputChange.bind(this)
-    this.handleNodeSelection = this.handleNodeSelection.bind(this)
+    this.updateData               = this.updateData.bind(this)
+    this.handleJSONLoad           = this.handleJSONLoad.bind(this)
+    this.handleInputChange        = this.handleInputChange.bind(this)
+    this.handleNewNode            = this.handleNewNode.bind(this)
+    this.handleNodeSelection      = this.handleNodeSelection.bind(this)
     this.setStateDataSelectedNode = this.setStateDataSelectedNode.bind(this)
+  }
+
+  updateData ( newData ) {
+    this.setState( { 
+      data:    newData,
+      lexicon: newData.nodes.map(function(d){return d.label})
+    })
   }
 
   handleJSONLoad ( error, _data ) {
     if (error) throw error
     // map nodes[].label to textList
-    this.setState( {
-      data:    _data,
-      lexicon: _data.nodes.map(function(d){return d.label})
-    })
+    this.updateData( _data )
   }
 
   handleInputChange ( value ) {
@@ -45,8 +51,15 @@ class AutoCompleteDemo extends React.Component {
     this.setStateDataSelectedNode( value )
   }
 
-  handleNewNode ( value ) {
-    console.log('new node',value)
+  handleNewNode ( newNode ) {
+    console.log('new node',newNode, this.state.data)
+    // HACK
+    // Blindly add data for now.
+    // Eventually we will want to check for ID, duplication, validation, etc.
+    var newData = this.state.data
+    newData.nodes.push( newNode )
+    console.log('....new data',newData)
+    this.updateData( newData )
   }
 
   handleNodeSelection ( nodeLabel ) {
@@ -121,6 +134,7 @@ class AutoCompleteDemo extends React.Component {
               </div>
               <div>
                 <NodeEntry 
+                  selectedNode={this.state.selectedNode}
                   onNewNode={this.handleNewNode}
                 />
               </div>
