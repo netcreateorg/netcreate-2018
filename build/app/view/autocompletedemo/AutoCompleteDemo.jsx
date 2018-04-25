@@ -4,6 +4,7 @@ const React        = require('react');
 const d3           = require('d3');
 const AutoComplete = require('./components/AutoComplete');
 const NetGraph     = require('./components/NetGraph');
+const NodeEntry    = require('./components/NodeEntry');
 const NodeDetail   = require('./components/NodeDetail');
 
 /// React Component ///////////////////////////////////////////////////////////
@@ -42,6 +43,10 @@ class AutoCompleteDemo extends React.Component {
   handleInputChange ( value ) {
     this.setState( {nodeSearchString: value} )
     this.setStateDataSelectedNode( value )
+  }
+
+  handleNewNode ( value ) {
+    console.log('new node',value)
   }
 
   handleNodeSelection ( nodeLabel ) {
@@ -110,10 +115,13 @@ class AutoCompleteDemo extends React.Component {
                   onInputChange={this.handleInputChange}
                   onSelection={this.handleNodeSelection}
                 />
-              </div>
-              <div>
                 <NodeDetail
                   selectedNode={this.state.selectedNode}
+                />
+              </div>
+              <div>
+                <NodeEntry 
+                  onNewNode={this.handleNewNode}
                 />
               </div>
             </div>
