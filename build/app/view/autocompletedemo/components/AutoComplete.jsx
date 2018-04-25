@@ -1,6 +1,8 @@
 const React       = require('react');
 const d3          = require('d3');
 const Autosuggest = require('react-autosuggest');
+const ReactStrap = require('reactstrap')
+const { FormText } = ReactStrap
 
 //////////// AUTO SUGGEST ////////////
 /******************************************************************************/
@@ -44,13 +46,13 @@ class AutoComplete extends React.Component {
       suggestions: []
     };
 
-    this.onChange = this.onChange.bind(this);
-    this.getSuggestionValue = this.getSuggestionValue.bind(this);
-    this.renderSuggestion = this.renderSuggestion.bind(this);
+    this.onChange                    = this.onChange.bind(this);
+    this.getSuggestionValue          = this.getSuggestionValue.bind(this);
+    this.renderSuggestion            = this.renderSuggestion.bind(this);
     this.onSuggestionsFetchRequested = this.onSuggestionsFetchRequested.bind(this);
     this.onSuggestionsClearRequested = this.onSuggestionsClearRequested.bind(this);
-    this.onSuggestionSelected = this.onSuggestionSelected.bind(this);
-    this.onSuggestionHighlighted = this.onSuggestionHighlighted.bind(this);    
+    this.onSuggestionSelected        = this.onSuggestionSelected.bind(this);
+    this.onSuggestionHighlighted     = this.onSuggestionHighlighted.bind(this);    
   };
 
   onChange (event, { newValue, method }) {
@@ -112,16 +114,20 @@ class AutoComplete extends React.Component {
     };
 
     return (
-      <Autosuggest 
-        suggestions={suggestions}
-        onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
-        onSuggestionsClearRequested={this.onSuggestionsClearRequested}
-        getSuggestionValue={this.getSuggestionValue}
-        renderSuggestion={this.renderSuggestion}
-        onSuggestionSelected={this.onSuggestionSelected}
-        onSuggestionHighlighted={this.onSuggestionHighlighted}
-        inputProps={inputProps} 
-      />
+      <div style={{minHeight:'100px',backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px'}}>
+        <FormText>SEARCH</FormText>
+        <hr/>
+        <Autosuggest 
+          suggestions={suggestions}
+          onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
+          onSuggestionsClearRequested={this.onSuggestionsClearRequested}
+          getSuggestionValue={this.getSuggestionValue}
+          renderSuggestion={this.renderSuggestion}
+          onSuggestionSelected={this.onSuggestionSelected}
+          onSuggestionHighlighted={this.onSuggestionHighlighted}
+          inputProps={inputProps} 
+        />
+      </div>
     );
   }
 }
