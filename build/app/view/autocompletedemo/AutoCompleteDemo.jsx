@@ -51,6 +51,7 @@ class AutoCompleteDemo extends React.Component {
     this.setStateDataSelectedNode( value )
   }
 
+  // NodeEntry just sent new node data
   handleNewNode ( newNode ) {
     console.log('new node',newNode, this.state.data)
     // HACK
@@ -60,25 +61,35 @@ class AutoCompleteDemo extends React.Component {
     newData.nodes.push( newNode )
     console.log('....new data',newData)
     this.updateData( newData )
+
+    // Clear the selection, so NodeEntry doesn't reshow it
+    this.handleNodeSelection('')
   }
 
   handleNodeSelection ( nodeLabel ) {
+    // Find the node
     let nodes = this.state.data.nodes.filter( node => { return node.label == nodeLabel })
     if ((nodes!==null) &&
         (Array.isArray(nodes)) &&
         (nodes.length>0) &&
         (nodes[0]!==null)) {
+      // Node is Valid!
       // console.log('nodeLabel is',nodeLabel,'node selected is', nodes)
       this.setState( {selectedNode: nodes[0] })
     } else {
+      // No node was found, create a new node?
       if (nodeLabel && nodeLabel.isAddNew) {
-        // ignore
+        // User is in the middle of typing a new label, but hasn't clicked "Add New"
+        // so ignore it for now.
+      } else if (nodeLabel!=='') {
+        // User clicked "Add New", and there is new label text
+        let node = {newNode: true, label: nodeLabel, type:'', info:'', notes:''}
+        this.setState( {selectedNode: node} )
+        // console.error('Selected node',nodeLabel,'not found')
       } else {
-        // New Node
-        // No node was found, so this is creating a new node.
-        let node = {label: nodeLabel, type:'', info:'', notes:''}
-        this.setState( {selectedNode: node } )
-        console.error('Selected node',nodeLabel,'not found')
+        // Nothing selected, clear the newNode flag
+        let node = {newNode: false, label:'', type:'', info:'', notes:''}
+        this.setState( {selectedNode: node} )
       }
     }
   }

@@ -60,6 +60,8 @@
 
 
 /* Data View Styles */
+.nodeEntry .form-control:disabled,.nodeEntry .form-control[readonly] { 
+  background-color: #ffffff33; 
 }
 
 /* SVG styles */

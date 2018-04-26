@@ -8,8 +8,9 @@ const { FormText } = ReactStrap
 /******************************************************************************/
 // 
 // Example code from https://codepen.io/moroshko/pen/vpBzMr
-
-
+//
+//
+//
 // https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions#Using_Special_Characters
 const escapeRegexCharacters = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -94,14 +95,16 @@ class AutoComplete extends React.Component {
     });
   };
 
+/// If a new value is suggested, we pass that up to the parent.
+/// The parent component should handle the creation of a new data object.
   onSuggestionSelected (event, { suggestion }) {
+    // call parent handler
     if (suggestion.isAddNew) {
       console.log('Add new:', this.state.value, 'suggestion',suggestion);
       this.props.onSelection( this.state.value )
-      return
+    } else {
+      this.props.onSelection( suggestion )
     }
-    // call parent handler
-    this.props.onSelection( suggestion )
   };
 
   onSuggestionHighlighted ({ suggestion }) {
@@ -122,12 +125,15 @@ class AutoComplete extends React.Component {
         <hr/>
         <Autosuggest 
           suggestions={suggestions}
+          // Link to Local Handlers for internal Autosuggest functions
           onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
           onSuggestionsClearRequested={this.onSuggestionsClearRequested}
           getSuggestionValue={this.getSuggestionValue}
           renderSuggestion={this.renderSuggestion}
+          // Receive Data from Autosuggest
           onSuggestionSelected={this.onSuggestionSelected}
           onSuggestionHighlighted={this.onSuggestionHighlighted}
+          // Pass Data to Autosuggest
           inputProps={inputProps} 
         />
       </div>
