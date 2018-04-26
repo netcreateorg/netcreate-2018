@@ -38,7 +38,7 @@
 const React        = require('react')
 const AutoComplete = require('./AutoComplete');
 const ReactStrap   = require('reactstrap')
-const { Button, Form, FormGroup, Label, Input, FormText } = ReactStrap
+const { Button, Col, Form, FormGroup, Label, Input, FormText } = ReactStrap
 
 
 
@@ -48,11 +48,24 @@ const { Button, Form, FormGroup, Label, Input, FormText } = ReactStrap
 /// https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions#Using_Special_Characters
 const escapeRegexCharacters = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 const appearsIn = (searchValue, targetString) => {
+  if (typeof searchValue !== 'string') { return false }
   const escapedLabel = escapeRegexCharacters(searchValue.trim())
   if (escapedLabel === '') { return false }
   const regex = new RegExp(escapedLabel, 'i') // case insensitive
   return regex.test(targetString)
 };
+
+const emptyState = {
+        selectedNode: {
+          label: '',
+          type:  '',
+          info:  '',
+          notes: '',
+          id:    ''
+        },
+        data: {},
+        canEdit: false
+      }
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -61,20 +74,14 @@ class NodeSelector extends React.Component {
 
   constructor (props) {
     super(props)
-    this.state = {
-      label: '',
-      type: '',
-      info: '',
-      notes: '',
-      canEdit: false
-    }
+    this.state = emptyState
 
+    this.getNewNodeID                    = this.getNewNodeID.bind(this)
     this.handleAutoCompleteInputChange   = this.handleAutoCompleteInputChange.bind(this)
     this.handleAutoCompleteNodeSelection = this.handleAutoCompleteNodeSelection.bind(this)
     this.updateSelectedNodes             = this.updateSelectedNodes.bind(this)
     this.deselectAllNodes                = this.deselectAllNodes.bind(this)
     this.clearState                      = this.clearState.bind(this)
-    this.onLabelChange                   = this.onLabelChange.bind(this)
     this.onTypeChange                    = this.onTypeChange.bind(this)
     this.onNotesChange                   = this.onNotesChange.bind(this)
     this.onInfoChange                    = this.onInfoChange.bind(this)
@@ -82,14 +89,20 @@ class NodeSelector extends React.Component {
     this.onSubmit                        = this.onSubmit.bind(this)
   }
 
+
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// UTILITIES
+  ///
+  /// Clear this.state
   clearState () {
-    this.setState({
-      label: '',
-      type: '',
-      info: '',
-      notes: '',
-      canEdit: false
-    })
+    this.setState(emptyState)
+  }
+  /// Return a new unique ID
+  getNewNodeID () {
+    let ids  = this.state.data.nodes.map( node => { return node.id } )
+    let highestID = ids.reduce( (a,b) => { return Math.max(a,b) } )
+    return highestID+1
   }
 
 
@@ -105,7 +118,7 @@ class NodeSelector extends React.Component {
   /// The user has selected one of the suggestions
   /// Update the selected data, and notify the parent
   handleAutoCompleteNodeSelection (nodeLabel) {
-    // Find the node
+    // Does the node already exist?  If so, update it.
     let nodes = this.state.data.nodes.filter( node => { return appearsIn(nodeLabel,node.label) })
     if ((nodes!==null) &&
         (Array.isArray(nodes)) &&
@@ -116,29 +129,39 @@ class NodeSelector extends React.Component {
       // Read node values for form
       let node = nodes[0]
       this.setState({
-        label: node.label,
-        type:  node.type,
-        info:  node.info,
-        notes: node.notes,
+        selectedNode: {
+          label:   node.label,
+          type:    node.attributes["Node_Type"],     // HACK This needs to be updated when 
+          info:    node.attributes["Extra Info"],    // the data format is updated
+          notes:   node.attributes["Notes"],         // These were bad keys from Fusion Tables.
+          id:      node.id,
+        },
         canEdit: false
       })
       // Mark the node as 'selected'
-      this.updateSelectedNodes( nodeLabel )
+      this.updateSelectedNodesById( node.id )
     } else {
-      // // No node was found, create a new node?
-      // if (nodeLabel && nodeLabel.isAddNew) {
-      //   // User is in the middle of typing a new label, but hasn't clicked "Add New"
-      //   // so ignore it for now.
-      // } else if (nodeLabel!=='') {
-      //   // User clicked "Add New", and there is new label text
-      //   let node = {newNode: true, label: nodeLabel, type:'', info:'', notes:''}
-      //   this.setState( {selectedNode: node} )
-      //   // console.error('Selected node',nodeLabel,'not found')
-      // } else {
-      //   // Nothing selected, clear the newNode flag
-      //   let node = {newNode: false, label:'', type:'', info:'', notes:''}
-      //   this.setState( {selectedNode: node} )
-      // }
+      // No node was found, create a new node?
+
+      if (nodeLabel && nodeLabel.isAddNew) {
+        // User is in the middle of typing a new label, but hasn't clicked "Add New"
+        // so ignore it for now.
+
+      } else if (nodeLabel!=='') {
+        // User clicked "Add New", and there is new label text, so create a new node
+        let node = {isNewNode: true, label: nodeLabel, type:'', info:'', notes:'', id:this.getNewNodeID()}
+        this.setState( {
+          selectedNode: node,
+          canEdit:      true
+        } )
+        // console.error('Selected node',nodeLabel,'not found')
+
+      } else {
+        // Nothing selected, clear the newNode flag and the form
+        let node = {isNewNode: false, label:'', type:'', info:'', notes:'', id:''}
+        this.setState( {selectedNode: node} )
+
+      }
     }
 
   }
@@ -164,6 +187,20 @@ class NodeSelector extends React.Component {
     // Notify the parent
     this.props.onDataUpdate( updatedData )
   }
+  updateSelectedNodesById( id ) {
+    if (id==='') {
+      this.deselectAllNodes()
+      return
+    }
+    let updatedData = this.state.data
+    updatedData.nodes = this.state.data.nodes.map( node => {
+      node.selected = (node.id===id)
+      return node
+    })
+    this.setState( { data: updatedData })
+    // Notify the parent
+    this.props.onDataUpdate( updatedData )
+  }
   deselectAllNodes () {
     for (let node of this.state.data.nodes) { node.selected = false }
   }
@@ -172,20 +209,58 @@ class NodeSelector extends React.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UI EVENT HANDLERS
   ///
-  onLabelChange (event) { this.setState({ label: event.target.value }) }
-  onTypeChange  (event) { this.setState({ type: event.target.value }) }
-  onNotesChange (event) { this.setState({ notes: event.target.value }) }
-  onInfoChange  (event) { this.setState({ info: event.target.value }) }
+  onTypeChange  (event) { 
+    let node = this.state.selectedNode
+    node.type = event.target.value
+    this.setState({ selectedNode: node }) 
+  }
+  onNotesChange (event) { 
+    let node = this.state.selectedNode
+    node.notes = event.target.value
+    this.setState({ selectedNode: node }) 
+  }
+  onInfoChange  (event) { 
+    let node = this.state.selectedNode
+    node.info = event.target.value
+    this.setState({ selectedNode: node }) 
+  }
   onEditButtonClick (event) {
     event.preventDefault()
     this.setState({ canEdit: true })
   }
   onSubmit ( event ) {
     event.preventDefault()
-    let node = this.state
-    delete node.canEdit
-    this.props.onNewNode( node )
-    this.props.onDataUpdate( this.state.data )
+    // Update the data with the selectedNode
+    let newNodeData = this.state.selectedNode
+    let updatedData = this.state.data
+    if (newNodeData.isNewNode) {
+      // Add a new node
+      let newNode = {
+          label:          newNodeData.label,
+          id:             newNodeData.id,
+          attributes: {
+            "Node_Type":  newNodeData.type,
+            "Extra Info": newNodeData.info,
+            "Notes":      newNodeData.notes
+          }
+      }
+      updatedData.nodes.push( newNode )
+    } else {
+      // Update existing node
+      updatedData.nodes = this.state.data.nodes.map( node => {
+        if (node.id === newNodeData.id) {
+          node.label                    = newNodeData.label
+          node.attributes["Node_Type"]  = newNodeData.type
+          node.attributes["Extra Info"] = newNodeData.info
+          node.attributes["Notes"]      = newNodeData.notes
+          node.id                       = newNodeData.id
+        }
+        return node
+      })
+    }
+    // Notify parent
+    this.props.onDataUpdate( updatedData )
+    // Clear the form
     this.clearState()
   }
 
@@ -199,16 +274,6 @@ class NodeSelector extends React.Component {
   }
   componentWillReceiveProps (nextProps) {
     // console.log('componentWillReceiveProps',nextProps)
-    let node = nextProps.selectedNode || {}
-    node.attributes = node.attributes || {}    // validate attributes
-    this.setState({
-      label:   node.label,
-      type:    node.attributes["Node_Type"],     // HACK This needs to be updated when 
-      info:    node.attributes["Extra Info"],    // the data format is updated
-      notes:   node.attributes["Notes"],         // These were bad keys from Fusion Tables.
-      canEdit: node.newNode                      // Pass canEdit=true to set NodeEntry into Edit mode
-    })
-
     let data = nextProps.data || {}
     this.setState({
       data:  data
@@ -229,17 +294,11 @@ class NodeSelector extends React.Component {
             onInputChange={this.handleAutoCompleteInputChange}
             onSelection={this.handleAutoCompleteNodeSelection}
           />
-          <Input type="text" name="nodeLabel" id="nodeLabel" 
-            value={this.state.label||''}    // necessary to prevent switching from controlled to uncontrolled
-            onChange={this.onLabelChange}
-            placeholder="person/group/place/thing/event" 
-            readOnly={!this.state.canEdit}
-            />
         </FormGroup>
         <FormGroup>
           <Label for="type" className="small text-muted">TYPE</Label>
           <Input type="select" name="type" id="typeSelect"
-            value={this.state.type||''}
+            value={this.state.selectedNode.type||''}
             onChange={this.onTypeChange}
             disabled={!this.state.canEdit}
             >
@@ -253,7 +312,7 @@ class NodeSelector extends React.Component {
         <FormGroup>
           <Label for="notes" className="small text-muted">NOTES</Label>
           <Input type="textarea" name="note" id="notesText" 
-            value={this.state.notes||''}
+            value={this.state.selectedNode.notes||''}
             onChange={this.onNotesChange}
             readOnly={!this.state.canEdit}
             />
@@ -261,10 +320,19 @@ class NodeSelector extends React.Component {
         <FormGroup>
           <Label for="info" className="small text-muted">GEOCODE or DATE</Label>
           <Input type="text" name="info" id="info" 
-            value={this.state.info||''}
+            value={this.state.selectedNode.info||''}
             onChange={this.onInfoChange}
             readOnly={!this.state.canEdit}
             />
+        </FormGroup>
+        <FormGroup row>
+          <Label for="id" sm={2} className="small text-muted">ID</Label>
+          <Col sm={10}>
+            <Input type="text" name="id" id="id"
+              value={this.state.selectedNode.id||''}
+              readOnly={true}
+            />
+          </Col>
         </FormGroup>
         <hr/>
         <FormGroup className="text-right" style={{paddingRight:'5px'}}>
