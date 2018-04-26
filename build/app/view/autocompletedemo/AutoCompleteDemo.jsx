@@ -6,6 +6,8 @@ const AutoComplete = require('./components/AutoComplete');
 const NetGraph     = require('./components/NetGraph');
 const NodeEntry    = require('./components/NodeEntry');
 const NodeDetail   = require('./components/NodeDetail');
+const ReactStrap   = require('reactstrap')
+const { FormText } = ReactStrap
 
 /// React Component ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -142,11 +144,15 @@ class AutoCompleteDemo extends React.Component {
             <div style={{display:'flex', flexFlow:'column nowrap',height:100+'%'}}>
               <div style={{flexGrow:1}}>
                 <h3>Nodes</h3>
-                <AutoComplete 
-                  lexicon={this.state.lexicon}
-                  onInputChange={this.handleInputChange}
-                  onSelection={this.handleNodeSelection}
-                />
+                <div style={{minHeight:'100px',backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px'}}>
+                  <FormText>SEARCH or ADD</FormText>
+                  <hr/>
+                  <AutoComplete 
+                    lexicon={this.state.lexicon}
+                    onInputChange={this.handleInputChange}
+                    onSelection={this.handleNodeSelection}
+                  />
+                </div>
               </div>
               <div>
                 <NodeEntry 

@@ -1,8 +1,6 @@
 const React       = require('react');
 const d3          = require('d3');
 const Autosuggest = require('react-autosuggest');
-const ReactStrap = require('reactstrap')
-const { FormText } = ReactStrap
 
 //////////// AUTO SUGGEST ////////////
 /******************************************************************************/
@@ -120,23 +118,19 @@ class AutoComplete extends React.Component {
     };
 
     return (
-      <div style={{minHeight:'100px',backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px'}}>
-        <FormText>SEARCH or ADD</FormText>
-        <hr/>
-        <Autosuggest 
-          suggestions={suggestions}
-          // Link to Local Handlers for internal Autosuggest functions
-          onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
-          onSuggestionsClearRequested={this.onSuggestionsClearRequested}
-          getSuggestionValue={this.getSuggestionValue}
-          renderSuggestion={this.renderSuggestion}
-          // Receive Data from Autosuggest
-          onSuggestionSelected={this.onSuggestionSelected}
-          onSuggestionHighlighted={this.onSuggestionHighlighted}
-          // Pass Data to Autosuggest
-          inputProps={inputProps} 
-        />
-      </div>
+      <Autosuggest 
+        suggestions={suggestions}
+        // Link to Local Handlers for internal Autosuggest functions
+        onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
+        onSuggestionsClearRequested={this.onSuggestionsClearRequested}
+        getSuggestionValue={this.getSuggestionValue}
+        renderSuggestion={this.renderSuggestion}
+        // Receive Data from Autosuggest
+        onSuggestionSelected={this.onSuggestionSelected}
+        onSuggestionHighlighted={this.onSuggestionHighlighted}
+        // Pass Data to Autosuggest
+        inputProps={inputProps} 
+      />
     );
   }
 }
