@@ -129,7 +129,7 @@ class NodeEntry extends React.Component {
           <Input type="select" name="type" id="typeSelect"
             value={this.state.type||''}
             onChange={this.onTypeChange}
-            readOnly={!this.state.canEdit}
+            disabled={!this.state.canEdit}
             >
             <option>Person</option>
             <option>Group</option>
