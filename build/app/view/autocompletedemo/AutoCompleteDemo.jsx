@@ -4,7 +4,7 @@ const React        = require('react');
 const d3           = require('d3');
 const AutoComplete = require('./components/AutoComplete');
 const NetGraph     = require('./components/NetGraph');
-const NodeEntry    = require('./components/NodeEntry');
+const NodeSelector = require('./components/NodeSelector');
 const NodeDetail   = require('./components/NodeDetail');
 const ReactStrap   = require('reactstrap')
 const { FormText } = ReactStrap
@@ -24,10 +24,7 @@ class AutoCompleteDemo extends React.Component {
     }
     this.updateData               = this.updateData.bind(this)
     this.handleJSONLoad           = this.handleJSONLoad.bind(this)
-    this.handleInputChange        = this.handleInputChange.bind(this)
     this.handleNewNode            = this.handleNewNode.bind(this)
-    this.handleNodeSelection      = this.handleNodeSelection.bind(this)
-    this.setStateDataSelectedNode = this.setStateDataSelectedNode.bind(this)
   }
 
   updateData ( newData ) {
@@ -40,11 +37,6 @@ class AutoCompleteDemo extends React.Component {
     if (error) throw error
     // map nodes[].label to textList
     this.updateData( _data )
-  }
-
-  handleInputChange ( value ) {
-    this.setState( {nodeSearchString: value} )
-    this.setStateDataSelectedNode( value )
   }
 
   // NodeEntry just sent new node data
@@ -62,56 +54,8 @@ class AutoCompleteDemo extends React.Component {
     this.handleNodeSelection('')
   }
 
-  handleNodeSelection ( nodeLabel ) {
-    // Find the node
-    let nodes = this.state.data.nodes.filter( node => { return node.label == nodeLabel })
-    if ((nodes!==null) &&
-        (Array.isArray(nodes)) &&
-        (nodes.length>0) &&
-        (nodes[0]!==null)) {
-      // Node is Valid!
-      // console.log('nodeLabel is',nodeLabel,'node selected is', nodes)
-      this.setState( {selectedNode: nodes[0] })
-    } else {
-      // No node was found, create a new node?
-      if (nodeLabel && nodeLabel.isAddNew) {
-        // User is in the middle of typing a new label, but hasn't clicked "Add New"
-        // so ignore it for now.
-      } else if (nodeLabel!=='') {
-        // User clicked "Add New", and there is new label text
-        let node = {newNode: true, label: nodeLabel, type:'', info:'', notes:''}
-        this.setState( {selectedNode: node} )
-        // console.error('Selected node',nodeLabel,'not found')
-      } else {
-        // Nothing selected, clear the newNode flag
-        let node = {newNode: false, label:'', type:'', info:'', notes:''}
-        this.setState( {selectedNode: node} )
-      }
-    }
-  }
-
   deselectAllNodes () {
     for (let node of this.state.data.nodes) { node.selected = false }
-  }
-
-  // Set the `selected` flag for any nodes that match `value`, and update the state
-  // This data is passed on to the NetGraph component for rendering
-  setStateDataSelectedNode( value ) {
-    if (value==='') {
-      this.deselectAllNodes()
-      return
-    }
-    let updatedData = this.state.data
-    updatedData.nodes = this.state.data.nodes.map( node => {
-      if (node.label.toLowerCase().startsWith( value.toLowerCase() )) {
-        // console.log('...setting selected',node.label,'matches',value)
-        node.selected = true
-      } else {
-        node.selected = false
-      }
-      return node
-    })
-    this.setState( { data: updatedData })
   }
 
   componentDidMount () {
@@ -138,18 +82,12 @@ class AutoCompleteDemo extends React.Component {
             <div style={{display:'flex', flexFlow:'column nowrap',height:100+'%'}}>
               <div style={{flexGrow:1}}>
                 <h3>Nodes</h3>
-                <div style={{minHeight:'100px',backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px'}}>
-                  <FormText>SEARCH or ADD</FormText>
-                  <hr/>
-                  <AutoComplete 
-                    data={this.state.data}
-                    onInputChange={this.handleInputChange}
-                    onSelection={this.handleNodeSelection}
-                  />
-                </div>
               </div>
               <div>
-                <NodeEntry 
+                <NodeSelector 
+                  data={this.state.data}
+                  onDataUpdate={this.updateData}
+                />
                   selectedNode={this.state.selectedNode}
                   onNewNode={this.handleNewNode}
                 />
