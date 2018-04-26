@@ -25,7 +25,7 @@ const Autosuggest = require('react-autosuggest');
 
 
       Based on example code from https://codepen.io/moroshko/pen/vpBzMr
-      
+
 /*/
 
 
@@ -39,8 +39,9 @@ const getSuggestions = (value, lexicon) => {
     return [];
   }
 
-  const regex = new RegExp('^' + escapedValue, 'i');
-  const suggestions = lexicon.filter(phrase => regex.test(phrase));
+    // const regex = new RegExp('^' + escapedValue, 'i'); // match start of string only
+    const regex = new RegExp(escapedValue, 'i');
+    const suggestions = lexicon.filter(phrase => regex.test(phrase));
   
   if (suggestions.length === 0) {
     return [
@@ -50,6 +51,7 @@ const getSuggestions = (value, lexicon) => {
   // console.log(suggestions);
   return suggestions;
 };
+
 
 
 
