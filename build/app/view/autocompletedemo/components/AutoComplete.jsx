@@ -121,7 +121,7 @@ class AutoComplete extends React.Component {
 
     return (
       <div style={{minHeight:'100px',backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px'}}>
-        <FormText>SEARCH</FormText>
+        <FormText>SEARCH or ADD</FormText>
         <hr/>
         <Autosuggest 
           suggestions={suggestions}

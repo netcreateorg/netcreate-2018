@@ -113,7 +113,7 @@ class NodeEntry extends React.Component {
     return (
       <Form className='nodeEntry' style={{minHeight:'300px',backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px'}}
         onSubmit={this.onSubmit}>
-        <FormText>NEW NODE</FormText>
+        <FormText>NODE EDITOR</FormText>
         <hr/>
         <FormGroup>
           <Label for="nodeLabel" className="small text-muted">LABEL</Label>
