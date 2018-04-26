@@ -24,7 +24,6 @@ class AutoCompleteDemo extends React.Component {
     }
     this.updateData               = this.updateData.bind(this)
     this.handleJSONLoad           = this.handleJSONLoad.bind(this)
-    this.handleNewNode            = this.handleNewNode.bind(this)
   }
 
   updateData ( newData ) {
@@ -37,21 +36,6 @@ class AutoCompleteDemo extends React.Component {
     if (error) throw error
     // map nodes[].label to textList
     this.updateData( _data )
-  }
-
-  // NodeEntry just sent new node data
-  handleNewNode ( newNode ) {
-    console.log('new node',newNode, this.state.data)
-    // HACK
-    // Blindly add data for now.
-    // Eventually we will want to check for ID, duplication, validation, etc.
-    var newData = this.state.data
-    newData.nodes.push( newNode )
-    console.log('....new data',newData)
-    this.updateData( newData )
-
-    // Clear the selection, so NodeEntry doesn't reshow it
-    this.handleNodeSelection('')
   }
 
   deselectAllNodes () {
