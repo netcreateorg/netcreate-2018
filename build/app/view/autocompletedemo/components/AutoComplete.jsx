@@ -12,6 +12,19 @@ const Autosuggest = require('react-autosuggest');
             onSelection={this.handleNodeSelection}
           /> 
 
+
+
+      INPUTS
+
+      data is mapped to this.props.data
+            This is how graph data is passed to the AutoComplete component.
+
+      requestClearValue is mapped to this.props.clearValue
+            Parent component can call this to clear the input field.
+
+
+      HANDLERS
+
       onInputChange is mapped to this.props.onInputChange.
             It is triggered by AutoComplete whenever the user types into
             the AutoComplete input field.
@@ -144,6 +157,15 @@ class AutoComplete extends React.Component {
   onSuggestionHighlighted ({ suggestion }) {
     if (suggestion!==null) this.props.onSelection( suggestion )
   };
+
+  clearValue () {
+    this.setState({value:''})
+  }
+
+  componentWillReceiveProps (nextProps) {
+    // console.log('AutoComplete: componentWillReceiveProps',nextProps)
+    if (nextProps.requestClearValue) this.clearValue()
+  }
 
   render() {
     const { value, suggestions } = this.state;

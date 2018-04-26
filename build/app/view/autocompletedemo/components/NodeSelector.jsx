@@ -114,6 +114,7 @@ class NodeSelector extends React.Component {
   /// this has a side effect of passing the data to the parent component via onDataUpdate
   handleAutoCompleteInputChange (searchValue) {
     this.updateSelectedNodes( searchValue )
+    this.setState({requestClearValue:false})  // Data selected, so don't clear
   }
   /// The user has selected one of the suggestions
   /// Update the selected data, and notify the parent
@@ -262,6 +263,8 @@ class NodeSelector extends React.Component {
     this.props.onDataUpdate( updatedData )
     // Clear the form
     this.clearState()
+    // Clear the AutoComplete field
+    this.setState({requestClearValue:true})
   }
 
 
@@ -291,6 +294,7 @@ class NodeSelector extends React.Component {
           <Label for="nodeLabel" className="small text-muted">LABEL</Label>
           <AutoComplete 
             data={this.state.data}
+            requestClearValue={this.state.requestClearValue}
             onInputChange={this.handleAutoCompleteInputChange}
             onSelection={this.handleAutoCompleteNodeSelection}
           />
