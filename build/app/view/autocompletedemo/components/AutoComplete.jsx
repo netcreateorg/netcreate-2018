@@ -4,11 +4,31 @@ const Autosuggest = require('react-autosuggest');
 
 //////////// AUTO SUGGEST ////////////
 /******************************************************************************/
-// 
-// Example code from https://codepen.io/moroshko/pen/vpBzMr
-//
-//
-//
+/*/
+      To Use:
+          <AutoComplete 
+            data={this.state.data}
+            onInputChange={this.handleInputChange}
+            onSelection={this.handleNodeSelection}
+          /> 
+
+      onInputChange is mapped to this.props.onInputChange.
+            It is triggered by AutoComplete whenever the user types into
+            the AutoComplete input field.
+            It is used to pass the current state of the user input
+            filed to the parent components.
+
+      onSelection is mapped to this.props.onSelection.
+            It is triggered by AutoComplete whenenever the users 
+            selects an item from the suggestions list by clicking on it.
+            It is used to pass the selected label to the parent component.
+
+
+      Based on example code from https://codepen.io/moroshko/pen/vpBzMr
+      
+/*/
+
+
 // https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions#Using_Special_Characters
 const escapeRegexCharacters = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -81,12 +101,26 @@ class AutoComplete extends React.Component {
     return suggestion;
   };
   
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Handle Autosuggest's request for list of suggestions
+  /*/
+      lexicon =  string array of node labels
+
+      lexicon is a one-dimensional string array that represents the complete list 
+      of all possible suggestions that are then filtered based on the user typing
+      for suggestions.
+
+      We construct the list on the fly based on the d3 data.  If the data model
+      changes, we'll need to update this lexicon constructor.
+  /*/
   onSuggestionsFetchRequested ({ value }) {
+    let lexicon = this.props.data.nodes.map(function(d){return d.label})
     this.setState({
-      suggestions: getSuggestions(value, this.props.lexicon)
+      suggestions: getSuggestions(value, lexicon)
     });
   };
 
+  // Handle Autosuggest's request to clear list of suggestions
   onSuggestionsClearRequested () {
     this.setState({
       suggestions: []
@@ -120,7 +154,7 @@ class AutoComplete extends React.Component {
     return (
       <Autosuggest 
         suggestions={suggestions}
-        // Link to Local Handlers for internal Autosuggest functions
+        // Map to Local Handlers for Autosuggest event triggers (requests)
         onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
         onSuggestionsClearRequested={this.onSuggestionsClearRequested}
         getSuggestionValue={this.getSuggestionValue}

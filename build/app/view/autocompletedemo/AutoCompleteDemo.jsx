@@ -11,11 +11,7 @@ const { FormText } = ReactStrap
 
 /// React Component ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*
-    lexicon is a one-dimensional string array that represents the complete list 
-    of all possible suggestions that are then filtered based on the user typing
-    for suggestions.
-*/
+
 
 
 /// export a class object for consumption by brunch/require
@@ -24,7 +20,6 @@ class AutoCompleteDemo extends React.Component {
     super()
     this.state = { 
       data:             {},    // nodes and edges data object
-      lexicon:          [],    // string array of node labels
       nodeSearchString: ''     // node label search string set in AutoComplete input field
     }
     this.updateData               = this.updateData.bind(this)
@@ -37,8 +32,7 @@ class AutoCompleteDemo extends React.Component {
 
   updateData ( newData ) {
     this.setState( { 
-      data:    newData,
-      lexicon: newData.nodes.map(function(d){return d.label})
+      data:    newData
     })
   }
 
@@ -148,7 +142,7 @@ class AutoCompleteDemo extends React.Component {
                   <FormText>SEARCH or ADD</FormText>
                   <hr/>
                   <AutoComplete 
-                    lexicon={this.state.lexicon}
+                    data={this.state.data}
                     onInputChange={this.handleInputChange}
                     onSelection={this.handleNodeSelection}
                   />
