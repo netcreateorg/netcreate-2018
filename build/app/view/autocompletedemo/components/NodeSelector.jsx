@@ -115,6 +115,11 @@ class NodeSelector extends React.Component {
   handleAutoCompleteInputChange (searchValue) {
     this.updateSelectedNodes( searchValue )
     this.setState({requestClearValue:false})  // Data selected, so don't clear
+
+    // Update SelectedNode
+    let node = this.state.selectedNode
+    node.label = searchValue
+    this.setState({ selectedNode: node }) 
   }
   /// The user has selected one of the suggestions
   /// Update the selected data, and notify the parent
