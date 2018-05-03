@@ -2,14 +2,20 @@ const React       = require('react');
 const d3          = require('d3');
 const Autosuggest = require('react-autosuggest');
 
-//////////// AUTO SUGGEST ////////////
+//////////// AUTO COMPLETE ////////////
 /******************************************************************************/
 /*/
+
+      This relies on the react-autosuggest component.
+      See documentation:  https://github.com/moroshko/react-autosuggest
+
+
       To Use:
           <AutoComplete 
             data={this.state.data}
             onInputChange={this.handleInputChange}
             onSelection={this.handleNodeSelection}
+            onHighlight={this.handleSuggestionHighlight}
           /> 
 
 
@@ -36,6 +42,12 @@ const Autosuggest = require('react-autosuggest');
             selects an item from the suggestions list by clicking on it.
             It is used to pass the selected label to the parent component.
 
+      onHighlight is mapped to this.props.onHighlight
+            It is triggered by AutoComplete whenever the user
+            highlights an item from the suggestion list by either moving
+            the mouse over it, or using keyboard to select it.
+            This is a temporary state and is cleared when onSelection is
+            triggered.
 
       Based on example code from https://codepen.io/moroshko/pen/vpBzMr
 
@@ -155,7 +167,7 @@ class AutoComplete extends React.Component {
   };
 
   onSuggestionHighlighted ({ suggestion }) {
-    if (suggestion!==null) this.props.onSelection( suggestion )
+    this.props.onHighlight( suggestion )
   };
 
   clearValue () {
@@ -184,8 +196,8 @@ class AutoComplete extends React.Component {
         getSuggestionValue={this.getSuggestionValue}
         renderSuggestion={this.renderSuggestion}
         // Receive Data from Autosuggest
-        onSuggestionSelected={this.onSuggestionSelected}
         onSuggestionHighlighted={this.onSuggestionHighlighted}
+        onSuggestionSelected={this.onSuggestionSelected}
         // Pass Data to Autosuggest
         inputProps={inputProps} 
       />
