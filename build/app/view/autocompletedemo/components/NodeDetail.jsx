@@ -6,6 +6,8 @@
     A display widget that shows all of the meta information contained in each 
     data node.
 
+    If label is undefined the component will not be shown.
+
     TO USE
     Add the following to the render() of the parent component:
 
@@ -67,7 +69,8 @@ class NodeDetail extends React.Component {
 
   render () {
     return (
-      <div style={{minHeight:'300px',backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px'}}>
+      <div className={this.state.label==undefined ? "d-none" : ""} 
+           style={{minHeight:'300px',minWidth:'240px',backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px',}}>
         <FormText>NODE DETAIL</FormText>
         <Table borderless="true" striped size="sm"><tbody>
           <tr><td>Label:&nbsp;&nbsp;</td><td>{this.state.label}</td></tr>
