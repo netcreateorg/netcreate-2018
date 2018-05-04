@@ -228,6 +228,8 @@ class NodeSelector extends React.Component {
       this.setState({
         highlightedNode: {}
       })
+      // Revert graph highlight to currently selected node
+      this.updateSelectedNodes( this.state.selectedNode.label )
       return
     }
     let nodes = this.state.data.nodes.filter( node => { return appearsIn(nodeLabel,node.label) })
