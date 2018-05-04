@@ -71,6 +71,12 @@ class AutoCompleteDemo extends React.Component {
                 <NodeSelector 
                   data={this.state.data}
                   onDataUpdate={this.updateData}
+                  selectedColor="#0000FF"
+                />
+                <NodeSelector 
+                  data={this.state.data}
+                  onDataUpdate={this.updateData}
+                  selectedColor="#EE0000"
                 />
                   selectedNode={this.state.selectedNode}
                   onNewNode={this.handleNewNode}

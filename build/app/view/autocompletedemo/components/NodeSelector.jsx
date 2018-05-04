@@ -20,6 +20,10 @@
           onDataUpdate    A callback function that NodeSelect will call when data 
                           has been updated
 
+          selectedColor   Set the color of the highlight graph node for any
+                          nodes selected by the NodeSelector
+
+
     STATES
           data            Local version of graph data
 
@@ -50,6 +54,10 @@ const ReactStrap   = require('reactstrap')
 const { Button, Col, Form, FormGroup, Label, Input, FormText } = ReactStrap
 
 
+
+/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DESELECTED_COLOR = ''
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -260,7 +268,11 @@ class NodeSelector extends React.Component {
     }
     let updatedData = this.state.data
     updatedData.nodes = this.state.data.nodes.map( node => {
-      node.selected = appearsIn(searchValue, node.label)
+      if (appearsIn(searchValue, node.label)) {
+        node.selected = this.props.selectedColor
+      } else {
+        node.selected = this.getDeselectedNodeColor( node )
+      }
       return node
     })
     this.setState( { data: updatedData })
@@ -274,15 +286,28 @@ class NodeSelector extends React.Component {
     }
     let updatedData = this.state.data
     updatedData.nodes = this.state.data.nodes.map( node => {
-      node.selected = (node.id===id)
+      if (node.id===id) {
+        node.selected = this.props.selectedColor
+      } else {
+        node.selected = this.getDeselectedNodeColor( node )
+      }
       return node
     })
     this.setState( { data: updatedData })
     // Notify the parent
     this.props.onDataUpdate( updatedData )
   }
+  /// Only deselect nodes that were selected by this instance, ignore selections
+  /// from other NodeSelectors
+  getDeselectedNodeColor ( node ) {
+    if (node.selected!==this.props.selectedColor) {
+      return node.selected 
+    } else {
+      return DESELECTED_COLOR
+    }
+  }
   deselectAllNodes () {
-    for (let node of this.state.data.nodes) { node.selected = false }
+    for (let node of this.state.data.nodes) { node.selected = this.getDeselectedNodeColor( node ) }
   }
 
 

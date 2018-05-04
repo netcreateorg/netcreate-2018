@@ -152,12 +152,13 @@ class D3NetGraph {
           .on("end",   (d) => { this._Dragended(d, this) }))
 
     // UPDATE SELECTION
+    //   If a node is not selected, its d.selected value is ''.
     this.node.merge(nodeRoot).selectAll("circle")
-        .attr("stroke",       function(d) { if (d.selected) return '#000'; })
+        .attr("stroke",       function(d) { if (d.selected) return d.selected; })
         .attr("stroke-width", function(d) { if (d.selected) return '5px'; })
     this.node.merge(nodeRoot).selectAll("text")
+        .attr("color",        function(d) { if (d.selected) return d.selected; })
         .attr("font-weight",  function(d) { if (d.selected) return 'bold'; })
-        .attr("color",        function(d) { if (d.selected) return '#000'; })
 
     // ENTER Add Group Items
     this.node.append("circle")
