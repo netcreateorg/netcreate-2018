@@ -21,11 +21,19 @@
                           has been updated
 
     STATES
-          data
+          data            Local version of graph data
 
-          canEdit
+          isEditable      If true, form is enabled for editing
+                          If false, form is readonly
 
-          selectedNode
+          selectedNode    The currently selected node shown in the form.
+
+          highlightedNode The node that is currently highlighted in the list
+                          of suggestions
+
+          requestClearValue   This is passed to the AutoComplete field when we
+                              we want to clear the input field after submiting
+                              the form data.
 
 
 
@@ -74,7 +82,7 @@ class NodeSelector extends React.Component {
           isNewNode: true
       },
       highlightedNode: {},
-      canEdit:         false
+      isEditable:      false
     }
 
     this.clearForm                             = this.clearForm.bind(this)
@@ -110,7 +118,7 @@ class NodeSelector extends React.Component {
           isNewNode: true
       },
       highlightedNode: {},
-      canEdit:      false
+      isEditable:      false
     })
   }
   /// Return a new unique ID
@@ -139,7 +147,7 @@ class NodeSelector extends React.Component {
           id:        node.id,
           isNewNode: false
         },
-        canEdit: false
+        isEditable: false
       })
     }
   }
@@ -154,7 +162,7 @@ class NodeSelector extends React.Component {
   handleAutoCompleteInputChange (searchValue) {
     this.updateSelectedNodes( searchValue )
     this.setState({requestClearValue:false})       // Data has been input, so don't clear
-    if (this.state.canEdit) { 
+    if (this.state.isEditable) { 
       this.onLabelChange( searchValue )            // In edit mode, so update the input
     } else {
       this.clearForm( searchValue )                // Not in edit mode, update input and clear rest of form
@@ -182,7 +190,7 @@ class NodeSelector extends React.Component {
           id:        node.id,
           isNewNode: false
         },
-        canEdit: false
+        isEditable: false
       })
       // Mark the node as 'selected'
       this.updateSelectedNodesById( node.id )
@@ -198,7 +206,7 @@ class NodeSelector extends React.Component {
         let node = {isNewNode: true, label: nodeLabel, type:'', info:'', notes:'', id:this.getNewNodeID()}
         this.setState( {
           selectedNode: node,
-          canEdit:      true
+          isEditable:   true
         } )
         // console.error('Selected node',nodeLabel,'not found')
 
@@ -216,26 +224,26 @@ class NodeSelector extends React.Component {
   handleAutoCompleteSuggestionHighlight (nodeLabel) {
     // Does the node already exist?  If so, update it.
     if (nodeLabel===null) {
-      console.log('unhighlight')
+      // console.log('unhighlight')
       this.setState({
         highlightedNode: {}
       })
       return
     }
     let nodes = this.state.data.nodes.filter( node => { return appearsIn(nodeLabel,node.label) })
-    if ((nodes!==null) &&
-        (Array.isArray(nodes)) &&
-        (nodes.length>0) &&
-        (nodes[0]!==null)) {
-      // Node is Valid!
-      // console.log('nodeLabel is',nodeLabel,'node selected is', nodes)
-      // Read node values for form
-      let node = nodes[0]
-      this.setState({
-        highlightedNode: node
-      })
-      // Also update graph highlight
-      this.updateSelectedNodes( node.label )
+    if ( (nodes!==null) &&
+         (Array.isArray(nodes)) &&
+         (nodes.length>0) &&
+         (nodes[0]!==null) 
+       ){
+          // Node is Valid!
+          // Read node values for form
+          let node = nodes[0]
+          this.setState({
+            highlightedNode: node
+          })
+          // Also update graph highlight
+          this.updateSelectedNodes( node.label )
     }
   }
 
@@ -303,9 +311,9 @@ class NodeSelector extends React.Component {
   }
   onEditButtonClick (event) {
     event.preventDefault()
-    this.setState({ canEdit: true })
-    // Add ID if one isn't already defined
+    this.setState({ isEditable: true })
     let selectedNode = this.state.selectedNode
+    // Add ID if one isn't already defined
     if (selectedNode.id == '') selectedNode.id = this.getNewNodeID()
     this.setState({ selectedNode: selectedNode })
     // Update graph data selections
@@ -376,7 +384,7 @@ class NodeSelector extends React.Component {
           <Label for="nodeLabel" className="small text-muted">LABEL</Label>
           <AutoComplete 
             data={this.state.data}
-            disableSuggestions={!this.state.canEdit}
+            disableSuggestions={!this.state.isEditable}
             requestClearValue={this.state.requestClearValue}
             onInputChange={this.handleAutoCompleteInputChange}
             onHighlight={this.handleAutoCompleteSuggestionHighlight}
@@ -393,7 +401,7 @@ class NodeSelector extends React.Component {
           <Input type="select" name="type" id="typeSelect"
             value={this.state.selectedNode.type||''}
             onChange={this.onTypeChange}
-            disabled={!this.state.canEdit}
+            disabled={!this.state.isEditable}
             >
             <option>Person</option>
             <option>Group</option>
@@ -407,7 +415,7 @@ class NodeSelector extends React.Component {
           <Input type="textarea" name="note" id="notesText" 
             value={this.state.selectedNode.notes||''}
             onChange={this.onNotesChange}
-            readOnly={!this.state.canEdit}
+            readOnly={!this.state.isEditable}
             />
         </FormGroup>
         <FormGroup>
@@ -415,7 +423,7 @@ class NodeSelector extends React.Component {
           <Input type="text" name="info" id="info" 
             value={this.state.selectedNode.info||''}
             onChange={this.onInfoChange}
-            readOnly={!this.state.canEdit}
+            readOnly={!this.state.isEditable}
             />
         </FormGroup>
         <FormGroup row>
@@ -430,11 +438,11 @@ class NodeSelector extends React.Component {
         <hr/>
         <FormGroup className="text-right" style={{paddingRight:'5px'}}>
           <Button outline size="sm"
-            hidden={this.state.canEdit}
+            hidden={this.state.isEditable}
             onClick={this.onEditButtonClick}
           >{this.state.selectedNode.isNewNode?"Add New Node":"Edit Node"}</Button>
           <Button color="primary" size="sm" 
-            hidden={!this.state.canEdit}
+            hidden={!this.state.isEditable}
           >Save</Button>
         </FormGroup>
       </Form>
