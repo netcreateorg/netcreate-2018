@@ -88,6 +88,7 @@ class NodeSelector extends React.Component {
     this.handleAutoCompleteSuggestionHighlight = this.handleAutoCompleteSuggestionHighlight.bind(this)
     this.updateSelectedNodes                   = this.updateSelectedNodes.bind(this)
     this.deselectAllNodes                      = this.deselectAllNodes.bind(this)
+    this.onLabelChange                         = this.onLabelChange.bind(this)
     this.onTypeChange                          = this.onTypeChange.bind(this)
     this.onNotesChange                         = this.onNotesChange.bind(this)
     this.onInfoChange                          = this.onInfoChange.bind(this)
@@ -151,9 +152,12 @@ class NodeSelector extends React.Component {
   /// this has a side effect of passing the data to the parent component via onDataUpdate
   handleAutoCompleteInputChange (searchValue) {
     this.updateSelectedNodes( searchValue )
-    this.setState({requestClearValue:false})  // Data selected, so don't clear
-
-    this.showDataInForm( searchValue )
+    this.setState({requestClearValue:false})       // Data selected, so don't clear
+    if (this.state.canEdit) { 
+      this.onLabelChange( searchValue )            // Update the state
+    } else {
+      this.clearForm()                             // Clear form if not editing
+    }
   }
   /// The user has selected one of the suggestions
   /// Update the selected data, and notify the parent
@@ -199,7 +203,7 @@ class NodeSelector extends React.Component {
 
       } else {
         // Nothing selected, clear the newNode flag and the form
-        let node = {isNewNode: false, label:'', type:'', info:'', notes:'', id:''}
+        let node = {isNewNode: true, label:'', type:'', info:'', notes:'', id:''}
         this.setState( {selectedNode: node} )
 
       }
@@ -276,6 +280,11 @@ class NodeSelector extends React.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UI EVENT HANDLERS
   ///
+  onLabelChange (label) {
+    let node = this.state.selectedNode
+    node.label = label
+    this.setState({ selectedNode: node })
+  }
   onTypeChange  (event) { 
     let node = this.state.selectedNode
     node.type = event.target.value
@@ -331,8 +340,8 @@ class NodeSelector extends React.Component {
     }
     // Notify parent
     this.props.onDataUpdate( updatedData )
-    // Clear the form
-    this.clearForm()
+    // Clear the any selections
+    this.clearState()
     // Clear the AutoComplete field
     this.setState({requestClearValue:true})
   }
@@ -364,6 +373,7 @@ class NodeSelector extends React.Component {
           <Label for="nodeLabel" className="small text-muted">LABEL</Label>
           <AutoComplete 
             data={this.state.data}
+            disableSuggestions={!this.state.canEdit}
             requestClearValue={this.state.requestClearValue}
             onInputChange={this.handleAutoCompleteInputChange}
             onHighlight={this.handleAutoCompleteSuggestionHighlight}

@@ -13,6 +13,7 @@ const Autosuggest = require('react-autosuggest');
       To Use:
           <AutoComplete 
             data={this.state.data}
+            disableSuggestions={this.state.canEdit}
             onInputChange={this.handleInputChange}
             onSelection={this.handleNodeSelection}
             onHighlight={this.handleSuggestionHighlight}
@@ -28,6 +29,8 @@ const Autosuggest = require('react-autosuggest');
       requestClearValue is mapped to this.props.clearValue
             Parent component can call this to clear the input field.
 
+      disableSuggesions is mapped to this.props.disabled
+            Set to true to stop making suggestions
 
       HANDLERS
 
@@ -98,7 +101,8 @@ class AutoComplete extends React.Component {
     this.onSuggestionsFetchRequested = this.onSuggestionsFetchRequested.bind(this);
     this.onSuggestionsClearRequested = this.onSuggestionsClearRequested.bind(this);
     this.onSuggestionSelected        = this.onSuggestionSelected.bind(this);
-    this.onSuggestionHighlighted     = this.onSuggestionHighlighted.bind(this);    
+    this.onSuggestionHighlighted     = this.onSuggestionHighlighted.bind(this);
+    this.shouldRenderSuggestions     = this.shouldRenderSuggestions.bind(this);   
   };
 
   onChange (event, { newValue, method }) {
@@ -170,6 +174,10 @@ class AutoComplete extends React.Component {
     this.props.onHighlight( suggestion )
   };
 
+  shouldRenderSuggestions (value) {
+    return this.props.disableSuggestions
+  }
+
   clearValue () {
     this.setState({value:''})
   }
@@ -190,6 +198,7 @@ class AutoComplete extends React.Component {
     return (
       <Autosuggest 
         suggestions={suggestions}
+        shouldRenderSuggestions={this.shouldRenderSuggestions}
         // Map to Local Handlers for Autosuggest event triggers (requests)
         onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
         onSuggestionsClearRequested={this.onSuggestionsClearRequested}
@@ -199,7 +208,7 @@ class AutoComplete extends React.Component {
         onSuggestionHighlighted={this.onSuggestionHighlighted}
         onSuggestionSelected={this.onSuggestionSelected}
         // Pass Data to Autosuggest
-        inputProps={inputProps} 
+        inputProps={inputProps}
       />
     );
   }
