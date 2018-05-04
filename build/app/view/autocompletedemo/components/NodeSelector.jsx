@@ -229,6 +229,8 @@ class NodeSelector extends React.Component {
       this.setState({
         highlightedNode: node
       })
+      // Also update graph highlight
+      this.updateSelectedNodes( node.label )
     }
   }
 
