@@ -64,7 +64,7 @@ const emptySelectedNode = {
           isNewNode: true
       }
 const emptyState = {
-        selectedNode: { emptySelectedNode },
+        selectedNode: emptySelectedNode,
         highlightedNode: {},
         data: {},
         canEdit: false
