@@ -32,6 +32,7 @@ const Autosuggest = require('react-autosuggest');
       disableSuggesions is mapped to this.props.disabled
             Set to true to stop making suggestions
 
+
       HANDLERS
 
       onInputChange is mapped to this.props.onInputChange.
@@ -122,11 +123,18 @@ class AutoComplete extends React.Component {
 
   renderSuggestion (suggestion) {
     if (suggestion.isAddNew) {
-      return (
-        <span>
-          [+] Add new: <strong>{this.state.value}</strong>
-        </span>
-      );
+      // Don't show "Add New" because when you're adding a new item that partially
+      // matches an existing item, you'll have a list of suggestions.  Better to
+      // have the user always click "Add New Node" button.
+      //
+      // return (
+      //   <span>
+      //     [+] Add new: <strong>{this.state.value}</strong>
+      //   </span>
+      // );
+      //
+      // Instead, just show a blank
+      return (<span></span>);
     }
 
     return suggestion;
