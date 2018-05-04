@@ -55,20 +55,6 @@ const appearsIn = (searchValue, targetString) => {
   const regex = new RegExp(escapedLabel, 'i') // case insensitive
   return regex.test(targetString)
 };
-const emptySelectedNode = {
-          label:     '',
-          type:      '',
-          info:      '',
-          notes:     '',
-          id:        '',
-          isNewNode: true
-      }
-const emptyState = {
-        selectedNode: emptySelectedNode,
-        highlightedNode: {},
-        data: {},
-        canEdit: false
-      }
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -77,9 +63,20 @@ class NodeSelector extends React.Component {
 
   constructor (props) {
     super(props)
-    this.state = emptyState
+    this.state = {
+      data:            {},
+      selectedNode: {
+          label:     '',
+          type:      '',
+          info:      '',
+          notes:     '',
+          id:        '',
+          isNewNode: true
+      },
+      highlightedNode: {},
+      canEdit:         false
+    }
 
-    this.clearState                            = this.clearState.bind(this)
     this.clearForm                             = this.clearForm.bind(this)
     this.getNewNodeID                          = this.getNewNodeID.bind(this)
     this.showDataInForm                        = this.showDataInForm.bind(this)
@@ -101,14 +98,18 @@ class NodeSelector extends React.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UTILITIES
   ///
-  /// Clear this.state, including the data!
-  clearState () {
-    this.setState(emptyState)
-  }
-  /// Clear the form
-  clearForm () {
+  /// Clear the form with optional label
+  clearForm ( label='' ) {
     this.setState({
-      selectedNode: emptySelectedNode,
+      selectedNode: {
+          label:     label,
+          type:      '',
+          info:      '',
+          notes:     '',
+          id:        '',
+          isNewNode: true
+      },
+      highlightedNode: {},
       canEdit:      false
     })
   }
@@ -152,11 +153,11 @@ class NodeSelector extends React.Component {
   /// this has a side effect of passing the data to the parent component via onDataUpdate
   handleAutoCompleteInputChange (searchValue) {
     this.updateSelectedNodes( searchValue )
-    this.setState({requestClearValue:false})       // Data selected, so don't clear
+    this.setState({requestClearValue:false})       // Data has been input, so don't clear
     if (this.state.canEdit) { 
-      this.onLabelChange( searchValue )            // Update the state
+      this.onLabelChange( searchValue )            // In edit mode, so update the input
     } else {
-      this.clearForm()                             // Clear form if not editing
+      this.clearForm( searchValue )                // Not in edit mode, update input and clear rest of form
     }
   }
   /// The user has selected one of the suggestions
@@ -341,7 +342,7 @@ class NodeSelector extends React.Component {
     // Notify parent
     this.props.onDataUpdate( updatedData )
     // Clear the any selections
-    this.clearState()
+    this.clearForm()
     // Clear the AutoComplete field
     this.setState({requestClearValue:true})
   }
