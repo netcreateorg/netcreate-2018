@@ -308,6 +308,8 @@ class NodeSelector extends React.Component {
     let selectedNode = this.state.selectedNode
     if (selectedNode.id == '') selectedNode.id = this.getNewNodeID()
     this.setState({ selectedNode: selectedNode })
+    // Update graph data selections
+    this.updateSelectedNodesById( selectedNode.id )
   }
   onSubmit ( event ) {
     event.preventDefault()
