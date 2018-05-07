@@ -24,6 +24,7 @@ class AutoCompleteDemo extends React.Component {
     }
     this.updateData               = this.updateData.bind(this)
     this.handleJSONLoad           = this.handleJSONLoad.bind(this)
+    this.handleNodeSelection      = this.handleNodeSelection.bind(this)
   }
 
   updateData ( newData ) {
@@ -36,6 +37,12 @@ class AutoCompleteDemo extends React.Component {
     if (error) throw error
     // map nodes[].label to textList
     this.updateData( _data )
+  }
+
+  handleNodeSelection ( selectedNode ) {
+    this.setState( {
+      selectedSourceNode: selectedNode
+    })
   }
 
   deselectAllNodes () {
@@ -71,6 +78,7 @@ class AutoCompleteDemo extends React.Component {
                 <NodeSelector 
                   data={this.state.data}
                   onDataUpdate={this.updateData}
+                  onNodeSelected={this.handleNodeSelection}
                   selectedColor="#0000FF"
                 />
                 <NodeSelector 

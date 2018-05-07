@@ -20,8 +20,13 @@
           onDataUpdate    A callback function that NodeSelect will call when data 
                           has been updated
 
+          onNodeSelected  A callback funciton that NodeSelect will call when the
+                          user has selected a specific node either for viewing
+                          or editing.  Used by EdgeEntry as the Source node.
+
           selectedColor   Set the color of the highlight graph node for any
                           nodes selected by the NodeSelector
+
 
 
     STATES
@@ -202,6 +207,7 @@ class NodeSelector extends React.Component {
       })
       // Mark the node as 'selected'
       this.updateSelectedNodesById( node.id )
+      this.props.onNodeSelected( node )
     } else {
       // No node was found, create a new node?
 
@@ -269,7 +275,7 @@ class NodeSelector extends React.Component {
     let updatedData = this.state.data
     updatedData.nodes = this.state.data.nodes.map( node => {
       if (appearsIn(searchValue, node.label)) {
-        node.selected = this.props.selectedColor
+        node.selected = this.getSelectedNodeColor( node )
       } else {
         node.selected = this.getDeselectedNodeColor( node )
       }
@@ -287,7 +293,7 @@ class NodeSelector extends React.Component {
     let updatedData = this.state.data
     updatedData.nodes = this.state.data.nodes.map( node => {
       if (node.id===id) {
-        node.selected = this.props.selectedColor
+        node.selected = this.getSelectedNodeColor( node )
       } else {
         node.selected = this.getDeselectedNodeColor( node )
       }
@@ -296,6 +302,14 @@ class NodeSelector extends React.Component {
     this.setState( { data: updatedData })
     // Notify the parent
     this.props.onDataUpdate( updatedData )
+  }
+  /// Only select nodes that have not already been selected
+  getSelectedNodeColor ( node ) {
+    if (node.selected===undefined || node.selected===DESELECTED_COLOR) {
+      return this.props.selectedColor
+    } else {
+      return node.selected    // default to existing color
+    }
   }
   /// Only deselect nodes that were selected by this instance, ignore selections
   /// from other NodeSelectors
