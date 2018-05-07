@@ -9,9 +9,16 @@ const EdgeEntry    = require('./components/EdgeEntry');
 const ReactStrap   = require('reactstrap')
 const { FormText } = ReactStrap
 
+
+
+/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DESELECTED_COLOR = ''
+
+
+
 /// React Component ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 
 
 /// export a class object for consumption by brunch/require
@@ -27,6 +34,8 @@ class AutoCompleteDemo extends React.Component {
     this.handleNodeSelection      = this.handleNodeSelection.bind(this)
     this.handleNodeClick          = this.handleNodeClick.bind(this)
   }
+
+
 
   updateData ( newData ) {
     this.setState( { 
@@ -51,12 +60,81 @@ class AutoCompleteDemo extends React.Component {
     this.setState( {
       selectedSourceNode: clickedNode
     })
+    this.deselectAllNodes()
+    this.updateSelectedNodesById( clickedNode.id )
   }
 
+
+
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// MANAGE GRAPH DATA
+  ///
+  /// Set the `selected` flag for any nodes that match `searchValue`, and update the state
+  /// The parent component is notified and the data is passed via onDataUpdate
+  updateSelectedNodes( searchValue ) {
+    if (searchValue==='') {
+      this.deselectAllNodes()
+      return
+    }
+    let updatedData = this.state.data
+    updatedData.nodes = this.state.data.nodes.map( node => {
+      if (appearsIn(searchValue, node.label)) {
+        node.selected = this.getSelectedNodeColor( node )
+      } else {
+        node.selected = this.getDeselectedNodeColor( node )
+      }
+      return node
+    })
+    this.setState( { data: updatedData })
+    // Notify the parent
+    this.props.onDataUpdate( updatedData )
+  }
+  updateSelectedNodesById( id ) {
+    if (id==='') {
+      this.deselectAllNodes()
+      return
+    }
+    let updatedData = this.state.data
+    updatedData.nodes = this.state.data.nodes.map( node => {
+      if (node.id===id) {
+        node.selected = this.getSelectedNodeColor( node )
+      } else {
+        node.selected = this.getDeselectedNodeColor( node )
+      }
+      return node
+    })
+    this.setState( { data: updatedData })
+    // Notify the parent
+    this.props.onDataUpdate( updatedData )
+  }
+  /// Only select nodes that have not already been selected
+  getSelectedNodeColor ( node ) {
+    if (node.selected===undefined || node.selected===DESELECTED_COLOR) {
+      return "#00EE00" // this.props.selectedColor
+    } else {
+      return node.selected    // default to existing color
+    }
+  }
+  /// Only deselect nodes that were selected by this instance, ignore selections
+  /// from other NodeSelectors
+  getDeselectedNodeColor ( node ) {
+    if (node.selected!==this.props.selectedColor) {
+      return node.selected 
+    } else {
+      return DESELECTED_COLOR
+    }
+  }
   deselectAllNodes () {
-    for (let node of this.state.data.nodes) { node.selected = false }
+    for (let node of this.state.data.nodes) { node.selected = this.getDeselectedNodeColor( node ) }
   }
 
+
+
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// REACT LIFECYCLE
+  ///
   componentDidMount () {
     // Verify D3 Loaded: console.log('D3',d3)
     // Load Data
