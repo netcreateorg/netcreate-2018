@@ -80,6 +80,8 @@ class D3NetGraph {
     this.simulation   = {}
     this.data         = {}
 
+    this.clickFn      = {}
+
     this.defaultSize  = 5
     this.defaultColor = '#000'
 
@@ -118,11 +120,17 @@ class D3NetGraph {
         this._Initialize()
         this._UpdateForces()
         this._UpdateGraph()
-        
+
         // updates ignored until this is run
         // restarts the simulation (important if simulation has already slowed down)
         this.simulation.alpha(1).restart()
       }
+  }
+  ///
+  ///   When a node is clicked, clickFn will be called
+  ///
+  SetClickHandler ( clickHandler ) {
+    this.clickFn = clickHandler
   }
 
 
@@ -200,8 +208,8 @@ class D3NetGraph {
         .on("drag",  this._Dragged)
         .on("end",   (d) => { this._Dragended(d, this) }))
       .on("click",   (d) => { 
-          console.log('click'); 
-          d.selected = true })
+          console.log('clicked on',d.label,d.id)
+          this.clickFn( d ) })
 
     nodes.append("circle")
         .attr("r", (d) => { return d.size ?  d.size/10 : self.defaultSize; })

@@ -10,6 +10,13 @@
     shouldComponentUpdate)
 
     
+    TO USE
+
+            <NetGraph 
+              data={this.state.data}
+              onNodeClick={this.handleNodeClick}
+            />
+
 
     Why not use FauxDom?
     
@@ -62,6 +69,7 @@ class NetGraph extends React.Component {
     // Updates to the graph data are received here from the parent
     // component via nextProps.data and passed on to the D3NetGraph module
     this.state.d3NetGraph.SetData( nextProps.data )
+    this.state.d3NetGraph.SetClickHandler( nextProps.onNodeClick )
   }
   
   shouldComponentUpdate () {

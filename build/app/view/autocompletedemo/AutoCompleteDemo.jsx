@@ -25,6 +25,7 @@ class AutoCompleteDemo extends React.Component {
     this.updateData               = this.updateData.bind(this)
     this.handleJSONLoad           = this.handleJSONLoad.bind(this)
     this.handleNodeSelection      = this.handleNodeSelection.bind(this)
+    this.handleNodeClick          = this.handleNodeClick.bind(this)
   }
 
   updateData ( newData ) {
@@ -42,6 +43,13 @@ class AutoCompleteDemo extends React.Component {
   handleNodeSelection ( selectedNode ) {
     this.setState( {
       selectedSourceNode: selectedNode
+    })
+  }
+
+  handleNodeClick ( clickedNode ) {
+    console.log('AutoCompleteDemo.handleNodeClick',clickedNode)
+    this.setState( {
+      selectedSourceNode: clickedNode
     })
   }
 
@@ -94,7 +102,7 @@ class AutoCompleteDemo extends React.Component {
           <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 auto', padding:'10px'}}>
             <NetGraph 
               data={this.state.data}
-              nodeSearchString={this.state.nodeSearchString}
+              onNodeClick={this.handleNodeClick}
             />
           </div>
           <div id="right" style={{backgroundColor:'#ffffE0', flex:'1 0 auto', padding:'10px'}}>
