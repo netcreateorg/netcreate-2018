@@ -96,6 +96,7 @@ class D3NetGraph {
     /// Bindings  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     this._Initialize        = this._Initialize.bind(this)
     this._UpdateGraph       = this._UpdateGraph.bind(this)
+    this._UpdateForces      = this._UpdateForces.bind(this)
     this._Tick              = this._Tick.bind(this)
     this._Dragstarted       = this._Dragstarted.bind(this)
     this._Dragged           = this._Dragged.bind(this)
@@ -107,15 +108,20 @@ class D3NetGraph {
 
   /// CLASS PUBLIC METHODS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
+  ///
+  ///   The parent container passes data to the d3 graph via this SetData call
+  ///   which then triggers all the internal updates
+  ///
   SetData ( newData ) {
-      // console.error('simDataReceived',newData)
       this.data = newData
-
-      let data = this.data
-      if (data && data.nodes) {
-        this._Initialize( data )
+      if (newData && newData.nodes) {
+        this._Initialize()
+        this._UpdateForces()
         this._UpdateGraph()
+        
+        // updates ignored until this is run
+        // restarts the simulation (important if simulation has already slowed down)
+        this.simulation.alpha(1).restart()
       }
   }
 
@@ -135,25 +141,12 @@ class D3NetGraph {
     // Create the force layout.  After a call to force.start(), the tick method will
     // be called repeatedly until the layout "gels" in a stable configuration.
     this.simulation
-      .force("link", d3.forceLink()
-          .id((d) => {return d.id})
-          .distance(_forceProperties.link.distance)
-          .iterations(_forceProperties.link.iterations))
-      .force("charge", d3.forceManyBody()
-          .strength(_forceProperties.charge.strength * _forceProperties.charge.enabled)
-          .distanceMin(_forceProperties.charge.distanceMin)
-          .distanceMax(_forceProperties.charge.distanceMax))
-      .force("collide", d3.forceCollide()
-          .strength(_forceProperties.collide.strength * _forceProperties.collide.enabled)
-          .radius((d) => {return d.size/_forceProperties.collide.radius;})
-          .iterations(_forceProperties.collide.iterations))
-      .force("center", d3.forceCenter(_width*0.5,_height*0.5))
-      .force("forceX", d3.forceX()
-          .strength(_forceProperties.forceX.strength * _forceProperties.forceX.enabled)
-          .x(_width * _forceProperties.forceX.x))
-      .force("forceY", d3.forceY()
-          .strength(_forceProperties.forceY.strength * _forceProperties.forceY.enabled)
-          .y(_height * _forceProperties.forceY.y))
+      .force("link", d3.forceLink())
+      .force("charge", d3.forceManyBody())
+      .force("collide", d3.forceCollide())
+      .force("center", d3.forceCenter())
+      .force("forceX", d3.forceX())
+      .force("forceY", d3.forceY())
 
       .on("tick", this._Tick)
   }
@@ -240,13 +233,37 @@ class D3NetGraph {
     this.simulation.nodes(this.data.nodes)
     this.simulation.force("link").links(this.data.edges)
 
-
-    // updates ignored until this is run
-    // restarts the simulation (important if simulation has already slowed down)
-    this.simulation.restart()
-
   }
 
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// _UpdateForces
+  ///     Apply new force properties
+  ///     Call this on construct and if forceProperties have changed.
+  _UpdateForces ( data ) {
+    this.simulation
+      .force("link", d3.forceLink()
+          .id((d) => {return d.id})
+          .distance(_forceProperties.link.distance)
+          .iterations(_forceProperties.link.iterations))
+      .force("charge", d3.forceManyBody()
+          .strength(_forceProperties.charge.strength * _forceProperties.charge.enabled)
+          .distanceMin(_forceProperties.charge.distanceMin)
+          .distanceMax(_forceProperties.charge.distanceMax))
+      .force("collide", d3.forceCollide()
+          .strength(_forceProperties.collide.strength * _forceProperties.collide.enabled)
+          .radius((d) => {return d.size/_forceProperties.collide.radius;})
+          .iterations(_forceProperties.collide.iterations))
+      .force("center", d3.forceCenter()
+          .x(_width * _forceProperties.center.x)
+          .y(_height * _forceProperties.center.y))
+      .force("forceX", d3.forceX()
+          .strength(_forceProperties.forceX.strength * _forceProperties.forceX.enabled)
+          .x(_width * _forceProperties.forceX.x))
+      .force("forceY", d3.forceY()
+          .strength(_forceProperties.forceY.strength * _forceProperties.forceY.enabled)
+          .y(_height * _forceProperties.forceY.y))
+  }
 
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
