@@ -75,7 +75,12 @@ svg {
   flex-basis: 100%;
   min-width: 200px;
 }
+/* D3SimpleNetGraph redo removes links group...
 svg .links line {
+  stroke: #aaa;
+} 
+... and replaces with .edge */
+svg .edge {
   stroke: #aaa;
 }
 svg .nodes circle {

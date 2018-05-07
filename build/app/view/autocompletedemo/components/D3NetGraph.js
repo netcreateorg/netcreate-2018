@@ -8,6 +8,13 @@
     NetGraph calls SetData whenever it receives an updated data object.
     This triggers D3NetGraph to redraw itself.
 
+    DEPRECATED
+    This implementation was problematic because newly-added links would not be
+    properly updated.  The problem likely had to do with:
+    *   Not using a proper link id based on source.id + target.id
+    *   Using saved references to objects that could get outdated with
+        data joins/merges/updates.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 

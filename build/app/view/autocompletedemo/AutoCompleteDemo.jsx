@@ -5,7 +5,7 @@ const d3           = require('d3');
 const AutoComplete = require('./components/AutoComplete');
 const NetGraph     = require('./components/NetGraph');
 const NodeSelector = require('./components/NodeSelector');
-const NodeDetail   = require('./components/NodeDetail');
+const EdgeEntry    = require('./components/EdgeEntry');
 const ReactStrap   = require('reactstrap')
 const { FormText } = ReactStrap
 
@@ -81,13 +81,12 @@ class AutoCompleteDemo extends React.Component {
                   onNodeSelected={this.handleNodeSelection}
                   selectedColor="#0000FF"
                 />
-                <NodeSelector 
+                <EdgeEntry 
                   data={this.state.data}
                   onDataUpdate={this.updateData}
+                  selectedSourceNode={this.state.selectedSourceNode}
+                  selectedTargetNode={this.state.selectedTargetNode}
                   selectedColor="#EE0000"
-                />
-                  selectedNode={this.state.selectedNode}
-                  onNewNode={this.handleNewNode}
                 />
               </div>
             </div>

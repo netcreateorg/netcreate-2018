@@ -33,7 +33,8 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react')
 const ReactDOM = require('react-dom')
-const D3NetGraph = require('./D3NetGraph')
+//const D3NetGraph = require('./D3NetGraph')
+const D3NetGraph = require('./D3SimpleNetGraph')
 
 
 
