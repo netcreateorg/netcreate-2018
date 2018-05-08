@@ -16,6 +16,19 @@ const { FormText } = ReactStrap
 const DESELECTED_COLOR = ''
 
 
+/// UTILITIES /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// REVIEW: These are duplicated in AutoComplete. Pull out as utilites?
+/// https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions#Using_Special_Characters
+const escapeRegexCharacters = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+const appearsIn = (searchValue, targetString) => {
+  if (typeof searchValue !== 'string') { return false }
+  const escapedLabel = escapeRegexCharacters(searchValue.trim())
+  if (escapedLabel === '') { return false }
+  const regex = new RegExp(escapedLabel, 'i') // case insensitive
+  return regex.test(targetString)
+};
+
 
 /// React Component ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,13 +39,18 @@ class AutoCompleteDemo extends React.Component {
   constructor () {
     super()
     this.state = { 
-      data:             {},    // nodes and edges data object
-      nodeSearchString: ''     // node label search string set in AutoComplete input field
+      data:                    {},    // nodes and edges data object
+      nodeSearchString:        '',     // node label search string set in AutoComplete input field
+
+      selectedSourceNode:      {}
     }
-    this.updateData               = this.updateData.bind(this)
-    this.handleJSONLoad           = this.handleJSONLoad.bind(this)
-    this.handleNodeSelection      = this.handleNodeSelection.bind(this)
-    this.handleNodeClick          = this.handleNodeClick.bind(this)
+    this.updateData                = this.updateData.bind(this)
+    this.handleJSONLoad            = this.handleJSONLoad.bind(this)
+    this.handleNodeClick           = this.handleNodeClick.bind(this)
+    this.handleSourceInputUpdate   = this.handleSourceInputUpdate.bind(this)
+    this.handleSourceHighlight     = this.handleSourceHighlight.bind(this)
+    this.handleSourceNodeSelection = this.handleSourceNodeSelection.bind(this)
+    this.handleNodeUpdate          = this.handleNodeUpdate.bind(this)
   }
 
 
@@ -49,23 +67,76 @@ class AutoCompleteDemo extends React.Component {
     this.updateData( _data )
   }
 
-  handleNodeSelection ( selectedNode ) {
-    this.setState( {
-      selectedSourceNode: selectedNode
-    })
-  }
-
   handleNodeClick ( clickedNode ) {
     console.log('AutoCompleteDemo.handleNodeClick',clickedNode)
+    this.deselectAllNodes()
+    this.updateSelectedNodeById( clickedNode.id )
     this.setState( {
       selectedSourceNode: clickedNode
     })
-    this.deselectAllNodes()
-    this.updateSelectedNodesById( clickedNode.id )
   }
 
+  handleSourceInputUpdate ( label ) {
+    console.log('AutoCompleteDemo.handleInputUpdate',label)
+    // mark matching nodes
+    this.updateSelectedNodes( label )
+    // if it doesn't match a node exactly, we clear the selected node
+    // but pass the input value
+    this.setState( {
+      selectedSourceNode: {label: label}
+    })
+  }
 
+  handleSourceHighlight ( label ) {
+    console.log('AutoCompleteDemo.handleSourceHighlight',label)
+    // mark matching nodes
+    if (label!==null) this.updateSelectedNodes( label )
+  }
 
+  handleSourceNodeSelection ( node ) {
+    console.log('AutoCompleteDemo.handleSourceNodeSelect',node)
+    if (node.id===undefined) {
+      // Invalid node, NodeSelect is trying to clear the selection
+      // we have to do this here, otherwise, the label will persist
+      console.log('...clearing selectedSourceNode')
+      this.setState( { selectedSourceNode:{} } )
+    } else {
+      // Valid node, so select it
+      this.setState( { selectedSourceNode: node } )
+      this.updateSelectedNodeById( node.id )      
+    }
+  }
+
+  /// Update existing node, or add a new node
+  handleNodeUpdate ( newNodeData ) {
+    console.log('AutoCompleteDemo.handleNodeUpdate',newNodeData)
+    let updatedData = this.state.data
+    let found = false
+    updatedData.nodes = this.state.data.nodes.map( node => {
+      if (node.id === newNodeData.id) {
+        node.label                    = newNodeData.label
+        node.attributes["Node_Type"]  = newNodeData.type
+        node.attributes["Extra Info"] = newNodeData.info
+        node.attributes["Notes"]      = newNodeData.notes
+        node.id                       = newNodeData.id
+        console.log('...updated existing node',node.id)
+        found = true
+      }
+      return node
+    })
+    if (!found) {
+      // Add a new node
+      console.log('...adding new node',newNodeData.id)
+      let node = {attributes:{}}
+      node.label                    = newNodeData.label
+      node.attributes["Node_Type"]  = newNodeData.type
+      node.attributes["Extra Info"] = newNodeData.info
+      node.attributes["Notes"]      = newNodeData.notes
+      node.id                       = newNodeData.id
+      updatedData.nodes.push(node)
+    }
+    this.setState({ data: updatedData })
+  }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// MANAGE GRAPH DATA
@@ -87,10 +158,8 @@ class AutoCompleteDemo extends React.Component {
       return node
     })
     this.setState( { data: updatedData })
-    // Notify the parent
-    this.props.onDataUpdate( updatedData )
   }
-  updateSelectedNodesById( id ) {
+  updateSelectedNodeById( id ) {
     if (id==='') {
       this.deselectAllNodes()
       return
@@ -105,8 +174,6 @@ class AutoCompleteDemo extends React.Component {
       return node
     })
     this.setState( { data: updatedData })
-    // Notify the parent
-    this.props.onDataUpdate( updatedData )
   }
   /// Only select nodes that have not already been selected
   getSelectedNodeColor ( node ) {
@@ -119,7 +186,7 @@ class AutoCompleteDemo extends React.Component {
   /// Only deselect nodes that were selected by this instance, ignore selections
   /// from other NodeSelectors
   getDeselectedNodeColor ( node ) {
-    if (node.selected!==this.props.selectedColor) {
+    if (node.selected!=="#00EE00" ) { // this.props.selectedColor) {
       return node.selected 
     } else {
       return DESELECTED_COLOR
@@ -163,9 +230,13 @@ class AutoCompleteDemo extends React.Component {
               <div>
                 <NodeSelector 
                   data={this.state.data}
-                  onDataUpdate={this.updateData}
-                  onNodeSelected={this.handleNodeSelection}
-                  selectedColor="#0000FF"
+                  selectedNode={this.state.selectedSourceNode}
+                  highlightedNodeLabel={this.state.highlightedSourceNodeLabel}
+
+                  onInputUpdate={this.handleSourceInputUpdate}
+                  onHighlight={this.handleSourceHighlight}
+                  onNodeSelect={this.handleSourceNodeSelection}
+                  onNodeUpdate={this.handleNodeUpdate}
                 />
                 <EdgeEntry 
                   data={this.state.data}

@@ -12,8 +12,11 @@ const Autosuggest = require('react-autosuggest');
 
       To Use:
           <AutoComplete 
+
             data={this.state.data}
+            value={label}
             disableSuggestions={this.state.canEdit}
+          
             onInputChange={this.handleInputChange}
             onSelection={this.handleNodeSelection}
             onHighlight={this.handleSuggestionHighlight}
@@ -26,8 +29,8 @@ const Autosuggest = require('react-autosuggest');
       data is mapped to this.props.data
             This is how graph data is passed to the AutoComplete component.
 
-      requestClearValue is mapped to this.props.clearValue
-            Parent component can call this to clear the input field.
+      value is mapped to this.props.setValue
+            Use this to set the autocomplete value externally.
 
       disableSuggesions is mapped to this.props.disabled
             Set to true to stop making suggestions
@@ -171,7 +174,7 @@ class AutoComplete extends React.Component {
   onSuggestionSelected (event, { suggestion }) {
     // call parent handler
     if (suggestion.isAddNew) {
-      console.log('Add new:', this.state.value, 'suggestion',suggestion);
+      // console.log('Add new:', this.state.value, 'suggestion',suggestion);
       this.props.onSelection( this.state.value )
     } else {
       this.props.onSelection( suggestion )
@@ -186,13 +189,17 @@ class AutoComplete extends React.Component {
     return this.props.disableSuggestions
   }
 
+  setValue ( value ) {
+    // console.log('...AutoComplete.setValue to',value)
+    this.setState({value: value})
+  }
   clearValue () {
     this.setState({value:''})
   }
 
   componentWillReceiveProps (nextProps) {
     // console.log('AutoComplete: componentWillReceiveProps',nextProps)
-    if (nextProps.requestClearValue) this.clearValue()
+    if (nextProps.value!==undefined) this.setValue( nextProps.value )
   }
 
   render() {
