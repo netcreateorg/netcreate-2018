@@ -139,7 +139,7 @@ class EdgeEntry extends React.Component {
   /// UTILITIES
   ///
   /// Clear the form with optional label
-  clearForm ( label='' ) {
+  clearForm () {
     this.setState({
       selectedEdge: {
         sourceId:     '',
@@ -150,7 +150,7 @@ class EdgeEntry extends React.Component {
         isNewEdge:    true
       },
       selectedNode: {
-          label:     label,
+          label:     '',
           type:      '',
           info:      '',
           notes:     '',
@@ -377,7 +377,7 @@ console.log('...Clear form finished')
         <FormGroup>
           <Label for="source" className="small text-muted">SOURCE</Label>
           <Input type="text" name="source" id="source"
-            value={this.props.selectedSourceNode ? this.props.selectedSourceNode.label : ''}
+            value={this.props.selectedSourceNode.label || ''}
             readOnly={true}
           />
         </FormGroup>
