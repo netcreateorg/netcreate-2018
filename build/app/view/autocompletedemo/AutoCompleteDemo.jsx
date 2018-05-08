@@ -14,7 +14,8 @@ const { FormText } = ReactStrap
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DESELECTED_COLOR = ''
-
+const SOURCE_COLOR     = '#0000DD'
+const TARGET_COLOR     = '#FF0000'
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -30,10 +31,8 @@ const appearsIn = (searchValue, targetString) => {
 };
 
 
-/// React Component ///////////////////////////////////////////////////////////
+/// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
 /// export a class object for consumption by brunch/require
 class AutoCompleteDemo extends React.Component {
   constructor () {
@@ -48,9 +47,13 @@ class AutoCompleteDemo extends React.Component {
     this.handleJSONLoad            = this.handleJSONLoad.bind(this)
     this.handleNodeClick           = this.handleNodeClick.bind(this)
     this.handleSourceInputUpdate   = this.handleSourceInputUpdate.bind(this)
+    this.handleTargetInputUpdate   = this.handleTargetInputUpdate.bind(this)
     this.handleSourceHighlight     = this.handleSourceHighlight.bind(this)
+    this.handleTargetHighlight     = this.handleTargetHighlight.bind(this)
     this.handleSourceNodeSelection = this.handleSourceNodeSelection.bind(this)
+    this.handleTargetNodeSelection = this.handleTargetNodeSelection.bind(this)
     this.handleNodeUpdate          = this.handleNodeUpdate.bind(this)
+    this.handleEdgeUpdate          = this.handleEdgeUpdate.bind(this)
   }
 
 
@@ -70,29 +73,46 @@ class AutoCompleteDemo extends React.Component {
   handleNodeClick ( clickedNode ) {
     console.log('AutoCompleteDemo.handleNodeClick',clickedNode)
     this.deselectAllNodes()
-    this.updateSelectedNodeById( clickedNode.id )
+    this.updateSelectedNodeById( clickedNode.id, SOURCE_COLOR )
     this.setState( {
       selectedSourceNode: clickedNode
     })
   }
 
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// SOURCE INPUT HANDLERS
+  ///
   handleSourceInputUpdate ( label ) {
-    console.log('AutoCompleteDemo.handleInputUpdate',label)
+    // console.log('AutoCompleteDemo.handleSourceInputUpdate',label)
     // mark matching nodes
-    this.updateSelectedNodes( label )
+    this.updateSelectedNodes( label, SOURCE_COLOR )
     // if it doesn't match a node exactly, we clear the selected node
     // but pass the input value
     this.setState( {
       selectedSourceNode: {label: label}
     })
   }
-
-  handleSourceHighlight ( label ) {
-    console.log('AutoCompleteDemo.handleSourceHighlight',label)
+  handleTargetInputUpdate ( label ) {
+    console.log('AutoCompleteDemo.handleTargetInputUpdate',label)
     // mark matching nodes
-    if (label!==null) this.updateSelectedNodes( label )
+    this.updateSelectedNodes( label, TARGET_COLOR )
+    // if it doesn't match a node exactly, we clear the selected node
+    // but pass the input value
+    this.setState( {
+      selectedTargetNode: {label: label}
+    })
   }
-
+  handleSourceHighlight ( label ) {
+    // console.log('AutoCompleteDemo.handleSourceHighlight',label)
+    // mark matching nodes
+    if (label!==null) this.updateSelectedNodes( label, SOURCE_COLOR )
+  }
+  handleTargetHighlight ( label ) {
+    console.log('AutoCompleteDemo.handleTargetHighlight',label)
+    // mark matching nodes
+    if (label!==null) this.updateSelectedNodes( label, TARGET_COLOR )
+  }
   handleSourceNodeSelection ( node ) {
     console.log('AutoCompleteDemo.handleSourceNodeSelect',node)
     if (node.id===undefined) {
@@ -103,7 +123,20 @@ class AutoCompleteDemo extends React.Component {
     } else {
       // Valid node, so select it
       this.setState( { selectedSourceNode: node } )
-      this.updateSelectedNodeById( node.id )      
+      this.updateSelectedNodeById( node.id, SOURCE_COLOR )      
+    }
+  }
+  handleTargetNodeSelection ( node ) {
+    console.log('AutoCompleteDemo.handleTargetNodeSelection',node)
+    if (node.id===undefined) {
+      // Invalid node, NodeSelect is trying to clear the selection
+      // we have to do this here, otherwise, the label will persist
+      console.log('...clearing selectedTargetNode')
+      this.setState( { selectedTargetNode:{} } )
+    } else {
+      // Valid node, so select it
+      this.setState( { selectedTargetNode: node } )
+      this.updateSelectedNodeById( node.id, TARGET_COLOR )      
     }
   }
 
@@ -138,12 +171,47 @@ class AutoCompleteDemo extends React.Component {
     this.setState({ data: updatedData })
   }
 
+  /// Update existing node, or add a new node
+  handleEdgeUpdate ( newEdgeData ) {
+    console.log('AutoCompleteDemo.handleEdgeUpdate',newEdgeData)
+    let updatedData = this.state.data
+    let found = false
+    updatedData.edges = this.state.data.edges.map( edge => {
+      if (edge.id === newEdgeData.id) {
+        edge.id                         = newEdgeData.id
+        edge.source                     = newEdgeData.sourceId
+        edge.target                     = newEdgeData.targetId
+        edge.attributes["Relationship"] = newEdgeData.type
+        edge.attributes["Citations"]    = newEdgeData.info
+        edge.attributes["Notes"]        = newEdgeData.notes
+        console.log('...updated existing edge',edge.id)
+        found = true
+      }
+      return edge
+    })
+    if (!found) {
+      // Add a new edge
+      console.log('...adding new edge',newEdgeData.id)
+      let edge = {attributes:{}}
+      edge.id                         = newEdgeData.id
+      edge.source                     = newEdgeData.sourceId
+      edge.target                     = newEdgeData.targetId
+      edge.attributes["Relationship"] = newEdgeData.type
+      edge.attributes["Citations"]    = newEdgeData.info
+      edge.attributes["Notes"]        = newEdgeData.notes
+      edge.size                       = 1                       // REQUIRED!
+      updatedData.edges.push(edge)
+    }
+    this.setState({ data: updatedData })
+  }
+
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// MANAGE GRAPH DATA
   ///
   /// Set the `selected` flag for any nodes that match `searchValue`, and update the state
   /// The parent component is notified and the data is passed via onDataUpdate
-  updateSelectedNodes( searchValue ) {
+  updateSelectedNodes( searchValue, color ) {
     if (searchValue==='') {
       this.deselectAllNodes()
       return
@@ -151,15 +219,15 @@ class AutoCompleteDemo extends React.Component {
     let updatedData = this.state.data
     updatedData.nodes = this.state.data.nodes.map( node => {
       if (appearsIn(searchValue, node.label)) {
-        node.selected = this.getSelectedNodeColor( node )
+        node.selected = this.getSelectedNodeColor( node, color )
       } else {
-        node.selected = this.getDeselectedNodeColor( node )
+        node.selected = this.getDeselectedNodeColor( node, color )
       }
       return node
     })
     this.setState( { data: updatedData })
   }
-  updateSelectedNodeById( id ) {
+  updateSelectedNodeById( id, color ) {
     if (id==='') {
       this.deselectAllNodes()
       return
@@ -167,26 +235,26 @@ class AutoCompleteDemo extends React.Component {
     let updatedData = this.state.data
     updatedData.nodes = this.state.data.nodes.map( node => {
       if (node.id===id) {
-        node.selected = this.getSelectedNodeColor( node )
+        node.selected = this.getSelectedNodeColor( node, color )
       } else {
-        node.selected = this.getDeselectedNodeColor( node )
+        node.selected = this.getDeselectedNodeColor( node, color )
       }
       return node
     })
     this.setState( { data: updatedData })
   }
   /// Only select nodes that have not already been selected
-  getSelectedNodeColor ( node ) {
+  getSelectedNodeColor ( node, color ) {
     if (node.selected===undefined || node.selected===DESELECTED_COLOR) {
-      return "#00EE00" // this.props.selectedColor
+      return color
     } else {
       return node.selected    // default to existing color
     }
   }
   /// Only deselect nodes that were selected by this instance, ignore selections
   /// from other NodeSelectors
-  getDeselectedNodeColor ( node ) {
-    if (node.selected!=="#00EE00" ) { // this.props.selectedColor) {
+  getDeselectedNodeColor ( node, color ) {
+    if (node.selected!==color ) { // this.props.selectedColor) {
       return node.selected 
     } else {
       return DESELECTED_COLOR
@@ -240,10 +308,13 @@ class AutoCompleteDemo extends React.Component {
                 />
                 <EdgeEntry 
                   data={this.state.data}
-                  onDataUpdate={this.updateData}
                   selectedSourceNode={this.state.selectedSourceNode}
                   selectedTargetNode={this.state.selectedTargetNode}
-                  selectedColor="#EE0000"
+
+                  onInputUpdate={this.handleTargetInputUpdate}
+                  onHighlight={this.handleTargetHighlight}
+                  onNodeSelect={this.handleTargetNodeSelection}
+                  onEdgeUpdate={this.handleEdgeUpdate}
                 />
               </div>
             </div>
