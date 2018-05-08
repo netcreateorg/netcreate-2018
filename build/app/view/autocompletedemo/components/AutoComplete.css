@@ -91,3 +91,6 @@ svg .nodes text {
   stroke: #666;
   stroke-width: 0px;
 }
+.noselect {
+  user-select: none;
+}
