@@ -84,19 +84,6 @@ const NodeDetail   = require('./NodeDetail')
 
 
 
-/// UTILITIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// REVIEW: These are duplicated in AutoComplete. Pull out as utilites?
-/// https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions#Using_Special_Characters
-const escapeRegexCharacters = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-const appearsIn = (searchValue, targetString) => {
-  if (typeof searchValue !== 'string') { return false }
-  const escapedLabel = escapeRegexCharacters(searchValue.trim())
-  if (escapedLabel === '') { return false }
-  const regex = new RegExp(escapedLabel, 'i') // case insensitive
-  return regex.test(targetString)
-};
-
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
@@ -210,7 +197,7 @@ class NodeSelector extends React.Component {
       // Unhighlight 
       this.setState({ highlightedNode: {} })
     } else {
-      let nodes = this.state.data.nodes.filter( node => { return appearsIn(nodeLabel,node.label) })
+      let nodes = this.state.data.nodes.filter( node => { return nodeLabel===node.label })
       if ( (nodes!==null) &&
            (Array.isArray(nodes)) &&
            (nodes.length>0) &&
@@ -226,7 +213,7 @@ class NodeSelector extends React.Component {
   /// Update the selected data, and notify the parent
   handleAutoCompleteNodeSelection (nodeLabel) {
     // Does the node already exist?  If so, update it.
-    let nodes = this.state.data.nodes.filter( node => { return appearsIn(nodeLabel,node.label) })
+    let nodes = this.state.data.nodes.filter( node => { return nodeLabel===node.label })
     if ((nodes!==null) &&
         (Array.isArray(nodes)) &&
         (nodes.length>0) &&
@@ -322,7 +309,7 @@ class NodeSelector extends React.Component {
     // console.log('componentDidMount')
   }
   componentWillReceiveProps (nextProps) {
-    // console.log('componentWillReceiveProps',nextProps)
+    // console.log('NodeSelect.componentWillReceiveProps',nextProps)
     let data = nextProps.data || {}
     this.setState({
       data:  data
@@ -331,7 +318,7 @@ class NodeSelector extends React.Component {
     // sourceNodeLabel
     let node = nextProps.selectedNode
     // console.log('NodeSelector: RECEIVED nextProps.selectedNode',node)
-    if (node!==undefined) {
+    if (node!==undefined && Object.keys(node).length>0) {
       // Fill out the form
       // console.log('...updating form')
       this.loadFormFromNode( node )

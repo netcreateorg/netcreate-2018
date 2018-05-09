@@ -71,18 +71,6 @@ const AutoComplete = require('./AutoComplete')
 const NodeDetail   = require('./NodeDetail')
 
 
-/// UTILITIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// REVIEW: These are duplicated in AutoComplete. Pull out as utilites?
-/// https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions#Using_Special_Characters
-const escapeRegexCharacters = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-const appearsIn = (searchValue, targetString) => {
-  if (typeof searchValue !== 'string') { return false }
-  const escapedLabel = escapeRegexCharacters(searchValue.trim())
-  if (escapedLabel === '') { return false }
-  const regex = new RegExp(escapedLabel, 'i') // case insensitive
-  return regex.test(targetString)
-};
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -169,7 +157,7 @@ class EdgeEntry extends React.Component {
   }
   /// Show the first node that matches the nodeLabel in the form
   showDataInForm (nodeLabel) {
-    let nodes = this.state.data.nodes.filter( node => { return appearsIn(nodeLabel,node.label) })
+    let nodes = this.state.data.nodes.filter( node => { return nodeLabel===node.label })
     if ((nodes!==null) &&
         (Array.isArray(nodes)) &&
         (nodes.length>0) &&
@@ -218,7 +206,7 @@ class EdgeEntry extends React.Component {
       // Unhighlight 
       this.setState({ highlightedNode: {} })
     } else {
-      let nodes = this.state.data.nodes.filter( node => { return appearsIn(nodeLabel,node.label) })
+      let nodes = this.state.data.nodes.filter( node => { return nodeLabel===node.label })
       if ( (nodes!==null) &&
            (Array.isArray(nodes)) &&
            (nodes.length>0) &&
@@ -237,7 +225,7 @@ class EdgeEntry extends React.Component {
   /// otherwise mark it a new edge
   handleAutoCompleteNodeSelection (nodeLabel) {
     // Does the node already exist?  If so, update it.
-    let nodes = this.state.data.nodes.filter( node => { return appearsIn(nodeLabel,node.label) })
+    let nodes = this.state.data.nodes.filter( node => { return nodeLabel===node.label })
     if ((nodes!==null) &&
         (Array.isArray(nodes)) &&
         (nodes.length>0) &&
@@ -344,8 +332,8 @@ console.log('...Clear form finished')
     // console.log('componentDidMount')
   }
   componentWillReceiveProps (nextProps) {
-    console.log('componentWillReceiveProps',nextProps)
-    console.log('this.state.selectedEdge',this.state.selectedEdge)
+    // console.log('componentWillReceiveProps',nextProps)
+    // console.log('this.state.selectedEdge',this.state.selectedEdge)
     let data = nextProps.data || {}
     this.setState({
       data:  data
