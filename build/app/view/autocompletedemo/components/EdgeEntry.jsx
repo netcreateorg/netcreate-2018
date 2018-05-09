@@ -48,6 +48,8 @@
     STATES
           data            Local version of graph data
 
+          selectedEdge    The edge data in the form
+
           isEditable      If true, form is enabled for editing
                           If false, form is readonly
 
@@ -59,7 +61,7 @@
                           This is the target node.
 
           highlightedNode The node that is currently highlighted in the list
-                          of suggestions
+                          of suggestions for selectedNode
 
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
@@ -112,6 +114,7 @@ class EdgeEntry extends React.Component {
     }
 
     this.clearForm                             = this.clearForm.bind(this)
+    this.clearSelectedEdge                     = this.clearSelectedEdge.bind(this)
     this.getNewEdgeID                          = this.getNewEdgeID.bind(this)
     this.loadFormFromEdge                      = this.loadFormFromEdge.bind(this)
     this.handleAutoCompleteInputChange         = this.handleAutoCompleteInputChange.bind(this)
@@ -149,6 +152,20 @@ class EdgeEntry extends React.Component {
           id:        ''
       },
       highlightedNode: {},
+      isEditable:      false
+    })
+  }
+  /// Clear just the selectedEdge
+  clearSelectedEdge () {
+    this.setState({
+      selectedEdge: {
+        sourceId:     '',
+        targetId:     '',
+        relationship: '',
+        notes:        '',
+        id:           '',
+        isNewEdge:    true
+      },
       isEditable:      false
     })
   }
@@ -309,6 +326,13 @@ console.error('REVIEW>>>look for existing edge')
     event.preventDefault()
 
     let edge = this.state.selectedEdge
+
+    // Read current edge values
+    // This is necessary because the SOURCE and TARGET labels
+    // are bound to selectedSourceNode and selectedTargetNode, not selectedEdge
+    edge.sourceId = this.state.selectedSourceNode.id
+    edge.targetId = this.state.selectedNode.id
+
     console.group('EdgeEntry.onSubmit submitting',edge)
 
     // Notify parent of new edge data
@@ -344,26 +368,40 @@ console.log('...Clear form finished')
 
     // selectedSourceNode update
     let sourceNode = nextProps.selectedSourceNode
+    let sourceNodeId
     let edge = this.state.selectedEdge
     if (sourceNode) {
-        edge.sourceId = sourceNode.id
+      edge.sourceId = sourceNode.id
+      sourceNodeId = sourceNode.id
+    } else {
+      // save it for processing selectedEdge
+      sourceNodeId = this.state.selectedEdge.sourceId
     }
     this.setState({ selectedSourceNode: sourceNode })
 
     // selectedTargetNode update
     // If parent passes an empty selectedTargetNode, then we
     // need to clear the form
+    let targetNodeId
     if (nextProps.selectedTargetNode===undefined) {
       this.clearForm()
     } else {
       this.setState({ selectedNode: nextProps.selectedTargetNode })
+      targetNodeId = nextProps.selectedTargetNode.id
     }
 
     // selectedEdge update
     // If parent passes a valid selectedEdge, then load it
+    // REVIEW: This can override selectedSourceNode and/or selectedNode
+    //         But theoretically it should match?
     console.log('EdgeEntry.componentWillReceiveProps selectedEdge:',nextProps.selectedEdge)
-    if (nextProps.selectedEdge!==undefined && Object.keys(nextProps.selectedEdge).length>0) {
-      this.loadFormFromEdge( nextProps.selectedEdge )
+    let nextEdge = nextProps.selectedEdge
+    if (nextEdge!==undefined && Object.keys(nextEdge).length>0) {
+      console.log('...loading selectedEdge')
+      this.loadFormFromEdge( nextEdge )
+    } else {
+      console.log('...clearing selectedEdge')
+      this.clearSelectedEdge()
     }
   }
   shouldComponentUpdate () { return true }

@@ -55,6 +55,15 @@ class AutoCompleteDemo extends React.Component {
     this.handleTargetNodeSelection = this.handleTargetNodeSelection.bind(this)
     this.handleNodeUpdate          = this.handleNodeUpdate.bind(this)
     this.handleEdgeUpdate          = this.handleEdgeUpdate.bind(this)
+    this.findNodeById              = this.findNodeById.bind(this)
+    this.findMatchingEdgeWithSource = this.findMatchingEdgeWithSource.bind(this)
+    this.findMatchingEdgeWithTarget = this.findMatchingEdgeWithTarget.bind(this)
+    this.findMatchingEdge          = this.findMatchingEdge.bind(this)
+    this.setSelectedEdge           = this.setSelectedEdge.bind(this)
+    this.markSelectedNodes         = this.markSelectedNodes.bind(this)
+    this.markSelectedNodeById      = this.markSelectedNodeById.bind(this)
+    this.deselectAllNodes          = this.deselectAllNodes.bind(this)
+    this.markSelectedEdgeById      = this.markSelectedEdgeById.bind(this)
   }
 
 
@@ -74,55 +83,63 @@ class AutoCompleteDemo extends React.Component {
   handleNodeClick ( clickedNode ) {
     console.log('AutoCompleteDemo.handleNodeClick',clickedNode)
     this.deselectAllNodes()
-    this.updateSelectedNodeById( clickedNode.id, SOURCE_COLOR )
+    this.markSelectedNodeById( clickedNode.id, SOURCE_COLOR )
     this.setState( {
       selectedSourceNode: clickedNode
     })
   }
   handleEdgeClick ( clickedEdge ) {
     console.log('AutoCompleteDemo.handleEdgeClick',clickedEdge)
-    // this.deselectAllNodes()
-    this.updateSelectedEdgeById( clickedEdge.id )
     this.setState( {
-      selectedEdge:       clickedEdge,
       selectedSourceNode: clickedEdge.source,
       selectedTargetNode: clickedEdge.target,
     })
+    this.setSelectedEdge(clickedEdge)
+
+    // Update markers
+    this.markSelectedEdgeById( clickedEdge.id )
+    this.deselectAllNodes()
+    this.markSelectedNodeById( clickedEdge.source.id, SOURCE_COLOR)
+    this.markSelectedNodeById( clickedEdge.target.id, TARGET_COLOR)
   }
 
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// SOURCE INPUT HANDLERS
+  /// SOURCE AND TARGET INPUT HANDLERS
   ///
   handleSourceInputUpdate ( label ) {
-    // console.log('AutoCompleteDemo.handleSourceInputUpdate',label)
+    console.log('AutoCompleteDemo.handleSourceInputUpdate',label)
     // mark matching nodes
-    this.updateSelectedNodes( label, SOURCE_COLOR )
+    this.markSelectedNodes( label, SOURCE_COLOR )
     // if it doesn't match a node exactly, we clear the selected node
     // but pass the input value
     this.setState( {
       selectedSourceNode: {label: label}
     })
+
+    this.findMatchingEdgeWithSource(label)
   }
   handleTargetInputUpdate ( label ) {
     console.log('AutoCompleteDemo.handleTargetInputUpdate',label)
     // mark matching nodes
-    this.updateSelectedNodes( label, TARGET_COLOR )
+    this.markSelectedNodes( label, TARGET_COLOR )
     // if it doesn't match a node exactly, we clear the selected node
     // but pass the input value
     this.setState( {
       selectedTargetNode: {label: label}
     })
+
+    this.findMatchingEdgeWithTarget(label)
   }
   handleSourceHighlight ( label ) {
     // console.log('AutoCompleteDemo.handleSourceHighlight',label)
     // mark matching nodes
-    if (label!==null) this.updateSelectedNodes( label, SOURCE_COLOR )
+    if (label!==null) this.markSelectedNodes( label, SOURCE_COLOR )
   }
   handleTargetHighlight ( label ) {
     console.log('AutoCompleteDemo.handleTargetHighlight',label)
     // mark matching nodes
-    if (label!==null) this.updateSelectedNodes( label, TARGET_COLOR )
+    if (label!==null) this.markSelectedNodes( label, TARGET_COLOR )
   }
   handleSourceNodeSelection ( node ) {
     console.log('AutoCompleteDemo.handleSourceNodeSelect',node)
@@ -134,8 +151,10 @@ class AutoCompleteDemo extends React.Component {
     } else {
       // Valid node, so select it
       this.setState( { selectedSourceNode: node } )
-      this.updateSelectedNodeById( node.id, SOURCE_COLOR )      
+      this.markSelectedNodeById( node.id, SOURCE_COLOR )      
     }
+
+    this.findMatchingEdgeWithSource(node.label)
   }
   handleTargetNodeSelection ( node ) {
     console.log('AutoCompleteDemo.handleTargetNodeSelection',node)
@@ -147,8 +166,10 @@ class AutoCompleteDemo extends React.Component {
     } else {
       // Valid node, so select it
       this.setState( { selectedTargetNode: node } )
-      this.updateSelectedNodeById( node.id, TARGET_COLOR )      
+      this.markSelectedNodeById( node.id, TARGET_COLOR )      
     }
+
+    this.findMatchingEdgeWithTarget(node.label)
   }
 
   /// Update existing node, or add a new node
@@ -182,16 +203,17 @@ class AutoCompleteDemo extends React.Component {
     this.setState({ data: updatedData })
   }
 
-  /// Update existing node, or add a new node
+  /// Update existing edge, or add a new edge
   handleEdgeUpdate ( newEdgeData ) {
     console.log('AutoCompleteDemo.handleEdgeUpdate',newEdgeData)
     let updatedData = this.state.data
     let found = false
+    // Update existing?
     updatedData.edges = this.state.data.edges.map( edge => {
       if (edge.id === newEdgeData.id) {
         edge.id                         = newEdgeData.id
-        edge.source                     = newEdgeData.sourceId
-        edge.target                     = newEdgeData.targetId
+        edge.source                     = this.findNodeById( newEdgeData.sourceId )
+        edge.target                     = this.findNodeById( newEdgeData.targetId )
         edge.attributes["Relationship"] = newEdgeData.type
         edge.attributes["Citations"]    = newEdgeData.info
         edge.attributes["Notes"]        = newEdgeData.notes
@@ -200,13 +222,14 @@ class AutoCompleteDemo extends React.Component {
       }
       return edge
     })
+    // Nope, add a new one instead
     if (!found) {
       // Add a new edge
       console.log('...adding new edge',newEdgeData.id)
       let edge = {attributes:{}}
       edge.id                         = newEdgeData.id
-      edge.source                     = newEdgeData.sourceId
-      edge.target                     = newEdgeData.targetId
+      edge.source                     = this.findNodeById( newEdgeData.sourceId )
+      edge.target                     = this.findNodeById( newEdgeData.targetId )
       edge.attributes["Relationship"] = newEdgeData.type
       edge.attributes["Citations"]    = newEdgeData.info
       edge.attributes["Notes"]        = newEdgeData.notes
@@ -218,13 +241,57 @@ class AutoCompleteDemo extends React.Component {
     this.setState({ selectedTargetNode: {} })
   }
 
+  findNodeById ( id ) {
+    let found = this.state.data.nodes.filter( n => n.id===id )
+    if (found.length>0) {
+      console.log('AutoCompleteDemo.findNodeById returning',found[0])
+      return found[0]
+    } else {
+      console.log('AutoCompleteDemo.findNodeById returning undefined')
+      return undefined
+    }
+  }
+
+  findMatchingEdgeWithSource ( sourceLabel ) {
+    let targetLabel = this.state.selectedTargetNode ? this.state.selectedTargetNode.label : ''
+    return this.findMatchingEdge( sourceLabel, targetLabel )
+  }
+  findMatchingEdgeWithTarget ( targetLabel ) {
+    let sourceLabel = this.state.selectedSourceNode ? this.state.selectedSourceNode.label : ''
+    return this.findMatchingEdge( sourceLabel, targetLabel )
+  }
+  /// When a source or target node is selected, check to see
+  /// if the pair matches an edge.
+  /// If there's a match, set this.state.selectedEdge
+  findMatchingEdge (sourceLabel, targetLabel) {
+    console.log('AutoCompleteDemo.findMatchingEdge Looking for match...')
+    if (sourceLabel!==undefined && targetLabel!==undefined) {
+      let found = this.state.data.edges.filter( edge => edge.source.label===sourceLabel && edge.target.label===targetLabel )
+      if (found.length>0) {
+        let matchingEdge = found[0]
+        console.log('AutoCompleteDemo.findMatchingEdge FOUND!',matchingEdge)
+        this.setSelectedEdge( matchingEdge )
+        return
+      }
+    }
+    console.log('...no match found, clearing selectedEdge')
+    // Not Found, clear selectedEdge
+    this.setSelectedEdge({})
+  }
+
+  /// Call this to set selectedEdge state
+  setSelectedEdge ( edge ) {
+    this.setState({ selectedEdge: edge })
+    this.markSelectedEdgeById( edge.id )
+  }
+
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// MANAGE GRAPH DATA
   ///
   /// Set the `selected` flag for any nodes that match `searchValue`, and update the state
   /// The parent component is notified and the data is passed via onDataUpdate
-  updateSelectedNodes( searchValue, color ) {
+  markSelectedNodes( searchValue, color ) {
     if (searchValue==='') {
       this.deselectAllNodes()
       return
@@ -240,7 +307,7 @@ class AutoCompleteDemo extends React.Component {
     })
     this.setState( { data: updatedData })
   }
-  updateSelectedNodeById( id, color ) {
+  markSelectedNodeById( id, color ) {
     if (id==='') {
       this.deselectAllNodes()
       return
@@ -275,24 +342,24 @@ class AutoCompleteDemo extends React.Component {
   }
   deselectAllNodes () {
     for (let node of this.state.data.nodes) { node.selected = this.getDeselectedNodeColor( node ) }
+    let updatedData = this.state.data
+    let color = DESELECTED_COLOR
+    updatedData.nodes = this.state.data.nodes.map( node => {
+      node.selected = DESELECTED_COLOR
+      return node
+    })
+    this.setState( { data: updatedData })
   }
   ///
   /// EDGES
   ///
-  updateSelectedEdgeById( id ) {
-    if (id==='') {
-      this.deselectAllEdges()
-      return
-    }
+  markSelectedEdgeById( id ) {
     let updatedData = this.state.data
     updatedData.edges = this.state.data.edges.map( edge => {
-      edge.selected = (edge.id===id) ? SOURCE_COLOR : DESELECTED_COLOR
+      edge.selected = (edge.id===id)
       return edge
     })
     this.setState( { data: updatedData })
-  }
-  deselectAllEdges () {
-    for (let edge of this.state.data.edges) { edge.selected = DESELECTED_COLOR }
   }
 
 
@@ -344,9 +411,9 @@ class AutoCompleteDemo extends React.Component {
                   selectedEdge={this.state.selectedEdge}
 
                   onInputUpdate={this.handleTargetInputUpdate}
-                  onHighlight={this.handleTargetHighlight}
-                  onNodeSelect={this.handleTargetNodeSelection}
-                  onEdgeUpdate={this.handleEdgeUpdate}
+                  onHighlight  ={this.handleTargetHighlight}
+                  onNodeSelect ={this.handleTargetNodeSelection}
+                  onEdgeUpdate ={this.handleEdgeUpdate}
                 />
               </div>
             </div>
