@@ -83,6 +83,10 @@ svg .links line {
 svg .edge {
   stroke: #aaa;
 }
+svg .edge.selected {
+  stroke: #f00;
+  stroke-width: 5px;
+}
 svg .nodes circle {
   pointer-events: all;
 }

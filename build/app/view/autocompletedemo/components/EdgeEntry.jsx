@@ -11,6 +11,7 @@
             data={this.state.data}
             selectedSourceNode={this.state.selectedSourceNode}
             selectedTargetNode={this.state.selectedTargetNode}
+            selectedEdge={this.state.selectedEdge}
 
             onInputUpdate={this.handleTargetInputUpdate}
             onHighlight={this.handleTargetHighlight}
@@ -23,6 +24,9 @@
 
           data            Used to pass the current graph data from the parent 
                           component to NodeSelector
+
+          selectedEdge    Set the edge selected by AutoCompleteDemo.
+                          Usually this is what the user clicked on.
 
           selectedSourceNode    Set the source node selected by NodeSelector
 
@@ -109,7 +113,7 @@ class EdgeEntry extends React.Component {
 
     this.clearForm                             = this.clearForm.bind(this)
     this.getNewEdgeID                          = this.getNewEdgeID.bind(this)
-    this.showDataInForm                        = this.showDataInForm.bind(this)
+    this.loadFormFromEdge                      = this.loadFormFromEdge.bind(this)
     this.handleAutoCompleteInputChange         = this.handleAutoCompleteInputChange.bind(this)
     this.handleAutoCompleteNodeSelection       = this.handleAutoCompleteNodeSelection.bind(this)
     this.handleAutoCompleteSuggestionHighlight = this.handleAutoCompleteSuggestionHighlight.bind(this)
@@ -142,8 +146,7 @@ class EdgeEntry extends React.Component {
           type:      '',
           info:      '',
           notes:     '',
-          id:        '',
-          isNewEdge: true
+          id:        ''
       },
       highlightedNode: {},
       isEditable:      false
@@ -155,27 +158,27 @@ class EdgeEntry extends React.Component {
     let highestID = ids.reduce( (a,b) => { return Math.max(a,b) } )
     return highestID+1
   }
-  /// Show the first node that matches the nodeLabel in the form
-  showDataInForm (nodeLabel) {
-    let nodes = this.state.data.nodes.filter( node => { return nodeLabel===node.label })
-    if ((nodes!==null) &&
-        (Array.isArray(nodes)) &&
-        (nodes.length>0) &&
-        (nodes[0]!==null)) {
-      // Node is Valid!
-      // console.log('nodeLabel is',nodeLabel,'node selected is', nodes)
-      // Read node values for form
-      let node = nodes[0]
+  /// Show edge data in form
+  loadFormFromEdge (newEdge) {
+    let edges = this.state.data.edges.filter( edge => { return newEdge.id===edge.id })
+    if ((edges!==null) &&
+        (Array.isArray(edges)) &&
+        (edges.length>0) &&
+        (edges[0]!==null)) {
+      // Edge is Valid!
+      // Read edge values for form
+      let edge = edges[0]
       this.setState({
-        selectedNode: {
-          label:     node.label,
-          type:      node.attributes["Node_Type"],     // HACK This needs to be updated when 
-          info:      node.attributes["Extra Info"],    // the data format is updated
-          notes:     node.attributes["Notes"],         // These were bad keys from Fusion Tables.
-          id:        node.id,
-          isNewEdge: false
+        selectedEdge: {
+          id:           edge.id,
+          sourceId:     edge.source,
+          targetId:     edge.target,
+          relationship: edge.attributes["Relationship"],
+          info:         edge.attributes["Citations"],
+          notes:        edge.attributes["Notes"],
+          isNewEdge:    true
         },
-        isEditable: false
+        isEditable:         false
       })
     }
   }
@@ -350,9 +353,18 @@ console.log('...Clear form finished')
     // selectedTargetNode update
     // If parent passes an empty selectedTargetNode, then we
     // need to clear the form
-    if (nextProps.selectedTargetNode=={}) {
+    if (nextProps.selectedTargetNode===undefined) {
       this.clearForm()
-    } 
+    } else {
+      this.setState({ selectedNode: nextProps.selectedTargetNode })
+    }
+
+    // selectedEdge update
+    // If parent passes a valid selectedEdge, then load it
+    console.log('EdgeEntry.componentWillReceiveProps selectedEdge:',nextProps.selectedEdge)
+    if (nextProps.selectedEdge!==undefined && Object.keys(nextProps.selectedEdge).length>0) {
+      this.loadFormFromEdge( nextProps.selectedEdge )
+    }
   }
   shouldComponentUpdate () { return true }
   componentWillUpdate () {}

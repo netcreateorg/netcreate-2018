@@ -46,6 +46,7 @@ class AutoCompleteDemo extends React.Component {
     this.updateData                = this.updateData.bind(this)
     this.handleJSONLoad            = this.handleJSONLoad.bind(this)
     this.handleNodeClick           = this.handleNodeClick.bind(this)
+    this.handleEdgeClick           = this.handleEdgeClick.bind(this)
     this.handleSourceInputUpdate   = this.handleSourceInputUpdate.bind(this)
     this.handleTargetInputUpdate   = this.handleTargetInputUpdate.bind(this)
     this.handleSourceHighlight     = this.handleSourceHighlight.bind(this)
@@ -76,6 +77,16 @@ class AutoCompleteDemo extends React.Component {
     this.updateSelectedNodeById( clickedNode.id, SOURCE_COLOR )
     this.setState( {
       selectedSourceNode: clickedNode
+    })
+  }
+  handleEdgeClick ( clickedEdge ) {
+    console.log('AutoCompleteDemo.handleEdgeClick',clickedEdge)
+    // this.deselectAllNodes()
+    this.updateSelectedEdgeById( clickedEdge.id )
+    this.setState( {
+      selectedEdge:       clickedEdge,
+      selectedSourceNode: clickedEdge.source,
+      selectedTargetNode: clickedEdge.target,
     })
   }
 
@@ -265,6 +276,24 @@ class AutoCompleteDemo extends React.Component {
   deselectAllNodes () {
     for (let node of this.state.data.nodes) { node.selected = this.getDeselectedNodeColor( node ) }
   }
+  ///
+  /// EDGES
+  ///
+  updateSelectedEdgeById( id ) {
+    if (id==='') {
+      this.deselectAllEdges()
+      return
+    }
+    let updatedData = this.state.data
+    updatedData.edges = this.state.data.edges.map( edge => {
+      edge.selected = (edge.id===id) ? SOURCE_COLOR : DESELECTED_COLOR
+      return edge
+    })
+    this.setState( { data: updatedData })
+  }
+  deselectAllEdges () {
+    for (let edge of this.state.data.edges) { edge.selected = DESELECTED_COLOR }
+  }
 
 
 
@@ -312,6 +341,7 @@ class AutoCompleteDemo extends React.Component {
                   data={this.state.data}
                   selectedSourceNode={this.state.selectedSourceNode}
                   selectedTargetNode={this.state.selectedTargetNode}
+                  selectedEdge={this.state.selectedEdge}
 
                   onInputUpdate={this.handleTargetInputUpdate}
                   onHighlight={this.handleTargetHighlight}
@@ -325,6 +355,7 @@ class AutoCompleteDemo extends React.Component {
             <NetGraph 
               data={this.state.data}
               onNodeClick={this.handleNodeClick}
+              onEdgeClick={this.handleEdgeClick}
             />
           </div>
           <div id="right" style={{backgroundColor:'#ffffE0', flex:'1 0 auto', padding:'10px'}}>

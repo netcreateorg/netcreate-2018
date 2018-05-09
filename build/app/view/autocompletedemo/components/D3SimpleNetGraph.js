@@ -115,22 +115,25 @@ class D3NetGraph {
   ///   which then triggers all the internal updates
   ///
   SetData ( newData ) {
-      this.data = newData
-      if (newData && newData.nodes) {
-        this._Initialize()
-        this._UpdateForces()
-        this._UpdateGraph()
+    this.data = newData
+    if (newData && newData.nodes) {
+      this._Initialize()
+      this._UpdateForces()
+      this._UpdateGraph()
 
-        // updates ignored until this is run
-        // restarts the simulation (important if simulation has already slowed down)
-        this.simulation.alpha(1).restart()
-      }
+      // updates ignored until this is run
+      // restarts the simulation (important if simulation has already slowed down)
+      this.simulation.alpha(1).restart()
+    }
   }
   ///
   ///   When a node is clicked, clickFn will be called
   ///
-  SetClickHandler ( clickHandler ) {
-    this.clickFn = clickHandler
+  SetNodeClickHandler ( clickHandler ) {
+    this.nodeClickFn = clickHandler
+  }
+  SetEdgeClickHandler ( clickHandler ) {
+    this.edgeClickFn = clickHandler
   }
 
 
@@ -193,6 +196,9 @@ class D3NetGraph {
         .attr("color",        (d) => { if (d.selected) return d.selected; })
         .attr("font-weight",  (d) => { if (d.selected) return 'bold'; })
 
+    linkElements.merge(linkElements)
+      .classed("selected",  (d) => { return d.selected })
+
 
     // ENTER
     // Create new elements as needed.
@@ -209,11 +215,11 @@ class D3NetGraph {
         .on("end",   (d) => { this._Dragended(d, this) }))
       .on("click",   (d) => { 
           console.log('clicked on',d.label,d.id)
-          this.clickFn( d ) })
+          this.nodeClickFn( d ) })
 
     nodes.append("circle")
-        .attr("r", (d) => { return d.size ?  d.size/10 : self.defaultSize; })
-        .attr("fill", (d) => { return d.color ? d.color : self.defaultColor; })
+        .attr("r", (d) => { return d.size ?  d.size/10 : this.defaultSize; })
+        .attr("fill", (d) => { return d.color ? d.color : this.defaultColor; })
     nodes
       .append("text")
         .classed('noselect', true)
@@ -229,6 +235,9 @@ class D3NetGraph {
     linkElements.enter()
       .insert("line",".node")
         .classed('edge', true)
+      .on("click",   (d) => { 
+          console.log('clicked on',d.label,d.id)
+          this.edgeClickFn( d ) })
 
 
     // EXIT
