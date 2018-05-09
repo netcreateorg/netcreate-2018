@@ -133,6 +133,13 @@ class EdgeEntry extends React.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UTILITIES
   ///
+  /// 
+  isEmpty ( obj ) {
+    return obj===undefined ||
+           obj===null      ||
+           ( obj.constructor === Object && 
+             Object.keys(obj).length===0 )   // = {}
+  }
   /// Clear the form with optional label
   clearForm () {
     this.setState({
@@ -483,7 +490,9 @@ console.log('...Clear form finished')
           >{this.state.selectedEdge.isNewEdge?"Add New Edge":"Edit Edge"}</Button>
           <Button color="primary" size="sm" 
             hidden={!this.state.isEditable}
-            disabled={!this.state.isEditable}
+            disabled={(!this.state.isEditable) && 
+                      ( this.isEmpty(this.state.selectedSourceNode) ||
+                        this.isEmpty(this.state.selectedTargetNode) )}
           >Save</Button>
         </FormGroup>
       </Form>
