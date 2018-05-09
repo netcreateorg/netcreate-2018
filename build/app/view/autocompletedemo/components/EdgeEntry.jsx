@@ -445,6 +445,7 @@ console.log('...Clear form finished')
           >{this.state.selectedEdge.isNewEdge?"Add New Edge":"Edit Edge"}</Button>
           <Button color="primary" size="sm" 
             hidden={!this.state.isEditable}
+            disabled={!this.state.isEditable}
           >Save</Button>
         </FormGroup>
       </Form>
