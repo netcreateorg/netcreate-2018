@@ -374,7 +374,8 @@ class AutoCompleteDemo extends React.Component {
     // This loads data from the htmldemos/d3forcedemo data file for now.
     // Relative URLS don't seem to work.
     // The URL is constructed in http://localhost:3000/scripts/node_modules/url/url.js line 110.
-    d3.json("http://localhost:3000/htmldemos/d3forcedemo/data.json", this.handleJSONLoad)
+//    d3.json("http://localhost:3000/htmldemos/d3forcedemo/data.json", this.handleJSONLoad)
+    d3.json("http://localhost:3000/htmldemos/d3forcedemo/data.reducedlinks.json", this.handleJSONLoad)
   }
 
   render() {

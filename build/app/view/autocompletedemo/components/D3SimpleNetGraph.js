@@ -50,12 +50,12 @@ let _forceProperties = {   // values for all forces
       },
       forceX: {
         enabled: true,
-        strength: .03,
+        strength: .2, //.03,
         x: .5
       },
       forceY: {
         enabled: true,
-        strength: .03,
+        strength: .2, //.03,
         y: .5
       },
       link: {
@@ -185,21 +185,6 @@ class D3NetGraph {
       .data(this.data.edges, (d) => { return d.source.id+"-"+d.target.id })
 
 
-    // UPDATE
-    // Update old elements as needed.
-    nodeElements.merge(nodeElements)
-      .selectAll("circle")
-        .attr("stroke",       (d) => { if (d.selected) return d.selected; })
-        .attr("stroke-width", (d) => { if (d.selected) return '5px'; })
-    nodeElements.merge(nodeElements)
-      .selectAll("text")
-        .attr("color",        (d) => { if (d.selected) return d.selected; })
-        .attr("font-weight",  (d) => { if (d.selected) return 'bold'; })
-
-    linkElements.merge(linkElements)
-      .classed("selected",  (d) => { return d.selected })
-
-
     // ENTER
     // Create new elements as needed.
     //
@@ -218,7 +203,15 @@ class D3NetGraph {
           this.nodeClickFn( d ) })
 
     nodes.append("circle")
-        .attr("r", (d) => { return d.size ?  d.size/10 : this.defaultSize; })
+        .attr("r", 
+          (d) => { 
+            let count = 1
+            this.data.edges.map( (l)=>{ l.source == d.id || l.target == d.id ? count++ : 0 } )
+            d.weight = count
+            // console.log(d.weight)
+            return this.defaultSize * d.weight
+        })
+//        .attr("r", (d) => { return this.defaultSize }) // d.size ?  d.size/10 : this.defaultSize; })
         .attr("fill", (d) => { return d.color ? d.color : this.defaultColor; })
     nodes
       .append("text")
@@ -238,6 +231,31 @@ class D3NetGraph {
       .on("click",   (d) => { 
           console.log('clicked on',d.label,d.id)
           this.edgeClickFn( d ) })
+
+
+
+    // UPDATE
+    // Update old elements as needed.
+    nodeElements.merge(nodeElements)
+      .selectAll("circle")
+        .attr("stroke",       (d) => { if (d.selected) return d.selected; })
+        .attr("stroke-width", (d) => { if (d.selected) return '5px'; })
+        .attr("r", 
+          (d) => { 
+            let count = 1
+            this.data.edges.map( (l)=>{ l.source.id == d.id || l.target.id == d.id ? count++ : 0 } )
+            d.weight = count
+            // console.log(d.weight)
+            return this.defaultSize * d.weight
+        })
+    nodeElements.merge(nodeElements)
+      .selectAll("text")
+        .attr("color",        (d) => { if (d.selected) return d.selected; })
+        .attr("font-weight",  (d) => { if (d.selected) return 'bold'; })
+
+    linkElements.merge(linkElements)
+      .classed("selected",  (d) => { return d.selected })
+
 
 
     // EXIT
@@ -261,10 +279,12 @@ class D3NetGraph {
     this.simulation
       .force("link", d3.forceLink()
           .id((d) => {return d.id})
-          .distance(_forceProperties.link.distance)
+          .distance( (d)=>{return _forceProperties.link.distance * (1/d.size) } )
+//          .distance(_forceProperties.link.distance)
           .iterations(_forceProperties.link.iterations))
       .force("charge", d3.forceManyBody()
-          .strength(_forceProperties.charge.strength * _forceProperties.charge.enabled)
+//          .strength(_forceProperties.charge.strength * _forceProperties.charge.enabled)
+          .strength( (d)=>{return d.size/6 * _forceProperties.charge.strength * _forceProperties.charge.enabled} )
           .distanceMin(_forceProperties.charge.distanceMin)
           .distanceMax(_forceProperties.charge.distanceMax))
       .force("collide", d3.forceCollide()
