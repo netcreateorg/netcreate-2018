@@ -408,7 +408,7 @@ class NodeSelector extends React.Component {
           <Button outline size="sm"
             hidden={this.state.isEditable}
             onClick={this.onEditButtonClick}
-          >{this.state.formData.isNewNode?"Add New Node":"Edit Node"}</Button>
+          >{this.props.selectedNode.id===undefined?"Add New Node":"Edit Node"}</Button>
           <Button color="primary" size="sm" 
             hidden={!this.state.isEditable}
           >Save</Button>

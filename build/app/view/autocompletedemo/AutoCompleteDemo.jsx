@@ -203,6 +203,8 @@ class AutoCompleteDemo extends React.Component {
       updatedData.edges.push(edge)
     }
     this.setState({ data: updatedData })
+    // Clear Target Node
+    this.setState({ selectedTargetNode: {} })
   }
 
 
