@@ -108,6 +108,8 @@ See class comments in `build/app/view/autocompletedemo/components/NodeDetail.jsx
 
 EdgeEntry is a form for searching for, viewing, selecting, and editing Edge information.
 
+It works in conjunction with NodeSelector to define edges.  NodeSelector defines the source node, and EdgeEntry defines the target node.
+
 EdgeEntry does not modify any data.  It passes all events (text updates,
 highlights, and suggestion selections) up to the parent.  The parent
 object should process the events and update the data accordingly.  The
@@ -121,10 +123,23 @@ See class comments in `build/app/view/autocompletedemo/components/EdgeEntry.jsx`
 
 
 
+---
+
+## NetGraph.js
+
+NetGraph is a wrapper for a D3 force simulation graph component: `D3SimpleNetGraph.js`.  It provides the data interface to AutoCompleteDemo, and allows the D3SimpleNetGraph to run outside of react's render loop.
+
+It also handles node and edge click events detected by D3SimpleNetGraph and passes the events back up to AutCompleteDemo.
+
+
 
 ---
 
-## D3SimpleNetGraph.jsx
+## D3SimpleNetGraph.js
+
+D3SimpleNetGraph is a class that renders a D3 force simulation graph.  It runs independently of react.
+
+It currently accepts data as defined in `build/app/assets/htmldemos/d3forcedemo/data.json`.
 
 Lessons Learned
 
@@ -132,9 +147,13 @@ Lessons Learned
     the way force simulations work.
 
 *   Most example code out there does not handle link merges during the D3
-    update, so changing the link data structures during a session results in disconected links.
+    update, so changing the link data structures during a session results in disconected links.  `D3NetGraph.jsx` was the initial implementation that did not account for this.  It has since been deprecated in favor of `D3SimpleNetGraph.js`
 
-*   Similarly, most example code does not properly handle link ids.
+*   Similarly, most example code does not properly handle link ids.  
+    Our implementation of link ids might be problematic.  Right now in `build/app/view/autocompletedemo/components/D3SimpleNetGraph.js` `_UpdateGraph` when linkElements are defined in line 190, we return a unique identifier constructed of `source.id + "-" + target.id` per various code examples.  This is problematic in two ways:
+    1.  It does not allow multiple edges to be defined between any two sources and targets.
+    2.  It ignores the edge.id field that should already be defined and should be unique.
+    We can probably get away with returning `edge.id` instead.
 
 
 

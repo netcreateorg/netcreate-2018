@@ -14,6 +14,7 @@
     *   Not using a proper link id based on source.id + target.id
     *   Using saved references to objects that could get outdated with
         data joins/merges/updates.
+    Use `D3SimpleNetGraph.js` instead.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 

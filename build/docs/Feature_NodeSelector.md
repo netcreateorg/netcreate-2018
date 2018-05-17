@@ -90,7 +90,7 @@ See class comments in `build/app/view/autocompletedemo/components/NetGraph.jsx` 
 
 * Modes: Search vs Select vs View vs Edit vs Add New
 
-        The component serves three different five different functions: 
+        The component serves five different functions: 
 
         1. Search -- User types in field to search for a matching node.
         2. Select -- User can browse list of matching nodes and select one from the list.
@@ -113,9 +113,9 @@ See class comments in `build/app/view/autocompletedemo/components/NetGraph.jsx` 
 
 ## TESTING
 
-* Modes: View vs Edit vs Add New
+* Modes: Search vs Select vs View vs Edit vs Add New
 
-        VIEW
+        SEARCH
         0.  Starting up
             => The label field should show placeholder "Type node name..."
             => The form should be empty
@@ -130,15 +130,14 @@ See class comments in `build/app/view/autocompletedemo/components/NetGraph.jsx` 
             => AutoComplete/AutoSuggest should show highlight on one item.
             => The graph should bold only one item, and unhighlight the rest.
             => The details of the highlighted item should be displayed in a NodeDetail
-            => AutoComplete/AutoSuggest should show highlight on one item.
-            => The graph should bold only one item, and unhighlight the rest.
-            => The details of the highlighted item should be displayed in a NodeDetail
         3.  If you click outside the input field
             => The suggestions list should disappaer
         4.  If you type a string that doesn't match any existing node, 
             e.g. "abcd"
             => The suggestions list should show only a blank
             => The bottom right button should display "Add New Node"
+
+        VIEW
         5.  If you click on a suggestion
             => The suggestions list should disappear
             => The clicked on suggestion should be highlighted in the graph

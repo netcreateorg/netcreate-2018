@@ -1,7 +1,7 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
 
-    D3 NetGraph
+    D3 Simple NetGraph
 
     This is designed to work with the NetGraph React component.
 
@@ -9,8 +9,13 @@
     This triggers D3NetGraph to redraw itself.
 
     This simplified version derived from D3NetGraph.js was created to address 
-    a problem with links not updating properly.  This removes the fancy force 
-    property settings.
+    a problem with links not updating properly.  
+
+    The first implementation of this removed the fancy force property settings
+    that were needed to handle the realtime UI widgets in 'D3 Force Demo' app.
+    Eventually these were brough back in once the link merging was debugged.
+    However, this hasn't been reconciled with the `D3 Force Demo` widgets.
+    It *might* work, but it *might* not.
 
     This is based on:
     *  rdpoor's commented version of mbostock's original code
@@ -18,7 +23,7 @@
     *  danilo's v4 update
        https://bl.ocks.org/tezzutezzu/cd04b3f1efee4186ff42aae66c87d1a7
     *  mbostock's general update pattern
-      https://bl.ocks.org/mbostock/3808218
+       https://bl.ocks.org/mbostock/3808218
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 

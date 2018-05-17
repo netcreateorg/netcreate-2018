@@ -6,6 +6,29 @@ const Autosuggest = require('react-autosuggest');
 /******************************************************************************/
 /*/
 
+      AutoComplete is the text input field for entering node labels to:
+      * search for nodes, 
+      * edit existing nodes, 
+      * and add new nodes.  
+
+      Main features:
+
+      * It interactively provides a list of suggestions that match the current 
+        input, e.g. typing "ah" will display a list of suggestions including "Ah 
+        Long", "Ah Seung", and "Oahu Railroad Station".
+
+      * Users can highlight suggestions (via mouseover or with keyboard arrows)
+
+      * Users can select a suggestion (via clicking or hitting return)
+
+      AutoComplete is a wrapper class for the open source AutoSuggest component, 
+      which handles the actual rendering of the suggestions list.  AutoComplete 
+      provides an interface to NodeSelector and EdgeEntry.  AutoComplete also 
+      provides the handler routines for generating the suggestions list and 
+      handling highlights and selections.
+
+
+
       This relies on the react-autosuggest component.
       See documentation:  https://github.com/moroshko/react-autosuggest
 

@@ -316,6 +316,9 @@ These are my daily notes as I work on features.
 
 
 NEXT:
+*   Are edges bidirectional?
+*   Edge types can't be set -- if you select an item, it reverts to the first selection.
+
 *   Highlighting and hitting enter results in a new edge
     -   Combine Save/Submit into one button to allow keyboard behavior?
 *   Error check -- empty form elements!
