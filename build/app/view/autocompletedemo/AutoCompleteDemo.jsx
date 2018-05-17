@@ -1,3 +1,152 @@
+/*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+
+    Auto Complete Demo
+    ==================
+
+    The basic structure of the app looks like this:
+
+        AutoCompleteDemo
+        |
+        +- NodeSelector
+        |  |
+        |  +- NodeDetail
+        |  |
+        |  +- AutoComplete
+        |     |
+        |     +- AutoSuggest
+        |
+        +- EdgeEntry
+        |  |
+        |  +- *AutoComplete (for Target Node)*
+        |
+        +- NetGraph
+           |
+           +- D3SimpleNetGraph
+              |
+              +- D3
+
+
+
+    # AutoCompleteDemo.jsx
+
+    `AutoCompleteDemo.jsx` is the root element.  
+
+    *   It maintains the graph data in `this.state.data`
+    *   It handles events from NodeSelector, EdgeEntry, and NetGraph components
+        and passes data and upates across them.
+
+
+    *PROPS*
+
+    (none)
+
+
+    *STATE*
+
+    data                    A js Object containing `nodes` and `edges` arrays.
+                            This data is rendered to the net graph directly by D3.
+
+    selectedSourceNode      The currently selected node in NodeSelector.
+                            This is used by EdgeEntry.jsx as the `source` node.
+
+    selectedTargetNode      The currently selected target node in EdgeEntry.
+
+
+    *EVENTS*
+
+    Source/Target Input Updates
+                            As the user types in either the source (NodeSelector)
+                            or target (EdgeEntry) input fields, the current value 
+                            of the input field is passed to AutoCompleteDemo via 
+                            handlers: `this.handleSourceInputUpdate` and 
+                            `this.handleTargetInputUpdate`.  
+
+                            AutoCompleteDemo will use this value to set 
+                            `this.state.selectedSourceNode` and 
+                            `this.state.selectedTargetNode` which in turn will 
+                            update the respective AutoComplete input field in 
+                            NodeSelector and EdgeEntry.  This insures that the 
+                            AutoComplete field in both of those components are 
+                            fully 'controlled' fields (e.g. set automatically 
+                            via a local state setting).
+
+    Source/Target Highlight
+                            As the user highlights suggestions in either the 
+                            source (NodeSelector) or target (EdgeEntry) input 
+                            fields, the current highlighted item is passed to 
+                            AutoCompleteDemo via handlers:
+                            `this.handleSourceHighlight` and 
+                            `this.handleTargetHighlight`.  
+
+                            AutoCompleteDemo uses this info to highlight 
+                            (mark by making it bold/outlined) particular nodes 
+                            and edges in the D3 graph.
+
+    Source/Target Selection
+                            When the user selects a particular node or edge in 
+                            NodeSelector or EdgeEntry input fields, the selected 
+                            item is passed to AutoCompleteDemo via handlers:
+                            `this.handleSourceNodeSelection` and 
+                            `this.handleTargetNodeSelection`.  
+
+                            AutoCompleteDemo will update 
+                            `this.state.selectedSourceNode` and 
+                            `this.state.selectedTargetNode` based on this 
+                            selection.  This data is then passed on to 
+                            NodeSelector and EdgeEntry via props.
+
+    Node Updates            When the user changes node data, either by adding a
+                            new node or editing an existing node in 
+                            NodeSelector, the updated data is passed to 
+                            AutoCompleteDemo via `this.handleNodeUpdate` handler.
+
+                            AutoCompleteDemo will update the graph data store 
+                            with the new node (replace existing node, or add 
+                            a new node)
+
+    Edge Updates            When the user changes node data, either by adding a
+                            new edge or editing an existing edge in EdgeEntry, 
+                            the updated data is passed to AutoCompleteDemo via 
+                            `this.handleEdgeUpdate` handler.
+
+                            AutoCompleteDemo will update the graph data store 
+                            with the new edge (replace existing edge, or add 
+                            a new edge)
+
+    *EVENTS: D3 Graph Updates*
+
+    Mark Node/Edge          When a node or edge is higlighted via an AutoComplete
+                            highlight or is selected via AutoComplete selection 
+                            or clicked on in NetGraph, it is shown bold (or 
+                            outlined) in the D3 graph.  This is done by updating 
+                            the node or edge in `this.state.data` object, setting 
+                            the object's `selected` key to a particular color 
+                            corresponding to the node/edge UI control.  When 
+                            the data is updated, it is passed to `NetGraph.jsx`, 
+                            which in turn updates the data in 
+                            `D3SimpleNetGraph.js`.  `D3SimpleNetGraph` will add 
+                            the highlight during its update cycle.
+
+                            The colors allow us to highlight different fields 
+                            simultaneously with each component.  For example, 
+                            you can highlight both the source and target nodes 
+                            with different colors so you know which is which.  
+                            This is especially useful when the highlight matches 
+                            many objects, e.g. "Ah" matches 7 different nodes.
+
+    Add New Node/Edge       When the user adds a new edge or node, handlers in
+                            AutoCompleteDemo will update its `this.state.data` 
+                            with the new nodes/edges.  This is passed on to 
+                            `NetGraph.jsx` and in turn to `D3SimpleNetGraph.js` 
+                            which will display the new data during its update 
+                            cycle.
+
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
+
+
+
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React        = require('react');
@@ -39,9 +188,8 @@ class AutoCompleteDemo extends React.Component {
     super()
     this.state = { 
       data:                    {},    // nodes and edges data object
-      nodeSearchString:        '',     // node label search string set in AutoComplete input field
-
-      selectedSourceNode:      {}
+      selectedSourceNode:      {},
+      selectedTargetNode:      {},
     }
     this.updateData                = this.updateData.bind(this)
     this.handleJSONLoad            = this.handleJSONLoad.bind(this)
@@ -290,7 +438,6 @@ class AutoCompleteDemo extends React.Component {
   /// MANAGE GRAPH DATA
   ///
   /// Set the `selected` flag for any nodes that match `searchValue`, and update the state
-  /// The parent component is notified and the data is passed via onDataUpdate
   markSelectedNodes( searchValue, color ) {
     if (searchValue==='') {
       this.deselectAllNodes()

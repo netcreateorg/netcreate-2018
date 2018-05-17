@@ -3,7 +3,8 @@
 
     Edge Entry
 
-    Form for selecting and editing Edge information.
+    EdgeEntry is a form for searching for, viewing, selecting, and 
+    editing Edge information.
 
     TO USE
 

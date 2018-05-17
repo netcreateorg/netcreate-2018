@@ -3,7 +3,8 @@
 
     Node Selector
 
-    Form for selecting and editing Node information.
+    NodeSelector is a form for searching for, viewing, selecting, and editing 
+    Node information.
 
     NodeSelector does not modify any data.  It passes all events (text updates,
     highlights, and suggestion selections) up to the parent.  The parent
