@@ -4,15 +4,14 @@ const React        = require('react');
 const d3           = require('d3');
 const AutoComplete = require('./components/AutoComplete');
 const NetGraph     = require('./components/NetGraph');
+const NodeSelector = require('./components/NodeSelector');
 const NodeDetail   = require('./components/NodeDetail');
+const ReactStrap   = require('reactstrap')
+const { FormText } = ReactStrap
 
 /// React Component ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*
-    lexicon is a one-dimensional string array that represents the complete list 
-    of all possible suggestions that are then filtered based on the user typing
-    for suggestions.
-*/
+
 
 
 /// export a class object for consumption by brunch/require
@@ -21,64 +20,26 @@ class AutoCompleteDemo extends React.Component {
     super()
     this.state = { 
       data:             {},    // nodes and edges data object
-      lexicon:          [],    // string array of node labels
       nodeSearchString: ''     // node label search string set in AutoComplete input field
     }
-    this.handleJSONLoad = this.handleJSONLoad.bind(this)
-    this.handleInputChange = this.handleInputChange.bind(this)
-    this.handleNodeSelection = this.handleNodeSelection.bind(this)
-    this.setStateDataSelectedNode = this.setStateDataSelectedNode.bind(this)
+    this.updateData               = this.updateData.bind(this)
+    this.handleJSONLoad           = this.handleJSONLoad.bind(this)
+  }
+
+  updateData ( newData ) {
+    this.setState( { 
+      data:    newData
+    })
   }
 
   handleJSONLoad ( error, _data ) {
     if (error) throw error
     // map nodes[].label to textList
-    this.setState( {
-      data:    _data,
-      lexicon: _data.nodes.map(function(d){return d.label})
-    })
-  }
-
-  handleInputChange ( value ) {
-    this.setState( {nodeSearchString: value} )
-    this.setStateDataSelectedNode( value )
-  }
-
-  handleNodeSelection ( nodeLabel ) {
-    let nodes = this.state.data.nodes.filter( node => { return node.label == nodeLabel })
-    if ((nodes!==null) &&
-        (Array.isArray(nodes)) &&
-        (nodes.length>0) &&
-        (nodes[0]!==null)) {
-      // console.log('nodeLabel is',nodeLabel,'node selected is', nodes)
-      this.setState( {selectedNode: nodes[0] })
-    } else {
-      console.error('Selected node',nodeLabel,'not found')
-  }
+    this.updateData( _data )
   }
 
   deselectAllNodes () {
     for (let node of this.state.data.nodes) { node.selected = false }
-  }
-
-  // Set the `selected` flag for any nodes that match `value`, and update the state
-  // This data is passed on to the NetGraph component for rendering
-  setStateDataSelectedNode( value ) {
-    if (value==='') {
-      this.deselectAllNodes()
-      return
-    }
-    let updatedData = this.state.data
-    updatedData.nodes = this.state.data.nodes.map( node => {
-      if (node.label.toLowerCase().startsWith( value.toLowerCase() )) {
-        // console.log('...setting selected',node.label,'matches',value)
-        node.selected = true
-      } else {
-        node.selected = false
-      }
-      return node
-    })
-    this.setState( { data: updatedData })
   }
 
   componentDidMount () {
@@ -105,15 +66,14 @@ class AutoCompleteDemo extends React.Component {
             <div style={{display:'flex', flexFlow:'column nowrap',height:100+'%'}}>
               <div style={{flexGrow:1}}>
                 <h3>Nodes</h3>
-                <AutoComplete 
-                  lexicon={this.state.lexicon}
-                  onInputChange={this.handleInputChange}
-                  onSelection={this.handleNodeSelection}
-                />
               </div>
               <div>
-                <NodeDetail
+                <NodeSelector 
+                  data={this.state.data}
+                  onDataUpdate={this.updateData}
+                />
                   selectedNode={this.state.selectedNode}
+                  onNewNode={this.handleNewNode}
                 />
               </div>
             </div>

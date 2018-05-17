@@ -63,14 +63,16 @@ class D3NetGraph {
 
   constructor ( rootElement ) {
     /// Instance Variables - - - - - - - - - - - - - - - - - - - - - - - - - - 
-    this.rootElement = rootElement
-    this.svg         = {}
-    this.simulation  = {}
-    this.linkGroup   = {}
-    this.link        = {}
-    this.nodeGroup   = {}
-    this.node        = {}
-    this.data        = {}
+    this.rootElement  = rootElement
+    this.svg          = {}
+    this.simulation   = {}
+    this.linkGroup    = {}
+    this.link         = {}
+    this.nodeGroup    = {}
+    this.node         = {}
+    this.data         = {}
+    this.defaultSize  = 5
+    this.defaultColor = '#000'
 
     /// Constructor - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     this.svg = d3.select(rootElement).append('svg')
@@ -84,10 +86,11 @@ class D3NetGraph {
 
     this.simulation = d3.forceSimulation()
 
-    this._Ticked = this._Ticked.bind(this)
-    this._Dragstarted = this._Dragstarted.bind(this)
-    this._Dragged = this._Dragged.bind(this)
-    this._Dragended = this._Dragended.bind(this)
+    this._InitializeDisplay = this._InitializeDisplay.bind(this)
+    this._Ticked            = this._Ticked.bind(this)
+    this._Dragstarted       = this._Dragstarted.bind(this)
+    this._Dragged           = this._Dragged.bind(this)
+    this._Dragended         = this._Dragended.bind(this)
 
   }
 
@@ -127,6 +130,8 @@ class D3NetGraph {
   ///         </g>
   _InitializeDisplay ( data ) {
 
+    var self = this
+
     this.link = this.linkGroup
       .selectAll("line")
       .data(data.edges)
@@ -156,8 +161,8 @@ class D3NetGraph {
 
     // ENTER Add Group Items
     this.node.append("circle")
-        .attr("r", function(d) { return d.size/10; })
-        .attr("fill", function(d) { return d.color; })
+        .attr("r", function(d) { return d.size ?  d.size/10 : self.defaultSize; })
+        .attr("fill", function(d) { return d.color ? d.color : self.defaultColor; })
     this.node.append("text")
         // .classed('noselect', true)
         .attr("font-size", 10)

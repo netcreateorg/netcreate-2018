@@ -30,7 +30,12 @@
 .react-autosuggest__suggestions-container--open {
   display: block;
   position: absolute;
-  top: 51px;
+  top: 51px; /* below input field */
+/* show suggestions to the right of the input field 
+   so form elements can be read 
+  top: 0px;
+  left: 239px;
+ end show suggestions */
   width: 280px;
   border: 1px solid #aaa;
   background-color: #fff;
@@ -60,6 +65,8 @@
 
 
 /* Data View Styles */
+.nodeEntry .form-control:disabled,.nodeEntry .form-control[readonly] { 
+  background-color: #ffffff33; 
 }
 
 /* SVG styles */
