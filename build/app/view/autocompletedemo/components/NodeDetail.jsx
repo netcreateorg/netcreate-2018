@@ -3,7 +3,7 @@
 
     Node Detail
 
-    A display widget that shows all of the meta information contained in each 
+    A display widget that shows all of the meta information contained in each
     data node.
 
     If label is undefined the component will not be shown.
@@ -57,19 +57,21 @@ class NodeDetail extends React.Component {
     node.attributes = node.attributes || {}    // validate attributes
     this.setState({
       label: node.label,
-      type:  node.attributes["Node_Type"],     // HACK This needs to be updated when 
+      type:  node.attributes["Node_Type"],     // HACK This needs to be updated when
       info:  node.attributes["Extra Info"],    // the data format is updated
       notes: node.attributes["Notes"]          // These were bad keys from Fusion Tables.
     })
   }
-  
+
   shouldComponentUpdate () { return true }
 
   componentWillUpdate () {}
 
   render () {
+    /*STYLE*/// it's impossible to tell where d-none is defined. A locally calculated style might be better.
+            /// ah, it's a built-in reactstrap property. blah.
     return (
-      <div className={this.state.label==undefined ? "d-none" : ""} 
+      <div className={this.state.label==undefined ? "d-none" : ""}
            style={{minHeight:'300px',minWidth:'240px',backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px',}}>
         <FormText>NODE DETAIL</FormText>
         <Table borderless="true" striped size="sm"><tbody>
