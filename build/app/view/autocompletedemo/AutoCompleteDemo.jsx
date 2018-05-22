@@ -30,7 +30,7 @@
 
     # AutoCompleteDemo.jsx
 
-    `AutoCompleteDemo.jsx` is the root element.  
+    `AutoCompleteDemo.jsx` is the root element.
 
     *   It maintains the graph data in `this.state.data`
     *   It handles events from NodeSelector, EdgeEntry, and NetGraph components
@@ -57,89 +57,89 @@
 
     Source/Target Input Updates
                             As the user types in either the source (NodeSelector)
-                            or target (EdgeEntry) input fields, the current value 
-                            of the input field is passed to AutoCompleteDemo via 
-                            handlers: `this.handleSourceInputUpdate` and 
-                            `this.handleTargetInputUpdate`.  
+                            or target (EdgeEntry) input fields, the current value
+                            of the input field is passed to AutoCompleteDemo via
+                            handlers: `this.handleSourceInputUpdate` and
+                            `this.handleTargetInputUpdate`.
 
-                            AutoCompleteDemo will use this value to set 
-                            `this.state.selectedSourceNode` and 
-                            `this.state.selectedTargetNode` which in turn will 
-                            update the respective AutoComplete input field in 
-                            NodeSelector and EdgeEntry.  This insures that the 
-                            AutoComplete field in both of those components are 
-                            fully 'controlled' fields (e.g. set automatically 
+                            AutoCompleteDemo will use this value to set
+                            `this.state.selectedSourceNode` and
+                            `this.state.selectedTargetNode` which in turn will
+                            update the respective AutoComplete input field in
+                            NodeSelector and EdgeEntry.  This insures that the
+                            AutoComplete field in both of those components are
+                            fully 'controlled' fields (e.g. set automatically
                             via a local state setting).
 
     Source/Target Highlight
-                            As the user highlights suggestions in either the 
-                            source (NodeSelector) or target (EdgeEntry) input 
-                            fields, the current highlighted item is passed to 
+                            As the user highlights suggestions in either the
+                            source (NodeSelector) or target (EdgeEntry) input
+                            fields, the current highlighted item is passed to
                             AutoCompleteDemo via handlers:
-                            `this.handleSourceHighlight` and 
-                            `this.handleTargetHighlight`.  
+                            `this.handleSourceHighlight` and
+                            `this.handleTargetHighlight`.
 
-                            AutoCompleteDemo uses this info to highlight 
-                            (mark by making it bold/outlined) particular nodes 
+                            AutoCompleteDemo uses this info to highlight
+                            (mark by making it bold/outlined) particular nodes
                             and edges in the D3 graph.
 
     Source/Target Selection
-                            When the user selects a particular node or edge in 
-                            NodeSelector or EdgeEntry input fields, the selected 
+                            When the user selects a particular node or edge in
+                            NodeSelector or EdgeEntry input fields, the selected
                             item is passed to AutoCompleteDemo via handlers:
-                            `this.handleSourceNodeSelection` and 
-                            `this.handleTargetNodeSelection`.  
+                            `this.handleSourceNodeSelection` and
+                            `this.handleTargetNodeSelection`.
 
-                            AutoCompleteDemo will update 
-                            `this.state.selectedSourceNode` and 
-                            `this.state.selectedTargetNode` based on this 
-                            selection.  This data is then passed on to 
+                            AutoCompleteDemo will update
+                            `this.state.selectedSourceNode` and
+                            `this.state.selectedTargetNode` based on this
+                            selection.  This data is then passed on to
                             NodeSelector and EdgeEntry via props.
 
     Node Updates            When the user changes node data, either by adding a
-                            new node or editing an existing node in 
-                            NodeSelector, the updated data is passed to 
+                            new node or editing an existing node in
+                            NodeSelector, the updated data is passed to
                             AutoCompleteDemo via `this.handleNodeUpdate` handler.
 
-                            AutoCompleteDemo will update the graph data store 
-                            with the new node (replace existing node, or add 
+                            AutoCompleteDemo will update the graph data store
+                            with the new node (replace existing node, or add
                             a new node)
 
     Edge Updates            When the user changes node data, either by adding a
-                            new edge or editing an existing edge in EdgeEntry, 
-                            the updated data is passed to AutoCompleteDemo via 
+                            new edge or editing an existing edge in EdgeEntry,
+                            the updated data is passed to AutoCompleteDemo via
                             `this.handleEdgeUpdate` handler.
 
-                            AutoCompleteDemo will update the graph data store 
-                            with the new edge (replace existing edge, or add 
+                            AutoCompleteDemo will update the graph data store
+                            with the new edge (replace existing edge, or add
                             a new edge)
 
     *EVENTS: D3 Graph Updates*
 
     Mark Node/Edge          When a node or edge is higlighted via an AutoComplete
-                            highlight or is selected via AutoComplete selection 
-                            or clicked on in NetGraph, it is shown bold (or 
-                            outlined) in the D3 graph.  This is done by updating 
-                            the node or edge in `this.state.data` object, setting 
-                            the object's `selected` key to a particular color 
-                            corresponding to the node/edge UI control.  When 
-                            the data is updated, it is passed to `NetGraph.jsx`, 
-                            which in turn updates the data in 
-                            `D3SimpleNetGraph.js`.  `D3SimpleNetGraph` will add 
+                            highlight or is selected via AutoComplete selection
+                            or clicked on in NetGraph, it is shown bold (or
+                            outlined) in the D3 graph.  This is done by updating
+                            the node or edge in `this.state.data` object, setting
+                            the object's `selected` key to a particular color
+                            corresponding to the node/edge UI control.  When
+                            the data is updated, it is passed to `NetGraph.jsx`,
+                            which in turn updates the data in
+                            `D3SimpleNetGraph.js`.  `D3SimpleNetGraph` will add
                             the highlight during its update cycle.
 
-                            The colors allow us to highlight different fields 
-                            simultaneously with each component.  For example, 
-                            you can highlight both the source and target nodes 
-                            with different colors so you know which is which.  
-                            This is especially useful when the highlight matches 
+                            The colors allow us to highlight different fields
+                            simultaneously with each component.  For example,
+                            you can highlight both the source and target nodes
+                            with different colors so you know which is which.
+                            This is especially useful when the highlight matches
                             many objects, e.g. "Ah" matches 7 different nodes.
 
     Add New Node/Edge       When the user adds a new edge or node, handlers in
-                            AutoCompleteDemo will update its `this.state.data` 
-                            with the new nodes/edges.  This is passed on to 
-                            `NetGraph.jsx` and in turn to `D3SimpleNetGraph.js` 
-                            which will display the new data during its update 
+                            AutoCompleteDemo will update its `this.state.data`
+                            with the new nodes/edges.  This is passed on to
+                            `NetGraph.jsx` and in turn to `D3SimpleNetGraph.js`
+                            which will display the new data during its update
                             cycle.
 
 
@@ -170,10 +170,15 @@ const TARGET_COLOR     = '#FF0000'
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// REVIEW: These are duplicated in AutoComplete. Pull out as utilites?
 /// https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions#Using_Special_Characters
-const escapeRegexCharacters = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+/// [DS] the context of this function isn't clear why we're using it; I'm guessing as I read through
+/// [DS] what's the best way of building these kind of shared functions such that people actually
+/// know when to use them? It's not clear to me not having reviewed the entirety of the code
+/// and it's only used once. Also this style of function declaration is foreign to our codestyle
+/// which favors oldschool function declarations, not this new arrow function stuff.
+const escapeRegexCharacters = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') /*STYLE*/// function declaration hard to parse
 const appearsIn = (searchValue, targetString) => {
   if (typeof searchValue !== 'string') { return false }
-  const escapedLabel = escapeRegexCharacters(searchValue.trim())
+  const escapedLabel = escapeRegexCharacters(searchValue.trim()) /*STYLE*/// why break this out? premature optimization
   if (escapedLabel === '') { return false }
   const regex = new RegExp(escapedLabel, 'i') // case insensitive
   return regex.test(targetString)
@@ -186,7 +191,7 @@ const appearsIn = (searchValue, targetString) => {
 class AutoCompleteDemo extends React.Component {
   constructor () {
     super()
-    this.state = { 
+    this.state = {
       data:                    {},    // nodes and edges data object
       selectedSourceNode:      {},
       selectedTargetNode:      {},
@@ -209,7 +214,7 @@ class AutoCompleteDemo extends React.Component {
     this.findMatchingEdge          = this.findMatchingEdge.bind(this)
     this.setSelectedEdge           = this.setSelectedEdge.bind(this)
     this.markSelectedNodes         = this.markSelectedNodes.bind(this)
-    this.markSelectedNodeById      = this.markSelectedNodeById.bind(this)
+    this.markSelectedNodeById      = this.markSelectedNodeById.bind(this) /*STYLE*/// Node vs Nodes hard to see
     this.deselectAllNodes          = this.deselectAllNodes.bind(this)
     this.markSelectedEdgeById      = this.markSelectedEdgeById.bind(this)
   }
@@ -217,15 +222,15 @@ class AutoCompleteDemo extends React.Component {
 
 
   updateData ( newData ) {
-    this.setState( { 
+    this.setState( {
       data:    newData
     })
   }
 
-  handleJSONLoad ( error, _data ) {
+  handleJSONLoad ( error, _data ) { /*SYSTEM*/// this eventually will be part of datamanage
     if (error) throw error
     // map nodes[].label to textList
-    this.updateData( _data )
+    this.updateData( _data ) /*STYLE*/// does the use of updateData() just make it more indirect to read?
   }
 
   handleNodeClick ( clickedNode ) {
@@ -233,8 +238,9 @@ class AutoCompleteDemo extends React.Component {
     this.deselectAllNodes()
     this.markSelectedNodeById( clickedNode.id, SOURCE_COLOR )
     this.setState( {
-      selectedSourceNode: clickedNode
+      selectedSourceNode: clickedNode /*STYLE*/// reuse of selectedSourceNode as selectedNode makes logic unclear with regards to selectedEdge?
     })
+    /*STYLE*/// why isn't there a setSelectedNode corresponding to setSelectedEdge?
   }
   handleEdgeClick ( clickedEdge ) {
     console.log('AutoCompleteDemo.handleEdgeClick',clickedEdge)
@@ -242,9 +248,10 @@ class AutoCompleteDemo extends React.Component {
       selectedSourceNode: clickedEdge.source,
       selectedTargetNode: clickedEdge.target,
     })
-    this.setSelectedEdge(clickedEdge)
+    this.setSelectedEdge(clickedEdge) /*STYLE*/// this doesn't update the visual?
 
     // Update markers
+    /*STYLE*/// these handle the actual visual update?
     this.markSelectedEdgeById( clickedEdge.id )
     this.deselectAllNodes()
     this.markSelectedNodeById( clickedEdge.source.id, SOURCE_COLOR)
@@ -255,6 +262,7 @@ class AutoCompleteDemo extends React.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// SOURCE AND TARGET INPUT HANDLERS
   ///
+  /*STYLE*/// in general should document who calls this in comments
   handleSourceInputUpdate ( label ) {
     console.log('AutoCompleteDemo.handleSourceInputUpdate',label)
     // mark matching nodes
@@ -299,7 +307,7 @@ class AutoCompleteDemo extends React.Component {
     } else {
       // Valid node, so select it
       this.setState( { selectedSourceNode: node } )
-      this.markSelectedNodeById( node.id, SOURCE_COLOR )      
+      this.markSelectedNodeById( node.id, SOURCE_COLOR )
     }
 
     this.findMatchingEdgeWithSource(node.label)
@@ -314,22 +322,22 @@ class AutoCompleteDemo extends React.Component {
     } else {
       // Valid node, so select it
       this.setState( { selectedTargetNode: node } )
-      this.markSelectedNodeById( node.id, TARGET_COLOR )      
+      this.markSelectedNodeById( node.id, TARGET_COLOR )
     }
 
     this.findMatchingEdgeWithTarget(node.label)
   }
 
   /// Update existing node, or add a new node
-  handleNodeUpdate ( newNodeData ) {
+  handleNodeUpdate ( newNodeData ) { /*STYLE*/// this is called 'newNodeData' but it isn't always new
     console.log('AutoCompleteDemo.handleNodeUpdate',newNodeData)
-    let updatedData = this.state.data
+    let updatedData = this.state.data /*STYLES*/// this is copying by reference, so you're overriding the original state below which may have repercussions
     let found = false
     updatedData.nodes = this.state.data.nodes.map( node => {
       if (node.id === newNodeData.id) {
         node.label                    = newNodeData.label
         node.attributes["Node_Type"]  = newNodeData.type
-        node.attributes["Extra Info"] = newNodeData.info
+        node.attributes["Extra Info"] = newNodeData.info  /*STYLE*/// why switch between _ and space?
         node.attributes["Notes"]      = newNodeData.notes
         node.id                       = newNodeData.id
         console.log('...updated existing node',node.id)
@@ -352,7 +360,7 @@ class AutoCompleteDemo extends React.Component {
   }
 
   /// Update existing edge, or add a new edge
-  handleEdgeUpdate ( newEdgeData ) {
+  handleEdgeUpdate ( newEdgeData ) { /*STYLE*/// this is called 'newEdgeData' but it isn't always new
     console.log('AutoCompleteDemo.handleEdgeUpdate',newEdgeData)
     let updatedData = this.state.data
     let found = false
@@ -443,6 +451,8 @@ class AutoCompleteDemo extends React.Component {
       this.deselectAllNodes()
       return
     }
+    /*STYLE*/// make sure this is actually creating a copy of this.state.data
+            /// map() might ensure this
     let updatedData = this.state.data
     updatedData.nodes = this.state.data.nodes.map( node => {
       if (appearsIn(searchValue, node.label)) {
@@ -480,15 +490,19 @@ class AutoCompleteDemo extends React.Component {
   }
   /// Only deselect nodes that were selected by this instance, ignore selections
   /// from other NodeSelectors
+  /*STYLE*/// this is called from deselectAllNodes without specifying 'color'. what is intent?
+  /*STYLE*/// what is an 'NodeSelector instance'? a set of matching nodes? premature optimization?
   getDeselectedNodeColor ( node, color ) {
     if (node.selected!==color ) { // this.props.selectedColor) {
-      return node.selected 
+      return node.selected /*STYLE*/// node.selected is a color AND a truthy value???
     } else {
       return DESELECTED_COLOR
     }
   }
   deselectAllNodes () {
+    /*STYLE*/// is the intent of this to ensure node.selected has a value of some kind? is it necessary at all?
     for (let node of this.state.data.nodes) { node.selected = this.getDeselectedNodeColor( node ) }
+    /*STYLE*///
     let updatedData = this.state.data
     let color = DESELECTED_COLOR
     updatedData.nodes = this.state.data.nodes.map( node => {
@@ -503,7 +517,7 @@ class AutoCompleteDemo extends React.Component {
   markSelectedEdgeById( id ) {
     let updatedData = this.state.data
     updatedData.edges = this.state.data.edges.map( edge => {
-      edge.selected = (edge.id===id)
+      edge.selected = (edge.id===id)  /*STYLE*/// edge.selected doesn't mirror node.selected in value type (node.selected is a color)
       return edge
     })
     this.setState( { data: updatedData })
@@ -526,6 +540,11 @@ class AutoCompleteDemo extends React.Component {
   }
 
   render() {
+    /*STYLE*/// might be possible to replace props like "onHighlight= blah blah" with
+            /// handleSourceHighlight = { this }  // destructuring assignment
+            /// which is equivalent to handleSourceHighlight = this.handleSourceHighlight
+            /// so we don't introduce another set of function names
+
     return (
       <div>
         <h1>Auto Complete Demo</h1>
@@ -542,7 +561,7 @@ class AutoCompleteDemo extends React.Component {
                 <h3>Nodes</h3>
               </div>
               <div>
-                <NodeSelector 
+                <NodeSelector
                   data={this.state.data}
                   selectedNode={this.state.selectedSourceNode}
                   highlightedNodeLabel={this.state.highlightedSourceNodeLabel}
@@ -552,7 +571,7 @@ class AutoCompleteDemo extends React.Component {
                   onNodeSelect={this.handleSourceNodeSelection}
                   onNodeUpdate={this.handleNodeUpdate}
                 />
-                <EdgeEntry 
+                <EdgeEntry
                   data={this.state.data}
                   selectedSourceNode={this.state.selectedSourceNode}
                   selectedTargetNode={this.state.selectedTargetNode}
@@ -567,7 +586,7 @@ class AutoCompleteDemo extends React.Component {
             </div>
           </div>
           <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 auto', padding:'10px'}}>
-            <NetGraph 
+            <NetGraph
               data={this.state.data}
               onNodeClick={this.handleNodeClick}
               onEdgeClick={this.handleEdgeClick}

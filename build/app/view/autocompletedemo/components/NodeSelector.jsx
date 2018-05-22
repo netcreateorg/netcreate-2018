@@ -3,7 +3,7 @@
 
     Node Selector
 
-    NodeSelector is a form for searching for, viewing, selecting, and editing 
+    NodeSelector is a form for searching for, viewing, selecting, and editing
     Node information.
 
     NodeSelector does not modify any data.  It passes all events (text updates,
@@ -30,18 +30,18 @@
 
     PROPS SETTERS (data from Parent)
 
-          data            Used to pass the current graph data from the parent 
+          data            Used to pass the current graph data from the parent
                           component to NodeSelector
-          
+
           selectedNode    If the parent selects a node, pass the node here
 
-          highlightedNodeLabel 
+          highlightedNodeLabel
                           Currently highlighted label
 
 
     PROPS HANDLERS (data sent to Parent)
 
-          onInputUpdate   A callback function, called whenever user types in 
+          onInputUpdate   A callback function, called whenever user types in
                           search field
 
           onHighlight     A callback function, called whenever user highlights
@@ -163,7 +163,7 @@ class NodeSelector extends React.Component {
     this.setState({
       formData: {
         label:     node.label,
-        type:      node.attributes["Node_Type"],     // HACK This needs to be updated when 
+        type:      node.attributes["Node_Type"],     // HACK This needs to be updated when
         info:      node.attributes["Extra Info"],    // the data format is updated
         notes:     node.attributes["Notes"],         // These were bad keys from Fusion Tables.
         id:        node.id,
@@ -179,6 +179,7 @@ class NodeSelector extends React.Component {
   ///
   /// As the user types, dynamically update the currently selected nodes in the data
   /// this has a side effect of passing the data to the parent component via onDataUpdate
+  /*STYLE*/// this is a generic name for what's happening. Maybe it should be LabelChange and indicate that a livesearch happens?
   handleAutoCompleteInputChange (searchValue) {
     // Update the local value
     let formData = this.state.formData
@@ -195,14 +196,15 @@ class NodeSelector extends React.Component {
   handleAutoCompleteSuggestionHighlight (nodeLabel) {
     // Find first node that matches highlight
     if (nodeLabel===null) {
-      // Unhighlight 
+      // Unhighlight
       this.setState({ highlightedNode: {} })
     } else {
       let nodes = this.state.data.nodes.filter( node => { return nodeLabel===node.label })
+      /*STYLE*/// Array.filter ALWAYS returns an array, but it can be empty. Checking for null or array-ness isn't necessary
       if ( (nodes!==null) &&
            (Array.isArray(nodes)) &&
            (nodes.length>0) &&
-           (nodes[0]!==null) 
+           (nodes[0]!==null)
          ) {
         // Node is Valid!
         this.setState({ highlightedNode: nodes[0] })
@@ -226,7 +228,7 @@ class NodeSelector extends React.Component {
       this.setState({
         formData: {
           label:     node.label,
-          type:      node.attributes["Node_Type"],     // HACK This needs to be updated when 
+          type:      node.attributes["Node_Type"],     // HACK This needs to be updated when
           info:      node.attributes["Extra Info"],    // the data format is updated
           notes:     node.attributes["Notes"],         // These were bad keys from Fusion Tables.
           id:        node.id,
@@ -250,20 +252,20 @@ class NodeSelector extends React.Component {
     node.label = label
     this.setState({ formData: node })
   }
-  onTypeChange  (event) { 
+  onTypeChange  (event) {
     let node = this.state.formData
     node.type = event.target.value
-    this.setState({ formData: node }) 
+    this.setState({ formData: node })
   }
-  onNotesChange (event) { 
+  onNotesChange (event) {
     let node = this.state.formData
     node.notes = event.target.value
-    this.setState({ formData: node }) 
+    this.setState({ formData: node })
   }
-  onInfoChange  (event) { 
+  onInfoChange  (event) {
     let node = this.state.formData
     node.info = event.target.value
-    this.setState({ formData: node }) 
+    this.setState({ formData: node })
   }
   onEditButtonClick (event) {
     event.preventDefault()
@@ -292,7 +294,7 @@ class NodeSelector extends React.Component {
     }
 
     // Notify parent of new node data
-    this.props.onNodeUpdate( node )
+    this.props.onNodeUpdate( node ) /*STYLE*/// why have onNodeUpdate() and handleNodeUpdate()?
     // Notify parent to deselect selectedNode
     this.props.onNodeSelect( {} )
 
@@ -338,7 +340,7 @@ class NodeSelector extends React.Component {
         <hr/>
         <FormGroup>
           <Label for="nodeLabel" className="small text-muted">LABEL</Label>
-          <AutoComplete 
+          <AutoComplete
             data={this.state.data}
             value={this.state.formData.label}
             disableSuggestions={!this.state.isEditable}
@@ -348,7 +350,7 @@ class NodeSelector extends React.Component {
           />
         </FormGroup>
         <div style={{position:'absolute',left:'300px',maxWidth:'300px'}}>
-          <NodeDetail 
+          <NodeDetail
             selectedNode={this.state.highlightedNode}
           />
         </div>
@@ -368,7 +370,7 @@ class NodeSelector extends React.Component {
         </FormGroup>
         <FormGroup>
           <Label for="notes" className="small text-muted">NOTES</Label>
-          <Input type="textarea" name="note" id="notesText" 
+          <Input type="textarea" name="note" id="notesText"
             value={this.state.formData.notes||''}
             onChange={this.onNotesChange}
             readOnly={!this.state.isEditable}
@@ -376,7 +378,7 @@ class NodeSelector extends React.Component {
         </FormGroup>
         <FormGroup>
           <Label for="info" className="small text-muted">GEOCODE or DATE</Label>
-          <Input type="text" name="info" id="info" 
+          <Input type="text" name="info" id="info"
             value={this.state.formData.info||''}
             onChange={this.onInfoChange}
             readOnly={!this.state.isEditable}
@@ -397,7 +399,7 @@ class NodeSelector extends React.Component {
             hidden={this.state.isEditable}
             onClick={this.onEditButtonClick}
           >{this.props.selectedNode.id===undefined?"Add New Node":"Edit Node"}</Button>
-          <Button color="primary" size="sm" 
+          <Button color="primary" size="sm"
             hidden={!this.state.isEditable}
           >Save</Button>
         </FormGroup>

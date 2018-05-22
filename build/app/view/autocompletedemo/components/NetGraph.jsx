@@ -3,31 +3,31 @@
 
     NetGraph
 
-    This component uses React to create the base dom element and pass data 
+    This component uses React to create the base dom element and pass data
     updates, but D3NetGraph handles the rendering and animation updates.
 
-    React is explicitly prevented from updating the component (see 
+    React is explicitly prevented from updating the component (see
     shouldComponentUpdate)
 
-    
+
     TO USE
 
-            <NetGraph 
+            <NetGraph
               data={this.state.data}
               onNodeClick={this.handleNodeClick}
             />
 
 
     Why not use FauxDom?
-    
+
     https://lab.oli.me.uk/react-faux-dom-state/
     This article suggests that maybe using force graphs with react-faux-dom
     not quite work.
         "If you want to animate things, use a React animation library (they’re
-         great and work fine with faux DOM), you have to find the React way to 
-         do things, sadly some D3 concepts just don’t translate. If you want 
-         some physics based graph full of state then you’re probably better 
-         off keeping to the original way of embedding D3 in React, dropping 
+         great and work fine with faux DOM), you have to find the React way to
+         do things, sadly some D3 concepts just don’t translate. If you want
+         some physics based graph full of state then you’re probably better
+         off keeping to the original way of embedding D3 in React, dropping
          out of React and letting D3 mutate that element."
     Indeed, in our testing, the animation updates were not optimal.
 
@@ -42,6 +42,7 @@ const React = require('react')
 const ReactDOM = require('react-dom')
 //const D3NetGraph = require('./D3NetGraph')
 const D3NetGraph = require('./D3SimpleNetGraph')
+/*STYLE*/// We use CamelCase only for React components, lowercase-only for all other modules
 
 
 
@@ -55,6 +56,9 @@ class NetGraph extends React.Component {
     this.state = {
       d3NetGraph: {}
     }
+    /*STYLE*/// explicitly listing the prop-based handlers here is a good convention to maintain
+            /// e.g. onNodeClick passed in. I see the docs, but I like explicit declaration and symmetry with other modules
+            /// also onEdgeClick isn't defined in the comment docs at the top
   }
 
   componentDidMount () {
@@ -71,8 +75,11 @@ class NetGraph extends React.Component {
     this.state.d3NetGraph.SetData( nextProps.data )
     this.state.d3NetGraph.SetNodeClickHandler( nextProps.onNodeClick )
     this.state.d3NetGraph.SetEdgeClickHandler( nextProps.onEdgeClick )
+    /*STYLE*/// this direct setting of React this.state outside of the constructor is considered BAD FORM
+            /// maybe this can be stored as a regular local var?
+            /// oh, this maybe fires only once in startup, but "updates to graph data" implies more than one in the comment above
   }
-  
+
   shouldComponentUpdate () {
     // This prevents React from updating the component,
     // allowing D3 to handle the simulation animation updates
