@@ -17,29 +17,29 @@
 
 /// REACT LIBRARIES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const React = require('react');
-const {
-  Alert,
-  Collapse,
-  Navbar,
-  NavbarToggler,
-  NavbarBrand,
-  Nav,
-  NavItem,
-  NavLink,
-  UncontrolledDropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem
-  } = require('reactstrap');
-const {
-  Switch,
-  Route,
-  Redirect,
-  Link
-  } = require('react-router-dom');
-// workaround name collision in ReactRouterNavLink with ReactStrap
-const RRNavLink = require('react-router-dom').NavLink;
+    const React = require('react');
+    const {
+      Alert,
+      Collapse,
+      Navbar,
+      NavbarToggler,
+      NavbarBrand,
+      Nav,
+      NavItem,
+      NavLink,
+      UncontrolledDropdown,
+      DropdownToggle,
+      DropdownMenu,
+      DropdownItem
+      } = require('reactstrap');
+    const {
+      Switch,
+      Route,
+      Redirect,
+      Link
+      } = require('react-router-dom');
+    // workaround name collision in ReactRouterNavLink with ReactStrap
+    const RRNavLink = require('react-router-dom').NavLink;
 
 
 /** (1) ROUTED COMPONENTS ****************************************************\
@@ -54,12 +54,13 @@ const RRNavLink = require('react-router-dom').NavLink;
   init-appshell        |     Navbar    position:fixed
   --- COMPONENT BELOW ---
   <RequiredComponent>  |     div       this is a child of a flexbox
-\* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-const AppDefault       = require('view/AppDefault');
-const Prototype        = require('view/prototype/Prototype');
-const AutoCompleteDemo = require('view/autocompletedemo/AutoCompleteDemo');
-const DevUnisys        = require('view/dev-unisys/DevUnisys');
-const D3Test           = require('view/d3test/D3Test');
+\*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+    const AppDefault        = require('view/AppDefault');
+    const Prototype         = require('view/prototype/Prototype');
+//  const AutoCompleteDemo  = require('view/autocompletedemo/AutoCompleteDemo');
+    const AutoCompleteDemo2 = require('view/autocompletedemo-rf/AutoCompleteDemo');
+    const DevUnisys         = require('view/dev-unisys/DevUnisys');
+    const D3Test            = require('view/d3test/D3Test');
 
 
 /** (2) ROUTED FUNCTIONS *****************************************************\
@@ -75,28 +76,28 @@ const D3Test           = require('view/d3test/D3Test');
   init-appshell.HTML() |     div       display:flex, flex-flow:column nowrap,
                                        width:100%
   init-appshell.HTML() |       iframe  flex:1 0 auto, border:0
-\* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-function HTML ( props ) {
-  let loc = props.location.pathname.substring(1);
-  loc     = '/htmldemos/'+loc+'/'+loc+'.html';
-  return (
-    <div style={{display:'flex', flexFlow:'column nowrap',
-         width:'100%', height:'100%'}}>
-      <iframe style={{flex:'1 0 auto',border:'0'}} src={loc} />
-    </div>
-  );
+\*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+    function HTML ( props ) {
+    let loc = props.location.pathname.substring(1);
+    loc     = '/htmldemos/'+loc+'/'+loc+'.html';
+    return (
+      <div style={{display:'flex', flexFlow:'column nowrap',
+           width:'100%', height:'100%'}}>
+        <iframe style={{flex:'1 0 auto',border:'0'}} src={loc} />
+      </div>
+    );
 }
 
 
 /** (3) NO ROUTE *************************************************************\
   Used by render()'s <Switch> when there are no matching routes
-\* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-function NoMatch ( props ) {
-  let hash = props.location.pathname.substring(1);
-  return (
-    <Alert color="warning">No Match for route <tt>#{hash}</tt></Alert>
-  );
-}
+\*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+  function NoMatch ( props ) {
+    let hash = props.location.pathname.substring(1);
+    return (
+      <Alert color="warning">No Match for route <tt>#{hash}</tt></Alert>
+    );
+  }
 
 
 
@@ -106,8 +107,10 @@ function NoMatch ( props ) {
     components and a React view associated with the current route via
     ReactRouter <Switch> and <Route>.
 
-\* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/// export a class object for consumption by brunch/require
+    The AppShell class is exported as the main module object for use with
+    require() statements (thanks to brunch magic)
+
+\*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 class AppShell extends React.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ constructor
@@ -117,7 +120,7 @@ class AppShell extends React.Component {
       this.state = {
         isOpen: false
       };
-  }
+    }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle changes in state of his toggle switch
@@ -148,7 +151,7 @@ class AppShell extends React.Component {
                   <NavLink to="/d3forcedemo" tag={RRNavLink} replace>D3 ForceDemo</NavLink>
                 </NavItem>
                 <NavItem>
-                  <NavLink to="/autocompletedemo" tag={RRNavLink} replace>AutoComplete Demo</NavLink>
+                  <NavLink to="/autocompletedemo-rf" tag={RRNavLink} replace>AutoComplete Demo RF</NavLink>
                 </NavItem>
                 <NavItem>
                   <NavLink to="/prototype" tag={RRNavLink} replace>Prototype</NavLink>
@@ -184,7 +187,7 @@ class AppShell extends React.Component {
             <Route path='/d3forcedemo' exact component={ (props) => {return HTML(props)} }/>
             <Route path='/simple' exact component={ (props) => {return HTML(props)} }/>
             <Route path='/d3test' exact component={D3Test}/>
-            <Route path='/autocompletedemo' exact component={AutoCompleteDemo}/>
+            <Route path='/autocompletedemo-rf' exact component={AutoCompleteDemo2}/>
             <Route path='/dev-unisys' exact component={DevUnisys}/>
             <Route component={NoMatch}/>
           </Switch>
