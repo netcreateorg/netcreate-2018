@@ -2,7 +2,7 @@
 
     UNISYS is the top level system module for implementing:
 
-    * LifeCycle Hooks
+    * LIFECYCLE Hooks
     * Synchronized State
     * Messaging
 
@@ -12,14 +12,14 @@ const DBG         = true;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const LifeCycle   = require('system/unisys-lifecycle');
-const UniState    = require('system/unisys-state');
+const LIFECYCLE   = require('system/unisys-lifecycle');
+const STATE       = require('system/unisys-state');
 
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const Emitter     = require('system/object/emitter_class');
-const UniNode     = require('system/object/unisys_node_class');
-const UniModule   = require('system/object/unisys_module_class');
+const Emitter     = require('system/object/emitter-class');
+const UniNode     = require('system/object/unisys-node-class');
+const UniModule   = require('system/object/unisys-module-class');
 
 
 /// INITIALIZE MAIN MODULE ////////////////////////////////////////////////////
@@ -38,18 +38,20 @@ var UNISYS        = {};
 /*/ UNISYS.NewConnector = ( owner, optName ) => {
       return new UniNode( owner, optName );
     };
-
-
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: LifeCycle Hook() functions,
-/*/ UNISYS.Hook = LifeCycle.Hook; // pass phase and hook function
+/*/ API: LIFECYCLE Hook() functions
+/*/ UNISYS.Hook = LIFECYCLE.Hook; // pass phase and hook function
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: LIFECYCLE Scope() functions
+/*/ UNISYS.SetScope = LIFECYCLE.SetScope; // pass phase and hook function
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: application startup
 /*/ UNISYS.EnterApp = () => {
       return new Promise( async (resolve,reject)=>{
-        await LifeCycle.Execute('INITIALIZE'); // INITIALIZE hook
-        await LifeCycle.Execute('LOADASSETS'); // LOADASSETS hook
+        await LIFECYCLE.Execute('INITIALIZE'); // INITIALIZE hook
+        await LIFECYCLE.Execute('LOADASSETS'); // LOADASSETS hook
         resolve();
       });
     };
@@ -57,9 +59,9 @@ var UNISYS        = {};
 /*/ API: configure system before run
 /*/ UNISYS.SetupRun = () => {
       return new Promise( async (resolve,reject)=>{
-        await LifeCycle.Execute('RESET');
-        await LifeCycle.Execute('CONFIGURE');
-        await LifeCycle.Execute('START');
+        await LIFECYCLE.Execute('RESET');
+        await LIFECYCLE.Execute('CONFIGURE');
+        await LIFECYCLE.Execute('START');
         resolve();
       });
     };
@@ -67,7 +69,7 @@ var UNISYS        = {};
 /*/ API: handle periodic updates for a simulation-driven timestep
 /*/ UNISYS.Run = () => {
       return new Promise( async (resolve,reject)=>{
-        await LifeCycle.Execute('UPDATE');
+        await LIFECYCLE.Execute('UPDATE');
         resolve();
       });
     };
@@ -76,7 +78,7 @@ var UNISYS        = {};
     NOTE ASYNC ARROW FUNCTION (necessary?)
 /*/ UNISYS.BeforePause = () => {
       return new Promise( async (resolve,reject)=>{
-        await LifeCycle.Execute('PREPAUSE');
+        await LIFECYCLE.Execute('PREPAUSE');
         resolve();
       });
     };
@@ -85,7 +87,7 @@ var UNISYS        = {};
     NOTE ASYNC ARROW FUNCTION (necessary?)
 /*/ UNISYS.Paused = () => {
       return new Promise( async (resolve,reject)=>{
-        await LifeCycle.Execute('PAUSE');
+        await LIFECYCLE.Execute('PAUSE');
         resolve();
       });
     };
@@ -94,7 +96,7 @@ var UNISYS        = {};
     NOTE ASYNC ARROW FUNCTION (necessary?)
 /*/ UNISYS.PostPause = () => {
       return new Promise( async (resolve,reject)=>{
-        await LifeCycle.Execute('POSTPAUSE');
+        await LIFECYCLE.Execute('POSTPAUSE');
         resolve();
       });
     };
@@ -103,7 +105,7 @@ var UNISYS        = {};
     NOTE ASYNC ARROW FUNCTION (necessary?)
 /*/ UNISYS.CleanupRun = () => {
       return new Promise( async (resolve,reject)=>{
-        await LifeCycle.Execute('STOP');
+        await LIFECYCLE.Execute('STOP');
         resolve();
       });
     };
@@ -112,8 +114,8 @@ var UNISYS        = {};
     NOTE ASYNC ARROW FUNCTION (necessary?)
 /*/ UNISYS.ExitApp = () => {
       return new Promise( async (resolve,reject)=>{
-        await LifeCycle.Execute('UNLOADASSETS');
-        await LifeCycle.Execute('SHUTDOWN');
+        await LIFECYCLE.Execute('UNLOADASSETS');
+        await LIFECYCLE.Execute('SHUTDOWN');
         resolve();
       });
     };

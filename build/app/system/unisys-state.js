@@ -12,7 +12,7 @@ const NO_UID_FLTR = "UNISYS.OnStateChange: pass DST_UID parameter to enable echo
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const REACT       = require('react');
-const Emitter     = require('system/object/emitter_class');
+const Emitter     = require('system/object/emitter-class');
 
 /// MODULE DECLARATIONS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

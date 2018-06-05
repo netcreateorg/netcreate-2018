@@ -2,16 +2,19 @@
 
     UNISYS MODULE SHELL
 
-    A simple shell with a unique id and unique name.
-
-
-
+    A simple shell with a unique id and unique name. Currently this is just
+    a utility class for maintaining naming convention for modules, and
+    also ensuring they all have the same properties.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const DBG            = true;
 const BAD_NAME       = "name parameter must be a string or unisys module";
 const NOT_UNIQUE     = "name must be unique";
+
+/// LIBRARIES /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const LIFECYCLE      = require('system/unisys-lifecycle');
 
 /// MODULE DECLARATIONS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,15 +30,17 @@ var MODULES_COUNTER  = 1;         // unisys modules counter
 /*/ class UnisysModule {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// initializer is a string or another instance of UnisysModule, which is
-  /// used to create a derivative name of form 'initializer name:0'
-      constructor( initializer ) {
+  /*/ initializer is the value module.id or another instance of UnisysModule,
+      which is used to create a derivative name of form 'initializer name:0'
+  /*/ constructor( module ) {
 
-        if (initializer===undefined) throw Error(BAD_NAME);
-        if (initializer instanceof UnisysModule) {
-          this.name = initializer.AutoName();
-        } else if (typeof initializer==='string') {
-          this.name = initializer;
+        if (module===undefined) throw Error(BAD_NAME);
+        // can pass another unisys modules to create derived name
+        if (module instanceof UnisysModule) {
+          this.module_id = module.AutoName();
+        } else if (typeof module==='string') {
+        // otherwise, copy the initializer
+          this.module_id = module;
         }
         if (MODULES.has( this.name )) throw Error(NOT_UNIQUE);
 
@@ -46,24 +51,35 @@ var MODULES_COUNTER  = 1;         // unisys modules counter
         this.subnameCounter = 0;
 
         // save module in the global module list
-        MODULES.set( this.name, this );
+        MODULES.set( this.module_id, this );
       }
 
+  /// PROPERTIES //////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// Properties
-  /// this is used to differentiate sources of events so they don't echo
-      UID() {
+  /*/ this is used to differentiate sources of events so they don't echo
+  /*/ UID() {
         return this.uid;
       }
-      Name() {
-        return this.name;
+  /*/ this is used for identifying the module. It must be unique across all
+  /*/ ModuleID() {
+        return this.module_id;
       }
-      AutoName() {
-        return `${this.name}:${this.subnameCounter++}`;
+  /*/ used to create a derivative name
+  /*/ AutoName() {
+        return `${this.module_id}:${this.subnameCounter++}`;
       }
-      HasModule( name ) {
+  /*/ check if the name already exists in the MODULES collection
+  /*/ HasModule( name ) {
         return MODULES.has(name);
       }
+
+  /// LIFECYCLE /////////////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ wrap Hook function to include the ModuleID
+  /*/ Hook( phase, f ) {
+        LIFECYCLE.Hook(phase,f,this.ModuleID());
+      }
+
 
   } // end UnisysModule
 

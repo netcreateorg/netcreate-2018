@@ -19,14 +19,14 @@ const UNISYS    = require('system/unisys');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var MOD   = UNISYS.NewModule('DevUnisysLogic');
+var MOD   = UNISYS.NewModule( module.id );
 var UNODE = UNISYS.NewConnector( MOD );
 
 /// LIFECYCLE INIT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ First INITIALIZE Hook takes some time to resolve asynchronously
     Enable this feature by returning a Promise
-/*/ UNISYS.Hook('INITIALIZE', function () {
+/*/ MOD.Hook('INITIALIZE', function () {
       let tms = 1000;
       console.log(`Init Hook P1 will resolve in ${tms} milliseconds...`);
       let p = new Promise(function (resolve,reject) {
@@ -43,14 +43,14 @@ var UNODE = UNISYS.NewConnector( MOD );
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Second INITIALIZE Hook just runs a normal function.
     Enable this feature by returning a Function
-/*/ UNISYS.Hook('INITIALIZE', function() {
+/*/ MOD.Hook('INITIALIZE', function() {
       console.log('Init Hook P2 resolves immediately');
     }); // end INITIALIZE 2
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ The START phase executes after INITIALIZE has completed.
     we register handlers to the VIEW state namespace,
     and also set different namespace states on timers
-/*/ UNISYS.Hook('START', function () {
+/*/ MOD.Hook('START', function () {
       // register state change handler
       UNODE.OnStateChange('VIEW',(ns,state,src_uid)=>{
         console.log(`.. LOGIC <- state`,state,`via NS '${ns}' ${src_uid}`);

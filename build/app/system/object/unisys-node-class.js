@@ -28,7 +28,7 @@ const BAD_UID     = "unexpected non-unique UID";
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISTATE    = require('system/unisys-state');
-const Emitter     = require('system/object/emitter_class');
+const Emitter     = require('system/object/emitter-class');
 
 
 /// NODE MANAGEMENT ///////////////////////////////////////////////////////////
@@ -72,9 +72,9 @@ var UNODE_COUNTER = 100;       // unisys connector node id counter
         }
 
         // save unique id
-        this.uid = `${msgr_type}_${UNODE_COUNTER}`;
+        this.uid = `${msgr_type}_${UNODE_COUNTER++}`;
         this.name = msgr_name;
-        if (UNODE.has(this.uid)) throw Error(BAD_UID,this.uid);
+        if (UNODE.has(this.uid)) throw Error(BAD_UID+this.uid);
 
         // define key subsystems
         this.Event = new Emitter();

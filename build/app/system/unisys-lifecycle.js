@@ -5,7 +5,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 'use strict';
-const DBG = false;
+const DBG = true;
+const BAD_PATH = "module_path must be a string derived from the module's module.id";
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -31,23 +32,26 @@ const DBG = false;
 /// MODULE DEFINITION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     var MOD = {
-      name : 'LifeCycle'
+      name  : 'LifeCycle',
+      scope : false
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: register a Phase Handler which is invoked by MOD.Execute()
     phase is a string constant from PHASES array above
     f is a function that does work immediately, or returns a Promise
-/*/ MOD.Hook = (phase,f) => {
+/*/ MOD.Hook = (phase,f,scope) => {
+      // make sure scope is included
+      if (typeof scope!=='string') throw Error(`<arg3> scope is required (set to module.id)`);
       // does this phase exist?
-      if (typeof phase!=='string') throw new Error("<arg1> must be PHASENAME (e.g. 'LOADASSETS')");
-      if (!PHASES.includes(phase)) throw new Error(phase,"is not a recognized lifecycle phase");
+      if (typeof phase!=='string') throw Error("<arg1> must be PHASENAME (e.g. 'LOADASSETS')");
+      if (!PHASES.includes(phase)) throw Error(phase,"is not a recognized lifecycle phase");
       // did we also get a promise?
-      if (!(f instanceof Function)) throw new Error("<arg2> must be a function optionally returning Promise");
+      if (!(f instanceof Function)) throw Error("<arg2> must be a function optionally returning Promise");
 
       // get the list of promises associated with this phase
       // and add the new promise
       if (!PHASE_HOOKS.has(phase)) PHASE_HOOKS.set(phase,[]);
-      PHASE_HOOKS.get(phase).push(f);
+      PHASE_HOOKS.get(phase).push({f,scope});
       if (DBG) console.log(`[${phase}] added handler`);
     };
 
@@ -57,8 +61,11 @@ const DBG = false;
     a Promise, this is added to a list of Promises to wait for before the
     function returns control to the calling code.
 /*/ MOD.Execute = async (phase) => {
+      // require scope to be set
+      if (MOD.scope===false) throw Error(`must Lifecycle Scope before execute`);
+
       // contents of PHASE_HOOKs are promise-generating functions
-      if (!PHASES.includes(phase)) throw new Error(`${phase} is not a recognized lifecycle phase`);
+      if (!PHASES.includes(phase)) throw Error(`${phase} is not a recognized lifecycle phase`);
       let hooks = PHASE_HOOKS.get(phase);
       if (hooks===undefined) {
         if (DBG) console.log(`[${phase}] no subscribers`);
@@ -70,8 +77,9 @@ const DBG = false;
       // now execute handlers and promises
       let icount = 0;
       if (DBG) console.group(phase);
-      let promises = hooks.map((f)=>{
-        let retval = f();
+      // o contains f, scope pushed in Hook() above
+      let promises = hooks.map((o)=>{
+        let retval = m_CheckedHookCall(o);
         if (retval instanceof Promise) return retval;
         icount++;
       });
@@ -79,16 +87,48 @@ const DBG = false;
       // wait for all promises to execute
       await Promise.all(promises)
       .then((values)=>{
-        if (DBG)         console.log(`[${phase}] PROMISES DONE: ${values.length}`);
+        if (DBG) console.log(`[${phase}] PROMISES DONE: ${values.length}`);
         if (DBG) console.groupEnd();
         return values;
       })
       .catch((err)=>{
         if (DBG) console.log(`[${phase} EXECUTE ERROR ${err}`);
-        throw new Error(`[${phase} EXECUTE ERROR ${err}`);
+        throw Error(`[${phase} EXECUTE ERROR ${err}`);
       });
       // phase housekeeping
       PHASE = phase;
+    };
+
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ UTILITY: compare the destination scope with the acceptable scope (the
+    module.id of the root JSX component in a view). Any module not in the
+    system directory will not get called
+/*/ function m_CheckedHookCall(o) {
+      // check for system directory
+      if (o.scope.indexOf('system')===0)
+        return o.f();
+      // check for subdirectory
+      if (o.scope.includes(MOD.scope,0))
+        return o.f();
+      // else do nothing
+        if (DBG) console.info(`LIFECYCLE: ${o.scope} not in scope`);
+    }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: The scope is used to filter lifecycle events within a particular
+    application path, which are defined under the view directory.
+/*/ MOD.SetScope = ( module_path ) => {
+      if (typeof module_path!=='string') throw Error(BAD_PATH);
+      if (DBG) console.log(`setting lifecycle scope to ${module_path}`);
+      // strip out filename, if one exists
+      module_path = module_path.substring(0, module_path.lastIndexOf("/"));
+      MOD.scope = module_path;
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: The scope
+/*/ MOD.Scope = () => {
+      return MOD.scope;
     };
 
 /// STATIC METHODS ////////////////////////////////////////////////////////////

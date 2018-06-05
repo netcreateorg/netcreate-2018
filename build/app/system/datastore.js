@@ -12,18 +12,17 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SETTINGS = require('settings');
 const UNISYS   = require('system/unisys');
-require("babel-polyfill"); // enables regenerators for async/await
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let MOD        = UNISYS.NewModule('DATASTORE');
+let MOD        = UNISYS.NewModule( module.id );
 let DATA       = {};
 
 /// LIFECYCLE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ First INITIALIZE Hook takes some time to resolve asynchronously
     Enable this feature by returning a Promise
-/*/ UNISYS.Hook('LOADASSETS', function () {
+/*/ MOD.Hook('LOADASSETS', function () {
       let promise = new Promise((resolve,reject)=>{
         let xobj = new XMLHttpRequest();
         xobj.addEventListener('load',(event)=>{

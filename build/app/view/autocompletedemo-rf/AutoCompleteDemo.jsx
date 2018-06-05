@@ -155,8 +155,13 @@ const AutoComplete = require('./components/AutoComplete');
 const NetGraph     = require('./components/NetGraph');
 const NodeSelector = require('./components/NodeSelector');
 const EdgeEntry    = require('./components/EdgeEntry');
+const ACD_LOGIC    = require('./autocomplete-logic');
 const ReactStrap   = require('reactstrap')
 const { FormText } = ReactStrap
+
+/// NEW SIGNLING SYSTEM LIBRARIES /////////////////////////////////////////////
+const UNISYS       = require('system/unisys');
+var   UNODE        = null; // set in constructor
 
 
 
@@ -196,6 +201,15 @@ class AutoCompleteDemo extends React.Component {
       selectedSourceNode:      {},
       selectedTargetNode:      {},
     }
+
+    /*NEWBEGIN*/
+    console.group(module.id);
+    UNISYS.SetScope(module.id);
+    UNODE = UNISYS.NewConnector( this );
+    UNODE.Emit('ACD_CONSTRUCT');
+    console.groupEnd();
+    /*NEWEND*/
+
     this.updateData                = this.updateData.bind(this)
     this.handleJSONLoad            = this.handleJSONLoad.bind(this)
     this.handleNodeClick           = this.handleNodeClick.bind(this)
@@ -536,7 +550,16 @@ class AutoCompleteDemo extends React.Component {
     // Relative URLS don't seem to work.
     // The URL is constructed in http://localhost:3000/scripts/node_modules/url/url.js line 110.
 //    d3.json("http://localhost:3000/htmldemos/d3forcedemo/data.json", this.handleJSONLoad)
-    d3.json("http://localhost:3000/htmldemos/d3forcedemo/data.reducedlinks.json", this.handleJSONLoad)
+    d3.json("http://localhost:3000/htmldemos/d3forcedemo/data.reducedlinks.json", this.handleJSONLoad);
+
+    /*NEWCODE BEGIN*/
+    // kickoff initialization stage by stage
+    (async () => {
+      await UNISYS.EnterApp();
+      await UNISYS.SetupRun();
+    })();
+    /*NEWCODE END*/
+
   }
 
   render() {
