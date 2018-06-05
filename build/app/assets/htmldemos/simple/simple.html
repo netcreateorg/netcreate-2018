@@ -19,10 +19,9 @@
 		<p>NetCreate Features are loaded but not initialized. You can use require() in your Javascript and access common system modules with Bootstrap styling. However, you can not access the same data from the rest of the web application because this page has its own instance of the system libraries.</p>
 	</body>
 	<script>
+		require("babel-polyfill"); // enables regenerators for async/await
 		// demonstrate that NetCreate system libraries are available
 		const STORE = require('system/datastore');
-		STORE.Initialize();
-		STORE.Increment();
 		const $ = require('jquery');
 		$('body').append('<p>JQUERY ADDED THIS. Now D3 will turn me orange.</p>');
 		// d3 is loaded

@@ -11,12 +11,13 @@
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SETTINGS = require('settings');
-const UNISYS = require('system/unisys');
+const UNISYS   = require('system/unisys');
+require("babel-polyfill"); // enables regenerators for async/await
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let MOD = UNISYS.NewModule({name:'DATASTORE'});
-let DATA = {};
+let MOD        = UNISYS.NewModule('DATASTORE');
+let DATA       = {};
 
 /// LIFECYCLE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

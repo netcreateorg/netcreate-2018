@@ -4,7 +4,6 @@ const UNISYS      = require('system/unisys');
 const LOGIC       = require('./DevUnisysLogic');
 const REFLECT     = require('system/util/reflection');
 
-
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React       = require('react');
@@ -25,13 +24,10 @@ const { Alert }   = ReactStrap;
       constructor(props) {
         super(props);
 
-        // the UID is used to identify this endpoint when sending data
-        // to the UNISYS subsystem. We just need the ID, but we can
-        // retrieve the UniBridge instance by ID
-        this.uni_id = UNISYS.NewBridge(this).UID();
+        this.unode = UNISYS.NewConnector(this);
 
         // UNISYS state may already be initialized from settings
-        let state = UNISYS.State('VIEW');
+        let state = this.unode.State('VIEW');
         // UNISYS.State() returns a copy of state obj; mutate/assign freely
         state.description = state.description || 'uninitialized description';
         // REACT TIP: you can safely set state directly ONLY in constructor!
@@ -43,8 +39,8 @@ const { Alert }   = ReactStrap;
 
         // subscribe to UNISYS state change listeners
         // note: make sure that handlers are already bound to this
-        UNISYS.OnStateChange('VIEW', this.UnisysStateChange, this.uni_id);
-        UNISYS.OnStateChange('LOGIC', this.UnisysStateChange, this.uni_id);
+        this.unode.OnStateChange('VIEW', this.UnisysStateChange, this.uni_id);
+        this.unode.OnStateChange('LOGIC', this.UnisysStateChange, this.uni_id);
 
       } // constructor
 
@@ -66,7 +62,7 @@ const { Alert }   = ReactStrap;
           description : target.value
         }
         console.log(`REACT -> state`,state,`to NS 'VIEW' ${this.uni_id}`);
-        UNISYS.SetState('VIEW',state, this.uni_id);
+        this.unode.SetState('VIEW',state, this.uni_id);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// COMPONENT this interface has composed

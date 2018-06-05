@@ -19,10 +19,10 @@ const UNISYS    = require('system/unisys');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let MOD = UNISYS.NewModule({name:'DevUNISYSLogic'});
+var MOD   = UNISYS.NewModule('DevUnisysLogic');
+var UNODE = UNISYS.NewConnector( MOD );
 
-
-/// LIFECYCLE /////////////////////////////////////////////////////////////////
+/// LIFECYCLE INIT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ First INITIALIZE Hook takes some time to resolve asynchronously
     Enable this feature by returning a Promise
@@ -52,7 +52,7 @@ let MOD = UNISYS.NewModule({name:'DevUNISYSLogic'});
     and also set different namespace states on timers
 /*/ UNISYS.Hook('START', function () {
       // register state change handler
-      UNISYS.OnStateChange('VIEW',(ns,state,src_uid)=>{
+      UNODE.OnStateChange('VIEW',(ns,state,src_uid)=>{
         console.log(`.. LOGIC <- state`,state,`via NS '${ns}' ${src_uid}`);
       });
 
@@ -60,14 +60,14 @@ let MOD = UNISYS.NewModule({name:'DevUNISYSLogic'});
       setTimeout( function () {
         let state = { description : 'Logic.START set this text' };
         console.log(`LOGIC -> state`,state,`via NS 'VIEW' ${MOD.UID()}`);
-        UNISYS.SetState('VIEW',state,MOD.UID());
+        UNODE.SetState('VIEW',state,MOD.UID());
       },1000);
 
       // set a periodic timer update
       setInterval( function() {
         let state = { random: u_RandomString() };
         console.log(`LOGIC -> state`,state,`via NS 'LOGIC' ${MOD.UID()}`);
-        UNISYS.SetState('LOGIC',state,MOD.UID());
+        UNODE.SetState('LOGIC',state,MOD.UID());
       },5000);
 
     }); // end START
