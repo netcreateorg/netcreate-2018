@@ -18,7 +18,7 @@ const STATE       = require('system/unisys-state');
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const Emitter     = require('system/object/emitter-class');
-const UniNode     = require('system/object/unisys-node-class');
+const UniData     = require('system/object/unisys-data-class');
 const UniModule   = require('system/object/unisys-module-class');
 
 
@@ -35,8 +35,8 @@ var UNISYS        = {};
 /// UNISYS CONNECTOR //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Make new module with UNISYS convenience methods
-/*/ UNISYS.NewConnector = ( owner, optName ) => {
-      return new UniNode( owner, optName );
+/*/ UNISYS.NewDataLink = ( owner, optName ) => {
+      return new UniData( owner, optName );
     };
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

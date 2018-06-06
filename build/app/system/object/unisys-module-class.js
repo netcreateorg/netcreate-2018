@@ -4,7 +4,7 @@
 
     A simple shell with a unique id and unique name. Currently this is just
     a utility class for maintaining naming convention for modules, and
-    also ensuring they all have the same properties.
+    serves as the interface for module management within the UNISYS universe
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -24,10 +24,9 @@ var MODULES_COUNTER  = 1;         // unisys modules counter
 
 /// UNISYS MODULE CLASS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Instances of this class can register/unregister message handlers and also
-    send messages. Constructor receives an owner, which is inspected for
-    properties to determine how to classify the created messager for debugging
-    purposes
+/*/ Instances of this class are used to participate in the UNISYS lifecycle.
+    Constructor receives the value of module.id, which is used to help scope
+    what lifecycle hooks are distributed to which module
 /*/ class UnisysModule {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,7 +69,8 @@ var MODULES_COUNTER  = 1;         // unisys modules counter
         return PATH.Basename(this.module_id);
       }
 
-
+  /// UTILITIES ///////////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ used to create a derivative name
   /*/ AutoName() {
         return `${this.module_id}:${this.subnameCounter++}`;

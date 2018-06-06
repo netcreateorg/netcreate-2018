@@ -19,8 +19,8 @@ const UNISYS    = require('system/unisys');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var MOD   = UNISYS.NewModule( module.id );
-var UNODE = UNISYS.NewConnector( MOD );
+var MOD    = UNISYS.NewModule( module.id );
+var UDAATA = UNISYS.NewDataLink( MOD );
 
 /// LIFECYCLE INIT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -52,7 +52,7 @@ var UNODE = UNISYS.NewConnector( MOD );
     and also set different namespace states on timers
 /*/ MOD.Hook('START', function () {
       // register state change handler
-      UNODE.OnStateChange('VIEW',(ns,state,src_uid)=>{
+      UDAATA.OnStateChange('VIEW',(ns,state,src_uid)=>{
         console.log(`.. LOGIC <- state`,state,`via NS '${ns}' ${src_uid}`);
       });
 
@@ -60,14 +60,14 @@ var UNODE = UNISYS.NewConnector( MOD );
       setTimeout( function () {
         let state = { description : 'Logic.START set this text' };
         console.log(`LOGIC -> state`,state,`via NS 'VIEW' ${MOD.UID()}`);
-        UNODE.SetState('VIEW',state,MOD.UID());
+        UDAATA.SetState('VIEW',state,MOD.UID());
       },1000);
 
       // set a periodic timer update
       setInterval( function() {
         let state = { random: u_RandomString() };
         console.log(`LOGIC -> state`,state,`via NS 'LOGIC' ${MOD.UID()}`);
-        UNODE.SetState('LOGIC',state,MOD.UID());
+        UDAATA.SetState('LOGIC',state,MOD.UID());
       },5000);
 
     }); // end START

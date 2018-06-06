@@ -162,7 +162,7 @@ const { FormText } = ReactStrap
 
 /// NEW SIGNLING SYSTEM LIBRARIES /////////////////////////////////////////////
 const UNISYS       = require('system/unisys');
-var   UNODE        = null; // set in constructor
+var   UDATA        = null; // set in constructor
 
 
 
@@ -206,8 +206,8 @@ class AutoCompleteDemo extends React.Component {
     /*NEWBEGIN*/
     console.group(module.id);
     UNISYS.SetScope(module.id);
-    UNODE = UNISYS.NewConnector( this );
-    UNODE.Emit('ACD_CONSTRUCT');
+    UDATA = UNISYS.NewDataLink( this );
+    UDATA.Call('ACD_CONSTRUCT');
     console.groupEnd();
     /*NEWEND*/
 
@@ -250,7 +250,7 @@ class AutoCompleteDemo extends React.Component {
 
   handleNodeClick ( clickedNode ) {
     /*NEWCODE*/
-    UNODE.Emit('SOURCE_SELECT',{ clickedNode });
+    UDATA.Call('SOURCE_SELECT',{ clickedNode });
     /*NEWCODE END*/
 
     if (DBG) console.log('AutoCompleteDemo.handleNodeClick',clickedNode)
@@ -263,7 +263,7 @@ class AutoCompleteDemo extends React.Component {
   }
   handleEdgeClick ( clickedEdge ) {
     /*NEWCODE*/
-    UNODE.Emit('EDGE_SELECT',{ clickedEdge });
+    UDATA.Call('EDGE_SELECT',{ clickedEdge });
     /*NEWCODE END*/
 
     if (DBG) console.log('AutoCompleteDemo.handleEdgeClick',clickedEdge)
@@ -290,7 +290,7 @@ class AutoCompleteDemo extends React.Component {
     /*NEWCODE*/
     // when source label changes due to SELECTION, find and "mark" matching node
     // and save it as selected source
-    UNODE.Emit('FILTER_SOURCES',{ label });
+    UDATA.Call('FILTER_SOURCES',{ label });
     /*NEWCODE END*/
 
     if (DBG) console.log('AutoCompleteDemo.handleSourceInputUpdate',label)
@@ -308,7 +308,7 @@ class AutoCompleteDemo extends React.Component {
     /*NEWCODE*/
     // when target label changes due to SELECTION, find and "mark" matching node
     // and save it as selected target
-    UNODE.Emit('FILTER_SOURCES',{ label });
+    UDATA.Call('FILTER_SOURCES',{ label });
     /*NEWCODE END*/
 
     if (DBG) console.log('AutoCompleteDemo.handleTargetInputUpdate',label)
@@ -326,7 +326,7 @@ class AutoCompleteDemo extends React.Component {
     /*NEWCODE*/
     // when source label changes, find and "mark" matching nodes
     // there is a different color for "hilite" versus "source"
-    UNODE.Emit('SOURCE_HILITE',{ label });
+    UDATA.Call('SOURCE_HILITE',{ label });
     /*NEWCODE END*/
 
     // if (DBG) console.log('AutoCompleteDemo.handleSourceHighlight',label)
@@ -337,7 +337,7 @@ class AutoCompleteDemo extends React.Component {
     /*NEWCODE*/
     // when target label changes, find and "mark" matching nodes
     // there is a different color for "hilite" versus "source"
-    UNODE.Emit('TARGET_HILITE',{ label });
+    UDATA.Call('TARGET_HILITE',{ label });
     /*NEWCODE END*/
 
     if (DBG) console.log('AutoCompleteDemo.handleTargetHighlight',label)
@@ -379,7 +379,7 @@ class AutoCompleteDemo extends React.Component {
   handleNodeUpdate ( newNodeData ) { /*STYLE*/// this is called 'newNodeData' but it isn't always new
 
     /*NEWCODE*/
-    UNODE.Emit('SOURCE_UPDATE',{ newNodeData });
+    UDATA.Call('SOURCE_UPDATE',{ newNodeData });
     /*NEWCODE END*/
 
     if (DBG) console.log('AutoCompleteDemo.handleNodeUpdate',newNodeData)
@@ -415,7 +415,7 @@ class AutoCompleteDemo extends React.Component {
   handleEdgeUpdate ( newEdgeData ) { /*STYLE*/// this is called 'newEdgeData' but it isn't always new
 
     /*NEWCODE*/
-    UNODE.Emit('EDGE_UPDATE',{ newNodeData });
+    UDATA.Call('EDGE_UPDATE',{ newNodeData });
     /*NEWCODE END*/
 
     if (DBG) console.log('AutoCompleteDemo.handleEdgeUpdate',newEdgeData)

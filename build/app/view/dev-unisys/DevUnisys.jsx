@@ -24,10 +24,10 @@ const { Alert }   = ReactStrap;
       constructor(props) {
         super(props);
 
-        this.unode = UNISYS.NewConnector(this);
+        this.udata = UNISYS.NewDataLink(this);
 
         // UNISYS state may already be initialized from settings
-        let state = this.unode.State('VIEW');
+        let state = this.udata.State('VIEW');
         // UNISYS.State() returns a copy of state obj; mutate/assign freely
         state.description = state.description || 'uninitialized description';
         // REACT TIP: you can safely set state directly ONLY in constructor!
@@ -39,15 +39,15 @@ const { Alert }   = ReactStrap;
 
         // subscribe to UNISYS state change listeners
         // note: make sure that handlers are already bound to this
-        this.unode.OnStateChange('VIEW', this.UnisysStateChange, this.uni_id);
-        this.unode.OnStateChange('LOGIC', this.UnisysStateChange, this.uni_id);
+        this.udata.OnStateChange('VIEW', this.UnisysStateChange, this.uni_id);
+        this.udata.OnStateChange('LOGIC', this.UnisysStateChange, this.uni_id);
 
       } // constructor
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UNISYS state change handler - registered by UNISYS.OnStateChange()
   /// state is coming from UNISYS
-      UnisysStateChange(nspace,state,src_uid) {
+      UnisysStateChange( nspace, state, src_uid ) {
         console.log(`.. REACT <- state`,state,`via NS '${nspace} ${src_uid}'`);
         // update local react state, which should force an update
         this.setState(state);
@@ -62,7 +62,7 @@ const { Alert }   = ReactStrap;
           description : target.value
         }
         console.log(`REACT -> state`,state,`to NS 'VIEW' ${this.uni_id}`);
-        this.unode.SetState('VIEW',state, this.uni_id);
+        this.udata.SetState('VIEW',state, this.uni_id);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// COMPONENT this interface has composed
@@ -70,6 +70,9 @@ const { Alert }   = ReactStrap;
         // start the application phase
         let className = REFLECT.ExtractClassName(this);
         console.log(`${className} componentDidMount`);
+
+        // establish module scope before lifecycle
+        UNISYS.SetScope(module.id);
 
         // kickoff initialization stage by stage
         (async () => {

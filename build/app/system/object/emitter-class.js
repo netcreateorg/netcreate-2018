@@ -74,9 +74,31 @@ class Emitter {
     return this;
   }
 
-// send an event
+// send an event with eventName, data, src_uid
   Emit( eventName, data, src_uid ) {
-    if (DBG) console.log(`EventEmitterClass: [${eventName}] data:`,data);
+    if (DBG) console.log(`EmitterEmit: [${eventName}] data:`,data);
+    const listeners = this.events.get(eventName);
+    if (listeners) {
+      for (let listener of listeners) {
+        if (src_uid && listener.unisys_id===src_uid) continue;
+        listener(eventName, data, src_uid);
+      }
+    }
+    return this;
+  }
+
+/// variations for Register/Call model
+  // register a message handler
+  Register( message, handler, src_uid ) {
+    this.On( message, handler, src_uid );
+  }
+  // unregister a message handle
+  UnRegister( message, handler ) {
+    this.Off( message, handler );
+  }
+// call an event handler with data, src_uid
+  Call( eventName, data, src_uid ) {
+    if (DBG) console.log(`EmitterCall: [${eventName}] data:`,data);
     const listeners = this.events.get(eventName);
     if (listeners) {
       for (let listener of listeners) {
@@ -86,6 +108,7 @@ class Emitter {
     }
     return this;
   }
+
 }
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////

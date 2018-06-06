@@ -127,15 +127,31 @@ var MESSAGER       = new Emitter();
         if (DBG) console.log(`${this.name} listener removed [${eventName}]`);
         MESSAGER.Off( eventName, listener );
       }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// EVENT NOTIFICATION - send event to subscribers
-  /// call this to fire the named event with args
-  /// subscribers will be notified
       Emit( eventName, data ) {
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
         if (DBG) console.log(`${this.name} emit [${eventName}]`);
         MESSAGER.Emit( eventName, data, this.UID() );
+      }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// CALL-STYLE EVENT NOTIFICATION - send event to subscribers
+  /// as above, but without also passing the eventName
+  /// subscribers will be notified
+      Register( message, listener ) {
+        // uid is "source uid" of subscribing object, to avoid reflection
+        // if the subscribing object is also the originating state changer
+        if (DBG) console.log(`${this.name} handler added [${message}]`);
+        MESSAGER.Register( message, listener, this.UID() );
+      }
+      Unregister( message, listener ) {
+        if (DBG) console.log(`${this.name} handler removed [${message}]`);
+        MESSAGER.Off( message, listener );
+      }
+      Call( eventName, data ) {
+        // uid is "source uid" of subscribing object, to avoid reflection
+        // if the subscribing object is also the originating state changer
+        if (DBG) console.log(`${this.name} emit [${eventName}]`);
+        MESSAGER.Call( data, this.UID() );
       }
 
 
