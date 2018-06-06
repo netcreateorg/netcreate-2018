@@ -15,6 +15,7 @@ const NOT_UNIQUE     = "name must be unique";
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const LIFECYCLE      = require('system/unisys-lifecycle');
+const PATH           = require('system/util/path');
 
 /// MODULE DECLARATIONS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,6 +65,12 @@ var MODULES_COUNTER  = 1;         // unisys modules counter
   /*/ ModuleID() {
         return this.module_id;
       }
+  /*/ utility method to return a short name
+  /*/ ModuleName() {
+        return PATH(this.module_id);
+      }
+
+
   /*/ used to create a derivative name
   /*/ AutoName() {
         return `${this.module_id}:${this.subnameCounter++}`;

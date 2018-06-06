@@ -1,12 +1,16 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    LifeCycle - A manager for application lifecycle events.
+    LifeCycle - A system manager for application lifecycle events.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 'use strict';
 const DBG = true;
 const BAD_PATH = "module_path must be a string derived from the module's module.id";
+
+/// LIBRARIES /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PATH = require('system/util/path');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -79,7 +83,7 @@ const BAD_PATH = "module_path must be a string derived from the module's module.
       if (DBG) console.group(phase);
       // o contains f, scope pushed in Hook() above
       let promises = hooks.map((o)=>{
-        let retval = m_CheckedHookCall(o);
+        let retval = m_CheckedHookCall(phase,o);
         if (retval instanceof Promise) return retval;
         icount++;
       });
@@ -104,7 +108,7 @@ const BAD_PATH = "module_path must be a string derived from the module's module.
 /*/ UTILITY: compare the destination scope with the acceptable scope (the
     module.id of the root JSX component in a view). Any module not in the
     system directory will not get called
-/*/ function m_CheckedHookCall(o) {
+/*/ function m_CheckedHookCall(phase,o) {
       // check for system directory
       if (o.scope.indexOf('system')===0)
         return o.f();
@@ -112,7 +116,7 @@ const BAD_PATH = "module_path must be a string derived from the module's module.
       if (o.scope.includes(MOD.scope,0))
         return o.f();
       // else do nothing
-        if (DBG) console.info(`LIFECYCLE: ${o.scope} not in scope`);
+        if (DBG) console.info(`LIFECYCLE: skipping [${phase}] ${o.scope} because scope is ${MOD.scope}`);
     }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -122,7 +126,7 @@ const BAD_PATH = "module_path must be a string derived from the module's module.
       if (typeof module_path!=='string') throw Error(BAD_PATH);
       if (DBG) console.log(`setting lifecycle scope to ${module_path}`);
       // strip out filename, if one exists
-      module_path = module_path.substring(0, module_path.lastIndexOf("/"));
+      module_path = PATH.Dirname(module_path);
       MOD.scope = module_path;
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
