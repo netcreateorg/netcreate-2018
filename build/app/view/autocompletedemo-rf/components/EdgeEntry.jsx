@@ -67,7 +67,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-
+var DBG = false;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -341,20 +341,20 @@ console.error('REVIEW>>>look for existing edge')
     edge.sourceId = this.state.selectedSourceNode.id
     edge.targetId = this.state.selectedNode.id
 
-    console.group('EdgeEntry.onSubmit submitting',edge)
+if (DBG) console.group('EdgeEntry.onSubmit submitting',edge)
 
     // Notify parent of new edge data
     this.props.onEdgeUpdate( edge )
     // Notify parent to deselect selectedNode
     this.props.onNodeSelect( {} )
 
-console.log('...About to clear form')
+if (DBG) console.log('...About to clear form')
     // Clear the any selections
     this.clearForm()
-    console.log('this.state.selectedEdge',this.state.selectedEdge)
-console.log('...Clear form finished')
+    if (DBG) console.log('this.state.selectedEdge',this.state.selectedEdge)
+if (DBG) console.log('...Clear form finished')
 
-    console.groupEnd()
+if (DBG) console.groupEnd()
 
   }
 
@@ -402,13 +402,13 @@ console.log('...Clear form finished')
     // If parent passes a valid selectedEdge, then load it
     // REVIEW: This can override selectedSourceNode and/or selectedNode
     //         But theoretically it should match?
-    console.log('EdgeEntry.componentWillReceiveProps selectedEdge:',nextProps.selectedEdge)
+    if (DBG) console.log('EdgeEntry.componentWillReceiveProps selectedEdge:',nextProps.selectedEdge)
     let nextEdge = nextProps.selectedEdge
     if (nextEdge!==undefined && Object.keys(nextEdge).length>0) {
-      console.log('...loading selectedEdge')
+      if (DBG) console.log('...loading selectedEdge')
       this.loadFormFromEdge( nextEdge )
     } else {
-      console.log('...clearing selectedEdge')
+      if (DBG) console.log('...clearing selectedEdge')
       this.clearSelectedEdge()
     }
   }

@@ -19,7 +19,7 @@
 
 /// DEBUGGING /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG         = true;
+const DBG         = false;
 const BAD_OWNER   = "must pass owner object of type React.Component or UniModule with optional 'name' parameter";
 const BAD_NAME    = "name parameter must be a string";
 const BAD_UID     = "unexpected non-unique UID";
@@ -36,6 +36,9 @@ const Emitter     = require('system/object/emitter-class');
 var UNODE         = new Map(); // unisys connector node map (local)
 var UNODE_COUNTER = 100;       // unisys connector node id counter
 
+/// GLOBAL MESSAGES ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+var MESSAGER       = new Emitter();
 
 /// UNISYS NODE CLASS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -75,9 +78,6 @@ var UNODE_COUNTER = 100;       // unisys connector node id counter
         this.uid = `${msgr_type}_${UNODE_COUNTER++}`;
         this.name = msgr_name;
         if (UNODE.has(this.uid)) throw Error(BAD_UID+this.uid);
-
-        // define key subsystems
-        this.Event = new Emitter();
 
         // save module in the global module list
         if (DBG) console.log(`Creating UNODE [${this.uid}] for [${this.name}]`);
@@ -120,12 +120,12 @@ var UNODE_COUNTER = 100;       // unisys connector node id counter
       On( eventName, listener ) {
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
-        this.Event.On( eventName, listener, this.UID() );
-        if (DBG) console.log('umodule',this.name,'listener added for',eventName);
+        if (DBG) console.log(`${this.name} listener added [${eventName}]`);
+        MESSAGER.On( eventName, listener, this.UID() );
       }
       Off( eventName, listener ) {
-        this.Event.Off( eventName, listener );
-        if (DBG) console.log('umodule',this.name,'listener removed for',eventName);
+        if (DBG) console.log(`${this.name} listener removed [${eventName}]`);
+        MESSAGER.Off( eventName, listener );
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// EVENT NOTIFICATION - send event to subscribers
@@ -134,8 +134,8 @@ var UNODE_COUNTER = 100;       // unisys connector node id counter
       Emit( eventName, data ) {
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
-        this.Event.Emit( eventName, data, this.UID() );
-        if (DBG) console.log('umodule',this.name,'emit event',eventName);
+        if (DBG) console.log(`${this.name} emit [${eventName}]`);
+        MESSAGER.Emit( eventName, data, this.UID() );
       }
 
 

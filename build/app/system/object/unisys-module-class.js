@@ -67,7 +67,7 @@ var MODULES_COUNTER  = 1;         // unisys modules counter
       }
   /*/ utility method to return a short name
   /*/ ModuleName() {
-        return PATH(this.module_id);
+        return PATH.Basename(this.module_id);
       }
 
 

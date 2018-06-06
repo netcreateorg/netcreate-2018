@@ -145,6 +145,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+var DBG = false;
 
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
@@ -248,7 +249,11 @@ class AutoCompleteDemo extends React.Component {
   }
 
   handleNodeClick ( clickedNode ) {
-    console.log('AutoCompleteDemo.handleNodeClick',clickedNode)
+    /*NEWCODE*/
+    UNODE.Emit('SOURCE_SELECT',{ clickedNode });
+    /*NEWCODE END*/
+
+    if (DBG) console.log('AutoCompleteDemo.handleNodeClick',clickedNode)
     this.deselectAllNodes()
     this.markSelectedNodeById( clickedNode.id, SOURCE_COLOR )
     this.setState( {
@@ -257,7 +262,11 @@ class AutoCompleteDemo extends React.Component {
     /*STYLE*/// why isn't there a setSelectedNode corresponding to setSelectedEdge?
   }
   handleEdgeClick ( clickedEdge ) {
-    console.log('AutoCompleteDemo.handleEdgeClick',clickedEdge)
+    /*NEWCODE*/
+    UNODE.Emit('EDGE_SELECT',{ clickedEdge });
+    /*NEWCODE END*/
+
+    if (DBG) console.log('AutoCompleteDemo.handleEdgeClick',clickedEdge)
     this.setState( {
       selectedSourceNode: clickedEdge.source,
       selectedTargetNode: clickedEdge.target,
@@ -278,7 +287,13 @@ class AutoCompleteDemo extends React.Component {
   ///
   /*STYLE*/// in general should document who calls this in comments
   handleSourceInputUpdate ( label ) {
-    console.log('AutoCompleteDemo.handleSourceInputUpdate',label)
+    /*NEWCODE*/
+    // when source label changes due to SELECTION, find and "mark" matching node
+    // and save it as selected source
+    UNODE.Emit('FILTER_SOURCES',{ label });
+    /*NEWCODE END*/
+
+    if (DBG) console.log('AutoCompleteDemo.handleSourceInputUpdate',label)
     // mark matching nodes
     this.markSelectedNodes( label, SOURCE_COLOR )
     // if it doesn't match a node exactly, we clear the selected node
@@ -290,7 +305,13 @@ class AutoCompleteDemo extends React.Component {
     this.findMatchingEdgeWithSource(label)
   }
   handleTargetInputUpdate ( label ) {
-    console.log('AutoCompleteDemo.handleTargetInputUpdate',label)
+    /*NEWCODE*/
+    // when target label changes due to SELECTION, find and "mark" matching node
+    // and save it as selected target
+    UNODE.Emit('FILTER_SOURCES',{ label });
+    /*NEWCODE END*/
+
+    if (DBG) console.log('AutoCompleteDemo.handleTargetInputUpdate',label)
     // mark matching nodes
     this.markSelectedNodes( label, TARGET_COLOR )
     // if it doesn't match a node exactly, we clear the selected node
@@ -302,21 +323,33 @@ class AutoCompleteDemo extends React.Component {
     this.findMatchingEdgeWithTarget(label)
   }
   handleSourceHighlight ( label ) {
-    // console.log('AutoCompleteDemo.handleSourceHighlight',label)
+    /*NEWCODE*/
+    // when source label changes, find and "mark" matching nodes
+    // there is a different color for "hilite" versus "source"
+    UNODE.Emit('SOURCE_HILITE',{ label });
+    /*NEWCODE END*/
+
+    // if (DBG) console.log('AutoCompleteDemo.handleSourceHighlight',label)
     // mark matching nodes
     if (label!==null) this.markSelectedNodes( label, SOURCE_COLOR )
   }
   handleTargetHighlight ( label ) {
-    console.log('AutoCompleteDemo.handleTargetHighlight',label)
+    /*NEWCODE*/
+    // when target label changes, find and "mark" matching nodes
+    // there is a different color for "hilite" versus "source"
+    UNODE.Emit('TARGET_HILITE',{ label });
+    /*NEWCODE END*/
+
+    if (DBG) console.log('AutoCompleteDemo.handleTargetHighlight',label)
     // mark matching nodes
     if (label!==null) this.markSelectedNodes( label, TARGET_COLOR )
   }
   handleSourceNodeSelection ( node ) {
-    console.log('AutoCompleteDemo.handleSourceNodeSelect',node)
+    if (DBG) console.log('AutoCompleteDemo.handleSourceNodeSelect',node)
     if (node.id===undefined) {
       // Invalid node, NodeSelect is trying to clear the selection
       // we have to do this here, otherwise, the label will persist
-      console.log('...clearing selectedSourceNode')
+      if (DBG) console.log('...clearing selectedSourceNode')
       this.setState( { selectedSourceNode:{} } )
     } else {
       // Valid node, so select it
@@ -327,7 +360,7 @@ class AutoCompleteDemo extends React.Component {
     this.findMatchingEdgeWithSource(node.label)
   }
   handleTargetNodeSelection ( node ) {
-    console.log('AutoCompleteDemo.handleTargetNodeSelection',node)
+    if (DBG) console.log('AutoCompleteDemo.handleTargetNodeSelection',node)
     if (node.id===undefined) {
       // Invalid node, NodeSelect is trying to clear the selection
       // we have to do this here, otherwise, the label will persist
@@ -344,7 +377,12 @@ class AutoCompleteDemo extends React.Component {
 
   /// Update existing node, or add a new node
   handleNodeUpdate ( newNodeData ) { /*STYLE*/// this is called 'newNodeData' but it isn't always new
-    console.log('AutoCompleteDemo.handleNodeUpdate',newNodeData)
+
+    /*NEWCODE*/
+    UNODE.Emit('SOURCE_UPDATE',{ newNodeData });
+    /*NEWCODE END*/
+
+    if (DBG) console.log('AutoCompleteDemo.handleNodeUpdate',newNodeData)
     let updatedData = this.state.data /*STYLES*/// this is copying by reference, so you're overriding the original state below which may have repercussions
     let found = false
     updatedData.nodes = this.state.data.nodes.map( node => {
@@ -375,7 +413,12 @@ class AutoCompleteDemo extends React.Component {
 
   /// Update existing edge, or add a new edge
   handleEdgeUpdate ( newEdgeData ) { /*STYLE*/// this is called 'newEdgeData' but it isn't always new
-    console.log('AutoCompleteDemo.handleEdgeUpdate',newEdgeData)
+
+    /*NEWCODE*/
+    UNODE.Emit('EDGE_UPDATE',{ newNodeData });
+    /*NEWCODE END*/
+
+    if (DBG) console.log('AutoCompleteDemo.handleEdgeUpdate',newEdgeData)
     let updatedData = this.state.data
     let found = false
     // Update existing?
@@ -414,10 +457,10 @@ class AutoCompleteDemo extends React.Component {
   findNodeById ( id ) {
     let found = this.state.data.nodes.filter( n => n.id===id )
     if (found.length>0) {
-      console.log('AutoCompleteDemo.findNodeById returning',found[0])
+      if (DBG) console.log('AutoCompleteDemo.findNodeById returning',found[0])
       return found[0]
     } else {
-      console.log('AutoCompleteDemo.findNodeById returning undefined')
+      if (DBG) console.log('AutoCompleteDemo.findNodeById returning undefined')
       return undefined
     }
   }
@@ -434,17 +477,17 @@ class AutoCompleteDemo extends React.Component {
   /// if the pair matches an edge.
   /// If there's a match, set this.state.selectedEdge
   findMatchingEdge (sourceLabel, targetLabel) {
-    console.log('AutoCompleteDemo.findMatchingEdge Looking for match...')
+    if (DBG) console.log('AutoCompleteDemo.findMatchingEdge Looking for match...')
     if (sourceLabel!==undefined && targetLabel!==undefined) {
       let found = this.state.data.edges.filter( edge => edge.source.label===sourceLabel && edge.target.label===targetLabel )
       if (found.length>0) {
         let matchingEdge = found[0]
-        console.log('AutoCompleteDemo.findMatchingEdge FOUND!',matchingEdge)
+        if (DBG) console.log('AutoCompleteDemo.findMatchingEdge FOUND!',matchingEdge)
         this.setSelectedEdge( matchingEdge )
         return
       }
     }
-    console.log('...no match found, clearing selectedEdge')
+    if (DBG) console.log('...no match found, clearing selectedEdge')
     // Not Found, clear selectedEdge
     this.setSelectedEdge({})
   }

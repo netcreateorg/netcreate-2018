@@ -33,12 +33,15 @@
 
 'use strict';
 const DBG        = false;
+var EMITTER_COUNT = 0;
 
 class Emitter {
   constructor() {
     this.events = new Map();
+    this.eid = ++EMITTER_COUNT;
   }
 
+// subscribe a listener
   On( eventName, listener, dst_uid ) {
     if (typeof listener !== 'function') {
       throw new TypeError('The listener must be a function');
@@ -56,6 +59,7 @@ class Emitter {
     return this;
   }
 
+// unsubscribe a listener
   Off( eventName, listener ) {
     if (!arguments.length) {
       this.events.clear();
@@ -70,13 +74,14 @@ class Emitter {
     return this;
   }
 
+// send an event
   Emit( eventName, data, src_uid ) {
     if (DBG) console.log(`EventEmitterClass: [${eventName}] data:`,data);
     const listeners = this.events.get(eventName);
     if (listeners) {
       for (let listener of listeners) {
         if (src_uid && listener.unisys_id===src_uid) continue;
-        listener(eventName, data, src_uid);
+        listener(data, src_uid);
       }
     }
     return this;
