@@ -164,8 +164,6 @@ const { FormText } = ReactStrap
 const UNISYS       = require('system/unisys');
 var   UDATA        = null; // set in constructor
 
-
-
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DESELECTED_COLOR = ''
@@ -203,13 +201,13 @@ class AutoCompleteDemo extends React.Component {
       selectedTargetNode:      {},
     }
 
-    /*NEWBEGIN*/
+    /*NEWCODE*/
     console.group(module.id);
     UNISYS.SetScope(module.id);
     UDATA = UNISYS.NewDataLink( this );
     UDATA.Call('ACD_CONSTRUCT');
     console.groupEnd();
-    /*NEWEND*/
+    /*NEWCODE END*/
 
     this.updateData                = this.updateData.bind(this)
     this.handleJSONLoad            = this.handleJSONLoad.bind(this)

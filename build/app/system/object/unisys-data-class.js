@@ -1,12 +1,13 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    UNISYS NODE CLASS
+    UNISYS DATALINK CLASS
 
-    The Unisys Node (UNODE) class represents a connection to the UNISYS event
-    messaging system. It is normally created through UNISYS.NewConnection().
-    Each UNODE has a unique ID (the UID) which represents its local address;
-    combined with the device address, this makes every UNODE on the network
-    addressable.
+    The UNISYS DATALINK (UDATA) class represents a connection to the UNISYS
+    event messaging system. Instances are created with UNISYS.NewDataLink().
+
+    Each UNODE has a unique UNISYS_ID (the UID) which represents its
+    local address. Combined with the device address, this makes every UNODE
+    on the network addressable.
 
     * UNODES can get and set global state objects
     * UNODES can subscribe to state change events
@@ -151,7 +152,7 @@ var MESSAGER       = new Emitter();
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
         if (DBG) console.log(`${this.name} emit [${eventName}]`);
-        MESSAGER.Call( data, this.UID() );
+        MESSAGER.Call( eventName, data, this.UID() );
       }
 
 

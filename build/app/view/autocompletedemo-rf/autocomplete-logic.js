@@ -14,6 +14,7 @@ var MOD        = UNISYS.NewModule(module.id);
 var UDATA      = UNISYS.NewDataLink(MOD);
 
 MOD.Hook('INITIALIZE',()=>{
+
   console.log(`*** initialize ${MOD.ModuleName()}`);
 
   UDATA.Register('SOURCE_SELECT',function(data) {
@@ -31,7 +32,6 @@ MOD.Hook('INITIALIZE',()=>{
   UDATA.Register('SOURCE_UPDATE',function(data) {
     console.log('SOURCE_UPDATE',data);
   });
-
 
 });
 
