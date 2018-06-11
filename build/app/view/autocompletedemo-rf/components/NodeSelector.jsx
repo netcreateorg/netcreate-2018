@@ -83,6 +83,9 @@ const { Button, Col, Form, FormGroup, Label, Input, FormText } = ReactStrap
 const AutoComplete = require('./AutoComplete')
 const NodeDetail   = require('./NodeDetail')
 
+const UNISYS   = require('system/unisys');
+var   UDATA    = null;
+
 
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
@@ -106,6 +109,21 @@ class NodeSelector extends React.Component {
       highlightedNode: {},
       isEditable:      false
     }
+
+    /// Initialize UNISYS DATA LINK for REACT
+    UDATA = UNISYS.NewDataLink(this);
+
+    UDATA.OnStateChange('SELECTION',(data)=>{
+      // expect { nodes, edges } for this namespace
+      console.log('NodeSelector got state SELECTION',data);
+      if (data.nodes) {
+        // grab the first node
+        let node = data.nodes.pop();
+        this.loadFormFromNode( node );
+      } else {
+        this.clearForm();
+      }
+    });
 
     this.clearForm                             = this.clearForm.bind(this)
     this.getNewNodeID                          = this.getNewNodeID.bind(this)
@@ -318,16 +336,17 @@ class NodeSelector extends React.Component {
       data:  data
     })
 
-    // sourceNodeLabel
-    let node = nextProps.selectedNode
-    // console.log('NodeSelector: RECEIVED nextProps.selectedNode',node)
-    if (node!==undefined && Object.keys(node).length>0) {
-      // Fill out the form
-      // console.log('...updating form')
-      this.loadFormFromNode( node )
-    } else {
-      this.clearForm()
-    }
+// DELETE: This is now handled by SAELECTION event in constructor
+    // // sourceNodeLabel
+    // let node = nextProps.selectedNode
+    // // console.log('NodeSelector: RECEIVED nextProps.selectedNode',node)
+    // if (node!==undefined && Object.keys(node).length>0) {
+    //   // Fill out the form
+    //   // console.log('...updating form')
+    //   this.loadFormFromNode( node )
+    // } else {
+    //   this.clearForm()
+    // }
   }
 
   shouldComponentUpdate () { return true }

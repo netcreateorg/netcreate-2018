@@ -16,19 +16,30 @@ var UDATA      = UNISYS.NewDataLink(MOD);
 
 /// APP STATE/DATA STRUCTURES /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var D3NODES        = null;
-var SELECTED_NODES = {};
-
+var D3DATA         = null;
+var SELECTION      = {};
+/*/ STATE DESIGN of NAMESPACES
+    'SELECTION' {
+      nodes: // an array of nodes, or a single node
+      edges: // an array of edges, or a single edge
+    }
+    'D3DATA' {
+      nodes: // all nodes (not all may be actually changed)
+      edges: // all edges (not all may be actuallyachanged)
+    }
+/*/
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 MOD.Hook('INITIALIZE',()=>{
 
   // load data; it will get passed onto
   D3.json("http://localhost:3000/htmldemos/d3forcedemo/data.reducedlinks.json", (error,_data)=>{
     if (error) throw Error(error);
-    D3NODES = _data;
+    D3DATA = _data;
     // communicate to everyone that a new D3 INSTANCE has been created
-    console.log('ACL: broadcasting',D3NODES);
-    UDATA.Broadcast('DATA_UPDATE', D3NODES );
+    console.log('ACL: broadcasting',D3DATA);
+    // change to use STATE SYSTEM, not messaging system
+    // UDATA.Broadcast('DATA_UPDATE', D3DATA );
+    UDATA.SetState('D3DATA',D3DATA);
   });
 
   UDATA.Register('SOURCE_SELECT',(data)=> {
@@ -49,6 +60,7 @@ MOD.Hook('INITIALIZE',()=>{
          // this is fired when the global state changes
     // }
 
+    m_HandleNodeClick( data );
 
   }); // REGISTER SOURCE_SELECT
 
@@ -69,8 +81,8 @@ MOD.Hook('INITIALIZE',()=>{
 
   // console.log('defining SET_D3_INSTANCE');
   // UDATA.Register('SET_D3_INSTANCE',(data)=>{
-  //   D3NODES = data.d3NetGraph;
-  //   console.log('SET_D3_INSTANCE received',D3NODES);
+  //   D3DATA = data.d3NetGraph;
+  //   console.log('SET_D3_INSTANCE received',D3DATA);
   // }); // D3_INSTANCE
 
 });
@@ -88,7 +100,37 @@ MOD.Hook('START',()=>{
 }); // START
 
 
+/* WIP */
+/// LOGIC METHODS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_HandleNodeClick (data) {
+  console.log('m_HandleNodeClick got data',data);
 
+  let id = data.node.id;
+  if (id==='') {
+    //this.deselectAllNodes()
+    return
+  }
+
+  // 1. Set the SelectedSourceNode
+  UDATA.SetState('SELECTION',{nodes: [data.node]});
+
+
+  // 2. Mark the selected node
+  let color = '#0000DD';
+  D3DATA.nodes = D3DATA.nodes.map( node => {
+    if (node.id===id) {
+      node.selected = color;
+    //   node.selected = this.getSelectedNodeColor( node, color )
+    // } else {
+    //   node.selected = this.getDeselectedNodeColor( node, color )
+    }
+    return node
+  })
+  // use state system instead of messaging system
+  // UDATA.Broadcast( 'DATA_UPDATE', D3DATA );
+  UDATA.SetState('D3DATA',D3DATA);
+}
 
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////

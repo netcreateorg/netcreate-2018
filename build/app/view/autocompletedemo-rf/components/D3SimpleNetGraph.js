@@ -114,8 +114,16 @@ class D3NetGraph {
     this._Dragended         = this._Dragended.bind(this)
 
     /// Receive Data Updates - - - - - - - - - - - - - - - - - - - - - - - - -
-    UDATA.Register('DATA_UPDATE',(data)=>{
-      console.log('D3SimpleNetgraph got DATA_UPDATE',data);
+
+// respond to OnStateChange instead of DATA_UPDATE
+    // UDATA.Register('DATA_UPDATE',(data)=>{
+    //   console.log('D3SimpleNetgraph got DATA_UPDATE',data);
+    //   this.SetData(data);
+    // });
+
+    UDATA.OnStateChange('D3DATA',(data)=>{
+      // expect { nodes, edges } for this namespace
+      console.log('D3SimpleNetgraph got state D3DATA',data);
       this.SetData(data);
     });
 
@@ -217,7 +225,11 @@ class D3NetGraph {
         .on("end",   (d) => { this._Dragended(d, this) }))
       .on("click",   (d) => {
           console.log('clicked on',d.label,d.id)
-          this.nodeClickFn( d ) })
+// instead of handling click via passed down handler functions, call UDATA direclty
+          //this.nodeClickFn( d ) })
+          /*NEWCODE*/
+          UDATA.Call('SOURCE_SELECT',{ node: d }); })
+          /*NEWCODE END*/
 
     nodes.append("circle")
         .attr("r",

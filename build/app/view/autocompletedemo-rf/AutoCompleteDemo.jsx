@@ -240,15 +240,12 @@ class AutoCompleteDemo extends React.Component {
     })
   }
 
-  handleJSONLoad ( error, _data ) { /*SYSTEM*/// this eventually will be part of datamanage
-    if (error) throw error
-    // map nodes[].label to textList
-    this.updateData( _data ) /*STYLE*/// does the use of updateData() just make it more indirect to read?
-  }
 
   handleNodeClick ( clickedNode ) {
     /*NEWCODE*/
-    UDATA.Call('SOURCE_SELECT',{ clickedNode });
+    // This is now handled by autocomplete-logic.
+    // handleNodeClick should eventually be replaced.
+    // UDATA.Call('SOURCE_SELECT',{ clickedNode });
     /*NEWCODE END*/
 
     if (DBG) console.log('AutoCompleteDemo.handleNodeClick',clickedNode)
