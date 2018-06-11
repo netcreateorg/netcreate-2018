@@ -133,6 +133,14 @@ var   UDATA       = new UniData(UNISYS);
         resolve();
       });
     };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ INTERNAL API: if this module needs to Broadcast, use this call.
+    External modules shouldn't use it, but create their own UDATA instance.
+/*/ UNISYS.Broadcast = ( eventName, data ) => {
+      if (DBG) console.log('broadcasting',data);
+      UDATA.Call(eventName, data);
+    };
+
 
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////

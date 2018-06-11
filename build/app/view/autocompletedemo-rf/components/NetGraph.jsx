@@ -38,11 +38,13 @@
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const React = require('react')
-const ReactDOM = require('react-dom')
+const React      = require('react')
+const ReactDOM   = require('react-dom')
 //const D3NetGraph = require('./D3NetGraph')
 const D3NetGraph = require('./D3SimpleNetGraph')
 /*STYLE*/// We use CamelCase only for React components, lowercase-only for all other modules
+const UNISYS     = require('system/unisys');
+var   UDATA      = null;
 
 
 
@@ -56,6 +58,9 @@ class NetGraph extends React.Component {
     this.state = {
       d3NetGraph: {}
     }
+
+    /*NEWCODE*/
+    UDATA = UNISYS.NewDataLink(this);
     /*STYLE*/// explicitly listing the prop-based handlers here is a good convention to maintain
             /// e.g. onNodeClick passed in. I see the docs, but I like explicit declaration and symmetry with other modules
             /// also onEdgeClick isn't defined in the comment docs at the top
@@ -64,9 +69,8 @@ class NetGraph extends React.Component {
   componentDidMount () {
     // D3NetGraph Constructor
     let el = ReactDOM.findDOMNode( this )
-    this.setState({
-      d3NetGraph: new D3NetGraph( el )
-    })
+    let d3NetGraph = new D3NetGraph(el);
+    this.setState({ d3NetGraph });
   }
 
   componentWillReceiveProps (nextProps) {

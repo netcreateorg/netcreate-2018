@@ -163,6 +163,8 @@ const { FormText } = ReactStrap
 /// NEW SIGNLING SYSTEM LIBRARIES /////////////////////////////////////////////
 const UNISYS       = require('system/unisys');
 var   UDATA        = null; // set in constructor
+      // start UNISYS
+      UNISYS.SystemInitialize( module.id );
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -188,7 +190,6 @@ const appearsIn = (searchValue, targetString) => {
   return regex.test(targetString)
 };
 
-
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
@@ -203,7 +204,6 @@ class AutoCompleteDemo extends React.Component {
 
     /*NEWCODE*/
     console.group(module.id);
-    UNISYS.SetScope(module.id);
     UDATA = UNISYS.NewDataLink( this );
     UDATA.Call('ACD_CONSTRUCT');
     console.groupEnd();
@@ -501,6 +501,7 @@ class AutoCompleteDemo extends React.Component {
   /// MANAGE GRAPH DATA
   ///
   /// Set the `selected` flag for any nodes that match `searchValue`, and update the state
+  // searchValue is the node_label
   markSelectedNodes( searchValue, color ) {
     if (searchValue==='') {
       this.deselectAllNodes()
@@ -510,7 +511,9 @@ class AutoCompleteDemo extends React.Component {
             /// map() might ensure this
     let updatedData = this.state.data
     updatedData.nodes = this.state.data.nodes.map( node => {
+      // search for matches (partial matches are included)
       if (appearsIn(searchValue, node.label)) {
+        // intent is only to set selected node color if the node doesn't already have one
         node.selected = this.getSelectedNodeColor( node, color )
       } else {
         node.selected = this.getDeselectedNodeColor( node, color )
@@ -519,6 +522,7 @@ class AutoCompleteDemo extends React.Component {
     })
     this.setState( { data: updatedData })
   }
+  // id is the node_id
   markSelectedNodeById( id, color ) {
     if (id==='') {
       this.deselectAllNodes()
@@ -591,7 +595,9 @@ class AutoCompleteDemo extends React.Component {
     // Relative URLS don't seem to work.
     // The URL is constructed in http://localhost:3000/scripts/node_modules/url/url.js line 110.
 //    d3.json("http://localhost:3000/htmldemos/d3forcedemo/data.json", this.handleJSONLoad)
-    d3.json("http://localhost:3000/htmldemos/d3forcedemo/data.reducedlinks.json", this.handleJSONLoad);
+
+// /*NEWCODE*/
+//    d3.json("http://localhost:3000/htmldemos/d3forcedemo/data.reducedlinks.json", this.handleJSONLoad);
 
     /*NEWCODE BEGIN*/
     // kickoff initialization stage by stage
