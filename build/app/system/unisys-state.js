@@ -62,7 +62,9 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
       Object.assign(STATES.get(namespace),newState);
       // forward new state to namespace listeners
       let emitter = m_GetStateEmitter(namespace);
-      emitter.Emit(namespace,newState,src_uid);
+      // don't pass with source_id because state should go everywhere
+      // a register exists, even if it's the originating module
+      emitter.Call(namespace,newState);
       // future: forward also to network
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -80,7 +82,7 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
       if (typeof listener!=='function') throw Error(BAD_LISTENR);
       if (src_uid===undefined) console.warn(NO_UID_FLTR);
       let namespaceEmitter = m_GetStateEmitter(namespace);
-      namespaceEmitter.On(namespace,listener,src_uid);
+      namespaceEmitter.Register(namespace,listener,src_uid);
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: unsubscribe to namestate updates
@@ -89,7 +91,7 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
       if (!namespace) throw Error(BAD_NSPACE);
       if (typeof listener!=='function') throw Error(BAD_LISTENR);
       let namespaceEmitter = m_GetStateEmitter(namespace);
-      namespaceEmitter.Off(namespace,listener);
+      namespaceEmitter.Unregister(namespace,listener);
     };
 
 

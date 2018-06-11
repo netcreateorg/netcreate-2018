@@ -14,21 +14,21 @@ const PATH = require('system/util/path');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    var PHASE_HOOKS = new Map();        // functions that might right a Promise
+    var PHASE_HOOKS = new Map();  // functions that might right a Promise
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    const PHASES = [                    // recognized phases
-      'INITIALIZE',
-      'LOADASSETS',
-      'RESET',
-      'CONFIGURE',
-      'START',
-      'UPDATE',
-      'PREPAUSE',
-      'PAUSE',
-      'POSTPAUSE',
-      'STOP',
-      'UNLOADASSETS',
-      'SHUTDOWN',
+    const PHASES = [
+      'INITIALIZE',               // executes before REACT renders
+      'LOADASSETS',               // load any external data, make connections
+      'RESET',                    // reset runtime data structures
+      'CONFIGURE',                // configure runtime data structures
+      'START',                    // start normal execution run
+      'UPDATE',                   // system is running (periodic call w/ time)
+      'PREPAUSE',                 // system wants to pause run
+      'PAUSE',                    // system has paused (periodic call w/ time)
+      'POSTPAUSE',                // system wants to resume running
+      'STOP',                     // system wants to stop current run
+      'UNLOADASSETS',             // system releases any connections
+      'SHUTDOWN',                 // system wants to shut down
     ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     var PHASE = PHASES[0]+'_PENDING';   // current phase
@@ -66,7 +66,7 @@ const PATH = require('system/util/path');
     function returns control to the calling code.
 /*/ MOD.Execute = async (phase) => {
       // require scope to be set
-      if (MOD.scope===false) throw Error(`must Lifecycle Scope before execute`);
+      if (MOD.scope===false) throw Error(`Root JSX component must call UNISYS.SystemInitialize(module.id)`);
 
       // contents of PHASE_HOOKs are promise-generating functions
       if (!PHASES.includes(phase)) throw Error(`${phase} is not a recognized lifecycle phase`);

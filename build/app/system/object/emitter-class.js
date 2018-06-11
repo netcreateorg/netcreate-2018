@@ -98,7 +98,6 @@ class Emitter {
     well.
 /*/ Emit( eventName, data, sender_uid ) {
       let etype = (sender_uid===undefined) ? 'EmitterBroadcast' : 'EmitterEmit';
-      if (sender_uid) e
       if (DBG) console.log(`${etype}: [${eventName}] data:`,data);
       const listeners = this.events.get(eventName);
       if (listeners) {

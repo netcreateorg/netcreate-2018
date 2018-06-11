@@ -17,10 +17,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-
 /// DEBUGGING /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG         = false;
+const DBG         = true;
 const BAD_OWNER   = "must pass owner object of type React.Component or UniModule with optional 'name' parameter";
 const BAD_NAME    = "name parameter must be a string";
 const BAD_UID     = "unexpected non-unique UID";
@@ -47,7 +46,7 @@ var MESSAGER       = new Emitter();
     send messages. Constructor receives an owner, which is inspected for
     properties to determine how to classify the created messager for debugging
     purposes
-/*/ class UnisysNode {
+/*/ class UnisysDataLink {
 
   /*/ CONSTRUCTOR
       A messager creates a unique ID within the webapp instance. Since
@@ -134,10 +133,15 @@ var MESSAGER       = new Emitter();
         if (DBG) console.log(`${this.name} emit [${eventName}]`);
         MESSAGER.Emit( eventName, data, this.UID() );
       }
+      Broadcast( eventName, data ) {
+        MESSAGER.Call(eventName, data);
+      }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// CALL-STYLE EVENT NOTIFICATION - send event to subscribers
   /// as above, but without also passing the eventName
   /// subscribers will be notified
+  /// NOTE: UNISYS also has these available if you don't need source
+  /// rejection
       Register( message, listener ) {
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
@@ -166,4 +170,4 @@ var MESSAGER       = new Emitter();
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = UnisysNode;
+module.exports = UnisysDataLink;

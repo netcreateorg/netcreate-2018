@@ -24,7 +24,8 @@ const UniModule   = require('system/object/unisys-module-class');
 
 /// INITIALIZE MAIN MODULE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var UNISYS        = {};
+var   UNISYS      = new UniModule(module.id);
+var   UDATA       = new UniData(UNISYS);
 
 /// UNISYS MODULE MAKING //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -35,8 +36,8 @@ var UNISYS        = {};
 /// UNISYS CONNECTOR //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Make new module with UNISYS convenience methods
-/*/ UNISYS.NewDataLink = ( owner, optName ) => {
-      return new UniData( owner, optName );
+/*/ UNISYS.NewDataLink = ( module, optName ) => {
+      return new UniData( module, optName );
     };
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,10 +48,23 @@ var UNISYS        = {};
 /*/ UNISYS.SetScope = LIFECYCLE.SetScope; // pass phase and hook function
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: application startup
-/*/ UNISYS.EnterApp = () => {
+/*/ API: application initialize (before React receives the DOM completion)
+    This should be placed as early as possible in the root REACT component,
+    passing the value of module.id (a predefined global in brunch modules)
+    so UNISYS.INITIALIZE phase will execute before REACT components
+    activate. This helps with modules to prepare themselves.
+/*/ UNISYS.SystemInitialize = (module_id) => {
+      UNISYS.SetScope(module_id);
       return new Promise( async (resolve,reject)=>{
         await LIFECYCLE.Execute('INITIALIZE'); // INITIALIZE hook
+        resolve();
+      });
+    }; // SystemInitialize
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: application startup after componentDidMount
+/*/ UNISYS.EnterApp = () => {
+      return new Promise( async (resolve,reject)=>{
         await LIFECYCLE.Execute('LOADASSETS'); // LOADASSETS hook
         resolve();
       });

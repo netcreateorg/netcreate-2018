@@ -37,7 +37,7 @@ console.log('> init.jsx loaded');
 const APP_CONTAINER = '#app-container';
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('init.jsx initializing AppShell into', APP_CONTAINER);
+  console.log('init.jsx: initializing AppShell into', APP_CONTAINER);
   ReactDOM.render((
     <HashRouter hashType="noslash">
       <AppShell />
