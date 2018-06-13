@@ -28,11 +28,15 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 
+var DBG = false;
+
+
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const d3       = require('d3')
 const UNISYS   = require('system/unisys');
 var   UDATA    = null;
+
 
 /// PRIVATE VARS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -114,13 +118,6 @@ class D3NetGraph {
     this._Dragended         = this._Dragended.bind(this)
 
     /// Receive Data Updates - - - - - - - - - - - - - - - - - - - - - - - - -
-
-// respond to OnStateChange instead of DATA_UPDATE
-    // UDATA.Register('DATA_UPDATE',(data)=>{
-    //   console.log('D3SimpleNetgraph got DATA_UPDATE',data);
-    //   this.SetData(data);
-    // });
-
     UDATA.OnStateChange('D3DATA',(data)=>{
       // expect { nodes, edges } for this namespace
       console.log('D3SimpleNetgraph got state D3DATA',data);
@@ -224,14 +221,10 @@ class D3NetGraph {
         .on("drag",  this._Dragged)
         .on("end",   (d) => { this._Dragended(d, this) }))
       .on("click",   (d) => {
-          console.log('clicked on',d.label,d.id)
-// instead of handling click via passed down handler functions, call UDATA direclty
-          //this.nodeClickFn( d ) })
-          /*NEWCODE*/
-          // We pass nodeLabels here because it's the lowest common denominator
+          if (DBG) console.log('clicked on',d.label,d.id)
+          // We pass nodeLabels here because it's the lowest common denominator --
           // not all components have acccess to complete node objects.
           UDATA.Call('SOURCE_SELECT',{ nodeLabels: [d.label] }); })
-          /*NEWCODE END*/
 
     nodes.append("circle")
         .attr("r",
