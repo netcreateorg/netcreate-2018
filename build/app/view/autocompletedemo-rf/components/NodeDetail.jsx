@@ -40,7 +40,7 @@ class NodeDetail extends React.Component {
   constructor (props) {
     super(props)
     this.state = {
-      label: '',
+      label: undefined,
       type: '',
       info: '',
       notes: ''

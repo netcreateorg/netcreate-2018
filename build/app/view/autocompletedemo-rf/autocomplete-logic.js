@@ -25,6 +25,8 @@ var SELECTION      = {};
       searchLabel:         // a string representing what the user has typed
       suggestedNodeLabels: // an array of node labels suggestions that match
                               the search string
+      hilitedNode:         // a node object the user has hilited in the
+                              suggestion list.
     }
     'D3DATA' {
       nodes: // all nodes (not all may be actually changed)
@@ -89,8 +91,10 @@ MOD.Hook('INITIALIZE',()=>{
     console.log('SOURCE_HILITE',data);
     m_HandleSourceHilite( data.nodeLabel );
   });
+  /// `data` = { node: node }
   UDATA.Register('SOURCE_UPDATE',function(data) {
     console.log('SOURCE_UPDATE',data);
+    m_HandleSourceUpdate( data.node );
   });
 
   // console.log('defining SET_D3_INSTANCE');
@@ -261,8 +265,8 @@ function m_HandleSourceSearch (searchString) {
 
   // 5. Mark the selected nodes
   if (searchString==='') {
-    m_DeselectAllNodes()
-    return
+    m_DeselectAllNodes();
+    return;
   }
   D3DATA.nodes = D3DATA.nodes.map( node => {
     // search for matches (partial matches are included)
@@ -276,7 +280,7 @@ function m_HandleSourceSearch (searchString) {
     // } else {
     //   node.selected = this.getDeselectedNodeColor( node, color )
     }
-    return node
+    return node;
   })
   UDATA.SetState('D3DATA',D3DATA);
 }
@@ -284,11 +288,57 @@ function m_HandleSourceSearch (searchString) {
 
 /// User has moused over (or keyboard-arrowed-over) an item in the suggestion list
 function m_HandleSourceHilite (nodeLabel) {
-  if (!nodeLabel) return;  // ignore hilite if nothing was set
-  m_DeselectAllNodes();
-  m_MarkNodeByLabel( nodeLabel, SOURCE_COLOR );
+  if (nodeLabel) {
+    // Only mark nodes if something is selected
+    m_DeselectAllNodes();
+    m_MarkNodeByLabel( nodeLabel, SOURCE_COLOR );
+  }
+
+  // Update hilitedNode in SELECTION
+  // Always update hilitedNode so that NodeDetail will update
+  let hilitedNode = m_GetNodeByLabel(nodeLabel);
+  let selection = UDATA.State('SELECTION');
+  selection.hilitedNode = hilitedNode;
+  UDATA.SetState('SELECTION',selection);
 }
 
+
+/// User has hit Save to save a node
+/// Update existing node, or add a new node
+function m_HandleSourceUpdate (newNodeData) {
+  if (DBG) console.log('autocomplete-logic.m_HandleSourceUpdate',newNodeData);
+  let found = false;
+  D3DATA.nodes = D3DATA.nodes.map( node => {
+    if (node.id === newNodeData.id) {
+      node.label                    = newNodeData.label;
+      node.attributes["Node_Type"]  = newNodeData.type;
+      node.attributes["Extra Info"] = newNodeData.info;  /*STYLE*/// why switch between _ and space?
+      node.attributes["Notes"]      = newNodeData.notes;
+      node.id                       = newNodeData.id;
+      if (DBG) console.log('...updated existing node',node.id);
+      found = true;
+    }
+    return node;
+  })
+  if (!found) {
+    // Add a new node
+    if (DBG) console.log('...adding new node',newNodeData.id);
+    let node = {attributes:{}};
+    node.label                    = newNodeData.label;
+    node.attributes["Node_Type"]  = newNodeData.type;
+    node.attributes["Extra Info"] = newNodeData.info;
+    node.attributes["Notes"]      = newNodeData.notes;
+    node.id                       = newNodeData.id;
+    D3DATA.nodes.push(node);
+  }
+
+  UDATA.SetState('D3DATA',D3DATA);
+
+  // Clear search field
+  let selection = UDATA.State('SELECTION');
+  selection.searchLabel = '';
+  UDATA.SetState('SELECTION',selection);
+}
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

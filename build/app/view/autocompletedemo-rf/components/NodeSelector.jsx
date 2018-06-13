@@ -3,62 +3,50 @@
 
     Node Selector
 
+
+    OVERVIEW
+    --------
+
     NodeSelector is a form for searching for, viewing, selecting, and editing
     Node information.
 
     NodeSelector does not modify any data.  It passes all events (text updates,
-    highlights, and suggestion selections) up to the parent.  The parent
-    object should process the events and update the data accordingly.  The
+    highlights, and suggestion selections) up to autocomplete-logic.  ac-l
+    should process the events and update the data accordingly.  The
     updated data is then rendered by NodeSelect.
 
 
     TO USE
-
-          <NodeSelector
-
-            data                 = {this.state.data}
-            selectedNode         = {this.state.selectedSourceNode}
-            highlightedNodeLabel = {this.state.highlightedSourceNodeLabel}
-
-            onInputUpdate        = {this.handleSourceInputUpdate}
-            onHighlight          = {this.handleSourceHighlight}
-            onNodeSelect         = {this.handleSourceNodeSelection}
-            onNodeUpdate         = {this.handleNodeUpdate}
-
-          />
+    ------
+          <NodeSelector/>
 
 
-    PROPS SETTERS (data from Parent)
+    TECHNICAL DESCRIPTION
+    ---------------------
 
-          data            Used to pass the current graph data from the parent
-                          component to NodeSelector
+    NodeSelector handles three basic functions:
 
-          selectedNode    If the parent selects a node, pass the node here
+    1. Display the current SELECTION.nodes[0]
+    2. Support input of node fields
+    3. Send updated node field data to SOURCE_UPDATE
 
-          highlightedNodeLabel
-                          Currently highlighted label
+    As the user edits the form, we locally save the changes and send it to UNISYS
+    when the user clicks "SAVE"
+
+    The currently selected/editing node is set via SELECTION.nodes.
+
+    Updates are sent to UNISYS via SOURCE_UPDATE.
 
 
-    PROPS HANDLERS (data sent to Parent)
-
-          onInputUpdate   A callback function, called whenever user types in
-                          search field
-
-          onHighlight     A callback function, called whenever user highlights
-                          (mouses over) a suggestion
-
-          onNodeSelect    A callback function that NodeSelect will call when the
-                          user has selected a specific node either for viewing
-                          or editing.  Used by EdgeEntry as the Source node.
-
-          onNodeUpdate    A callback function, called when the user edits an
-                          existing node, or adds a new node.  This is passed
-                          to the parent, which updates the data store.
+    The AutoComplete search field is handled a little differently from the other
+    input fields because it is independent of NodeSelector.  In order to keep
+    NodeSelector's internal representation of form data up to date, we rely on
+    the SELECTION updates' searchLabel field to update the label.
 
 
 
     STATES
-          data            Local version of graph data
+    ------
 
           formData        Node data that is shown in the form
 
@@ -71,21 +59,64 @@
 
 
 
+    TESTING
+    -------
+
+    Edit Existing Node
+        1. Type 'ah'
+              * Nodes on graph should hilite
+              * Suggestions should be displayed
+              * "Add New Node" should be shown.
+        2. Highlight 'Ah Sing'
+              * Ah Sing node detail should be shown
+        3. Unhighlight all selections (move mouse out)
+              * NodeDetail should disappear
+        4. Click 'Ah Sing'
+              * 'Ah Sing's details should load in form
+              * "Edit Node" button should be shown.
+        5. Click "Edit Node"
+              * "Save" should be shown
+              * All fields should be enabled
+        6. Edit 'Ah Sing' to 'Ah Sing A'
+              * Form should not change
+              * Hilited graph node should go away
+        7. Edit fields (add text)
+        8. Click "Save"
+              * Form should clear
+        9. Check 'Ah Sing' contents to make sure changes were saved
+
+    Create New Node
+        1. Type 'ah'
+              * Nodes on graph should hilite
+              * Suggestions should be displayed
+              * "Add New Node" should be shown.
+        2. Click 'Add New Node'
+              * Fields should be enabled
+              * A new ID should be added
+              * "Save" button should appear
+        3. Edit fields
+        4. Click "Save"
+              * New node should appear in graph
+              * The node should have the label you added 'ah'
+        5. Select the node to verify the contents
+
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+
+var DBG = true;
 
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const React        = require('react')
-const ReactStrap   = require('reactstrap')
-const { Button, Col, Form, FormGroup, Label, Input, FormText } = ReactStrap
-const AutoComplete = require('./AutoComplete')
-const NodeDetail   = require('./NodeDetail')
+const React        = require('react');
+const ReactStrap   = require('reactstrap');
+const { Button, Col, Form, FormGroup, Label, Input, FormText } = ReactStrap;
+const AutoComplete = require('./AutoComplete');
+const NodeDetail   = require('./NodeDetail');
 
 const UNISYS   = require('system/unisys');
 var   UDATA    = null;
-
 
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
@@ -94,10 +125,8 @@ var   UDATA    = null;
 class NodeSelector extends React.Component {
 
   constructor (props) {
-    super(props)
+    super(props);
     this.state = {
-      data:                 {},
-
       formData: {
           label:     '',
           type:      '',
@@ -108,35 +137,25 @@ class NodeSelector extends React.Component {
       },
       highlightedNode: {},
       isEditable:      false
-    }
+    };
 
     /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
 
     UDATA.OnStateChange('SELECTION',(data)=>{
-      // expect { nodes, edges } for this namespace
-      console.log('NodeSelector got state SELECTION',data);
-      if (data.nodes) {
-        // grab the first node
-        let node = data.nodes.pop();
-        this.loadFormFromNode( node );
-      } else {
-        this.clearForm();
-      }
+      this.handleSelection(data);
     });
 
-    this.clearForm                             = this.clearForm.bind(this)
-    this.getNewNodeID                          = this.getNewNodeID.bind(this)
-    this.loadFormFromNode                      = this.loadFormFromNode.bind(this)
-    this.handleAutoCompleteInputChange         = this.handleAutoCompleteInputChange.bind(this)
-    this.handleAutoCompleteNodeSelection       = this.handleAutoCompleteNodeSelection.bind(this)
-    this.handleAutoCompleteSuggestionHighlight = this.handleAutoCompleteSuggestionHighlight.bind(this)
-    this.onLabelChange                         = this.onLabelChange.bind(this)
-    this.onTypeChange                          = this.onTypeChange.bind(this)
-    this.onNotesChange                         = this.onNotesChange.bind(this)
-    this.onInfoChange                          = this.onInfoChange.bind(this)
-    this.onEditButtonClick                     = this.onEditButtonClick.bind(this)
-    this.onSubmit                              = this.onSubmit.bind(this)
+    this.clearForm                             = this.clearForm.bind(this);
+    this.getNewNodeID                          = this.getNewNodeID.bind(this);
+    this.handleSelection                       = this.handleSelection.bind(this);
+    this.loadFormFromNode                      = this.loadFormFromNode.bind(this);
+    this.onLabelChange                         = this.onLabelChange.bind(this);
+    this.onTypeChange                          = this.onTypeChange.bind(this);
+    this.onNotesChange                         = this.onNotesChange.bind(this);
+    this.onInfoChange                          = this.onInfoChange.bind(this);
+    this.onEditButtonClick                     = this.onEditButtonClick.bind(this);
+    this.onSubmit                              = this.onSubmit.bind(this);
 
   }
 
@@ -158,24 +177,61 @@ class NodeSelector extends React.Component {
       },
       highlightedNode: {},
       isEditable:      false
-    })
+    });
   }
   /// Return a new unique ID
+  /// REVIEW: Should this be in autocomplete-logic?
   getNewNodeID () {
-    let ids  = this.state.data.nodes.map( node => { return node.id } )
-    let highestID = ids.reduce( (a,b) => { return Math.max(a,b) } )
-    return highestID+1
+    let data = UDATA.State('D3DATA');
+    let ids  = data.nodes.map( node => { return node.id } );
+    let highestID = ids.reduce( (a,b) => { return Math.max(a,b) } );
+    return highestID+1;
   }
-  /// Show node data in the form
+  /// Handle updated SELECTION
+  handleSelection ( data ) {
+    if (DBG) console.log('NodeSelector got state SELECTION',data);
+    if (!this.state.isEditable) {
+      if (data.nodes && data.nodes.length>0) {
+        // A node was selected, so load it
+        // We're not editing, so it's OK to update the form
+        // grab the first node
+        let node = data.nodes[0];
+        this.loadFormFromNode( node );
+      } else {
+        if (DBG) console.log('No data.nodes, so clearing form');
+        this.clearForm();
+      }
+    } else {
+      // Always update the search label
+      // Update the form's node label because that data is only passed via SELECTION
+      // AutoComplete calls SELECTION whenever the input field changes
+      let formData = this.state.formData;
+      formData.label = data.searchLabel;
+      this.setState({
+        formData: formData
+      });
+    }
+
+    // Show Node Detail
+    this.setState({
+      highlightedNode: data.hilitedNode
+    });
+  }
+  /// Coppy the node data passed via SELECTION in the form
   loadFormFromNode ( newNode ) {
+    if (DBG) console.log('NodeSelector.loadFormFromNode',newNode);
+    if (newNode===undefined) {
+      throw "NodeSelector.loadFormFromNode called with undefined newNode!";
+    }
     // Clean data
-    let node = {attributes:{}}
-    if (newNode.attributes===undefined) { newNode.attributes = {} }
-    node.label                    = newNode.label || ''
-    node.id                       = newNode.id    || ''
-    node.attributes["Node_Type"]  = newNode.attributes["Node_Type"]  || ''
-    node.attributes["Extra Info"] = newNode.attributes["Extra Info"] || ''
-    node.attributes["Notes"]      = newNode.attributes["Notes"]      || ''
+    // REVIEW: Basic data structure probably needs updating
+    let node = {attributes:{}};
+    if (newNode.attributes===undefined) { newNode.attributes = {} };
+    node.label                    = newNode.label || '';
+    node.id                       = newNode.id    || '';
+    node.attributes["Node_Type"]  = newNode.attributes["Node_Type"]  || '';
+    node.attributes["Extra Info"] = newNode.attributes["Extra Info"] || '';
+    node.attributes["Notes"]      = newNode.attributes["Notes"]      || '';
 
     // Copy to form
     this.setState({
@@ -188,76 +244,9 @@ class NodeSelector extends React.Component {
         isNewNode: false
       },
       isEditable: false
-    })
+    });
   }
 
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// AUTOCOMPLETE HANDLERS
-  ///
-  /// As the user types, dynamically update the currently selected nodes in the data
-  /// this has a side effect of passing the data to the parent component via onDataUpdate
-  /*STYLE*/// this is a generic name for what's happening. Maybe it should be LabelChange and indicate that a livesearch happens?
-  handleAutoCompleteInputChange (searchValue) {
-    // Update the local value
-    let formData = this.state.formData
-        formData.label = searchValue
-    this.setState({
-      formData: formData
-    })
-    // console.log('NodeSelector.handleAutoCompleteInputChange setting label to',formData.label)
-    // Notify parent of updated value
-    this.props.onInputUpdate( searchValue )
-  }
-  /// The user has temporarily highlighted one of the suggestions
-  /// Show the highlighted node in NodeDetail, but let it get overriden by selection.
-  handleAutoCompleteSuggestionHighlight (nodeLabel) {
-    // Find first node that matches highlight
-    if (nodeLabel===null) {
-      // Unhighlight
-      this.setState({ highlightedNode: {} })
-    } else {
-      let nodes = this.state.data.nodes.filter( node => { return nodeLabel===node.label })
-      /*STYLE*/// Array.filter ALWAYS returns an array, but it can be empty. Checking for null or array-ness isn't necessary
-      if ( (nodes!==null) &&
-           (Array.isArray(nodes)) &&
-           (nodes.length>0) &&
-           (nodes[0]!==null)
-         ) {
-        // Node is Valid!
-        this.setState({ highlightedNode: nodes[0] })
-      }
-    }
-    this.props.onHighlight( nodeLabel )
-  }
-  /// The user has selected one of the suggestions
-  /// Update the selected data, and notify the parent
-  handleAutoCompleteNodeSelection (nodeLabel) {
-    // Does the node already exist?  If so, update it.
-    let nodes = this.state.data.nodes.filter( node => { return nodeLabel===node.label })
-    if ((nodes!==null) &&
-        (Array.isArray(nodes)) &&
-        (nodes.length>0) &&
-        (nodes[0]!==null)) {
-      // Node is Valid!
-      // console.info('nodeLabel is',nodeLabel,'node selected is', nodes)
-      // Read node values for form
-      let node = nodes[0]
-      this.setState({
-        formData: {
-          label:     node.label,
-          type:      node.attributes["Node_Type"],     // HACK This needs to be updated when
-          info:      node.attributes["Extra Info"],    // the data format is updated
-          notes:     node.attributes["Notes"],         // These were bad keys from Fusion Tables.
-          id:        node.id,
-          isNewNode: false
-        },
-        isEditable: false
-      })
-      // Propagate to parent
-      this.props.onNodeSelect( node )
-    }
-  }
 
 
 
@@ -265,59 +254,58 @@ class NodeSelector extends React.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UI EVENT HANDLERS
   ///
+  /// REVIEW: Do we really need to manage each input field change with a state update
+  ///         or can we just grab the final text during the "SAVE"?
   onLabelChange (label) {
-    let node = this.state.formData
-    node.label = label
-    this.setState({ formData: node })
+    let node = this.state.formData;
+    node.label = label;
+    this.setState({ formData: node });
   }
   onTypeChange  (event) {
-    let node = this.state.formData
-    node.type = event.target.value
-    this.setState({ formData: node })
+    let node = this.state.formData;
+    node.type = event.target.value;
+    this.setState({ formData: node });
   }
   onNotesChange (event) {
-    let node = this.state.formData
-    node.notes = event.target.value
-    this.setState({ formData: node })
+    let node = this.state.formData;
+    node.notes = event.target.value;
+    this.setState({ formData: node });
   }
   onInfoChange  (event) {
-    let node = this.state.formData
-    node.info = event.target.value
-    this.setState({ formData: node })
+    let node = this.state.formData;
+    node.info = event.target.value;
+    this.setState({ formData: node });
   }
   onEditButtonClick (event) {
-    event.preventDefault()
+    event.preventDefault();
 
     // console.log('NodeSelector.onEditButtonClick')
-    this.setState({ isEditable: true })
+    this.setState({ isEditable: true });
 
     // Add ID if one isn't already defined
-    let formData = this.state.formData
-    if (formData.id == '') formData.id = this.getNewNodeID()
-    this.setState({ formData: formData })
+    let formData = this.state.formData;
+    if (formData.id == '') formData.id = this.getNewNodeID();
+    this.setState({ formData: formData });
 
   }
   onSubmit ( event ) {
-    event.preventDefault()
+    event.preventDefault();
 
     // Update the data with the selectedNode
-    let newNodeData = this.state.formData
-    // console.log('NodeSelector.onSubmit label is',newNodeData.label)
+    let newNodeData = this.state.formData;
+    console.log('NodeSelector.onSubmit label is',newNodeData.label)
     let node = {
         label: newNodeData.label,
         id:    newNodeData.id,
         type:  newNodeData.type,
         info:  newNodeData.info,
         notes: newNodeData.notes
-    }
+    };
 
-    // Notify parent of new node data
-    this.props.onNodeUpdate( node ) /*STYLE*/// why have onNodeUpdate() and handleNodeUpdate()?
-    // Notify parent to deselect selectedNode
-    this.props.onNodeSelect( {} )
+    UDATA.Call('SOURCE_UPDATE', {node: node});
 
     // Clear form data
-    this.clearForm()
+    this.clearForm();
 
   }
 
@@ -331,22 +319,6 @@ class NodeSelector extends React.Component {
   }
   componentWillReceiveProps (nextProps) {
     // console.log('NodeSelect.componentWillReceiveProps',nextProps)
-    let data = nextProps.data || {}
-    this.setState({
-      data:  data
-    })
-
-// DELETE: This is now handled by SAELECTION event in constructor
-    // // sourceNodeLabel
-    // let node = nextProps.selectedNode
-    // // console.log('NodeSelector: RECEIVED nextProps.selectedNode',node)
-    // if (node!==undefined && Object.keys(node).length>0) {
-    //   // Fill out the form
-    //   // console.log('...updating form')
-    //   this.loadFormFromNode( node )
-    // } else {
-    //   this.clearForm()
-    // }
   }
 
   shouldComponentUpdate () { return true }
@@ -360,12 +332,7 @@ class NodeSelector extends React.Component {
         <FormGroup>
           <Label for="nodeLabel" className="small text-muted">LABEL</Label>
           <AutoComplete
-            data={this.state.data}
-            value={this.state.formData.label}
             disableSuggestions={!this.state.isEditable}
-            onInputChange={this.handleAutoCompleteInputChange}
-            onHighlight={this.handleAutoCompleteSuggestionHighlight}
-            onSelection={this.handleAutoCompleteNodeSelection}
           />
         </FormGroup>
         <div style={{position:'absolute',left:'300px',maxWidth:'300px'}}>
@@ -417,7 +384,7 @@ class NodeSelector extends React.Component {
           <Button outline size="sm"
             hidden={this.state.isEditable}
             onClick={this.onEditButtonClick}
-          >{this.props.selectedNode.id===undefined?"Add New Node":"Edit Node"}</Button>
+          >{this.state.formData.id===''?"Add New Node":"Edit Node"}</Button>
           <Button color="primary" size="sm"
             hidden={!this.state.isEditable}
           >Save</Button>

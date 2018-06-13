@@ -372,40 +372,41 @@ class AutoCompleteDemo extends React.Component {
     this.findMatchingEdgeWithTarget(node.label)
   }
 
+// TODO: Remove this.  Now in ACL
   /// Update existing node, or add a new node
   handleNodeUpdate ( newNodeData ) { /*STYLE*/// this is called 'newNodeData' but it isn't always new
 
-    /*NEWCODE*/
-    UDATA.Call('SOURCE_UPDATE',{ newNodeData });
-    /*NEWCODE END*/
+    // /*NEWCODE*/
+    // UDATA.Call('SOURCE_UPDATE',{ newNodeData });
+    // /*NEWCODE END*/
 
-    if (DBG) console.log('AutoCompleteDemo.handleNodeUpdate',newNodeData)
-    let updatedData = this.state.data /*STYLES*/// this is copying by reference, so you're overriding the original state below which may have repercussions
-    let found = false
-    updatedData.nodes = this.state.data.nodes.map( node => {
-      if (node.id === newNodeData.id) {
-        node.label                    = newNodeData.label
-        node.attributes["Node_Type"]  = newNodeData.type
-        node.attributes["Extra Info"] = newNodeData.info  /*STYLE*/// why switch between _ and space?
-        node.attributes["Notes"]      = newNodeData.notes
-        node.id                       = newNodeData.id
-        console.log('...updated existing node',node.id)
-        found = true
-      }
-      return node
-    })
-    if (!found) {
-      // Add a new node
-      console.log('...adding new node',newNodeData.id)
-      let node = {attributes:{}}
-      node.label                    = newNodeData.label
-      node.attributes["Node_Type"]  = newNodeData.type
-      node.attributes["Extra Info"] = newNodeData.info
-      node.attributes["Notes"]      = newNodeData.notes
-      node.id                       = newNodeData.id
-      updatedData.nodes.push(node)
-    }
-    this.setState({ data: updatedData })
+    // if (DBG) console.log('AutoCompleteDemo.handleNodeUpdate',newNodeData)
+    // let updatedData = this.state.data /*STYLES*/// this is copying by reference, so you're overriding the original state below which may have repercussions
+    // let found = false
+    // updatedData.nodes = this.state.data.nodes.map( node => {
+    //   if (node.id === newNodeData.id) {
+    //     node.label                    = newNodeData.label
+    //     node.attributes["Node_Type"]  = newNodeData.type
+    //     node.attributes["Extra Info"] = newNodeData.info  /*STYLE*/// why switch between _ and space?
+    //     node.attributes["Notes"]      = newNodeData.notes
+    //     node.id                       = newNodeData.id
+    //     console.log('...updated existing node',node.id)
+    //     found = true
+    //   }
+    //   return node
+    // })
+    // if (!found) {
+    //   // Add a new node
+    //   console.log('...adding new node',newNodeData.id)
+    //   let node = {attributes:{}}
+    //   node.label                    = newNodeData.label
+    //   node.attributes["Node_Type"]  = newNodeData.type
+    //   node.attributes["Extra Info"] = newNodeData.info
+    //   node.attributes["Notes"]      = newNodeData.notes
+    //   node.id                       = newNodeData.id
+    //   updatedData.nodes.push(node)
+    // }
+    // this.setState({ data: updatedData })
   }
 
   /// Update existing edge, or add a new edge
@@ -634,16 +635,7 @@ class AutoCompleteDemo extends React.Component {
                 <h3>Nodes (RF)</h3>
               </div>
               <div>
-                <NodeSelector
-                  data={this.state.data}
-                  selectedNode={this.state.selectedSourceNode}
-                  highlightedNodeLabel={this.state.highlightedSourceNodeLabel}
-
-                  onInputUpdate={this.handleSourceInputUpdate}
-                  onHighlight={this.handleSourceHighlight}
-                  onNodeSelect={this.handleSourceNodeSelection}
-                  onNodeUpdate={this.handleNodeUpdate}
-                />
+                <NodeSelector/>
                 <EdgeEntry
                   data={this.state.data}
                   selectedSourceNode={this.state.selectedSourceNode}

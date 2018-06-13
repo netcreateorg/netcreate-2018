@@ -30,7 +30,9 @@
       See documentation:  https://github.com/moroshko/react-autosuggest
 
 
-      To Use:
+      TO USE
+      ------
+
           <AutoComplete
             disableSuggestions={this.state.canEdit}
           />
@@ -41,13 +43,15 @@
       TECHNICAL DESCRIPTION
       ---------------------
 
-      AutoComplete handles three basic functions:
+      AutoComplete handles five basic functions:
 
       1. Show suggestions when the user types in the input search field.
       2. Mark nodes on graph when the user changes the search field.
       3. Set selection when user clicks on a suggestion.
       4. Show the label if the node is selected externally
          (via a click on the graph)
+      5. Provide an edit field for the label when the user is editing a node
+         (during edit, show suggestions, but don't select anything?)
 
       The Autosuggest input field is a controlled field.  It is controlled via this.state.value.
 
@@ -80,7 +84,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 
-var DBG = true;
+var DBG = false;
 
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
@@ -113,9 +117,9 @@ class AutoComplete extends React.Component {
 
 
     UDATA.OnStateChange('SELECTION',(data)=>{
-      console.log('AutoComplete got state SELECTION',data);
+      if (DBG) console.log('AutoComplete got state SELECTION',data);
       // Update the autosuggest input field's value
-      if (data.searchLabel) {
+      if (data.searchLabel!==undefined) {
         this.setState({
           value: data.searchLabel
         });

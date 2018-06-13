@@ -283,6 +283,7 @@ class D3NetGraph {
       .selectAll("text")
         .attr("color",        (d) => { if (d.selected) return d.selected; })
         .attr("font-weight",  (d) => { if (d.selected) return 'bold'; })
+        .text((d) => { return d.label })  // in case text is updated
 
     linkElements.merge(linkElements)
       .classed("selected",  (d) => { return d.selected })
