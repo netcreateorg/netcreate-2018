@@ -51,7 +51,8 @@ class EdgeEditor extends React.Component {
           id:        ''
       },
       highlightedNode: {},
-      isEditable:      false
+      isEditable:      false,
+      isExpanded:      false,     // Summary view vs Expanded view
     };
 
     /// Initialize UNISYS DATA LINK for REACT
@@ -69,7 +70,7 @@ class EdgeEditor extends React.Component {
   /// UI EVENT HANDLERS
   ///
   onButtonClick () {
-    this.setState({ isEditable: !this.state.isEditable });
+    this.setState({ isExpanded: !this.state.isExpanded });
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -127,7 +128,7 @@ class EdgeEditor extends React.Component {
   render () {
     const { formData, sourceNode, targetNode, parentNodeLabel } = this.state;
     const me = 'me';
-    if (this.state.isEditable) {
+    if (this.state.isExpanded) {
       // Show Full Information
       return (
         <Form className="nodeEntry"
