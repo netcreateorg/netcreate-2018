@@ -168,6 +168,7 @@ var   UDATA        = null; // set in constructor
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// TODO: Remove thsese contants -- they're now defined in acl
 const DESELECTED_COLOR = ''
 const SOURCE_COLOR     = '#0000DD'
 const TARGET_COLOR     = '#FF0000'
@@ -181,14 +182,16 @@ const TARGET_COLOR     = '#FF0000'
 /// know when to use them? It's not clear to me not having reviewed the entirety of the code
 /// and it's only used once. Also this style of function declaration is foreign to our codestyle
 /// which favors oldschool function declarations, not this new arrow function stuff.
-const escapeRegexCharacters = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') /*STYLE*/// function declaration hard to parse
-const appearsIn = (searchValue, targetString) => {
-  if (typeof searchValue !== 'string') { return false }
-  const escapedLabel = escapeRegexCharacters(searchValue.trim()) /*STYLE*/// why break this out? premature optimization
-  if (escapedLabel === '') { return false }
-  const regex = new RegExp(escapedLabel, 'i') // case insensitive
-  return regex.test(targetString)
-};
+
+// TODO: This is moved to AutoComplete-Logic.  Can delete here.
+// const escapeRegexCharacters = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') /*STYLE*/// function declaration hard to parse
+// const appearsIn = (searchValue, targetString) => {
+//   if (typeof searchValue !== 'string') { return false }
+//   const escapedLabel = escapeRegexCharacters(searchValue.trim()) /*STYLE*/// why break this out? premature optimization
+//   if (escapedLabel === '') { return false }
+//   const regex = new RegExp(escapedLabel, 'i') // case insensitive
+//   return regex.test(targetString)
+// };
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -210,7 +213,6 @@ class AutoCompleteDemo extends React.Component {
     /*NEWCODE END*/
 
     this.updateData                = this.updateData.bind(this)
-    this.handleJSONLoad            = this.handleJSONLoad.bind(this)
     this.handleNodeClick           = this.handleNodeClick.bind(this)
     this.handleEdgeClick           = this.handleEdgeClick.bind(this)
     this.handleSourceInputUpdate   = this.handleSourceInputUpdate.bind(this)
@@ -449,6 +451,7 @@ class AutoCompleteDemo extends React.Component {
     this.setState({ selectedTargetNode: {} })
   }
 
+// TODO This is now moved to ACL
   findNodeById ( id ) {
     let found = this.state.data.nodes.filter( n => n.id===id )
     if (found.length>0) {
@@ -506,18 +509,19 @@ class AutoCompleteDemo extends React.Component {
     }
     /*STYLE*/// make sure this is actually creating a copy of this.state.data
             /// map() might ensure this
-    let updatedData = this.state.data
-    updatedData.nodes = this.state.data.nodes.map( node => {
-      // search for matches (partial matches are included)
-      if (appearsIn(searchValue, node.label)) {
-        // intent is only to set selected node color if the node doesn't already have one
-        node.selected = this.getSelectedNodeColor( node, color )
-      } else {
-        node.selected = this.getDeselectedNodeColor( node, color )
-      }
-      return node
-    })
-    this.setState( { data: updatedData })
+// REMOVE because marking is now handled by acl?
+    // let updatedData = this.state.data
+    // updatedData.nodes = this.state.data.nodes.map( node => {
+    //   // search for matches (partial matches are included)
+    //   if (appearsIn(searchValue, node.label)) {
+    //     // intent is only to set selected node color if the node doesn't already have one
+    //     node.selected = this.getSelectedNodeColor( node, color )
+    //   } else {
+    //     node.selected = this.getDeselectedNodeColor( node, color )
+    //   }
+    //   return node
+    // })
+    // this.setState( { data: updatedData })
   }
   // id is the node_id
   markSelectedNodeById( id, color ) {
@@ -555,6 +559,7 @@ class AutoCompleteDemo extends React.Component {
       return DESELECTED_COLOR
     }
   }
+// TODO: This is now moved to acl, remove it here
   deselectAllNodes () {
     /*STYLE*/// is the intent of this to ensure node.selected has a value of some kind? is it necessary at all?
     for (let node of this.state.data.nodes) { node.selected = this.getDeselectedNodeColor( node ) }
@@ -571,12 +576,13 @@ class AutoCompleteDemo extends React.Component {
   /// EDGES
   ///
   markSelectedEdgeById( id ) {
-    let updatedData = this.state.data
-    updatedData.edges = this.state.data.edges.map( edge => {
-      edge.selected = (edge.id===id)  /*STYLE*/// edge.selected doesn't mirror node.selected in value type (node.selected is a color)
-      return edge
-    })
-    this.setState( { data: updatedData })
+// REMOVE because marking is now handled by acl?
+    // let updatedData = this.state.data
+    // updatedData.edges = this.state.data.edges.map( edge => {
+    //   edge.selected = (edge.id===id)  /*STYLE*/// edge.selected doesn't mirror node.selected in value type (node.selected is a color)
+    //   return edge
+    // })
+    // this.setState( { data: updatedData })
   }
 
 

@@ -228,7 +228,9 @@ class D3NetGraph {
 // instead of handling click via passed down handler functions, call UDATA direclty
           //this.nodeClickFn( d ) })
           /*NEWCODE*/
-          UDATA.Call('SOURCE_SELECT',{ node: d }); })
+          // We pass nodeLabels here because it's the lowest common denominator
+          // not all components have acccess to complete node objects.
+          UDATA.Call('SOURCE_SELECT',{ nodeLabels: [d.label] }); })
           /*NEWCODE END*/
 
     nodes.append("circle")
