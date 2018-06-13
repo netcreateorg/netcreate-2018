@@ -216,7 +216,7 @@ function m_MarkNodeByLabel (label, color) {
 /// LOGIC METHODS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_HandleNodeSelect (nodeLabel) {
-  console.log('m_HandleNodeSelect got data',node);
+  console.log('autocomplete-logic.m_HandleNodeSelect got data',nodeLabel);
 
   let node = m_GetNodeByLabel( nodeLabel );
 
@@ -232,12 +232,20 @@ function m_HandleNodeSelect (nodeLabel) {
   let selection = UDATA.State('SELECTION');
   selection.nodes = [node];
   selection.searchLabel = node.label;
+
+  // 2. Find the related edges
+  //    `edges` needs to always be defined as an array or React rendering will break
+  let edges = [];
+  edges = edges.concat( D3DATA.edges.filter( edge => edge.source.label===nodeLabel || edge.target.label===nodeLabel) );
+  selection.edges = edges;
+
+  // 3. Set the state
   UDATA.SetState('SELECTION',selection);
   // this would be implemented by any component that needed
   // to know when global state changes
   // UDATA.OnStateChange('SELECTION', this.globalStateChanged);
 
-  // 2. Mark the selected node
+  // 4. Mark the selected node
   let color = '#0000DD';
   m_MarkNodeById( id, color );
 

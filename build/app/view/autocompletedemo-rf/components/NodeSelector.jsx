@@ -199,6 +199,11 @@ class NodeSelector extends React.Component {
         // grab the first node
         let node = data.nodes[0];
         this.loadFormFromNode( node );
+
+        // Load edges
+        this.setState({
+          edges: data.edges
+        })
       } else {
         if (DBG) console.log('No data.nodes, so clearing form');
         this.clearForm();
@@ -235,14 +240,6 @@ class NodeSelector extends React.Component {
     node.attributes["Extra Info"] = newNode.attributes["Extra Info"] || '';
     node.attributes["Notes"]      = newNode.attributes["Notes"]      || '';
 
-
-    // Load Edges
-    let D3DATA = UDATA.State('D3DATA');
-    let label = newNode.label;
-    let edges = D3DATA.edges.filter( edge => edge.source.label===label || edge.target.label===label);
-    if (edges.length<1) edges = [];
-    if (DBG) console.warn('NodeSelector.loadFormFromNode edges found:',edges);
-
     // Copy to form
     this.setState({
       formData: {
@@ -253,7 +250,6 @@ class NodeSelector extends React.Component {
         id:        node.id,
         isNewNode: false
       },
-      edges: edges,
       isEditable: false,
     });
   }
