@@ -130,11 +130,43 @@ class EdgeEditor extends React.Component {
     if (this.state.isEditable) {
       // Show Full Information
       return (
-        <Form>
+        <Form className="nodeEntry"
+              style={{minHeight:'300px',backgroundColor:'#caf1c7',padding:'5px',marginBottom:'10px'}}
+        >
           <FormText>EDGE</FormText>
           <FormGroup>
             <Input type="text" name="source" id="source"
               value={sourceNode.label}
+              readOnly={true}
+            />
+          </FormGroup>
+          <FormGroup>
+            <Input type="text" name="relationship" id="relationship"
+              value={formData.relationship}
+              readOnly={true}
+            />
+          </FormGroup>
+          <FormGroup>
+            <Input type="text" name="target" id="target"
+              value={targetNode.label}
+              readOnly={true}
+            />
+          </FormGroup>
+          <FormGroup>
+            <Input type="text" name="notes" id="notes"
+              value={formData.notes}
+              readOnly={true}
+            />
+          </FormGroup>
+          <FormGroup>
+            <Input type="text" name="info" id="info"
+              value={formData.info}
+              readOnly={true}
+            />
+          </FormGroup>
+          <FormGroup>
+            <Input type="text" name="id" id="id"
+              value={formData.id}
               readOnly={true}
             />
           </FormGroup>
