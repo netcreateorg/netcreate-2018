@@ -336,9 +336,7 @@ class NodeSelector extends React.Component {
           />
         </FormGroup>
         <div style={{position:'absolute',left:'300px',maxWidth:'300px'}}>
-          <NodeDetail
-            selectedNode={this.state.highlightedNode}
-          />
+          <NodeDetail/>
         </div>
         <FormGroup>
           <Label for="type" className="small text-muted">TYPE</Label>
