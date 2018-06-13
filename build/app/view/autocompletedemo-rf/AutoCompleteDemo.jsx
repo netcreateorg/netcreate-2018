@@ -449,17 +449,6 @@ class AutoCompleteDemo extends React.Component {
               </div>
               <div>
                 <NodeSelector/>
-                <EdgeEntry
-                  data={this.state.data}
-                  selectedSourceNode={this.state.selectedSourceNode}
-                  selectedTargetNode={this.state.selectedTargetNode}
-                  selectedEdge={this.state.selectedEdge}
-
-                  onInputUpdate={this.handleTargetInputUpdate}
-                  onHighlight  ={this.handleTargetHighlight}
-                  onNodeSelect ={this.handleTargetNodeSelection}
-                  onEdgeUpdate ={this.handleEdgeUpdate}
-                />
               </div>
             </div>
           </div>
