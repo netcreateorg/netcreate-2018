@@ -114,6 +114,7 @@ const ReactStrap   = require('reactstrap');
 const { Button, Col, Form, FormGroup, Label, Input, FormText } = ReactStrap;
 const AutoComplete = require('./AutoComplete');
 const NodeDetail   = require('./NodeDetail');
+const EdgeEditor   = require('./EdgeEditor');
 
 const UNISYS   = require('system/unisys');
 var   UDATA    = null;
@@ -397,7 +398,10 @@ class NodeSelector extends React.Component {
         <hr/>
         <FormText>EDGES</FormText>
           {this.state.edges.map( (edge,i) =>
-            <div key={i}>{i} {edge.source.label} &rarr; {edge.target.label}</div>
+            <EdgeEditor key={i}
+              edgeID={edge.id}
+              parentNodeLabel={this.state.formData.label}
+            />
           )}
       </Form>
     )
