@@ -32,7 +32,7 @@
 
     `AutoCompleteDemo.jsx` is the root element.
 
-    *   It maintains the graph data in `this.state.data`
+    *   All state is maintained in autocomplete-logic.jsx.
     *   It handles events from NodeSelector, EdgeEntry, and NetGraph components
         and passes data and upates across them.
 
@@ -651,11 +651,7 @@ class AutoCompleteDemo extends React.Component {
             </div>
           </div>
           <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 auto', padding:'10px'}}>
-            <NetGraph
-              data={this.state.data}
-              onNodeClick={this.handleNodeClick}
-              onEdgeClick={this.handleEdgeClick}
-            />
+            <NetGraph/>
           </div>
           <div id="right" style={{backgroundColor:'#ffffE0', flex:'1 0 auto', padding:'10px'}}>
             <h3>Edges</h3>
