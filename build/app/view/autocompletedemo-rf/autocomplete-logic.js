@@ -297,9 +297,7 @@ function m_HandleSourceHilite (nodeLabel) {
   // Update hilitedNode in SELECTION
   // Always update hilitedNode so that NodeDetail will update
   let hilitedNode = m_GetNodeByLabel(nodeLabel);
-  let selection = UDATA.State('SELECTION');
-  selection.hilitedNode = hilitedNode;
-  UDATA.SetState('SELECTION',selection);
+  UDATA.SetState('SELECTION',{ hilitedNode: hilitedNode });
 }
 
 
@@ -335,9 +333,7 @@ function m_HandleSourceUpdate (newNodeData) {
   UDATA.SetState('D3DATA',D3DATA);
 
   // Clear search field
-  let selection = UDATA.State('SELECTION');
-  selection.searchLabel = '';
-  UDATA.SetState('SELECTION',selection);
+  UDATA.SetState('SELECTION',{searchLabel: ''});
 }
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
