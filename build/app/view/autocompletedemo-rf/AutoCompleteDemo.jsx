@@ -212,52 +212,19 @@ class AutoCompleteDemo extends React.Component {
     console.groupEnd();
     /*NEWCODE END*/
 
-    this.updateData                = this.updateData.bind(this)
-    this.handleNodeClick           = this.handleNodeClick.bind(this)
     this.handleEdgeClick           = this.handleEdgeClick.bind(this)
-    this.handleSourceInputUpdate   = this.handleSourceInputUpdate.bind(this)
     this.handleTargetInputUpdate   = this.handleTargetInputUpdate.bind(this)
-    this.handleSourceHighlight     = this.handleSourceHighlight.bind(this)
     this.handleTargetHighlight     = this.handleTargetHighlight.bind(this)
-    this.handleSourceNodeSelection = this.handleSourceNodeSelection.bind(this)
     this.handleTargetNodeSelection = this.handleTargetNodeSelection.bind(this)
-    this.handleNodeUpdate          = this.handleNodeUpdate.bind(this)
     this.handleEdgeUpdate          = this.handleEdgeUpdate.bind(this)
-    this.findNodeById              = this.findNodeById.bind(this)
     this.findMatchingEdgeWithSource = this.findMatchingEdgeWithSource.bind(this)
     this.findMatchingEdgeWithTarget = this.findMatchingEdgeWithTarget.bind(this)
     this.findMatchingEdge          = this.findMatchingEdge.bind(this)
     this.setSelectedEdge           = this.setSelectedEdge.bind(this)
-    this.markSelectedNodes         = this.markSelectedNodes.bind(this)
-    this.markSelectedNodeById      = this.markSelectedNodeById.bind(this) /*STYLE*/// Node vs Nodes hard to see
-    this.deselectAllNodes          = this.deselectAllNodes.bind(this)
     this.markSelectedEdgeById      = this.markSelectedEdgeById.bind(this)
   }
 
 
-
-  updateData ( newData ) {
-    this.setState( {
-      data:    newData
-    })
-  }
-
-
-  handleNodeClick ( clickedNode ) {
-    /*NEWCODE*/
-    // This is now handled by autocomplete-logic.
-    // handleNodeClick should eventually be replaced.
-    // UDATA.Call('SOURCE_SELECT',{ clickedNode });
-    /*NEWCODE END*/
-
-    if (DBG) console.log('AutoCompleteDemo.handleNodeClick',clickedNode)
-    this.deselectAllNodes()
-    this.markSelectedNodeById( clickedNode.id, SOURCE_COLOR )
-    this.setState( {
-      selectedSourceNode: clickedNode /*STYLE*/// reuse of selectedSourceNode as selectedNode makes logic unclear with regards to selectedEdge?
-    })
-    /*STYLE*/// why isn't there a setSelectedNode corresponding to setSelectedEdge?
-  }
   handleEdgeClick ( clickedEdge ) {
     /*NEWCODE*/
     UDATA.Call('EDGE_SELECT',{ clickedEdge });
@@ -283,24 +250,7 @@ class AutoCompleteDemo extends React.Component {
   /// SOURCE AND TARGET INPUT HANDLERS
   ///
   /*STYLE*/// in general should document who calls this in comments
-  handleSourceInputUpdate ( label ) {
-    /*NEWCODE*/
-    // when source label changes due to SELECTION, find and "mark" matching node
-    // and save it as selected source
-    UDATA.Call('FILTER_SOURCES',{ label });
-    /*NEWCODE END*/
 
-    if (DBG) console.log('AutoCompleteDemo.handleSourceInputUpdate',label)
-    // mark matching nodes
-    this.markSelectedNodes( label, SOURCE_COLOR )
-    // if it doesn't match a node exactly, we clear the selected node
-    // but pass the input value
-    this.setState( {
-      selectedSourceNode: {label: label}
-    })
-
-    this.findMatchingEdgeWithSource(label)
-  }
   handleTargetInputUpdate ( label ) {
     /*NEWCODE*/
     // when target label changes due to SELECTION, find and "mark" matching node
@@ -319,17 +269,6 @@ class AutoCompleteDemo extends React.Component {
 
     this.findMatchingEdgeWithTarget(label)
   }
-  handleSourceHighlight ( label ) {
-    /*NEWCODE*/
-    // when source label changes, find and "mark" matching nodes
-    // there is a different color for "hilite" versus "source"
-    UDATA.Call('SOURCE_HILITE',{ label });
-    /*NEWCODE END*/
-
-    // if (DBG) console.log('AutoCompleteDemo.handleSourceHighlight',label)
-    // mark matching nodes
-    if (label!==null) this.markSelectedNodes( label, SOURCE_COLOR )
-  }
   handleTargetHighlight ( label ) {
     /*NEWCODE*/
     // when target label changes, find and "mark" matching nodes
@@ -340,21 +279,6 @@ class AutoCompleteDemo extends React.Component {
     if (DBG) console.log('AutoCompleteDemo.handleTargetHighlight',label)
     // mark matching nodes
     if (label!==null) this.markSelectedNodes( label, TARGET_COLOR )
-  }
-  handleSourceNodeSelection ( node ) {
-    if (DBG) console.log('AutoCompleteDemo.handleSourceNodeSelect',node)
-    if (node.id===undefined) {
-      // Invalid node, NodeSelect is trying to clear the selection
-      // we have to do this here, otherwise, the label will persist
-      if (DBG) console.log('...clearing selectedSourceNode')
-      this.setState( { selectedSourceNode:{} } )
-    } else {
-      // Valid node, so select it
-      this.setState( { selectedSourceNode: node } )
-      this.markSelectedNodeById( node.id, SOURCE_COLOR )
-    }
-
-    this.findMatchingEdgeWithSource(node.label)
   }
   handleTargetNodeSelection ( node ) {
     if (DBG) console.log('AutoCompleteDemo.handleTargetNodeSelection',node)
@@ -372,42 +296,6 @@ class AutoCompleteDemo extends React.Component {
     this.findMatchingEdgeWithTarget(node.label)
   }
 
-// TODO: Remove this.  Now in ACL
-  /// Update existing node, or add a new node
-  handleNodeUpdate ( newNodeData ) { /*STYLE*/// this is called 'newNodeData' but it isn't always new
-
-    // /*NEWCODE*/
-    // UDATA.Call('SOURCE_UPDATE',{ newNodeData });
-    // /*NEWCODE END*/
-
-    // if (DBG) console.log('AutoCompleteDemo.handleNodeUpdate',newNodeData)
-    // let updatedData = this.state.data /*STYLES*/// this is copying by reference, so you're overriding the original state below which may have repercussions
-    // let found = false
-    // updatedData.nodes = this.state.data.nodes.map( node => {
-    //   if (node.id === newNodeData.id) {
-    //     node.label                    = newNodeData.label
-    //     node.attributes["Node_Type"]  = newNodeData.type
-    //     node.attributes["Extra Info"] = newNodeData.info  /*STYLE*/// why switch between _ and space?
-    //     node.attributes["Notes"]      = newNodeData.notes
-    //     node.id                       = newNodeData.id
-    //     console.log('...updated existing node',node.id)
-    //     found = true
-    //   }
-    //   return node
-    // })
-    // if (!found) {
-    //   // Add a new node
-    //   console.log('...adding new node',newNodeData.id)
-    //   let node = {attributes:{}}
-    //   node.label                    = newNodeData.label
-    //   node.attributes["Node_Type"]  = newNodeData.type
-    //   node.attributes["Extra Info"] = newNodeData.info
-    //   node.attributes["Notes"]      = newNodeData.notes
-    //   node.id                       = newNodeData.id
-    //   updatedData.nodes.push(node)
-    // }
-    // this.setState({ data: updatedData })
-  }
 
   /// Update existing edge, or add a new edge
   handleEdgeUpdate ( newEdgeData ) { /*STYLE*/// this is called 'newEdgeData' but it isn't always new
@@ -452,17 +340,7 @@ class AutoCompleteDemo extends React.Component {
     this.setState({ selectedTargetNode: {} })
   }
 
-// TODO This is now moved to ACL
-  findNodeById ( id ) {
-    let found = this.state.data.nodes.filter( n => n.id===id )
-    if (found.length>0) {
-      if (DBG) console.log('AutoCompleteDemo.findNodeById returning',found[0])
-      return found[0]
-    } else {
-      if (DBG) console.log('AutoCompleteDemo.findNodeById returning undefined')
-      return undefined
-    }
-  }
+
 
   findMatchingEdgeWithSource ( sourceLabel ) {
     let targetLabel = this.state.selectedTargetNode ? this.state.selectedTargetNode.label : ''
@@ -501,46 +379,7 @@ class AutoCompleteDemo extends React.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// MANAGE GRAPH DATA
   ///
-  /// Set the `selected` flag for any nodes that match `searchValue`, and update the state
-  // searchValue is the node_label
-  markSelectedNodes( searchValue, color ) {
-    if (searchValue==='') {
-      this.deselectAllNodes()
-      return
-    }
-    /*STYLE*/// make sure this is actually creating a copy of this.state.data
-            /// map() might ensure this
-// REMOVE because marking is now handled by acl?
-    // let updatedData = this.state.data
-    // updatedData.nodes = this.state.data.nodes.map( node => {
-    //   // search for matches (partial matches are included)
-    //   if (appearsIn(searchValue, node.label)) {
-    //     // intent is only to set selected node color if the node doesn't already have one
-    //     node.selected = this.getSelectedNodeColor( node, color )
-    //   } else {
-    //     node.selected = this.getDeselectedNodeColor( node, color )
-    //   }
-    //   return node
-    // })
-    // this.setState( { data: updatedData })
-  }
-  // id is the node_id
-  markSelectedNodeById( id, color ) {
-    if (id==='') {
-      this.deselectAllNodes()
-      return
-    }
-    let updatedData = this.state.data
-    updatedData.nodes = this.state.data.nodes.map( node => {
-      if (node.id===id) {
-        node.selected = this.getSelectedNodeColor( node, color )
-      } else {
-        node.selected = this.getDeselectedNodeColor( node, color )
-      }
-      return node
-    })
-    this.setState( { data: updatedData })
-  }
+
   /// Only select nodes that have not already been selected
   getSelectedNodeColor ( node, color ) {
     if (node.selected===undefined || node.selected===DESELECTED_COLOR) {
@@ -559,19 +398,6 @@ class AutoCompleteDemo extends React.Component {
     } else {
       return DESELECTED_COLOR
     }
-  }
-// TODO: This is now moved to acl, remove it here
-  deselectAllNodes () {
-    /*STYLE*/// is the intent of this to ensure node.selected has a value of some kind? is it necessary at all?
-    for (let node of this.state.data.nodes) { node.selected = this.getDeselectedNodeColor( node ) }
-    /*STYLE*///
-    let updatedData = this.state.data
-    let color = DESELECTED_COLOR
-    updatedData.nodes = this.state.data.nodes.map( node => {
-      node.selected = DESELECTED_COLOR
-      return node
-    })
-    this.setState( { data: updatedData })
   }
   ///
   /// EDGES
@@ -593,24 +419,11 @@ class AutoCompleteDemo extends React.Component {
   /// REACT LIFECYCLE
   ///
   componentDidMount () {
-    // Verify D3 Loaded: console.log('D3',d3)
-    // Load Data
-    // This loads data from the htmldemos/d3forcedemo data file for now.
-    // Relative URLS don't seem to work.
-    // The URL is constructed in http://localhost:3000/scripts/node_modules/url/url.js line 110.
-//    d3.json("http://localhost:3000/htmldemos/d3forcedemo/data.json", this.handleJSONLoad)
-
-// /*NEWCODE*/
-//    d3.json("http://localhost:3000/htmldemos/d3forcedemo/data.reducedlinks.json", this.handleJSONLoad);
-
-    /*NEWCODE BEGIN*/
     // kickoff initialization stage by stage
     (async () => {
       await UNISYS.EnterApp();
       await UNISYS.SetupRun();
     })();
-    /*NEWCODE END*/
-
   }
 
   render() {
