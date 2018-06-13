@@ -333,69 +333,71 @@ class NodeSelector extends React.Component {
   componentWillUpdate () {}
   render () {
     return (
-      <Form className='nodeEntry' style={{minHeight:'300px',backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px'}}
-        onSubmit={this.onSubmit}>
-        <FormText>NODE SELECTOR (RF)</FormText>
-        <hr/>
-        <FormGroup>
-          <Label for="nodeLabel" className="small text-muted">LABEL</Label>
-          <AutoComplete
-            disableSuggestions={!this.state.isEditable}
-          />
-        </FormGroup>
-        <div style={{position:'absolute',left:'300px',maxWidth:'300px'}}>
-          <NodeDetail/>
-        </div>
-        <FormGroup>
-          <Label for="type" className="small text-muted">TYPE</Label>
-          <Input type="select" name="type" id="typeSelect"
-            value={this.state.formData.type||''}
-            onChange={this.onTypeChange}
-            disabled={!this.state.isEditable}
-            >
-            <option>Person</option>
-            <option>Group</option>
-            <option>Place</option>
-            <option>Thing</option>
-            <option>Event</option>
-          </Input>
-        </FormGroup>
-        <FormGroup>
-          <Label for="notes" className="small text-muted">NOTES</Label>
-          <Input type="textarea" name="note" id="notesText"
-            value={this.state.formData.notes||''}
-            onChange={this.onNotesChange}
-            readOnly={!this.state.isEditable}
+      <div>
+        <Form className='nodeEntry' style={{minHeight:'300px',backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px'}}
+          onSubmit={this.onSubmit}>
+          <FormText>NODE SELECTOR (RF)</FormText>
+          <hr/>
+          <FormGroup>
+            <Label for="nodeLabel" className="small text-muted">LABEL</Label>
+            <AutoComplete
+              disableSuggestions={!this.state.isEditable}
             />
-        </FormGroup>
-        <FormGroup>
-          <Label for="info" className="small text-muted">GEOCODE or DATE</Label>
-          <Input type="text" name="info" id="info"
-            value={this.state.formData.info||''}
-            onChange={this.onInfoChange}
-            readOnly={!this.state.isEditable}
-            />
-        </FormGroup>
-        <FormGroup row>
-          <Label for="id" sm={2} className="small text-muted">ID</Label>
-          <Col sm={10}>
-            <Input type="text" name="id" id="id"
-              value={this.state.formData.id||''}
-              readOnly={true}
-            />
-          </Col>
-        </FormGroup>
-        <hr/>
-        <FormGroup className="text-right" style={{paddingRight:'5px'}}>
-          <Button outline size="sm"
-            hidden={this.state.isEditable}
-            onClick={this.onEditButtonClick}
-          >{this.state.formData.id===''?"Add New Node":"Edit Node"}</Button>
-          <Button color="primary" size="sm"
-            hidden={!this.state.isEditable}
-          >Save</Button>
-        </FormGroup>
-        <hr/>
+          </FormGroup>
+          <div style={{position:'absolute',left:'300px',maxWidth:'300px'}}>
+            <NodeDetail/>
+          </div>
+          <FormGroup>
+            <Label for="type" className="small text-muted">TYPE</Label>
+            <Input type="select" name="type" id="typeSelect"
+              value={this.state.formData.type||''}
+              onChange={this.onTypeChange}
+              disabled={!this.state.isEditable}
+              >
+              <option>Person</option>
+              <option>Group</option>
+              <option>Place</option>
+              <option>Thing</option>
+              <option>Event</option>
+            </Input>
+          </FormGroup>
+          <FormGroup>
+            <Label for="notes" className="small text-muted">NOTES</Label>
+            <Input type="textarea" name="note" id="notesText"
+              value={this.state.formData.notes||''}
+              onChange={this.onNotesChange}
+              readOnly={!this.state.isEditable}
+              />
+          </FormGroup>
+          <FormGroup>
+            <Label for="info" className="small text-muted">GEOCODE or DATE</Label>
+            <Input type="text" name="info" id="info"
+              value={this.state.formData.info||''}
+              onChange={this.onInfoChange}
+              readOnly={!this.state.isEditable}
+              />
+          </FormGroup>
+          <FormGroup row>
+            <Label for="id" sm={2} className="small text-muted">ID</Label>
+            <Col sm={10}>
+              <Input type="text" name="id" id="id"
+                value={this.state.formData.id||''}
+                readOnly={true}
+              />
+            </Col>
+          </FormGroup>
+          <hr/>
+          <FormGroup className="text-right" style={{paddingRight:'5px'}}>
+            <Button outline size="sm"
+              hidden={this.state.isEditable}
+              onClick={this.onEditButtonClick}
+            >{this.state.formData.id===''?"Add New Node":"Edit Node"}</Button>
+            <Button color="primary" size="sm"
+              hidden={!this.state.isEditable}
+            >Save</Button>
+          </FormGroup>
+          <hr/>
+        </Form>
         <FormText>EDGES</FormText>
           {this.state.edges.map( (edge,i) =>
             <EdgeEditor key={i}
@@ -403,7 +405,7 @@ class NodeSelector extends React.Component {
               parentNodeLabel={this.state.formData.label}
             />
           )}
-      </Form>
+      </div>
     )
   }
   componentDidUpdate () {}

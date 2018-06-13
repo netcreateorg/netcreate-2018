@@ -61,15 +61,31 @@ class EdgeEditor extends React.Component {
     //   this.handleSelection(data.edges);
     // });
 
+    this.onButtonClick = this.onButtonClick.bind(this);
+
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// UI EVENT HANDLERS
+  ///
+  onButtonClick () {
+    this.setState({ isEditable: !this.state.isEditable });
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// REACT LIFECYCLE
+  ///
   componentWillReceiveProps (nextProps) {
+    // 1. set edgeID
     let edgeID = nextProps.edgeID || {}
 
+    // 2. set parentNodeLabel
     this.setState({
       parentNodeLabel: nextProps.parentNodeLabel
     });
 
+
+    // 3. Load edge, source, and target node data
     let D3DATA = UDATA.State('D3DATA');
 
     let edges = D3DATA.edges.filter( edge=>edge.id===edgeID );
@@ -111,9 +127,34 @@ class EdgeEditor extends React.Component {
   render () {
     const { formData, sourceNode, targetNode, parentNodeLabel } = this.state;
     const me = 'me';
-    return (
-      <div>{parentNodeLabel===sourceNode.label ? me : sourceNode.label} &#x2794; {parentNodeLabel===targetNode.label ? me : targetNode.label}</div>
-    );
+    if (this.state.isEditable) {
+      // Show Full Information
+      return (
+        <Form>
+          <FormText>EDGE</FormText>
+          <FormGroup>
+            <Input type="text" name="source" id="source"
+              value={sourceNode.label}
+              readOnly={true}
+            />
+          </FormGroup>
+          <Button size="sm" onClick={this.onButtonClick}>Done</Button>
+        </Form>
+      );
+
+    } else {
+      // Show Summary Information
+      return (
+        <Button
+          outline
+          size="sm"
+          style={{width:'100%'}}
+          onClick={this.onButtonClick}
+        >{parentNodeLabel===sourceNode.label ? me : sourceNode.label}
+        &nbsp;&#x2794;&nbsp;
+        {parentNodeLabel===targetNode.label ? me : targetNode.label}</Button>
+      );
+    }
   }
 }
 
