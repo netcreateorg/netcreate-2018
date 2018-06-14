@@ -136,42 +136,63 @@ class EdgeEditor extends React.Component {
         >
           <FormText>EDGE</FormText>
           <FormGroup>
-            <Input type="text" name="source" id="source"
+            <Label for="source" className="small text-muted">SOURCE</Label>
+            <AutoComplete type="text" name="source" id="source"
               value={sourceNode.label}
-              readOnly={true}
+              readOnly={parentNodeLabel===sourceNode.label}
             />
           </FormGroup>
           <FormGroup>
+            <Label for="relationship" className="small text-muted">TYPE</Label>
             <Input type="text" name="relationship" id="relationship"
               value={formData.relationship}
               readOnly={true}
             />
           </FormGroup>
           <FormGroup>
-            <Input type="text" name="target" id="target"
+            <Label for="nodeLabel" className="small text-muted">TARGET</Label>
+            <AutoComplete
+              disableSuggestions={!this.state.isEditable}
+              type="text" name="target" id="target"
               value={targetNode.label}
-              readOnly={true}
+              readOnly={parentNodeLabel===targetNode.label}
             />
           </FormGroup>
           <FormGroup>
+            <Label for="notes" className="small text-muted">NOTES</Label>
             <Input type="text" name="notes" id="notes"
               value={formData.notes}
               readOnly={true}
             />
           </FormGroup>
           <FormGroup>
+            <Label for="info" className="small text-muted">APPROXIMATE DATE OF INTERACTION</Label>
             <Input type="text" name="info" id="info"
               value={formData.info}
               readOnly={true}
             />
           </FormGroup>
           <FormGroup>
+            <Label for="id" sm={2} className="small text-muted">ID</Label>
             <Input type="text" name="id" id="id"
               value={formData.id}
               readOnly={true}
             />
           </FormGroup>
-          <Button size="sm" onClick={this.onButtonClick}>Done</Button>
+          <FormGroup className="text-right" style={{paddingRight:'5px'}}>
+            <a href="#" className="small text-muted float-left">DELETE</a>&nbsp;
+            <Button outline size="sm"
+              hidden={this.state.isEditable}
+              onClick={this.onEditButtonClick}
+            >{this.state.isEditable?"Add New Edge":"Edit Edge"}</Button>&nbsp;
+            <Button size="sm" onClick={this.onButtonClick}>Done</Button>&nbsp;
+            <Button color="primary" size="sm"
+              hidden={!this.state.isEditable}
+              disabled={(!this.state.isEditable) &&
+                        ( !this.state.formData.source ||
+                          !this.state.formData.target )}
+            >Save</Button>
+          </FormGroup>
         </Form>
       );
 
