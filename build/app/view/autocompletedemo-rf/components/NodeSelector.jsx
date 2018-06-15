@@ -133,8 +133,7 @@ class NodeSelector extends React.Component {
           isNewNode: true
       },
       edges: [],
-      isEditable:      false,
-      autoCompleteFieldMode: 'active' // by default
+      isEditable:      false
     };
 
     /// Initialize UNISYS DATA LINK for REACT
@@ -188,14 +187,6 @@ class NodeSelector extends React.Component {
   /// Handle updated SELECTION
   handleSelection ( data ) {
     if (DBG) console.log('NodeSelector: got state SELECTION',data);
-
-    // Only update if we are the active autoComplete field
-    if (data.activeAutoCompleteId!=='nodeSelector') {
-      // We aren't active, so disable!
-      if (DBG) console.log('NodeSelector: handleSelection: Disabling ')
-      this.setState({ autoCompleteFieldMode: 'disabled' });
-      return;
-    }
 
     if (!this.state.isEditable) {
       if (data.nodes && data.nodes.length>0) {
@@ -341,7 +332,7 @@ class NodeSelector extends React.Component {
             <AutoComplete
               identifier={'nodeSelector'}
               disabledValue={this.state.formData.label}
-              mode={this.state.autoCompleteFieldMode}
+              inactiveMode={'disabled'}
             />
           </FormGroup>
           <div style={{position:'absolute',left:'300px',maxWidth:'300px'}}>

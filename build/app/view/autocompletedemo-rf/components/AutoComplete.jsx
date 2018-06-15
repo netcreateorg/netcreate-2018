@@ -139,11 +139,12 @@ class AutoComplete extends React.Component {
 
     UDATA.OnStateChange('SELECTION',(data)=>{
       if (DBG) console.log('AutoComplete got state SELECTION',data);
-      if (this.props.mode===MODE_ACTIVE && data.activeAutoCompleteId===this.props.identifier) {
+      if (data.activeAutoCompleteId===this.props.identifier) {
         // This is the currently active AutoComplete field
         // Update the autosuggest input field's value with the current search data
         if (data.searchLabel!==undefined) {
           this.setState({
+            mode: MODE_ACTIVE,
             value: data.searchLabel
           });
         }
@@ -151,7 +152,7 @@ class AutoComplete extends React.Component {
         // This is not the active AutoComplete field
         // Use the disabledValue prop to display
         this.setState({
-          mode: MODE_DISABLED,
+          mode: this.props.inactiveMode,
           value: this.props.disabledValue
         });
       }
@@ -297,7 +298,12 @@ class AutoComplete extends React.Component {
       onChange: this.onInputChange
     };
 
-    if (this.state.mode===MODE_DISABLED) {
+    if (this.state.mode===MODE_STATIC) {
+      // Show generic text component
+      return (
+        <p>{this.state.value}</p>
+      );
+    } else if (this.state.mode===MODE_DISABLED) {
       // Show generic Input component
       return (
         <Input type="text" value={this.state.value} readOnly={true}/>

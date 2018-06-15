@@ -164,7 +164,7 @@ class EdgeEditor extends React.Component {
               <AutoComplete
                 identifier={'edge'+formData.id+'source'}
                 disabledValue={sourceNode.label}
-                mode={'disabled'}
+                inactiveMode={parentNodeLabel===sourceNode.label ? 'static' : 'disabled'}
               />
             </FormGroup>
             <FormGroup>
@@ -180,7 +180,7 @@ class EdgeEditor extends React.Component {
               <AutoComplete
                 identifier={'edge'+formData.id+'target'}
                 disabledValue={targetNode.label}
-                mode={'disabled'}
+                inactiveMode={parentNodeLabel===targetNode.label ? 'static' : 'disabled'}
               />
             </FormGroup>
             <FormGroup>
