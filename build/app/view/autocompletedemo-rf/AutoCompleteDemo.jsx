@@ -443,7 +443,7 @@ class AutoCompleteDemo extends React.Component {
         <div style={{display:'flex', flexFlow:'row nowrap',
              width:'100%', height:'100%'}}>
           <div id="left" style={{backgroundColor:'#E0ffff',flex:'1 0 auto',maxWidth:'300px',padding:'10px'}}>
-            <div style={{display:'flex', flexFlow:'column nowrap',height:100+'%'}}>
+            <div style={{display:'flex', flexFlow:'column nowrap'}}>
               <div style={{flexGrow:1}}>
                 <h3>Nodes (RF)</h3>
               </div>
