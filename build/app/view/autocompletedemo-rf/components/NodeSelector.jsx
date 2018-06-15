@@ -53,10 +53,6 @@
           isEditable      If true, form is enabled for editing
                           If false, form is readonly
 
-          highlightedNode The node that is currently highlighted in the list
-                          of suggestions.  This is a node object.  This
-                          determines what is shown in NodeDetail.
-
 
 
     TESTING
@@ -136,7 +132,6 @@ class NodeSelector extends React.Component {
           id:        '',
           isNewNode: true
       },
-      highlightedNode: {},
       edges: [],
       isEditable:      false
     };
@@ -177,7 +172,6 @@ class NodeSelector extends React.Component {
           id:        '',
           isNewNode: true
       },
-      highlightedNode: {},
       edges: [],
       isEditable:      false
     });
@@ -220,10 +214,6 @@ class NodeSelector extends React.Component {
       });
     }
 
-    // Show Node Detail
-    this.setState({
-      highlightedNode: data.hilitedNode
-    });
   }
   /// Coppy the node data passed via SELECTION in the form
   loadFormFromNode ( newNode ) {
