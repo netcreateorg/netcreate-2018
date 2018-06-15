@@ -20,6 +20,12 @@ var D3DATA         = null;
 var SELECTION      = {};
 /*/ STATE DESIGN of NAMESPACES
     'SELECTION' {
+      activeAutoCompleteId:// 'node-xx' or 'edge-source-xx' or 'edge-target-xx'
+                              where xx = the id of the node/edge of the
+                              AutoComplete field that has the current focus.
+                              This is used to keep track of the currently
+                              active AutoComplete field, disabling the inactive
+                              fields and providing updates as necessary.
       nodes:               // an array of selected nodes for editing
       edges:               // an array of edge objects for editing
       searchLabel:         // a string representing what the user has typed
@@ -96,6 +102,16 @@ MOD.Hook('INITIALIZE',()=>{
     console.log('SOURCE_UPDATE',data);
     m_HandleSourceUpdate( data.node );
   });
+
+
+  /// AutoComplete components register here to be
+  /// the active component.
+  UDATA.Register('AUTOCOMPLETE_SELECT',function(data) {
+    if (DBG) console.log('AUTOCOMPLETE_SELECT',data);
+    let selection = UDATA.State('SELECTION');
+    selection.activeAutoCompleteId = data.id;
+    UDATA.SetState('SELECTION',selection);
+  })
 
   // console.log('defining SET_D3_INSTANCE');
   // UDATA.Register('SET_D3_INSTANCE',(data)=>{

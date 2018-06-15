@@ -133,7 +133,8 @@ class NodeSelector extends React.Component {
           isNewNode: true
       },
       edges: [],
-      isEditable:      false
+      isEditable:      false,
+      autoCompleteFieldMode: 'active' // by default
     };
 
     /// Initialize UNISYS DATA LINK for REACT
@@ -186,7 +187,16 @@ class NodeSelector extends React.Component {
   }
   /// Handle updated SELECTION
   handleSelection ( data ) {
-    if (DBG) console.log('NodeSelector got state SELECTION',data);
+    if (DBG) console.log('NodeSelector: got state SELECTION',data);
+
+    // Only update if we are the active autoComplete field
+    if (data.activeAutoCompleteId!=='nodeSelector') {
+      // We aren't active, so disable!
+      if (DBG) console.log('NodeSelector: handleSelection: Disabling ')
+      this.setState({ autoCompleteFieldMode: 'disabled' });
+      return;
+    }
+
     if (!this.state.isEditable) {
       if (data.nodes && data.nodes.length>0) {
         // A node was selected, so load it
@@ -200,7 +210,7 @@ class NodeSelector extends React.Component {
           edges: data.edges
         })
       } else {
-        if (DBG) console.log('No data.nodes, so clearing form');
+        if (DBG) console.log('NodeSelector: No data.nodes, so clearing form');
         this.clearForm();
       }
     } else {
@@ -312,12 +322,10 @@ class NodeSelector extends React.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// REACT LIFECYCLE
   ///
-  componentDidMount () {
-    // console.log('componentDidMount')
-  }
-  componentWillReceiveProps (nextProps) {
-    // console.log('NodeSelect.componentWillReceiveProps',nextProps)
-  }
+
+  // componentWillReceiveProps has been deprectaed by React.  Don't use!
+  // componentWillReceiveProps (nextProps) {
+  // }
 
   shouldComponentUpdate () { return true }
   componentWillUpdate () {}
@@ -331,7 +339,9 @@ class NodeSelector extends React.Component {
           <FormGroup>
             <Label for="nodeLabel" className="small text-muted">LABEL</Label>
             <AutoComplete
-              disableSuggestions={!this.state.isEditable}
+              identifier={'nodeSelector'}
+              disabledValue={this.state.formData.label}
+              mode={this.state.autoCompleteFieldMode}
             />
           </FormGroup>
           <div style={{position:'absolute',left:'300px',maxWidth:'300px'}}>
@@ -388,18 +398,31 @@ class NodeSelector extends React.Component {
           </FormGroup>
           <hr/>
         </Form>
-        <FormText>EDGES</FormText>
+        <div style={{backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px'}}>
+          <FormText>EDGES</FormText>
           {this.state.edges.map( (edge,i) =>
             <EdgeEditor key={i}
               edgeID={edge.id}
               parentNodeLabel={this.state.formData.label}
             />
           )}
+          <FormGroup className="text-right">
+            <Button outline size="sm">Add New Edge</Button>
+          </FormGroup>
+        </div>
       </div>
     )
   }
-  componentDidUpdate () {}
-  componentWillUnMount () {}
+
+
+  // Called after initial render on mount
+  componentDidMount () {
+    // console.log('componentDidMount')
+    // Register as the active autoComplete Component when we first start up
+    UDATA.Call('AUTOCOMPLETE_SELECT',{id:'nodeSelector'});
+
+  }
+
 
 }
 

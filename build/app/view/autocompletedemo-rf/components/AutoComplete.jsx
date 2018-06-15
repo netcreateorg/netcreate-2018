@@ -18,6 +18,21 @@
 
       * Users can select a suggestion (via clicking or hitting return)
 
+      * Only one AutoComplete component can be active at a time in an app.
+        Since there can be multiple AutoComplete components on a single page
+        (e.g. multiple edges along with the source), we disable the component
+        when it isn't active.
+
+      * When the AutoComplete component is disabled, it will ignore SELECTION
+        updates.
+
+      * When the AutoComplete component is disabled, it will display a
+        generic INPUT component instead of the Autosuggest component.
+
+      * When the AutoComplete component is disabled, since it will not
+        receive SELECTION updates, we need to pass it the current field
+        value via the this.props.disabledValue.
+
       AutoComplete is a wrapper class for the open source AutoSuggest component,
       which handles the actual rendering of the suggestions list.  AutoComplete
       provides an interface to NodeSelector and EdgeEntry.  AutoComplete also
@@ -34,7 +49,8 @@
       ------
 
           <AutoComplete
-            disableSuggestions={this.state.canEdit}
+            isDisabled={this.state.canEdit}
+            disabledValue={this.state.formData.label}
           />
 
 
@@ -84,19 +100,22 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 
-var DBG = false;
+var DBG = true;
 
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React       = require('react');
-const d3          = require('d3');
+const ReactStrap  = require('reactstrap');
+const { Input }   = ReactStrap;
 const Autosuggest = require('react-autosuggest');
 
 const UNISYS      = require('system/unisys');
 var   UDATA       = null;
 
-
+const MODE_STATIC   = 'static';   // Can't be edited ever
+const MODE_DISABLED = 'disabled'; // Can be edited, but not at the moment
+const MODE_ACTIVE   = 'active';   // Currently able to edit
 
 
 
@@ -108,7 +127,9 @@ class AutoComplete extends React.Component {
     super();
     this.state = {
       value: '',
-      suggestions: []
+      suggestions: [],
+      id: '',
+      mode: MODE_ACTIVE
     };
 
 
@@ -118,10 +139,20 @@ class AutoComplete extends React.Component {
 
     UDATA.OnStateChange('SELECTION',(data)=>{
       if (DBG) console.log('AutoComplete got state SELECTION',data);
-      // Update the autosuggest input field's value
-      if (data.searchLabel!==undefined) {
+      if (this.props.mode===MODE_ACTIVE && data.activeAutoCompleteId===this.state.id) {
+        // This is the currently active AutoComplete field
+        // Update the autosuggest input field's value with the current search data
+        if (data.searchLabel!==undefined) {
+          this.setState({
+            value: data.searchLabel
+          });
+        }
+      } else {
+        // This is not the active AutoComplete field
+        // Use the disabledValue prop to display
         this.setState({
-          value: data.searchLabel
+          mode: MODE_DISABLED,
+          value: this.props.disabledValue
         });
       }
     });
@@ -240,7 +271,7 @@ class AutoComplete extends React.Component {
   /// Autosuggest checks this before rendering suggestions
   /// Set the prop to turn off suggestions
   shouldRenderSuggestions (value) {
-    return this.props.disableSuggestions
+    return this.state.mode===MODE_ACTIVE;
   }
 
 
@@ -252,9 +283,11 @@ class AutoComplete extends React.Component {
   /// REACT LIFECYCLE
   ///
 
-  componentWillReceiveProps (nextProps) {
-    // console.log('AutoComplete: componentWillReceiveProps',nextProps)
-  }
+// componentWillReceiveProps is deprecateD
+//  https://reactjs.org/docs/react-component.html#defaultprops
+//  https://reactjs.org/blog/2018/03/27/update-on-async-rendering.html
+//  componentWillReceiveProps (nextProps) {
+//  }
 
   render() {
     const { value, suggestions } = this.state;
@@ -264,25 +297,33 @@ class AutoComplete extends React.Component {
       onChange: this.onInputChange
     };
 
-    return (
-    /*STYLE*/// this passing of handlers down the chain is exactly what we'd like to avoid, right?
-            /// it makes wiring components together very cumbersome when writing new code
-    /// BL: In this case, it's unavoidable as the Autosuggest component requires these handlers.
-      <Autosuggest
-        suggestions={suggestions}
-        shouldRenderSuggestions={this.shouldRenderSuggestions}
-        // Map to Local Handlers for Autosuggest event triggers (requests)
-        onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
-        onSuggestionsClearRequested={this.onSuggestionsClearRequested}
-        getSuggestionValue={this.getSuggestionValue}
-        renderSuggestion={this.renderSuggestion}
-        // Receive Data from Autosuggest
-        onSuggestionHighlighted={this.onSuggestionHighlighted}
-        onSuggestionSelected={this.onSuggestionSelected}
-        // Pass Data to Autosuggest
-        inputProps={inputProps}
-      />
-    );
+    if (this.state.mode===MODE_DISABLED) {
+      // Show generic Input component
+      return (
+        <Input type="text" value={this.state.value} readOnly={true}/>
+      );
+    } else {
+      // Show AutoSuggest
+      return (
+      /*STYLE*/// this passing of handlers down the chain is exactly what we'd like to avoid, right?
+              /// it makes wiring components together very cumbersome when writing new code
+              /// BL: In this case, it's unavoidable as the Autosuggest component requires these handlers.
+        <Autosuggest
+          suggestions={suggestions}
+          shouldRenderSuggestions={this.shouldRenderSuggestions}
+          // Map to Local Handlers for Autosuggest event triggers (requests)
+          onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
+          onSuggestionsClearRequested={this.onSuggestionsClearRequested}
+          getSuggestionValue={this.getSuggestionValue}
+          renderSuggestion={this.renderSuggestion}
+          // Receive Data from Autosuggest
+          onSuggestionHighlighted={this.onSuggestionHighlighted}
+          onSuggestionSelected={this.onSuggestionSelected}
+          // Pass Data to Autosuggest
+          inputProps={inputProps}
+        />
+      );
+    }
   }
 }
 
