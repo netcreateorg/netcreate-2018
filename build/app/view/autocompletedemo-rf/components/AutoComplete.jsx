@@ -100,7 +100,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 
-var DBG = true;
+var DBG = false;
 
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
@@ -139,7 +139,7 @@ class AutoComplete extends React.Component {
 
     UDATA.OnStateChange('SELECTION',(data)=>{
       if (DBG) console.log('AutoComplete got state SELECTION',data);
-      if (this.props.mode===MODE_ACTIVE && data.activeAutoCompleteId===this.state.id) {
+      if (this.props.mode===MODE_ACTIVE && data.activeAutoCompleteId===this.props.identifier) {
         // This is the currently active AutoComplete field
         // Update the autosuggest input field's value with the current search data
         if (data.searchLabel!==undefined) {

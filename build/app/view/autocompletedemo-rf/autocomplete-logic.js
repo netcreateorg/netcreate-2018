@@ -76,7 +76,7 @@ MOD.Hook('INITIALIZE',()=>{
     if (data.nodeLabels.length>0) {
       m_HandleNodeSelect( data.nodeLabels[0] );
     } else {
-      console.error('AutoComplete-logic.SOURCE_SELECT received empty nodeLabels in data',data);
+      m_HandleNodeSelect();
     }
   }); // REGISTER SOURCE_SELECT
 
@@ -178,9 +178,9 @@ function m_GetNodeByLabel (label) {
 }
 
 
-/// NODE SELECTION METHODS ////////////////////////////////////////////////////
+/// NODE MARKING METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_DeselectAllNodes () {
+function m_UnMarkAllNodes () {
   /*STYLE*/// is the intent of this to ensure node.selected has a value of some kind? is it necessary at all?
 //  for (let node of this.state.data.nodes) { node.selected = this.getDeselectedNodeColor( node ) }
   /*STYLE*///
@@ -235,35 +235,38 @@ function m_HandleNodeSelect (nodeLabel) {
   console.log('autocomplete-logic.m_HandleNodeSelect got data',nodeLabel);
 
   let node = m_GetNodeByLabel( nodeLabel );
+  let selection = UDATA.State('SELECTION');
 
-  let id = node.id;
+  if (node===undefined) {
+    // No node selected, deselect all
+    m_UnMarkAllNodes();
+    selection.nodes = [];
+    selection.edges = [];
+    selection.searchLabel = '';
 
-  // 0. No node selected, deselect all
-  if (id==='') {
-    m_DeselectAllNodes();
-    return;
+  } else {
+    // Select Node
+
+    // 1. Set the SelectedSourceNode
+    selection.nodes = [node];
+    selection.searchLabel = node.label;
+
+    // 2. Find the related edges
+    //    `edges` needs to always be defined as an array or React rendering will break
+    let edges = [];
+    edges = edges.concat( D3DATA.edges.filter( edge => edge.source.label===nodeLabel || edge.target.label===nodeLabel) );
+    selection.edges = edges;
+
+    // 3. Mark the selected node
+    let color = '#0000DD';
+    m_MarkNodeById( node.id, color );
   }
 
-  // 1. Set the SelectedSourceNode
-  let selection = UDATA.State('SELECTION');
-  selection.nodes = [node];
-  selection.searchLabel = node.label;
-
-  // 2. Find the related edges
-  //    `edges` needs to always be defined as an array or React rendering will break
-  let edges = [];
-  edges = edges.concat( D3DATA.edges.filter( edge => edge.source.label===nodeLabel || edge.target.label===nodeLabel) );
-  selection.edges = edges;
-
-  // 3. Set the state
+  // 4. Set the state
   UDATA.SetState('SELECTION',selection);
   // this would be implemented by any component that needed
   // to know when global state changes
   // UDATA.OnStateChange('SELECTION', this.globalStateChanged);
-
-  // 4. Mark the selected node
-  let color = '#0000DD';
-  m_MarkNodeById( id, color );
 
 }
 
@@ -289,7 +292,7 @@ function m_HandleSourceSearch (searchString) {
 
   // 5. Mark the selected nodes
   if (searchString==='') {
-    m_DeselectAllNodes();
+    m_UnMarkAllNodes();
     return;
   }
   D3DATA.nodes = D3DATA.nodes.map( node => {
@@ -314,7 +317,7 @@ function m_HandleSourceSearch (searchString) {
 function m_HandleSourceHilite (nodeLabel) {
   if (nodeLabel) {
     // Only mark nodes if something is selected
-    m_DeselectAllNodes();
+    m_UnMarkAllNodes();
     m_MarkNodeByLabel( nodeLabel, SOURCE_COLOR );
   }
 
