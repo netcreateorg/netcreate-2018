@@ -115,6 +115,7 @@ const EdgeEditor   = require('./EdgeEditor');
 const UNISYS   = require('system/unisys');
 var   UDATA    = null;
 
+const thisIdentifier = 'nodeSelector';   // SELECTION identifier
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -152,6 +153,7 @@ class NodeSelector extends React.Component {
     this.onNotesChange                         = this.onNotesChange.bind(this);
     this.onInfoChange                          = this.onInfoChange.bind(this);
     this.onEditButtonClick                     = this.onEditButtonClick.bind(this);
+    this.onAddNewEdgeButtonClick               = this.onAddNewEdgeButtonClick.bind(this);
     this.onSubmit                              = this.onSubmit.bind(this);
 
   }
@@ -179,14 +181,26 @@ class NodeSelector extends React.Component {
   /// Return a new unique ID
   /// REVIEW: Should this be in autocomplete-logic?
   getNewNodeID () {
-    let data = UDATA.State('D3DATA');
-    let ids  = data.nodes.map( node => { return node.id } );
+    let ids  = UDATA.State('D3DATA').nodes.map( node => { return node.id } );
     let highestID = ids.reduce( (a,b) => { return Math.max(a,b) } );
-    return highestID+1;
+    // REVIEW: Should ids be strings or numbers?
+    // Right now most edge ids are strings
+    return (highestID+1).toString();
+  }
+  /// Return a new unique ID
+  getNewEdgeID () {
+    let ids  = UDATA.State('D3DATA').edges.map( edge => { return edge.id } )
+    let highestID = ids.reduce( (a,b) => { return Math.max(a,b) } )
+    // REVIEW: Should ids be strings or numbers?
+    // Right now most edge ids are strings
+    return (highestID+1).toString();
   }
   /// Handle updated SELECTION
   handleSelection ( data ) {
     if (DBG) console.log('NodeSelector: got state SELECTION',data);
+
+    // Ignore the update if we're not the active AutoComplete component
+    if (data.activeAutoCompleteId!==thisIdentifier) return;
 
     if (!this.state.isEditable) {
       if (data.nodes && data.nodes.length>0) {
@@ -287,6 +301,26 @@ class NodeSelector extends React.Component {
     this.setState({ formData: formData });
 
   }
+  onAddNewEdgeButtonClick (event) {
+    event.preventDefault();
+    /*
+          When creating a new edge, we first
+          1. Add a bare bones edge object with a new ID to the local state.edges
+          2. Pass it to render, so that a new EdgeEditor will be created.
+          3. In EdgeEditor, we create a dummy edge object
+
+    */
+    // Add it to local state for now
+    let edge = {
+      id:           this.getNewEdgeID(),
+      source:       undefined,
+      target:       undefined,
+      attributes:   {}
+    };
+    let edges = this.state.edges;
+    edges.push(edge);
+    this.setState({ edges: edges });
+  }
   onSubmit ( event ) {
     event.preventDefault();
 
@@ -330,7 +364,7 @@ class NodeSelector extends React.Component {
           <FormGroup>
             <Label for="nodeLabel" className="small text-muted">LABEL</Label>
             <AutoComplete
-              identifier={'nodeSelector'}
+              identifier={thisIdentifier}
               disabledValue={this.state.formData.label}
               inactiveMode={'disabled'}
             />
@@ -398,7 +432,10 @@ class NodeSelector extends React.Component {
             />
           )}
           <FormGroup className="text-right">
-            <Button outline size="sm">Add New Edge</Button>
+            <Button outline size="sm"
+              hidden={this.state.formData.id===''}
+              onClick={this.onAddNewEdgeButtonClick}
+            >Add New Edge</Button>
           </FormGroup>
         </div>
       </div>
@@ -410,8 +447,7 @@ class NodeSelector extends React.Component {
   componentDidMount () {
     // console.log('componentDidMount')
     // Register as the active autoComplete Component when we first start up
-    UDATA.Call('AUTOCOMPLETE_SELECT',{id:'nodeSelector'});
-
+    UDATA.Call('AUTOCOMPLETE_SELECT',{id:'nodeSelector', searchString:this.state.formData.label});
   }
 
 

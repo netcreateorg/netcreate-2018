@@ -26,7 +26,9 @@ var SELECTION      = {};
                               This is used to keep track of the currently
                               active AutoComplete field, disabling the inactive
                               fields and providing updates as necessary.
-      nodes:               // an array of selected nodes for editing
+      nodes:               // an array of current selected nodes for editing
+                           // this is the node the user clicked on in the
+                           // graph or selected from the suggestions list
       edges:               // an array of edge objects for editing
       searchLabel:         // a string representing what the user has typed
       suggestedNodeLabels: // an array of node labels suggestions that match
@@ -83,33 +85,43 @@ MOD.Hook('INITIALIZE',()=>{
 
 
   UDATA.Register('SOURCE_DRAG',function(data) {
-    console.log('SOURCE_DRAG',data);
+    if (DBG) console.log('SOURCE_DRAG',data);
   });
   UDATA.Register('FILTER_SOURCES',function(data) {
-    console.log('FILTER_SOURCES',data);
+    if (DBG) console.log('FILTER_SOURCES',data);
   });
   /// `data` = { searchString: "" }
   UDATA.Register('SOURCE_SEARCH',function(data) {
-    console.log('SOURCE_SEARCH',data);
+    if (DBG) console.log('SOURCE_SEARCH',data);
     m_HandleSourceSearch( data.searchString );
   });
   UDATA.Register('SOURCE_HILITE',function(data) {
-    console.log('SOURCE_HILITE',data);
+    if (DBG) console.log('SOURCE_HILITE',data);
     m_HandleSourceHilite( data.nodeLabel );
   });
   /// `data` = { node: node }
   UDATA.Register('SOURCE_UPDATE',function(data) {
-    console.log('SOURCE_UPDATE',data);
+    if (DBG) console.log('SOURCE_UPDATE',data);
     m_HandleSourceUpdate( data.node );
   });
-
+  /// `data` = { edge: sourceNode }
+  UDATA.Register('CREATE_EDGE',function(data) {
+    if (DBG) console.log('CREATE_EDGE',data);
+    m_HandleCreateEdge( data.edge );
+  });
 
   /// AutoComplete components register here to be
   /// the active component.
+  ///
+  /// `data` = { id: id, searchString: "" }
+  ///          `searchString` needs to be passed so when we
+  ///          switch components, we know what the new value is
+  ///
   UDATA.Register('AUTOCOMPLETE_SELECT',function(data) {
     if (DBG) console.log('AUTOCOMPLETE_SELECT',data);
     let selection = UDATA.State('SELECTION');
     selection.activeAutoCompleteId = data.id;
+    selection.searchLabel = data.searchString;
     UDATA.SetState('SELECTION',selection);
   })
 
@@ -177,6 +189,17 @@ function m_GetNodeByLabel (label) {
   }
 }
 
+/// Returns the first node that matches the id
+function m_GetNodeById (id) {
+  let found = D3DATA.nodes.filter( node => node.id===id );
+  if (found.length>0) {
+    return found[0];
+  } else {
+    return undefined;
+  }
+}
+
+
 
 /// NODE MARKING METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -229,6 +252,9 @@ function m_MarkNodeByLabel (label, color) {
 }
 
 
+
+
+
 /// LOGIC METHODS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_HandleNodeSelect (nodeLabel) {
@@ -239,10 +265,14 @@ function m_HandleNodeSelect (nodeLabel) {
 
   if (node===undefined) {
     // No node selected, deselect all
+
     m_UnMarkAllNodes();
     selection.nodes = [];
     selection.edges = [];
     selection.searchLabel = '';
+
+    // Make NodeSelector's AutoComplete the default
+    selection.activeAutoCompleteId = 'nodeSelector';
 
   } else {
     // Select Node
@@ -365,6 +395,23 @@ function m_HandleSourceUpdate (newNodeData) {
   let selection = UDATA.State('SELECTION');
   selection.searchLabel = '';
   UDATA.SetState('SELECTION',selection);
+}
+
+
+/// User has requested a new edge be created
+function m_HandleCreateEdge (edgeNode) {
+  if (DBG) console.log('autocomplete-logic:m_HandleCreateEdge',edgeNode);
+
+  // source and target id need to be transformed into nodes
+  edgeNode.source = m_GetNodeById(edgeNode.source);
+  edgeNode.target = m_GetNodeById(edgeNode.target);
+
+  // Need to add `size` property too
+  // REVIEW: This should probably be calculated
+  edgeNode.size = 1;
+
+  D3DATA.edges.push(edgeNode);
+  UDATA.SetState('D3DATA',D3DATA);
 }
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
