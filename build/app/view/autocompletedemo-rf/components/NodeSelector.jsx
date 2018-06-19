@@ -404,14 +404,8 @@ class NodeSelector extends React.Component {
               readOnly={!this.state.isEditable}
               />
           </FormGroup>
-          <FormGroup row>
-            <Label for="id" sm={2} className="small text-muted">ID</Label>
-            <Col sm={10}>
-              <Input type="text" name="id" id="id"
-                value={this.state.formData.id||''}
-                readOnly={true}
-              />
-            </Col>
+          <FormGroup>
+            <Label m={2} className="small text-muted">ID: {this.state.formData.id||''}</Label>
           </FormGroup>
           <hr/>
           <FormGroup className="text-right" style={{paddingRight:'5px'}}>
