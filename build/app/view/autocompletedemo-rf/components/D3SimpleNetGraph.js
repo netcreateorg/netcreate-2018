@@ -123,7 +123,7 @@ class D3NetGraph {
     /// Receive Data Updates - - - - - - - - - - - - - - - - - - - - - - - - -
     UDATA.OnStateChange('D3DATA',(data)=>{
       // expect { nodes, edges } for this namespace
-      console.log('D3SimpleNetgraph got state D3DATA',data);
+      if (DBG) console.log('D3SimpleNetgraph got state D3DATA',data);
       this.SetData(data);
     });
 

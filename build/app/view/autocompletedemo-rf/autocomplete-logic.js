@@ -2,7 +2,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG      = true;
+const DBG      = false;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -146,8 +146,8 @@ MOD.Hook('START',()=>{
 
   // REGISTER STATE MANAGEMENT
   UDATA.OnStateChange('SELECTION',(state) => {
-    console.log('SELECTION state: contains',state );
-    console.log('SELECTION state: update data structure with new state');
+    if (DBG) console.log('SELECTION state: contains',state );
+    if (DBG) console.log('SELECTION state: update data structure with new state');
     // copy AutoCompleteDemo node state stuff here
   });
 
@@ -266,7 +266,7 @@ function m_MarkNodeByLabel (label, color) {
 /// LOGIC METHODS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_HandleNodeSelect (nodeLabel) {
-  console.log('autocomplete-logic.m_HandleNodeSelect got data',nodeLabel);
+  if (DBG) console.log('autocomplete-logic.m_HandleNodeSelect got data',nodeLabel);
 
   let node = m_GetNodeByLabel( nodeLabel );
   let selection = UDATA.State('SELECTION');
