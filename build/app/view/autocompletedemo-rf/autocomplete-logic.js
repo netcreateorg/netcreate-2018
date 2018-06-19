@@ -96,6 +96,7 @@ MOD.Hook('INITIALIZE',()=>{
     if (DBG) console.log('SOURCE_SEARCH',data);
     m_HandleSourceSearch( data.searchString );
   });
+  /// `data` = { nodeLabel: string, color: string }
   UDATA.Register('SOURCE_HILITE',function(data) {
     if (DBG) console.log('SOURCE_HILITE',data);
     m_HandleSourceHilite( data.nodeLabel );
@@ -259,7 +260,27 @@ function m_MarkNodeByLabel (label, color) {
   UDATA.SetState('D3DATA',D3DATA);
 }
 
-
+function m_MarkNodesThatMatch (searchString, color) {
+  if (searchString==='') {
+    m_UnMarkAllNodes();
+    return;
+  }
+  D3DATA.nodes = D3DATA.nodes.map( node => {
+    // search for matches (partial matches are included)
+    if (m_AppearsIn(searchString, node.label)) {
+      node.selected = color;
+    } else {
+      node.selected = DESELECTED_COLOR;
+// TODO this needs to be implemented
+    //   // intent is only to set selected node color if the node doesn't already have one
+    //   node.selected = this.getSelectedNodeColor( node, color )
+    // } else {
+    //   node.selected = this.getDeselectedNodeColor( node, color )
+    }
+    return node;
+  })
+  UDATA.SetState('D3DATA',D3DATA);
+}
 
 
 
@@ -329,25 +350,8 @@ function m_HandleSourceSearch (searchString) {
   UDATA.SetState('SELECTION',selection);
 
   // 5. Mark the selected nodes
-  if (searchString==='') {
-    m_UnMarkAllNodes();
-    return;
-  }
-  D3DATA.nodes = D3DATA.nodes.map( node => {
-    // search for matches (partial matches are included)
-    if (m_AppearsIn(searchString, node.label)) {
-      node.selected = SOURCE_COLOR;
-    } else {
-      node.selected = DESELECTED_COLOR;
-// TODO this needs to be implemented
-    //   // intent is only to set selected node color if the node doesn't already have one
-    //   node.selected = this.getSelectedNodeColor( node, color )
-    // } else {
-    //   node.selected = this.getDeselectedNodeColor( node, color )
-    }
-    return node;
-  })
-  UDATA.SetState('D3DATA',D3DATA);
+  m_MarkNodesThatMatch( searchString, SOURCE_COLOR);
+
 }
 
 
