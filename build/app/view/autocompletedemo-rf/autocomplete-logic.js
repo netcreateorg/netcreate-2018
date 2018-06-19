@@ -65,7 +65,7 @@ MOD.Hook('INITIALIZE',()=>{
   ///         We use nodeLabels suggestions sent from AutoComplete do not
   ///         have access to the source node objects.
   ///
-  UDATA.Register('SOURCE_SELECT',(data)=> {
+  UDATA.HandleMessage('SOURCE_SELECT',(data)=> {
     if (DBG) console.log('SOURCE_SELECT call: received', data );
     if (data.nodeLabels.length>0) {
       m_HandleNodeSelect( data.nodeLabels[0] );
@@ -76,23 +76,23 @@ MOD.Hook('INITIALIZE',()=>{
 
 
 
-  UDATA.Register('SOURCE_DRAG',function(data) {
+  UDATA.HandleMessage('SOURCE_DRAG',function(data) {
     console.log('SOURCE_DRAG',data);
   });
-  UDATA.Register('FILTER_SOURCES',function(data) {
+  UDATA.HandleMessage('FILTER_SOURCES',function(data) {
     console.log('FILTER_SOURCES',data);
   });
   /// `data` = { searchString: "" }
-  UDATA.Register('SOURCE_SEARCH',function(data) {
+  UDATA.HandleMessage('SOURCE_SEARCH',function(data) {
     console.log('SOURCE_SEARCH',data);
     m_HandleSourceSearch( data.searchString );
   });
-  UDATA.Register('SOURCE_HILITE',function(data) {
+  UDATA.HandleMessage('SOURCE_HILITE',function(data) {
     console.log('SOURCE_HILITE',data);
     m_HandleSourceHilite( data.nodeLabel );
   });
   /// `data` = { node: node }
-  UDATA.Register('SOURCE_UPDATE',function(data) {
+  UDATA.HandleMessage('SOURCE_UPDATE',function(data) {
     console.log('SOURCE_UPDATE',data);
     m_HandleSourceUpdate( data.node );
   });

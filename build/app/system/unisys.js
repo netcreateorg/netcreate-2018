@@ -17,7 +17,7 @@ const STATE       = require('system/unisys-state');
 
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const Emitter     = require('system/object/emitter-class');
+const Messager    = require('system/object/messager-class');
 const UniData     = require('system/object/unisys-data-class');
 const UniModule   = require('system/object/unisys-module-class');
 
