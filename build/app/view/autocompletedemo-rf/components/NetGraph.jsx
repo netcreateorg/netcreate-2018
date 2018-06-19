@@ -3,8 +3,10 @@
 
     NetGraph
 
-    This component uses React to create the base dom element and pass data
-    updates, but D3NetGraph handles the rendering and animation updates.
+    NetGraph is basicallya React wrapper for a D3 net graph component.
+
+    This component uses React to create the base dom element, but D3NetGraph
+    handles the data updates, rendering and animation updates.
 
     React is explicitly prevented from updating the component (see
     shouldComponentUpdate)
@@ -12,10 +14,7 @@
 
     TO USE
 
-            <NetGraph
-              data={this.state.data}
-              onNodeClick={this.handleNodeClick}
-            />
+            <NetGraph/>
 
 
     Why not use FauxDom?
@@ -74,14 +73,7 @@ class NetGraph extends React.Component {
   }
 
   componentWillReceiveProps (nextProps) {
-    // Updates to the graph data are received here from the parent
-    // component via nextProps.data and passed on to the D3NetGraph module
-    this.state.d3NetGraph.SetData( nextProps.data )
-    this.state.d3NetGraph.SetNodeClickHandler( nextProps.onNodeClick )
-    this.state.d3NetGraph.SetEdgeClickHandler( nextProps.onEdgeClick )
-    /*STYLE*/// this direct setting of React this.state outside of the constructor is considered BAD FORM
-            /// maybe this can be stored as a regular local var?
-            /// oh, this maybe fires only once in startup, but "updates to graph data" implies more than one in the comment above
+    // d3NetGraph gets data directly from UNISYS
   }
 
   shouldComponentUpdate () {

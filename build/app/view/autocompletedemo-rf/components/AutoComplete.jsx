@@ -1,15 +1,15 @@
-const React       = require('react');
-const d3          = require('d3');
-const Autosuggest = require('react-autosuggest');
+/*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-//////////// AUTO COMPLETE ////////////
-/******************************************************************************/
-/*/
+      OVERVIEW
+      --------
 
       AutoComplete is the text input field for entering node labels to:
       * search for nodes,
       * edit existing nodes,
       * and add new nodes.
+      * view the current selection/setting when searching for a node
+      * view the current selection/setting for an edge source or target
+
 
       Main features:
 
@@ -21,11 +21,27 @@ const Autosuggest = require('react-autosuggest');
 
       * Users can select a suggestion (via clicking or hitting return)
 
+      * Only one AutoComplete component can be active at a time in an app.
+        Since there can be multiple AutoComplete components on a single page
+        (e.g. multiple edges along with the source), we disable the component
+        when it isn't active.
+
+      * When the AutoComplete component is disabled, it will ignore SELECTION
+        updates.
+
+      * When the AutoComplete component is disabled, it will display a
+        generic INPUT component instead of the Autosuggest component.
+
+      * When the AutoComplete component is disabled, since it will not
+        receive SELECTION updates, we need to pass it the current field
+        value via the this.props.disabledValue.
+
       AutoComplete is a wrapper class for the open source AutoSuggest component,
       which handles the actual rendering of the suggestions list.  AutoComplete
       provides an interface to NodeSelector and EdgeEntry.  AutoComplete also
       provides the handler routines for generating the suggestions list and
-      handling highlights and selections.
+      handling highlights and selections.  Data is passed to AutoComplete via
+      UDATA SELECTION state changes.
 
 
 
@@ -33,81 +49,93 @@ const Autosuggest = require('react-autosuggest');
       See documentation:  https://github.com/moroshko/react-autosuggest
 
 
-      To Use:
+      TO USE
+      ------
+
           <AutoComplete
-
-            data={this.state.data}
-            value={label}
-            disableSuggestions={this.state.canEdit}
-
-            onInputChange={this.handleInputChange}
-            onSelection={this.handleNodeSelection}
-            onHighlight={this.handleSuggestionHighlight}
+            isDisabled={this.state.canEdit}
+            disabledValue={this.state.formData.label}
+            inactiveMode={'disabled'}
           />
 
 
 
-      INPUTS
 
-      data is mapped to this.props.data
-            This is how graph data is passed to the AutoComplete component.
+      TECHNICAL DESCRIPTION
+      ---------------------
 
-      value is mapped to this.props.setValue
-            Use this to set the autocomplete value externally.
+      AutoComplete handles five basic functions:
 
-      disableSuggesions is mapped to this.props.disabled
-            Set to true to stop making suggestions
+      1. Show suggestions when the user types in the input search field.
+      2. Mark nodes on graph when the user changes the search field.
+      3. Set selection when user clicks on a suggestion.
+      4. Show the label if the node is selected externally
+         (via a click on the graph)
+      5. Provide an edit field for the label when the user is editing a node
+         (during edit, show suggestions, but don't select anything?)
+
+      The Autosuggest input field is a controlled field.  It is controlled via this.state.value.
 
 
-      HANDLERS
+      Sequence of Events
 
-      onInputChange is mapped to this.props.onInputChange.
-            It is triggered by AutoComplete whenever the user types into
-            the AutoComplete input field.
-            It is used to pass the current state of the user input
-            filed to the parent components.
+      1. When the user types in the Autosuggest input field,
+      2. AutoComplete makes a UDATA SOURCE_SEARCH call
+      3. autocomplete-logic handles the call and returns a SELECTION state update
+      4. AutoComplete then sets the Autosuggest input field value via
+         this.state.value.
+      5. The updated SELECTION state also contains a list of
+         suggestedNodeLabels that is used by Autosuggest whenever it
+         requests a list of suggestions.
 
-      onSelection is mapped to this.props.onSelection.
-            It is triggered by AutoComplete whenenever the users
-            selects an item from the suggestions list by clicking on it.
-            It is used to pass the selected label to the parent component.
 
-      onHighlight is mapped to this.props.onHighlight
-            It is triggered by AutoComplete whenever the user
-            highlights an item from the suggestion list by either moving
-            the mouse over it, or using keyboard to select it.
-            This is a temporary state and is cleared when onSelection is
-            triggered.
+
+      PROPS
+      -----
+
+      identifier
+
+            A unique ID for identifying which AutoComplete component is active
+            within the whole app system.
+
+      disabledValue
+
+            When the AutoComplete component is not active, it should display
+            the currently selected node (rather than be an active input field
+            for selecting a new node).  This is the label for that node.
+
+      inactiveMode
+
+            When the AutoComplete component is not active, it can be either:
+            'static'   -- an unchangeable field, e.g. the Source node for an
+                          edge is always going to be the Source label.  It
+                          cannot be changed.
+            'disabled' -- a changeable field that is not currently activated,
+                          e.g. the Target node for an edge.
+
+
 
       Based on example code from https://codepen.io/moroshko/pen/vpBzMr
 
-/*/
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 
-// https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions#Using_Special_Characters
-const escapeRegexCharacters = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-const getSuggestions = (value, lexicon) => {
-  const escapedValue = escapeRegexCharacters(value.trim());
-
-  if (escapedValue === '') {
-    return [];
-  }
-
-    // const regex = new RegExp('^' + escapedValue, 'i'); // match start of string only
-    const regex = new RegExp(escapedValue, 'i');
-    const suggestions = lexicon.filter(phrase => regex.test(phrase));
-
-  if (suggestions.length === 0) {
-    return [
-      { isAddNew: true }
-    ];
-  }
-  // console.log(suggestions);
-  return suggestions;
-};
+var DBG = false;
 
 
+/// LIBRARIES /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const React       = require('react');
+const ReactStrap  = require('reactstrap');
+const { Input }   = ReactStrap;
+const Autosuggest = require('react-autosuggest');
+
+const UNISYS      = require('system/unisys');
+var   UDATA       = null;
+
+const MODE_STATIC   = 'static';   // Can't be edited ever
+const MODE_DISABLED = 'disabled'; // Can be edited, but not at the moment
+const MODE_ACTIVE   = 'active';   // Currently able to edit
 
 
 
@@ -119,10 +147,41 @@ class AutoComplete extends React.Component {
     super();
     this.state = {
       value: '',
-      suggestions: []
+      suggestions: [],
+      id: '',
+      mode: MODE_ACTIVE
     };
 
-    this.onChange                    = this.onChange.bind(this);
+
+    /// Initialize UNISYS DATA LINK for REACT
+    UDATA = UNISYS.NewDataLink(this);
+
+
+    UDATA.OnStateChange('SELECTION',(data)=>{
+      if (DBG) console.log('AutoComplete',this.props.identifier,'got state SELECTION',data);
+      if (data.activeAutoCompleteId===this.props.identifier) {
+        // This is the currently active AutoComplete field
+        // Update the autosuggest input field's value with the current search data
+        if (DBG) console.log('...AutoComplete',this.props.identifier,': ACTIVE setting search value to',data.searchLabel);
+        if (data.searchLabel!==undefined) {
+          this.setState({
+            mode: MODE_ACTIVE,
+            value: data.searchLabel
+          });
+        }
+      } else {
+        // This is not the active AutoComplete field
+        // Use the disabledValue prop to display
+        if (DBG) console.log('...AutoComplete',this.props.identifier,': NOT ACTIVE setting search value to',this.props.disabledValue);
+        this.setState({
+          mode: this.props.inactiveMode,
+          value: this.props.disabledValue
+        });
+      }
+    });
+
+
+    this.onInputChange               = this.onInputChange.bind(this);
     this.getSuggestionValue          = this.getSuggestionValue.bind(this);
     this.renderSuggestion            = this.renderSuggestion.bind(this);
     this.onSuggestionsFetchRequested = this.onSuggestionsFetchRequested.bind(this);
@@ -132,21 +191,39 @@ class AutoComplete extends React.Component {
     this.shouldRenderSuggestions     = this.shouldRenderSuggestions.bind(this);
   };
 
-  onChange (event, { newValue, method }) {
-    this.setState({
-      value: newValue
-    });
-    this.props.onInputChange( newValue )
-  };
 
+
+
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// AUTOSUGGEST HANDLERS
+  ///
+
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Handle Autosuggest's input event trigger
+  /// User has typed something new into the field
+  onInputChange (event, { newValue, method }) {
+    if (DBG) console.log('AutoComplete:onInputChange',newValue);
+
+    // Pass the input value (node label search string) to UDATA
+    // which will in turn pass the searchLabel back to the SELECTION
+    // state handler in the constructor, which will in turn set the stae
+    // of the input value to be passed on to AutoSuggest
+    UDATA.Call('SOURCE_SEARCH', { searchString: newValue });
+
+  };
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Handle Autosuggest's request to set the value of the input field when
+  /// a selection is clicked.
   getSuggestionValue (suggestion) {
     if (suggestion.isAddNew) {
       return this.state.value;
     }
-
     return suggestion;
   };
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Handle Autosuggest's request for HTML rendering of suggestions
   renderSuggestion (suggestion) {
     if (suggestion.isAddNew) {
       // Don't show "Add New" because when you're adding a new item that partially
@@ -165,7 +242,6 @@ class AutoComplete extends React.Component {
 
     return suggestion;
   };
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// Handle Autosuggest's request for list of suggestions
   /*/
@@ -175,82 +251,111 @@ class AutoComplete extends React.Component {
       of all possible suggestions that are then filtered based on the user typing
       for suggestions.
 
-      We construct the list on the fly based on the d3 data.  If the data model
+      We construct the list on the fly based on the D3DATA data.  If the data model
       changes, we'll need to update this lexicon constructor.
   /*/
-  onSuggestionsFetchRequested ({ value }) {
-    let lexicon = this.props.data.nodes.map(function(d){return d.label})
-    this.setState({
-      suggestions: getSuggestions(value, lexicon)
-    });
+  onSuggestionsFetchRequested () {
+    let data = UDATA.State('SELECTION');
+    if (data.suggestedNodeLabels) {
+      this.setState({
+        suggestions: (data.suggestedNodeLabels)
+      });
+    } else {
+      if (DBG) console.log('AutoComplete.onSuggestionsFetchRequested: No suggestions.');
+    }
   };
-
-  // Handle Autosuggest's request to clear list of suggestions
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Handle Autosuggest's request to clear list of suggestions
   onSuggestionsClearRequested () {
     this.setState({
       suggestions: []
     });
   };
-
-/// If a new value is suggested, we pass that up to the parent.
-/// The parent component should handle the creation of a new data object.
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Autosuggest's callback when a selection is made
+  /// If a new value is suggested, we call SOURCE_SELECT.
+  /// Autocomplete-logic should handle the creation of a new data object.
   onSuggestionSelected (event, { suggestion }) {
-    // call parent handler
     if (suggestion.isAddNew) {
+      // User selected the "Add New Node" item in the suggestion list
       // console.log('Add new:', this.state.value, 'suggestion',suggestion);
-      this.props.onSelection( this.state.value )
+      UDATA.Call('SOURCE_SELECT',{ nodeLabels: [this.state.value] });
     } else {
-      this.props.onSelection( suggestion )
+      // User selected an existing node in the suggestion list
+      UDATA.Call('SOURCE_SELECT',{ nodeLabels: [suggestion] });
     }
   };
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Autosuggest calls this whenever the user has highlighted a different suggestion
   onSuggestionHighlighted ({ suggestion }) {
-    this.props.onHighlight( suggestion )
+    UDATA.Call('SOURCE_HILITE',{ nodeLabel: suggestion });
   };
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Autosuggest checks this before rendering suggestions
+  /// Set the prop to turn off suggestions
   shouldRenderSuggestions (value) {
-    return this.props.disableSuggestions
+    return this.state.mode===MODE_ACTIVE;
   }
 
-  setValue ( value ) {
-    // console.log('...AutoComplete.setValue to',value)
-    this.setState({value: value})
-  }
-  clearValue () {
-    this.setState({value:''})
-  }
 
-  componentWillReceiveProps (nextProps) {
-    // console.log('AutoComplete: componentWillReceiveProps',nextProps)
-    if (nextProps.value!==undefined) this.setValue( nextProps.value )
-  }
+
+
+
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// REACT LIFECYCLE
+  ///
+
+  // componentWillReceiveProps is deprecateD
+  //  https://reactjs.org/docs/react-component.html#defaultprops
+  //  https://reactjs.org/blog/2018/03/27/update-on-async-rendering.html
+  // componentWillReceiveProps (nextProps) {
+  //   console.error('AutoComplete.componentWillReceiveProps',nextProps);
+  // }
 
   render() {
     const { value, suggestions } = this.state;
     const inputProps = {
       placeholder: "Type node name...",
       value,
-      onChange: this.onChange
+      onChange: this.onInputChange
     };
 
-    return (
-    /*STYLE*/// this passing of handlers down the chain is exactly what we'd like to avoid, right?
-            /// it makes wiring components together very cumbersome when writing new code
-      <Autosuggest
-        suggestions={suggestions}
-        shouldRenderSuggestions={this.shouldRenderSuggestions}
-        // Map to Local Handlers for Autosuggest event triggers (requests)
-        onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
-        onSuggestionsClearRequested={this.onSuggestionsClearRequested}
-        getSuggestionValue={this.getSuggestionValue}
-        renderSuggestion={this.renderSuggestion}
-        // Receive Data from Autosuggest
-        onSuggestionHighlighted={this.onSuggestionHighlighted}
-        onSuggestionSelected={this.onSuggestionSelected}
-        // Pass Data to Autosuggest
-        inputProps={inputProps}
-      />
-    );
+    // REVIEW: Should we really be returning three different components?
+    // or shoudl we simply be hiding the non-active components?
+    // Properties might not get properly updated if they are not rendered.
+    if (this.state.mode===MODE_STATIC) {
+      // Show generic text component
+      return (
+        <p>{this.state.value}</p>
+      );
+    } else if (this.state.mode===MODE_DISABLED) {
+      // Show generic Input component
+      return (
+        <Input type="text" value={this.props.disabledValue} readOnly={true}/>
+      );
+    } else { // mode===MODE_ACTIVE
+      // Show AutoSuggest
+      return (
+      /*STYLE*/// this passing of handlers down the chain is exactly what we'd like to avoid, right?
+              /// it makes wiring components together very cumbersome when writing new code
+              /// BL: In this case, it's unavoidable as the Autosuggest component requires these handlers.
+        <Autosuggest
+          suggestions={suggestions}
+          shouldRenderSuggestions={this.shouldRenderSuggestions}
+          // Map to Local Handlers for Autosuggest event triggers (requests)
+          onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
+          onSuggestionsClearRequested={this.onSuggestionsClearRequested}
+          getSuggestionValue={this.getSuggestionValue}
+          renderSuggestion={this.renderSuggestion}
+          // Receive Data from Autosuggest
+          onSuggestionHighlighted={this.onSuggestionHighlighted}
+          onSuggestionSelected={this.onSuggestionSelected}
+          // Pass Data to Autosuggest
+          inputProps={inputProps}
+        />
+      );
+    }
   }
 }
 

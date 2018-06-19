@@ -56,10 +56,6 @@ var MODULES_COUNTER  = 1;         // unisys modules counter
 
   /// PROPERTIES //////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ this is used to differentiate sources of events so they don't echo
-  /*/ UID() {
-        return this.uid;
-      }
   /*/ this is used for identifying the module. It must be unique across all
   /*/ ModuleID() {
         return this.module_id;

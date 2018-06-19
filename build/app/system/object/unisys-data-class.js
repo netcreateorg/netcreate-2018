@@ -19,7 +19,10 @@
 
 /// DEBUGGING /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG         = true;
+var   DBG         = {
+  send   : false,
+  return : true
+};
 const BAD_OWNER   = "must pass owner object of type React.Component or UniModule with optional 'name' parameter";
 const BAD_NAME    = "name parameter must be a string";
 const BAD_UID     = "unexpected non-unique UID";
@@ -28,7 +31,7 @@ const BAD_UID     = "unexpected non-unique UID";
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISTATE    = require('system/unisys-state');
-const Emitter     = require('system/object/emitter-class');
+const Messager    = require('system/object/messager-class');
 
 
 /// NODE MANAGEMENT ///////////////////////////////////////////////////////////
@@ -38,7 +41,7 @@ var UNODE_COUNTER = 100;       // unisys connector node id counter
 
 /// GLOBAL MESSAGES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var MESSAGER       = new Emitter();
+var MESSAGER       = new Messager();
 
 /// UNISYS NODE CLASS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -81,7 +84,7 @@ var MESSAGER       = new Emitter();
 
         // save module in the global module list
         if (DBG) console.log(`Creating UNODE [${this.uid}] for [${this.name}]`);
-        UNODE.set( this.uid, this );
+        UNODE.set(this.uid,this);
       }
 
 
@@ -97,73 +100,58 @@ var MESSAGER       = new Emitter();
   /// global UNISTATE module calls are wrapped by unisys node so the unique
   /// UnisysID address can be appended
       State( namespace ) {
-        return UNISTATE.State( namespace );
+        return UNISTATE.State(namespace);
       }
       SetState( namespace, newState ) {
         // uid is "source uid" designating who is making the change
-        UNISTATE.SetState( namespace, newState, this.UID() );
+        UNISTATE.SetState(namespace,newState,this.UID() );
       }
       // uid is "source uid" of subscribing object, to avoid reflection
       // if the subscribing object is also the originating state changer
       OnStateChange( namespace, listener ) {
-        UNISTATE.OnStateChange( namespace, listener, this.UID() );
+        UNISTATE.OnStateChange(namespace,listener,this.UID() );
       }
       OffStateChange( namespace, listener ) {
-        UNISTATE.OffStateChange( namespace, listener );
+        UNISTATE.OffStateChange(namespace,listener);
       }
 
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// EVENT SUBSCRIPTION CONTROL - Other modules subscribe to events
-  /// eventName is a string, and is an official event that's defined by the
+  /// MESSAGES 
+  /// mesgName is a string, and is an official event that's defined by the
   /// subclasser of UnisysNode
-      On( eventName, listener ) {
+      HandleMessage( mesgName, listener ) {
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
-        if (DBG) console.log(`${this.name} listener added [${eventName}]`);
-        MESSAGER.On( eventName, listener, this.UID() );
+        if (DBG.register) console.log(`${this.name} handler added [${mesgName}]`);
+        MESSAGER.HandleMessage(mesgName,listener,{receiverUID:this.UID()});
       }
-      Off( eventName, listener ) {
-        if (DBG) console.log(`${this.name} listener removed [${eventName}]`);
-        MESSAGER.Off( eventName, listener );
+      UnhandleMessage( mesgName, listener ) {
+        if (DBG.register) console.log(`${this.name} handler removed [${mesgName}]`);
+        MESSAGER.UnhandleMessage(mesgName,listener);
       }
-      Emit( eventName, data ) {
+      Send( mesgName, data ) {
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
-        if (DBG) console.log(`${this.name} emit [${eventName}]`);
-        MESSAGER.Emit( eventName, data, this.UID() );
+        if (DBG.send) console.log(`${this.name} send [${mesgName}]`);
+        MESSAGER.Send(mesgName,data,{
+          srcUID         : this.UID(),
+        });
       }
-      Broadcast( eventName, data ) {
-        MESSAGER.Call(eventName, data);
+      Signal( mesgName, data ) {
+        MESSAGER.Signal(mesgName,data);
       }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// CALL-STYLE EVENT NOTIFICATION - send event to subscribers
-  /// as above, but without also passing the eventName
-  /// subscribers will be notified
-  /// NOTE: UNISYS also has these available if you don't need source
-  /// rejection
-      Register( message, listener ) {
+      Call( mesgName, inData, optCallback ) {
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
-        if (DBG) console.log(`${this.name} handler added [${message}]`);
-        MESSAGER.Register( message, listener, this.UID() );
+        let hasCallback = typeof optCallback==='function' ? "w/callback" : "w/out callback";
+        if (DBG.return) console.log(`${this.name} call [${mesgName}]`,hasCallback);
+        MESSAGER.Call(mesgName,inData,{
+          srcUID         : this.UID(),
+          dataReturnFunc : optCallback || _null_callback
+        });
+        function _null_callback () {};
       }
-      Unregister( message, listener ) {
-        if (DBG) console.log(`${this.name} handler removed [${message}]`);
-        MESSAGER.Off( message, listener );
-      }
-      Call( eventName, data ) {
-        // uid is "source uid" of subscribing object, to avoid reflection
-        // if the subscribing object is also the originating state changer
-        if (DBG) console.log(`${this.name} emit [${eventName}]`);
-        MESSAGER.Call( eventName, data, this.UID() );
-      }
-
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// ASYNCHRONOUS MESSAGE CALLING
-  /// TBD
-
 
   } // end UnisysNode
 

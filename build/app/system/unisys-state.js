@@ -12,7 +12,7 @@ const NO_UID_FLTR = "UNISYS.OnStateChange: pass DST_UID parameter to enable echo
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const REACT       = require('react');
-const Emitter     = require('system/object/emitter-class');
+const Messager    = require('system/object/messager-class');
 
 /// MODULE DECLARATIONS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -42,15 +42,15 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
 /*/ Retrieve the emitter associated with a namespace, which contains handles
     all the listeners associated with a namespace. Always returns a valid
     emitter, creating it if the passed namespace is valid.
-/*/ function m_GetStateEmitter (nspace) {
+/*/ function m_GetStateMessager (nspace) {
       nspace = m_ConformNamespace(nspace);
       if (!nspace) throw Error(BAD_NSPACE);
-      let em = STATES_LISTEN.get(nspace);
-      if (!em) {
-        em = new Emitter();
-        STATES_LISTEN.set(nspace,em);
+      let msgr = STATES_LISTEN.get(nspace);
+      if (!msgr) {
+        msgr = new Messager();
+        STATES_LISTEN.set(nspace,msgr);
       }
-      return em;
+      return msgr;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: update the selected namespace state with new state
@@ -61,10 +61,10 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
       if (!STATES.has(namespace)) STATES.set(namespace,{});
       Object.assign(STATES.get(namespace),newState);
       // forward new state to namespace listeners
-      let emitter = m_GetStateEmitter(namespace);
+      let msgr = m_GetStateMessager(namespace);
       // don't pass with source_id because state should go everywhere
       // a register exists, even if it's the originating module
-      emitter.Call(namespace,newState);
+      msgr.Call(namespace,newState);
       // future: forward also to network
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -81,8 +81,8 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
       if (!namespace) throw Error(BAD_NSPACE);
       if (typeof listener!=='function') throw Error(BAD_LISTENR);
       if (src_uid===undefined) console.warn(NO_UID_FLTR);
-      let namespaceEmitter = m_GetStateEmitter(namespace);
-      namespaceEmitter.Register(namespace,listener,src_uid);
+      let namespaceMessager = m_GetStateMessager(namespace);
+      namespaceMessager.HandleMessage(namespace,listener,{handlerUID:src_uid});
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: unsubscribe to namestate updates
@@ -90,8 +90,8 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
       namespace = m_ConformNamespace(namespace);
       if (!namespace) throw Error(BAD_NSPACE);
       if (typeof listener!=='function') throw Error(BAD_LISTENR);
-      let namespaceEmitter = m_GetStateEmitter(namespace);
-      namespaceEmitter.Unregister(namespace,listener);
+      let namespaceMessager = m_GetStateMessager(namespace);
+      namespaceMessager.UnhandleMessage(namespace,listener);
     };
 
 
