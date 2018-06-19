@@ -24,6 +24,11 @@ const { Alert }   = ReactStrap;
       constructor(props) {
         super(props);
 
+        // establish module scope before lifecycle
+        // do this once in the root component as early as possible
+        UNISYS.SystemInitialize(module.id);
+
+        // set up data links
         this.udata = UNISYS.NewDataLink(this);
 
         // UNISYS state may already be initialized from settings
@@ -33,22 +38,33 @@ const { Alert }   = ReactStrap;
         // REACT TIP: you can safely set state directly ONLY in constructor!
         this.state = state;
 
-        // bind handlers, annoyingly
+        // bind 'this' context to handler function
+        // then use for handling UNISYS state changes
         this.UnisysStateChange = this.UnisysStateChange.bind(this);
-        this.handleTextChange = this.handleTextChange.bind(this);
+        this.udata.OnStateChange('VIEW', this.UnisysStateChange);
 
-        // subscribe to UNISYS state change listeners
-        // note: make sure that handlers are already bound to this
-        this.udata.OnStateChange('VIEW', this.UnisysStateChange, this.uni_id);
-        this.udata.OnStateChange('LOGIC', this.UnisysStateChange, this.uni_id);
+        this.handleTextChange  = this.handleTextChange.bind(this);
+        this.udata.OnStateChange('LOGIC', this.UnisysStateChange);
+
+        // register some handlers
+        this.udata.HandleMessage('JSXMELON',(data,ucontrol) => {
+          data.cat = 'calico';
+          data.melon += '_ack';
+          ucontrol.return(data);
+        });
+
+        // hook start handler to initiate call
+        UNISYS.Hook('START',() => {
+          this.udata.Call('LOGICMELON',{ melon : 'jsxmelon' });
+        });
 
       } // constructor
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UNISYS state change handler - registered by UNISYS.OnStateChange()
   /// state is coming from UNISYS
-      UnisysStateChange( nspace, state, src_uid ) {
-        console.log(`.. REACT <- state`,state,`via NS '${nspace} ${src_uid}'`);
+      UnisysStateChange( state ) {
+        console.log(`.. REACT <- state`,state,`via ${this.udata.UID()}'`);
         // update local react state, which should force an update
         this.setState(state);
       }
@@ -56,13 +72,13 @@ const { Alert }   = ReactStrap;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// COMPONENT state change handler - registered in render()
   /// state is coming FROM component, which is updating already
-      handleTextChange(event) {
+      handleTextChange( event ) {
         let target = event.target;
         let state = {
           description : target.value
         }
-        console.log(`REACT -> state`,state,`to NS 'VIEW' ${this.uni_id}`);
-        this.udata.SetState('VIEW',state, this.uni_id);
+        console.log(`REACT -> state`,state,`to ${this.udata.UID()}`);
+        this.udata.SetState('VIEW',state,this.uni_id);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// COMPONENT this interface has composed
@@ -71,8 +87,6 @@ const { Alert }   = ReactStrap;
         let className = REFLECT.ExtractClassName(this);
         console.log(`${className} componentDidMount`);
 
-        // establish module scope before lifecycle
-        UNISYS.SetScope(module.id);
 
         // kickoff initialization stage by stage
         (async () => {

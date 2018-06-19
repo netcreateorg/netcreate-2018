@@ -103,7 +103,7 @@ MOD.Hook('INITIALIZE',()=>{
   ///         We use nodeLabels suggestions sent from AutoComplete do not
   ///         have access to the source node objects.
   ///
-  UDATA.Register('SOURCE_SELECT',(data)=> {
+  UDATA.HandleMessage('SOURCE_SELECT',(data)=> {
     if (DBG) console.log('SOURCE_SELECT call: received', data );
     if (data.nodeLabels.length>0) {
       m_HandleNodeSelect( data.nodeLabels[0] );
@@ -114,34 +114,34 @@ MOD.Hook('INITIALIZE',()=>{
 
 
 
-  UDATA.Register('SOURCE_DRAG',function(data) {
-    if (DBG) console.log('SOURCE_DRAG',data);
+  UDATA.HandleMessage('SOURCE_DRAG',function(data) {
+    console.log('SOURCE_DRAG',data);
   });
-  UDATA.Register('FILTER_SOURCES',function(data) {
-    if (DBG) console.log('FILTER_SOURCES',data);
+  UDATA.HandleMessage('FILTER_SOURCES',function(data) {
+    console.log('FILTER_SOURCES',data);
   });
   /// `data` = { searchString: "" }
-  UDATA.Register('SOURCE_SEARCH',function(data) {
-    if (DBG) console.log('SOURCE_SEARCH',data);
+  UDATA.HandleMessage('SOURCE_SEARCH',function(data) {
+    console.log('SOURCE_SEARCH',data);
     m_HandleSourceSearch( data.searchString );
   });
   /// `data` = { nodeLabel: string, color: string }
-  UDATA.Register('SOURCE_HILITE',function(data) {
-    if (DBG) console.log('SOURCE_HILITE',data);
+  UDATA.HandleMessage('SOURCE_HILITE',function(data) {
+    console.log('SOURCE_HILITE',data);
     m_HandleSourceHilite( data.nodeLabel );
   });
   /// `data` = { node: node }
-  UDATA.Register('SOURCE_UPDATE',function(data) {
-    if (DBG) console.log('SOURCE_UPDATE',data);
+  UDATA.HandleMessage('SOURCE_UPDATE',function(data) {
+    console.log('SOURCE_UPDATE',data);
     m_HandleSourceUpdate( data.node );
   });
   /// `data` = { edge: sourceNode }
-  UDATA.Register('EDGE_UPDATE',function(data) {
+  UDATA.HandleMessage('EDGE_UPDATE',function(data) {
     if (DBG) console.log('EDGE_UPDATE',data);
     m_HandleEdgeUpdate( data.edge );
   });
   /// `data` = { edgeID: string }
-  UDATA.Register('EDGE_DELETE',function(data) {
+  UDATA.HandleMessage('EDGE_DELETE',function(data) {
     if (DBG) console.log('EDGE_DELETE',data);
     m_HandleEdgeDelete( data.edgeID );
   })
@@ -152,7 +152,7 @@ MOD.Hook('INITIALIZE',()=>{
   ///          `searchString` needs to be passed so when we
   ///          switch components, we know what the new value is
   ///
-  UDATA.Register('AUTOCOMPLETE_SELECT',function(data) {
+  UDATA.HandleMessage('AUTOCOMPLETE_SELECT',function(data) {
     if (DBG) console.log('AUTOCOMPLETE_SELECT',data);
     let selection = UDATA.State('SELECTION');
     selection.activeAutoCompleteId = data.id;
@@ -164,7 +164,7 @@ MOD.Hook('INITIALIZE',()=>{
   })
 
   // console.log('defining SET_D3_INSTANCE');
-  // UDATA.Register('SET_D3_INSTANCE',(data)=>{
+  // UDATA.HandleMessage('SET_D3_INSTANCE',(data)=>{
   //   D3DATA = data.d3NetGraph;
   //   console.log('SET_D3_INSTANCE received',D3DATA);
   // }); // D3_INSTANCE
@@ -375,9 +375,9 @@ function m_HandleNodeSelect (nodeLabel) {
   } else {
     // Select Node
 
-    // 1. Set the SelectedSourceNode
-    selection.nodes = [node];
-    selection.searchLabel = node.label;
+  // 1. Set the SelectedSourceNode
+  selection.nodes = [node];
+  selection.searchLabel = node.label;
 
     // 2. Find the related edges
     //    `edges` needs to always be defined as an array or React rendering will break
