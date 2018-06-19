@@ -105,9 +105,9 @@ MOD.Hook('INITIALIZE',()=>{
     m_HandleSourceUpdate( data.node );
   });
   /// `data` = { edge: sourceNode }
-  UDATA.Register('CREATE_EDGE',function(data) {
-    if (DBG) console.log('CREATE_EDGE',data);
-    m_HandleCreateEdge( data.edge );
+  UDATA.Register('EDGE_UPDATE',function(data) {
+    if (DBG) console.log('EDGE_UPDATE',data);
+    m_HandleEdgeUpdate( data.edge );
   });
 
   /// AutoComplete components register here to be
@@ -376,7 +376,7 @@ function m_HandleSourceUpdate (newNodeData) {
       found = true;
     }
     return node;
-  })
+  });
   if (!found) {
     // Add a new node
     if (DBG) console.log('...adding new node',newNodeData.id);
@@ -398,20 +398,40 @@ function m_HandleSourceUpdate (newNodeData) {
 }
 
 
-/// User has requested a new edge be created
-function m_HandleCreateEdge (edgeNode) {
+/// User has requested a new edge be created or updated
+function m_HandleEdgeUpdate (edgeNode) {
   if (DBG) console.log('autocomplete-logic:m_HandleCreateEdge',edgeNode);
 
-  // source and target id need to be transformed into nodes
-  edgeNode.source = m_GetNodeById(edgeNode.source);
-  edgeNode.target = m_GetNodeById(edgeNode.target);
+  // Are we creating a new edge, or updating existing edge?
+  let found = false;
+  // Update existing node?
+  D3DATA.edges = D3DATA.edges.map( edge => {
+    if (edge.id === edgeNode.id) {
+      edge.id                         = edgeNode.id;
+      edge.source                     = m_GetNodeById(edgeNode.source);
+      edge.target                     = m_GetNodeById(edgeNode.target);
+      edge.attributes["Relationship"] = edgeNode.attributes["Relationship"];
+      edge.attributes["Citations"]    = edgeNode.attributes["Citations"];
+      edge.attributes["Notes"]        = edgeNode.attributes["Notes"];
+      if (DBG) console.log('...updated existing edge',edge.id);
+      found = true;
+    }
+    return edge;
+  });
+  if (!found) {
+    // Not found, add New Node
 
-  // Need to add `size` property too
-  // REVIEW: This should probably be calculated
-  edgeNode.size = 1;
+    // source and target id need to be transformed into nodes
+    edgeNode.source = m_GetNodeById(edgeNode.source);
+    edgeNode.target = m_GetNodeById(edgeNode.target);
 
-  D3DATA.edges.push(edgeNode);
-  UDATA.SetState('D3DATA',D3DATA);
+    // Need to add `size` property too
+    // REVIEW: This should probably be calculated
+    edgeNode.size = 1;
+
+    D3DATA.edges.push(edgeNode);
+    UDATA.SetState('D3DATA',D3DATA);
+  }
 }
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////

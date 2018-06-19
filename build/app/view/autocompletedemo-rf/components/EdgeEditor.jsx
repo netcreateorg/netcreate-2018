@@ -199,6 +199,7 @@ class EdgeEditor extends React.Component {
     });
 
     this.onButtonClick        = this.onButtonClick.bind(this);
+    this.onEditButtonClick    = this.onEditButtonClick.bind(this);
     this.onRelationshipChange = this.onRelationshipChange.bind(this);
     this.onNotesChange        = this.onNotesChange.bind(this);
     this.onInfoChange         = this.onInfoChange.bind(this);
@@ -289,7 +290,11 @@ class EdgeEditor extends React.Component {
       UDATA.Call('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'target'});
     }
   }
-
+  onEditButtonClick () {
+    this.setState({ isEditable: true });
+    // set this autoComplete as current
+    UDATA.Call('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'target'});
+  }
   loadSourceAndTarget () {
     if (DBG) console.log('EdgeEditor.loadSourceAndTarget!')
     let edgeID = this.props.edgeID || '';
@@ -413,7 +418,7 @@ class EdgeEditor extends React.Component {
     if (DBG) console.group('EdgeEntry.onSubmit submitting',edge)
 
     // Notify parent of new edge data
-    UDATA.Call('CREATE_EDGE',{edge:edge});
+    UDATA.Call('EDGE_UPDATE',{edge:edge});
 
     // Notify parent to deselect selectedNode
     UDATA.Call('SOURCE_SELECT',{nodeLabels:[]});
