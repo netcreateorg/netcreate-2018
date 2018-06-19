@@ -405,7 +405,7 @@ class NodeSelector extends React.Component {
               />
           </FormGroup>
           <FormGroup>
-            <Label m={2} className="small text-muted">ID: {this.state.formData.id||''}</Label>
+            <Label className="small text-muted">ID: {this.state.formData.id||''}</Label>
           </FormGroup>
           <hr/>
           <FormGroup className="text-right" style={{paddingRight:'5px'}}>

@@ -516,7 +516,7 @@ class EdgeEditor extends React.Component {
               />
             </FormGroup>
             <FormGroup>
-              <Label sm={2} className="small text-muted">ID: {formData.id}</Label>
+              <Label className="small text-muted">ID: {formData.id}</Label>
             </FormGroup>
             <FormGroup className="text-right" style={{paddingRight:'5px'}}>
               <Button className="small text-muted float-left btn btn-outline-light" size="sm"
