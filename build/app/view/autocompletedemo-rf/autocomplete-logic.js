@@ -435,7 +435,9 @@ function m_HandleSourceHilite (nodeLabel) {
   // Update hilitedNode in SELECTION
   // Always update hilitedNode so that NodeDetail will update
   let hilitedNode = m_GetNodeByLabel(nodeLabel);
-  UDATA.SetState('SELECTION',{ hilitedNode: hilitedNode });
+  let selection = UDATA.State('SELECTION');
+  selection.hilitedNode = hilitedNode;
+  UDATA.SetState('SELECTION',selection);
 }
 
 
@@ -471,7 +473,9 @@ function m_HandleSourceUpdate (newNodeData) {
   UDATA.SetState('D3DATA',D3DATA);
 
   // Clear search field
-  UDATA.SetState('SELECTION',{searchLabel: ''});
+  let selection = UDATA.State('SELECTION');
+  selection.searchLabel = '';
+  UDATA.SetState('SELECTION',selection);
 }
 
 
