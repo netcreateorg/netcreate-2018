@@ -78,7 +78,7 @@ const { Alert }   = ReactStrap;
           description : target.value
         }
         console.log(`REACT -> state`,state,`to ${this.udata.UID()}`);
-        this.udata.SetState('VIEW',state, this.uni_id);
+        this.udata.SetState('VIEW',state,this.uni_id);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// COMPONENT this interface has composed

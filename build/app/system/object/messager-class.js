@@ -14,13 +14,13 @@
       Remove a handlerFunc associated with the handlerFuncFunction
     Send('MESG_NAME',data,options)
       Trigger an message+data to all handlers from a particular UDATA id
-      If options.senderUID is specified, echo suppression is enabled
+      If options.srcUID is specified, echo suppression is enabled
     Signal('MESG_NAME',data)
       Similar to Send(), but will ALWAYS broadcast to all implementors
     Call('MESG_NAME',data,options)
       Similar to Send(), but can return a value to a callback function
-      options.callerUID is the UDATA id; set for echo supression to that uid
-      options.callerReturnFunc is the callback function.
+      options.srcUID is the UDATA id; set for echo supression to that uid
+      options.dataReturnFunc is the callback function.
 
     NOTE: CallerReturnFunctions receive data object AND control object.
     The control object has the "return" function that closes a transaction;
@@ -100,14 +100,14 @@ class Messager {
     to receiving its own message back if it happens to implement the message as
     well.
 /*/ Send( mesgName, data, options={} ) {
-      let { senderUID } = options;
-      let etype = (senderUID===undefined) ? 'MessagerSignal' : 'MessagerSend';
+      let { srcUID } = options;
+      let etype = (src_uid===undefined) ? 'MessagerSignal' : 'MessagerSend';
       if (DBG) console.log(`${etype}: [${mesgName}] data:`,data);
       const handlers = this.handlerMap.get(mesgName);
       if (handlers) {
         for (let handlerFunc of handlers) {
-          if (senderUID && handlerFunc.udata_id===senderUID) continue;
-          handlerFunc(mesgName, data, senderUID);
+          if (src_uid && handlerFunc.udata_id===src_uid) continue;
+          handlerFunc(mesgName, data, src_uid);
         }
       }
       return this;
@@ -126,20 +126,20 @@ class Messager {
     across the network
     TODO: Enable callback support by adding to options, callobjs dict, etc
 /*/ Call( mesgName, inData, options={} ) {
-      let { callerUID, callerReturnFunc } = options;
+      let { srcUID, dataReturnFunc } = options;
       if (DBG) console.log(`MessagerCall: [${mesgName}] inData:`,inData);
       const handlers = this.handlerMap.get(mesgName);
       if (handlers) {
         for (let handlerFunc of handlers) {
-          if (callerUID && handlerFunc.udata_id===callerUID) {
+          if (srcUID && handlerFunc.udata_id===srcUID) {
             if (DBG) console.warn(`MessagerCall: [${mesgName}] skip call since origin = destination; use Broadcast() if intended`);
             continue;
           }
           // invoke a registered handler, passing inData and a UDATA_API function collection
-          let hasFunction = typeof callerReturnFunc==='function' ? "w/callback":"w/out callback";
+          let hasFunction = typeof dataReturnFunc==='function' ? "w/callback":"w/out callback";
           console.log('.. MessagerCall: CALLING HANDLER for',mesgName,hasFunction);
           handlerFunc(inData,{
-            "return" : callerReturnFunc
+            "return" : dataReturnFunc
           });
         }
       }

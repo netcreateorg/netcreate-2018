@@ -134,7 +134,9 @@ var MESSAGER       = new Messager();
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
         if (DBG.send) console.log(`${this.name} send [${mesgName}]`);
-        MESSAGER.Send(mesgName,data,{senderUID:this.UID()});
+        MESSAGER.Send(mesgName,data,{
+          srcUID         : this.UID(),
+        });
       }
       Signal( mesgName, data ) {
         MESSAGER.Signal(mesgName,data);
@@ -145,8 +147,8 @@ var MESSAGER       = new Messager();
         let hasCallback = typeof optCallback==='function' ? "w/callback" : "w/out callback";
         if (DBG.return) console.log(`${this.name} call [${mesgName}]`,hasCallback);
         MESSAGER.Call(mesgName,inData,{
-          callerUID        : this.UID(),
-          callerReturnFunc : optCallback || _null_callback
+          srcUID         : this.UID(),
+          dataReturnFunc : optCallback || _null_callback
         });
         function _null_callback () {};
       }
