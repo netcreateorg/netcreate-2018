@@ -1,5 +1,34 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+    *EVENTS: D3 Graph Updates*
+
+    Mark Node/Edge          When a node or edge is higlighted via an AutoComplete
+                            highlight or is selected via AutoComplete selection
+                            or clicked on in NetGraph, it is shown bold (or
+                            outlined) in the D3 graph.  This is done by updating
+                            the node or edge in `this.state.data` object, setting
+                            the object's `selected` key to a particular color
+                            corresponding to the node/edge UI control.  When
+                            the data is updated, it is passed to `NetGraph.jsx`,
+                            which in turn updates the data in
+                            `D3SimpleNetGraph.js`.  `D3SimpleNetGraph` will add
+                            the highlight during its update cycle.
+
+                            The colors allow us to highlight different fields
+                            simultaneously with each component.  For example,
+                            you can highlight both the source and target nodes
+                            with different colors so you know which is which.
+                            This is especially useful when the highlight matches
+                            many objects, e.g. "Ah" matches 7 different nodes.
+
+    Add New Node/Edge       When the user adds a new edge or node, handlers in
+                            AutoCompleteDemo will update its `this.state.data`
+                            with the new nodes/edges.  This is passed on to
+                            `NetGraph.jsx` and in turn to `D3SimpleNetGraph.js`
+                            which will display the new data during its update
+                            cycle.
+
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const DBG      = false;
@@ -281,6 +310,46 @@ function m_MarkNodesThatMatch (searchString, color) {
   })
   UDATA.SetState('D3DATA',D3DATA);
 }
+
+
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// TODO: THESE STILL NEED TO BE CONVERTED
+///
+/// These are methods for marking edges and nodes with multiple colors.
+/// Multiple color marking is not currently implemented.
+//
+//   /// Only select nodes that have not already been selected
+//   getSelectedNodeColor ( node, color ) {
+//     if (node.selected===undefined || node.selected===DESELECTED_COLOR) {
+//       return color
+//     } else {
+//       return node.selected    // default to existing color
+//     }
+//   }
+//   /// Only deselect nodes that were selected by this instance, ignore selections
+//   /// from other NodeSelectors
+//   /*STYLE*/// this is called from deselectAllNodes without specifying 'color'. what is intent?
+//   /*STYLE*/// what is an 'NodeSelector instance'? a set of matching nodes? premature optimization?
+//   getDeselectedNodeColor ( node, color ) {
+//     if (node.selected!==color ) { // this.props.selectedColor) {
+//       return node.selected /*STYLE*/// node.selected is a color AND a truthy value???
+//     } else {
+//       return DESELECTED_COLOR
+//     }
+//   }
+//   ///
+//   /// EDGES
+//   ///
+//   markSelectedEdgeById( id ) {
+// // REMOVE because marking is now handled by acl?
+//     // let updatedData = this.state.data
+//     // updatedData.edges = this.state.data.edges.map( edge => {
+//     //   edge.selected = (edge.id===id)  /*STYLE*/// edge.selected doesn't mirror node.selected in value type (node.selected is a color)
+//     //   return edge
+//     // })
+//     // this.setState( { data: updatedData })
+//   }
 
 
 
