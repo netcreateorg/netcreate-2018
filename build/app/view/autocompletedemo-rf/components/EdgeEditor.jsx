@@ -97,7 +97,11 @@
         1. Click on "Board of Health"
         2. Click on "me -> Residents of Chinatown"
         3. Click on "Edit Edge"
-              * WIP
+              * The "NOTES" and "DATE" fields will become editable.
+        4. Click "Save"
+        5. Select the updated edge.
+              * The changed notes and dates should appear.
+
 
     Create New Edge
         1. Click on "Board of Health"
@@ -136,8 +140,13 @@
 
     Delete Edge
         1. Click on "Board of Health"
-        2. Click on "DELETE"
-              * WIP
+        2. Click on "me -> Residents of Chinatown"
+        3. Click on "DELETE"
+              * The edge should be removed.
+              * The graph should update with the edge remvoed.
+              * The EdgeEditor for the deleted edge shoudl close.
+              * The source node should remain selected.
+              * The non-deleted edges should still be listed.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
