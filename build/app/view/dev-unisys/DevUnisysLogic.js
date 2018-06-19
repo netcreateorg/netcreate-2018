@@ -10,7 +10,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG       = true;
+const DBG       = {
+  state : false
+};
 
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -71,11 +73,13 @@ PASSED = {
 /*/ MOD.Hook('INITIALIZE', function() {
       PASSED.initHook2 = true;
       console.log('Init Hook P2 resolves immediately');
+
       UDATA.HandleMessage('LOGICMELON',(data)=>{
         if (data && data.melon) PASSED.callRegInvoke = true;
         if (typeof data==='object') PASSED.callData = true;
         if (typeof data.melon==='string' && data.melon==='jsxmelon') PASSED.callDataProp = true;
       });
+
     }); // end INITIALIZE 2
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ The START phase executes after INITIALIZE has completed.
@@ -84,7 +88,7 @@ PASSED = {
 /*/ MOD.Hook('START', function () {
       // register state change handler
       UDATA.OnStateChange('VIEW',(state)=>{
-        console.log(`.. LOGIC <- state`,state,`via NS 'VIEW'`);
+        if (DBG.state) console.log(`.. LOGIC <- state`,state,`via NS 'VIEW'`);
         PASSED.stateChange = true;
       });
 
@@ -98,7 +102,7 @@ PASSED = {
       remote method invocation of JSXMELON is expected to return data in a callback
       /*/
       console.group('CALL INVOCATION TEST');
-      UDATA.Call('JSXMELON',{melon:'logicmelon'},(data)=>{
+      UDATA.Call('JSXMELON',{melon:'logicmelon'},(data,ucontrol)=>{
         PASSED.remoteCall = true;
         if (data && data.melon && data.cat) PASSED.remoteData = true;
         if ((data.melon==='logicmelon_ack')&&(data.cat==='calico')) PASSED.remoteDataAdd = true;
@@ -113,7 +117,7 @@ PASSED = {
       // update the description
       setTimeout( function () {
         let state = { description : 'Logic.START set this text' };
-        console.log(`LOGIC -> state`,state,`via NS 'VIEW' ${UDATA.UID()}`);
+        if (DBG.state) console.log(`LOGIC -> state`,state,`via NS 'VIEW' ${UDATA.UID()}`);
         UDATA.SetState('VIEW',state,UDATA.UID());
       },1000);
 
@@ -133,7 +137,7 @@ PASSED = {
           return;
         }
         let state = { random: u_RandomString() };
-        console.log(`LOGIC -> state`,state,`via NS 'LOGIC' ${UDATA.UID()}`);
+        if (DBG.state) console.log(`LOGIC -> state`,state,`via NS 'LOGIC' ${UDATA.UID()}`);
         UDATA.SetState('LOGIC',state,UDATA.UID());
       },500);
 

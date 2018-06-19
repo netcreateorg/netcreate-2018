@@ -19,7 +19,10 @@
 
 /// DEBUGGING /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG         = true;
+var   DBG         = {
+  send   : false,
+  return : true
+};
 const BAD_OWNER   = "must pass owner object of type React.Component or UniModule with optional 'name' parameter";
 const BAD_NAME    = "name parameter must be a string";
 const BAD_UID     = "unexpected non-unique UID";
@@ -81,7 +84,7 @@ var MESSAGER       = new Messager();
 
         // save module in the global module list
         if (DBG) console.log(`Creating UNODE [${this.uid}] for [${this.name}]`);
-        UNODE.set( this.uid, this );
+        UNODE.set(this.uid,this);
       }
 
 
@@ -97,19 +100,19 @@ var MESSAGER       = new Messager();
   /// global UNISTATE module calls are wrapped by unisys node so the unique
   /// UnisysID address can be appended
       State( namespace ) {
-        return UNISTATE.State( namespace );
+        return UNISTATE.State(namespace);
       }
       SetState( namespace, newState ) {
         // uid is "source uid" designating who is making the change
-        UNISTATE.SetState( namespace, newState, this.UID() );
+        UNISTATE.SetState(namespace,newState,this.UID() );
       }
       // uid is "source uid" of subscribing object, to avoid reflection
       // if the subscribing object is also the originating state changer
       OnStateChange( namespace, listener ) {
-        UNISTATE.OnStateChange( namespace, listener, this.UID() );
+        UNISTATE.OnStateChange(namespace,listener,this.UID() );
       }
       OffStateChange( namespace, listener ) {
-        UNISTATE.OffStateChange( namespace, listener );
+        UNISTATE.OffStateChange(namespace,listener);
       }
 
 
@@ -120,27 +123,32 @@ var MESSAGER       = new Messager();
       HandleMessage( mesgName, listener ) {
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
-        if (DBG) console.log(`${this.name} handler added [${mesgName}]`);
-        MESSAGER.HandleMessage( mesgName, listener, { receiverUID:this.UID() } );
+        if (DBG.register) console.log(`${this.name} handler added [${mesgName}]`);
+        MESSAGER.HandleMessage(mesgName,listener,{receiverUID:this.UID()});
       }
       UnhandleMessage( mesgName, listener ) {
-        if (DBG) console.log(`${this.name} handler removed [${mesgName}]`);
-        MESSAGER.UnhandleMessage( mesgName, listener );
+        if (DBG.register) console.log(`${this.name} handler removed [${mesgName}]`);
+        MESSAGER.UnhandleMessage(mesgName,listener);
       }
       Send( mesgName, data ) {
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
-        if (DBG) console.log(`${this.name} send [${mesgName}]`);
-        MESSAGER.Send( mesgName, data, { senderUID: this.UID()} );
+        if (DBG.send) console.log(`${this.name} send [${mesgName}]`);
+        MESSAGER.Send(mesgName,data,{senderUID:this.UID()});
       }
       Signal( mesgName, data ) {
-        MESSAGER.Signal(mesgName, data);
+        MESSAGER.Signal(mesgName,data);
       }
-      Call( mesgName, data, callback ) {
+      Call( mesgName, inData, optCallback ) {
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
-        if (DBG) console.log(`${this.name} emit [${mesgName}]`);
-        MESSAGER.Call( mesgName, data, callback, this.UID() );
+        let hasCallback = typeof optCallback==='function' ? "w/callback" : "w/out callback";
+        if (DBG.return) console.log(`${this.name} call [${mesgName}]`,hasCallback);
+        MESSAGER.Call(mesgName,inData,{
+          callerUID        : this.UID(),
+          callerReturnFunc : optCallback || _null_callback
+        });
+        function _null_callback () {};
       }
 
   } // end UnisysNode

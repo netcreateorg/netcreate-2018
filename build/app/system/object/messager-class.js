@@ -1,38 +1,38 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    Messager - Handle a collection of named events and their receivers
+    Messager - Handle a collection of named events and their handlers
     https://en.wikipedia.org/wiki/Event-driven_architecture#JavaScript
 
-    This class is often wrapped by other UNISYS modules that manage
+    NOTE: This class is often WRAPPED by other UNISYS modules that manage
     a unique ID (such as the unique unisys datalink id) that hide that
     implementation detail from local users (e.g. unisys-data-class)
 
-    /// NORMAL EVENT TRIGGERS ///
+    HandleMessasge('MESG_NAME',handlerFunc,options)
+      Add a handlerFunc. Specify options.handlerUID to enable echo rejection
+      (same udata module will not invoke own handler when sending same message)
+    UnhandleMessage('MESG_NAME',handlerFunc)
+      Remove a handlerFunc associated with the handlerFuncFunction
+    Send('MESG_NAME',data,options)
+      Trigger an message+data to all handlers from a particular UDATA id
+      If options.senderUID is specified, echo suppression is enabled
+    Signal('MESG_NAME',data)
+      Similar to Send(), but will ALWAYS broadcast to all implementors
+    Call('MESG_NAME',data,options)
+      Similar to Send(), but can return a value to a callback function
+      options.callerUID is the UDATA id; set for echo supression to that uid
+      options.callerReturnFunc is the callback function.
 
-    On('EVENT_NAME',receiverFunction,sub_uid)
-      Add a receiver with a particular subscriber UDATA id
-    Off('EVENT_NAME',receiverFunction)
-      Remove a receiver associated with the receiverFunction
-    Emit('EVENT_NAME',data,src_id)
-      Trigger an event+data to all receivers from a particular UDATA id
-      If no src_id is specified, may echo back to UDATA
-    Broadcast('EVENT_NAME',data)
-      Similar to emit, but will always broadcast to all implementors
-      (even ones on the sending UDATA link)
+    NOTE: CallerReturnFunctions receive data object AND control object.
+    The control object has the "return" function that closes a transaction;
+    this is useful for async operations without Promises.
 
-    /// RPC-STYLE MESSAGE PASSING ///
+    NOTE: HandlerFunctions and CallerReturnFunctions are anotated with the
+    udata_id property, which can be set to avoid echoing a message back to
+    the same originating udata source. 
 
-    Register('EVENT_NAME',receiverFunction,handler_id)
-      Register a handler that possibly can return a value
-    Call('EVENT_NAME',data,caller_uid)
-      Invoke remote handler and possibly expect a return value
-
-    When providing a receiver, make sure that it is bound to a specific
-    'this' value using bind()
+    NOTE: When providing a handlerFunc, you might want to bind it to a 
+    specific object context (i.e. 'this') value using bind().
     e.g. handlerFunction = handlerFunction.bind(this);
-
-    To keep a code module from receiving its own emitted event back,
-    emitters can do simple filtering with an optional UNISYS uid string.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -41,24 +41,24 @@ const DBG = true;
 
 /// MODULE VARS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var   MSG_IDCOUNT = 0;
+var   MSGR_IDCOUNT = 0;
 
 /// UNISYS EMITTER CLASS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-class Messager {
+class Messager { 
 
 /*/ Instances of this class can be used to implement a UNISYS-style message
     passing scheme with shared semantics. It maintains a Map keyed by mesgName
-    strings, containing a Set object filled with receivers for that mesgName.
+    strings, containing a Set object filled with handlers for that mesgName.
 /*/ constructor() {
-      this.recvmap = new Map();     // message map storing sets of functions
-      this.eid     = ++MSG_IDCOUNT;
+      this.handlerMap   = new Map(); // message map storing sets of functions
+      this.messager_id  = ++MSGR_IDCOUNT;
     }
 
 /// FIRE ONCE EVENTS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: subscribe a receiver function with a particular unisys id
+/*/ API: subscribe a handlerFunc function with a particular unisys id
     to receive a particular message.
 /*/ HandleMessage( mesgName, handlerFunc, options={} ) {
       let { handlerUID } = options;
@@ -66,36 +66,36 @@ class Messager {
         throw new TypeError('arg2 must be a function');
       }
       if (typeof handlerUID==='string') {
-        if (DBG) console.log(`saving udata_id with receiver`);
-        // bind the udata uid to the receiver function for convenient access
+        if (DBG) console.log(`saving udata_id with handlerFunc`);
+        // bind the udata uid to the handlerFunc function for convenient access
         // by the message dispatcher
         handlerFunc.udata_id = handlerUID;
       }
-      let receivers = this.recvmap.get(mesgName);
-      if (!receivers) {
-        receivers = new Set();
-        this.recvmap.set( mesgName, receivers );
+      let handlers = this.handlerMap.get(mesgName);
+      if (!handlers) {
+        handlers = new Set();
+        this.handlerMap.set( mesgName, handlers );
       }
-      receivers.add( handlerFunc );
+      handlers.add(handlerFunc);
       return this;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: unsubscribe a receiver function from a particular event
+/*/ API: unsubscribe a handlerFunc function from a particular event
 /*/ UnhandleMessage( mesgName, handlerFunc ) {
       if (!arguments.length) {
-        this.recvmap.clear();
+        this.handlerMap.clear();
       } else if (arguments.length === 1) {
-        this.recvmap.delete(mesgName);
+        this.handlerMap.delete(mesgName);
       } else {
-        const receivers = this.recvmap.get(mesgName);
-        if (receivers) {
-          receivers.delete(handlerFunc);
+        const handlers = this.handlerMap.get(mesgName);
+        if (handlers) {
+          handlers.delete(handlerFunc);
         }
       }
       return this;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: trigger a message with the data object payload, sending to all receivers
+/*/ API: trigger a message with the data object payload, sending to all handlers
     that implement that event. Includer sender's unisys id to prevent the sender
     to receiving its own message back if it happens to implement the message as
     well.
@@ -103,40 +103,44 @@ class Messager {
       let { senderUID } = options;
       let etype = (senderUID===undefined) ? 'MessagerSignal' : 'MessagerSend';
       if (DBG) console.log(`${etype}: [${mesgName}] data:`,data);
-      const receivers = this.recvmap.get(mesgName);
-      if (receivers) {
-        for (let receiver of receivers) {
-          if (senderUID && receiver.udata_id===senderUID) continue;
-          receiver(mesgName, data, senderUID);
+      const handlers = this.handlerMap.get(mesgName);
+      if (handlers) {
+        for (let handlerFunc of handlers) {
+          if (senderUID && handlerFunc.udata_id===senderUID) continue;
+          handlerFunc(mesgName, data, senderUID);
         }
       }
       return this;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: wrapper for Send() used when you want every receiver, including
+/*/ API: wrapper for Send() used when you want every handlerFunc, including
     the sender, to receive the event even if it is the one who sent it
 /*/ Signal( mesgName, data ) {
-      this.Send( mesgName, data );
+      this.Send(mesgName,data);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: The Remote Method Invocation version of Send(). It does not include 
     the 'mesgName' in calling subscriber function, so handlers declare one less
-    paramter for conciseness.
+    param (I like conciseness in function declarations)
     TODO: handle asynchronous events, collect results, and work seamlessly
     across the network
     TODO: Enable callback support by adding to options, callobjs dict, etc
-/*/ Call( mesgName, data, options={} ) {
-      let caller_uid = options.caller_uid;
-      let callback   = options.callback;
-      if (DBG) console.log(`MessagerCall: [${mesgName}] data:`,data);
-      const receivers = this.recvmap.get(mesgName);
-      if (receivers) {
-        for (let receiver of receivers) {
-          if (caller_uid && receiver.udata_id===caller_uid) {
+/*/ Call( mesgName, inData, options={} ) {
+      let { callerUID, callerReturnFunc } = options;
+      if (DBG) console.log(`MessagerCall: [${mesgName}] inData:`,inData);
+      const handlers = this.handlerMap.get(mesgName);
+      if (handlers) {
+        for (let handlerFunc of handlers) {
+          if (callerUID && handlerFunc.udata_id===callerUID) {
             if (DBG) console.warn(`MessagerCall: [${mesgName}] skip call since origin = destination; use Broadcast() if intended`);
             continue;
           }
-          receiver( data, options );
+          // invoke a registered handler, passing inData and a UDATA_API function collection
+          let hasFunction = typeof callerReturnFunc==='function' ? "w/callback":"w/out callback";
+          console.log('.. MessagerCall: CALLING HANDLER for',mesgName,hasFunction);
+          handlerFunc(inData,{
+            "return" : callerReturnFunc
+          });
         }
       }
       return this;

@@ -47,15 +47,16 @@ const { Alert }   = ReactStrap;
         this.udata.OnStateChange('LOGIC', this.UnisysStateChange);
 
         // register some handlers
-        this.udata.HandleMessage('JSXMELON',(data,cb) => {
+        this.udata.HandleMessage('JSXMELON',(data,ucontrol) => {
           data.cat = 'calico';
+          data.melon += '_ack';
+          ucontrol.return(data);
         });
 
         // hook start handler to initiate call
         UNISYS.Hook('START',() => {
           this.udata.Call('LOGICMELON',{ melon : 'jsxmelon' });
         });
-
 
       } // constructor
 
