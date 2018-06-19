@@ -105,8 +105,11 @@ class D3NetGraph {
     this.svg = d3.select(rootElement).append('svg')
       .attr('width', _width)
       .attr('height',_height)
+      .on("click",   (e,event) => {
+          // Deselect
+          UDATA.Call('SOURCE_SELECT',{ nodeLabels: [] }); });
 
-    this.simulation = d3.forceSimulation()
+    this.simulation = d3.forceSimulation();
 
     /// Bindings  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     this._Initialize        = this._Initialize.bind(this)
@@ -120,7 +123,7 @@ class D3NetGraph {
     /// Receive Data Updates - - - - - - - - - - - - - - - - - - - - - - - - -
     UDATA.OnStateChange('D3DATA',(data)=>{
       // expect { nodes, edges } for this namespace
-      console.log('D3SimpleNetgraph got state D3DATA',data);
+      if (DBG) console.log('D3SimpleNetgraph got state D3DATA',data);
       this.SetData(data);
     });
 
@@ -147,15 +150,6 @@ class D3NetGraph {
       // restarts the simulation (important if simulation has already slowed down)
       this.simulation.alpha(1).restart()
     }
-  }
-  ///
-  ///   When a node is clicked, clickFn will be called
-  /// CALLED BY PARENT COMPONENT NetGraph.jsx, which is called from AutoCompleteDemo.jsx
-  SetNodeClickHandler ( clickHandler ) {
-    this.nodeClickFn = clickHandler
-  }
-  SetEdgeClickHandler ( clickHandler ) {
-    this.edgeClickFn = clickHandler
   }
 
 
@@ -224,7 +218,9 @@ class D3NetGraph {
           if (DBG) console.log('clicked on',d.label,d.id)
           // We pass nodeLabels here because it's the lowest common denominator --
           // not all components have acccess to complete node objects.
-          UDATA.Call('SOURCE_SELECT',{ nodeLabels: [d.label] }); })
+          UDATA.Call('SOURCE_SELECT',{ nodeLabels: [d.label] });
+          d3.event.stopPropagation();
+        });
 
     nodes.append("circle")
         .attr("r",
