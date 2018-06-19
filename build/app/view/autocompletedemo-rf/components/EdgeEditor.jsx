@@ -450,7 +450,7 @@ class EdgeEditor extends React.Component {
   render () {
     const { edgeID, parentNodeLabel } = this.props;
     const { formData, sourceNode, targetNode } = this.state;
-    const me = 'me';
+    const me = 'this';
     return (
       <div>
 
