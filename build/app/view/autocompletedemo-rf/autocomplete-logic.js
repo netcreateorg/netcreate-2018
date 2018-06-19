@@ -30,6 +30,7 @@ var SELECTION      = {};
                            // this is the node the user clicked on in the
                            // graph or selected from the suggestions list
       edges:               // an array of edge objects for editing
+// REVIEW: Should this be renamed "selectedEdges" to distinguish from D3DATA.edges
       searchLabel:         // a string representing what the user has typed
       suggestedNodeLabels: // an array of node labels suggestions that match
                               the search string
@@ -109,7 +110,11 @@ MOD.Hook('INITIALIZE',()=>{
     if (DBG) console.log('EDGE_UPDATE',data);
     m_HandleEdgeUpdate( data.edge );
   });
-
+  /// `data` = { edgeID: string }
+  UDATA.Register('EDGE_DELETE',function(data) {
+    if (DBG) console.log('EDGE_DELETE',data);
+    m_HandleEdgeDelete( data.edgeID );
+  })
   /// AutoComplete components register here to be
   /// the active component.
   ///
@@ -121,7 +126,10 @@ MOD.Hook('INITIALIZE',()=>{
     if (DBG) console.log('AUTOCOMPLETE_SELECT',data);
     let selection = UDATA.State('SELECTION');
     selection.activeAutoCompleteId = data.id;
-    selection.searchLabel = data.searchString;
+    // Only set searchLabel if it was passed
+    if (data.searchString!==undefined) {
+      selection.searchLabel = data.searchString;
+    }
     UDATA.SetState('SELECTION',selection);
   })
 
@@ -432,6 +440,24 @@ function m_HandleEdgeUpdate (edgeNode) {
     D3DATA.edges.push(edgeNode);
     UDATA.SetState('D3DATA',D3DATA);
   }
+}
+
+/// User has requested an edge be deleted
+function m_HandleEdgeDelete ( edgeID ) {
+  if (DBG) console.log('m_HandleEdgeDelete',edgeID,'SELECTION.searchLabel',UDATA.State('SELECTION').searchLabel);
+  // REVIEW: Should D3DATA always be read from UDATA.State?
+  D3DATA.edges = D3DATA.edges.filter( edge => {
+    if (edge.id !== edgeID) {
+      return edge;
+    }
+  });
+  UDATA.SetState('D3DATA',D3DATA);
+  // Also update selection so edges in EdgeEditor will update
+  m_HandleNodeSelect( UDATA.State('SELECTION').searchLabel );
+  // Hand control back off to nodeselector
+  let selection = UDATA.State('SELECTION');
+  selection.activeAutoCompleteId = 'nodeSelector';
+  UDATA.SetState('SELECTION',selection);
 }
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////

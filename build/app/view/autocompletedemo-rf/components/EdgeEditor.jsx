@@ -199,6 +199,7 @@ class EdgeEditor extends React.Component {
     });
 
     this.onButtonClick        = this.onButtonClick.bind(this);
+    this.onDeleteButtonClick  = this.onDeleteButtonClick.bind(this);
     this.onEditButtonClick    = this.onEditButtonClick.bind(this);
     this.onRelationshipChange = this.onRelationshipChange.bind(this);
     this.onNotesChange        = this.onNotesChange.bind(this);
@@ -289,6 +290,10 @@ class EdgeEditor extends React.Component {
       // set this autoComplete as current
       UDATA.Call('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'target'});
     }
+  }
+  onDeleteButtonClick () {
+    this.clearForm();
+    UDATA.Call('EDGE_DELETE',{edgeID:this.props.edgeID});
   }
   onEditButtonClick () {
     this.setState({ isEditable: true });
@@ -514,7 +519,9 @@ class EdgeEditor extends React.Component {
               <Label sm={2} className="small text-muted">ID: {formData.id}</Label>
             </FormGroup>
             <FormGroup className="text-right" style={{paddingRight:'5px'}}>
-              <a href="#" className="small text-muted float-left">DELETE</a>&nbsp;
+              <Button className="small text-muted float-left btn btn-outline-light" size="sm"
+               onClick={this.onDeleteButtonClick}
+              >DELETE</Button>&nbsp;
               <Button outline size="sm"
                 hidden={this.state.isEditable}
                 onClick={this.onEditButtonClick}

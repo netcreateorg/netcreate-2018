@@ -354,6 +354,8 @@ class NodeSelector extends React.Component {
 
   shouldComponentUpdate () { return true }
   componentWillUpdate () {}
+
+
   render () {
     return (
       <div>
@@ -425,9 +427,13 @@ class NodeSelector extends React.Component {
         </Form>
         <div style={{backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px'}}>
           <FormText>EDGES</FormText>
+          {/* `key` is needed during edge deletion so EdgeEditors are properly
+               removed when an edge is deleted.
+               REVIEW: Can we replace edgeID with key?  */}
           {this.state.edges.map( (edge,i) =>
             <EdgeEditor key={i}
               edgeID={edge.id}
+              key={edge.id}
               parentNodeLabel={this.state.formData.label}
             />
           )}
