@@ -443,23 +443,12 @@ class AutoCompleteDemo extends React.Component {
         <div style={{display:'flex', flexFlow:'row nowrap',
              width:'100%', height:'100%'}}>
           <div id="left" style={{backgroundColor:'#E0ffff',flex:'1 0 auto',maxWidth:'300px',padding:'10px'}}>
-            <div style={{display:'flex', flexFlow:'column nowrap',height:100+'%'}}>
+            <div style={{display:'flex', flexFlow:'column nowrap'}}>
               <div style={{flexGrow:1}}>
                 <h3>Nodes (RF)</h3>
               </div>
               <div>
                 <NodeSelector/>
-                <EdgeEntry
-                  data={this.state.data}
-                  selectedSourceNode={this.state.selectedSourceNode}
-                  selectedTargetNode={this.state.selectedTargetNode}
-                  selectedEdge={this.state.selectedEdge}
-
-                  onInputUpdate={this.handleTargetInputUpdate}
-                  onHighlight  ={this.handleTargetHighlight}
-                  onNodeSelect ={this.handleTargetNodeSelection}
-                  onEdgeUpdate ={this.handleEdgeUpdate}
-                />
               </div>
             </div>
           </div>

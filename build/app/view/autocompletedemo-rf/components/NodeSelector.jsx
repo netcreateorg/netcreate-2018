@@ -53,10 +53,6 @@
           isEditable      If true, form is enabled for editing
                           If false, form is readonly
 
-          highlightedNode The node that is currently highlighted in the list
-                          of suggestions.  This is a node object.  This
-                          determines what is shown in NodeDetail.
-
 
 
     TESTING
@@ -104,7 +100,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 
-var DBG = true;
+var DBG = false;
 
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
@@ -114,10 +110,12 @@ const ReactStrap   = require('reactstrap');
 const { Button, Col, Form, FormGroup, Label, Input, FormText } = ReactStrap;
 const AutoComplete = require('./AutoComplete');
 const NodeDetail   = require('./NodeDetail');
+const EdgeEditor   = require('./EdgeEditor');
 
 const UNISYS   = require('system/unisys');
 var   UDATA    = null;
 
+const thisIdentifier = 'nodeSelector';   // SELECTION identifier
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -135,7 +133,7 @@ class NodeSelector extends React.Component {
           id:        '',
           isNewNode: true
       },
-      highlightedNode: {},
+      edges: [],
       isEditable:      false
     };
 
@@ -155,6 +153,7 @@ class NodeSelector extends React.Component {
     this.onNotesChange                         = this.onNotesChange.bind(this);
     this.onInfoChange                          = this.onInfoChange.bind(this);
     this.onEditButtonClick                     = this.onEditButtonClick.bind(this);
+    this.onAddNewEdgeButtonClick               = this.onAddNewEdgeButtonClick.bind(this);
     this.onSubmit                              = this.onSubmit.bind(this);
 
   }
@@ -175,21 +174,34 @@ class NodeSelector extends React.Component {
           id:        '',
           isNewNode: true
       },
-      highlightedNode: {},
+      edges: [],
       isEditable:      false
     });
   }
   /// Return a new unique ID
   /// REVIEW: Should this be in autocomplete-logic?
   getNewNodeID () {
-    let data = UDATA.State('D3DATA');
-    let ids  = data.nodes.map( node => { return node.id } );
+    let ids  = UDATA.State('D3DATA').nodes.map( node => { return node.id } );
     let highestID = ids.reduce( (a,b) => { return Math.max(a,b) } );
-    return highestID+1;
+    // REVIEW: Should ids be strings or numbers?
+    // Right now most edge ids are strings
+    return (highestID+1).toString();
+  }
+  /// Return a new unique ID
+  getNewEdgeID () {
+    let ids  = UDATA.State('D3DATA').edges.map( edge => { return edge.id } )
+    let highestID = ids.reduce( (a,b) => { return Math.max(a,b) } )
+    // REVIEW: Should ids be strings or numbers?
+    // Right now most edge ids are strings
+    return (highestID+1).toString();
   }
   /// Handle updated SELECTION
   handleSelection ( data ) {
-    if (DBG) console.log('NodeSelector got state SELECTION',data);
+    if (DBG) console.log('NodeSelector: got state SELECTION',data);
+
+    // Ignore the update if we're not the active AutoComplete component
+    if (data.activeAutoCompleteId!==thisIdentifier) return;
+
     if (!this.state.isEditable) {
       if (data.nodes && data.nodes.length>0) {
         // A node was selected, so load it
@@ -197,8 +209,13 @@ class NodeSelector extends React.Component {
         // grab the first node
         let node = data.nodes[0];
         this.loadFormFromNode( node );
+
+        // Load edges
+        this.setState({
+          edges: data.edges
+        })
       } else {
-        if (DBG) console.log('No data.nodes, so clearing form');
+        if (DBG) console.log('NodeSelector: No data.nodes, so clearing form');
         this.clearForm();
       }
     } else {
@@ -212,10 +229,6 @@ class NodeSelector extends React.Component {
       });
     }
 
-    // Show Node Detail
-    this.setState({
-      highlightedNode: data.hilitedNode
-    });
   }
   /// Coppy the node data passed via SELECTION in the form
   loadFormFromNode ( newNode ) {
@@ -243,7 +256,7 @@ class NodeSelector extends React.Component {
         id:        node.id,
         isNewNode: false
       },
-      isEditable: false
+      isEditable: false,
     });
   }
 
@@ -288,6 +301,26 @@ class NodeSelector extends React.Component {
     this.setState({ formData: formData });
 
   }
+  onAddNewEdgeButtonClick (event) {
+    event.preventDefault();
+    /*
+          When creating a new edge, we first
+          1. Add a bare bones edge object with a new ID to the local state.edges
+          2. Pass it to render, so that a new EdgeEditor will be created.
+          3. In EdgeEditor, we create a dummy edge object
+
+    */
+    // Add it to local state for now
+    let edge = {
+      id:           this.getNewEdgeID(),
+      source:       undefined,
+      target:       undefined,
+      attributes:   {}
+    };
+    let edges = this.state.edges;
+    edges.push(edge);
+    this.setState({ edges: edges });
+  }
   onSubmit ( event ) {
     event.preventDefault();
 
@@ -314,84 +347,109 @@ class NodeSelector extends React.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// REACT LIFECYCLE
   ///
-  componentDidMount () {
-    // console.log('componentDidMount')
-  }
-  componentWillReceiveProps (nextProps) {
-    // console.log('NodeSelect.componentWillReceiveProps',nextProps)
-  }
+
+  // componentWillReceiveProps has been deprectaed by React.  Don't use!
+  // componentWillReceiveProps (nextProps) {
+  // }
 
   shouldComponentUpdate () { return true }
   componentWillUpdate () {}
+
+
   render () {
     return (
-      <Form className='nodeEntry' style={{minHeight:'300px',backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px'}}
-        onSubmit={this.onSubmit}>
-        <FormText>NODE SELECTOR (RF)</FormText>
-        <hr/>
-        <FormGroup>
-          <Label for="nodeLabel" className="small text-muted">LABEL</Label>
-          <AutoComplete
-            disableSuggestions={!this.state.isEditable}
-          />
-        </FormGroup>
-        <div style={{position:'absolute',left:'300px',maxWidth:'300px'}}>
-          <NodeDetail/>
+      <div>
+        <Form className='nodeEntry' style={{minHeight:'300px',backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px'}}
+          onSubmit={this.onSubmit}>
+          <FormText>NODE SELECTOR (RF)</FormText>
+          <hr/>
+          <FormGroup>
+            <Label for="nodeLabel" className="small text-muted">LABEL</Label>
+            <AutoComplete
+              identifier={thisIdentifier}
+              disabledValue={this.state.formData.label}
+              inactiveMode={'disabled'}
+            />
+          </FormGroup>
+          <div style={{position:'absolute',left:'300px',maxWidth:'300px'}}>
+            <NodeDetail/>
+          </div>
+          <FormGroup>
+            <Label for="type" className="small text-muted">TYPE</Label>
+            <Input type="select" name="type" id="typeSelect"
+              value={this.state.formData.type||''}
+              onChange={this.onTypeChange}
+              disabled={!this.state.isEditable}
+              >
+              <option>Person</option>
+              <option>Group</option>
+              <option>Place</option>
+              <option>Thing</option>
+              <option>Event</option>
+            </Input>
+          </FormGroup>
+          <FormGroup>
+            <Label for="notes" className="small text-muted">NOTES</Label>
+            <Input type="textarea" name="note" id="notesText"
+              value={this.state.formData.notes||''}
+              onChange={this.onNotesChange}
+              readOnly={!this.state.isEditable}
+              />
+          </FormGroup>
+          <FormGroup>
+            <Label for="info" className="small text-muted">GEOCODE or DATE</Label>
+            <Input type="text" name="info" id="info"
+              value={this.state.formData.info||''}
+              onChange={this.onInfoChange}
+              readOnly={!this.state.isEditable}
+              />
+          </FormGroup>
+          <FormGroup>
+            <Label m={2} className="small text-muted">ID: {this.state.formData.id||''}</Label>
+          </FormGroup>
+          <hr/>
+          <FormGroup className="text-right" style={{paddingRight:'5px'}}>
+            <Button outline size="sm"
+              hidden={this.state.isEditable}
+              onClick={this.onEditButtonClick}
+            >{this.state.formData.id===''?"Add New Node":"Edit Node"}</Button>
+            <Button color="primary" size="sm"
+              hidden={!this.state.isEditable}
+            >Save</Button>
+          </FormGroup>
+          <hr/>
+        </Form>
+        <div style={{backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px'}}>
+          <FormText>EDGES</FormText>
+          {/* `key` is needed during edge deletion so EdgeEditors are properly
+               removed when an edge is deleted.
+               REVIEW: Can we replace edgeID with key?  */}
+          {this.state.edges.map( (edge,i) =>
+            <EdgeEditor key={i}
+              edgeID={edge.id}
+              key={edge.id}
+              parentNodeLabel={this.state.formData.label}
+            />
+          )}
+          <FormGroup className="text-right">
+            <Button outline size="sm"
+              hidden={this.state.formData.id===''}
+              onClick={this.onAddNewEdgeButtonClick}
+            >Add New Edge</Button>
+          </FormGroup>
         </div>
-        <FormGroup>
-          <Label for="type" className="small text-muted">TYPE</Label>
-          <Input type="select" name="type" id="typeSelect"
-            value={this.state.formData.type||''}
-            onChange={this.onTypeChange}
-            disabled={!this.state.isEditable}
-            >
-            <option>Person</option>
-            <option>Group</option>
-            <option>Place</option>
-            <option>Thing</option>
-            <option>Event</option>
-          </Input>
-        </FormGroup>
-        <FormGroup>
-          <Label for="notes" className="small text-muted">NOTES</Label>
-          <Input type="textarea" name="note" id="notesText"
-            value={this.state.formData.notes||''}
-            onChange={this.onNotesChange}
-            readOnly={!this.state.isEditable}
-            />
-        </FormGroup>
-        <FormGroup>
-          <Label for="info" className="small text-muted">GEOCODE or DATE</Label>
-          <Input type="text" name="info" id="info"
-            value={this.state.formData.info||''}
-            onChange={this.onInfoChange}
-            readOnly={!this.state.isEditable}
-            />
-        </FormGroup>
-        <FormGroup row>
-          <Label for="id" sm={2} className="small text-muted">ID</Label>
-          <Col sm={10}>
-            <Input type="text" name="id" id="id"
-              value={this.state.formData.id||''}
-              readOnly={true}
-            />
-          </Col>
-        </FormGroup>
-        <hr/>
-        <FormGroup className="text-right" style={{paddingRight:'5px'}}>
-          <Button outline size="sm"
-            hidden={this.state.isEditable}
-            onClick={this.onEditButtonClick}
-          >{this.state.formData.id===''?"Add New Node":"Edit Node"}</Button>
-          <Button color="primary" size="sm"
-            hidden={!this.state.isEditable}
-          >Save</Button>
-        </FormGroup>
-      </Form>
+      </div>
     )
   }
-  componentDidUpdate () {}
-  componentWillUnMount () {}
+
+
+  // Called after initial render on mount
+  componentDidMount () {
+    // console.log('componentDidMount')
+    // Register as the active autoComplete Component when we first start up
+    UDATA.Call('AUTOCOMPLETE_SELECT',{id:'nodeSelector', searchString:this.state.formData.label});
+  }
+
 
 }
 
