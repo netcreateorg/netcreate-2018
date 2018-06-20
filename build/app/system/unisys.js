@@ -60,16 +60,12 @@ var   UDATA       = new UniData(UNISYS);
     activate. This helps with modules to prepare themselves.
 /*/ UNISYS.SystemInitialize = ( module_id ) => {
       UNISYS.SetScope(module_id);
-      return new Promise( async ( resolve, reject )=>{
-        await LIFECYCLE.Execute('INITIALIZE'); // INITIALIZE hook
-        resolve();
-      });
     }; // SystemInitialize
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: application startup after componentDidMount
 /*/ UNISYS.EnterApp = () => {
       return new Promise( async ( resolve, reject )=>{
+        await LIFECYCLE.Execute('INITIALIZE'); // INITIALIZE hook
         await LIFECYCLE.Execute('LOADASSETS'); // LOADASSETS hook
         resolve();
       });
