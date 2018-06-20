@@ -8,8 +8,8 @@
     NetGraph calls SetData whenever it receives an updated data object.
     This triggers D3NetGraph to redraw itself.
 
-    This simplified version derived from D3NetGraph.js was created to address 
-    a problem with links not updating properly.  
+    This simplified version derived from D3NetGraph.js was created to address
+    a problem with links not updating properly.
 
     The first implementation of this removed the fancy force property settings
     that were needed to handle the realtime UI widgets in 'D3 Force Demo' app.
@@ -28,9 +28,15 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 
+var DBG = false;
+
+
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const d3       = require('d3')
+const UNISYS   = require('system/unisys');
+var   UDATA    = null;
+
 
 /// PRIVATE VARS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -79,7 +85,7 @@ class D3NetGraph {
 
 
   constructor ( rootElement ) {
-    /// Instance Variables - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    /// Instance Variables - - - - - - - - - - - - - - - - - - - - - - - - - -
     this.rootElement  = rootElement
     this.svg          = {}
     this.simulation   = {}
@@ -90,17 +96,22 @@ class D3NetGraph {
     this.defaultSize  = 5
     this.defaultColor = '#000'
 
-    /// Simple Instance Variables - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    /// Initialize UNISYS DATA LINK for REACT
+    UDATA = UNISYS.NewDataLink(this);
 
+    /// Simple Instance Variables - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     /// Constructor - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     this.svg = d3.select(rootElement).append('svg')
       .attr('width', _width)
       .attr('height',_height)
+      .on("click",   (e,event) => {
+          // Deselect
+          UDATA.Call('SOURCE_SELECT',{ nodeLabels: [] }); });
 
-    this.simulation = d3.forceSimulation()
+    this.simulation = d3.forceSimulation();
 
-    /// Bindings  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    /// Bindings  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     this._Initialize        = this._Initialize.bind(this)
     this._UpdateGraph       = this._UpdateGraph.bind(this)
     this._UpdateForces      = this._UpdateForces.bind(this)
@@ -109,8 +120,17 @@ class D3NetGraph {
     this._Dragged           = this._Dragged.bind(this)
     this._Dragended         = this._Dragended.bind(this)
 
+    /// Receive Data Updates - - - - - - - - - - - - - - - - - - - - - - - - -
+    UDATA.OnStateChange('D3DATA',(data)=>{
+      // expect { nodes, edges } for this namespace
+      if (DBG) console.log('D3SimpleNetgraph got state D3DATA',data);
+      this.SetData(data);
+    });
+
   }
 
+
+  /*SHINY UNISYS REPLACEMENT FOR RECEIVING DATA UPDATES*/
 
 
   /// CLASS PUBLIC METHODS /////////////////////////////////////////////////////
@@ -130,15 +150,6 @@ class D3NetGraph {
       // restarts the simulation (important if simulation has already slowed down)
       this.simulation.alpha(1).restart()
     }
-  }
-  ///
-  ///   When a node is clicked, clickFn will be called
-  ///
-  SetNodeClickHandler ( clickHandler ) {
-    this.nodeClickFn = clickHandler
-  }
-  SetEdgeClickHandler ( clickHandler ) {
-    this.edgeClickFn = clickHandler
   }
 
 
@@ -172,10 +183,10 @@ class D3NetGraph {
   ///     Call this after data has been loaded
   ///     This creates link and node svg objects
   ///     and sets their forceProperties
-  /// 
+  ///
   ///     The component `node` looks like this:
   ///         <g class="node">  // node group object
-  ///            <circle>       
+  ///            <circle>
   ///            <text>         // label
   ///            <title>        // tooltip
   ///         </g>
@@ -203,13 +214,17 @@ class D3NetGraph {
         .on("start", (d) => { this._Dragstarted(d, this) })
         .on("drag",  this._Dragged)
         .on("end",   (d) => { this._Dragended(d, this) }))
-      .on("click",   (d) => { 
-          console.log('clicked on',d.label,d.id)
-          this.nodeClickFn( d ) })
+      .on("click",   (d) => {
+          if (DBG) console.log('clicked on',d.label,d.id)
+          // We pass nodeLabels here because it's the lowest common denominator --
+          // not all components have acccess to complete node objects.
+          UDATA.Call('SOURCE_SELECT',{ nodeLabels: [d.label] });
+          d3.event.stopPropagation();
+        });
 
     nodes.append("circle")
-        .attr("r", 
-          (d) => { 
+        .attr("r",
+          (d) => {
             let count = 1
             this.data.edges.map( (l)=>{ l.source == d.id || l.target == d.id ? count++ : 0 } )
             d.weight = count
@@ -233,7 +248,7 @@ class D3NetGraph {
     linkElements.enter()
       .insert("line",".node")
         .classed('edge', true)
-      .on("click",   (d) => { 
+      .on("click",   (d) => {
           console.log('clicked on',d.label,d.id)
           this.edgeClickFn( d ) })
 
@@ -245,8 +260,8 @@ class D3NetGraph {
       .selectAll("circle")
         .attr("stroke",       (d) => { if (d.selected) return d.selected; })
         .attr("stroke-width", (d) => { if (d.selected) return '5px'; })
-        .attr("r", 
-          (d) => { 
+        .attr("r",
+          (d) => {
             let count = 1
             this.data.edges.map( (l)=>{ l.source.id == d.id || l.target.id == d.id ? count++ : 0 } )
             d.weight = count
@@ -257,6 +272,7 @@ class D3NetGraph {
       .selectAll("text")
         .attr("color",        (d) => { if (d.selected) return d.selected; })
         .attr("font-weight",  (d) => { if (d.selected) return 'bold'; })
+        .text((d) => { return d.label })  // in case text is updated
 
     linkElements.merge(linkElements)
       .classed("selected",  (d) => { return d.selected })
@@ -313,7 +329,7 @@ class D3NetGraph {
   ///       Update the display positions after each simulation tick
   ///
   ///       This tick method is called repeatedly until the layout stabilizes.
-  ///  
+  ///
   ///       NOTE: the order in which we update nodes and links does NOT determine which
   ///       gets drawn first -- the drawing order is determined by the ordering in the
   ///       DOM.  See the notes under link_update.enter() above for one technique for

@@ -98,13 +98,13 @@ class NodeEntry extends React.Component {
     node.attributes = node.attributes || {}    // validate attributes
     this.setState({
       label:   node.label,
-      type:    node.attributes["Node_Type"],     // HACK This needs to be updated when 
+      type:    node.attributes["Node_Type"],     // HACK This needs to be updated when
       info:    node.attributes["Extra Info"],    // the data format is updated
       notes:   node.attributes["Notes"],         // These were bad keys from Fusion Tables.
       canEdit: node.newNode                      // Pass canEdit=true to set NodeEntry into Edit mode
     })
   }
-  
+
   shouldComponentUpdate () { return true }
 
   componentWillUpdate () {}
@@ -113,14 +113,14 @@ class NodeEntry extends React.Component {
     return (
       <Form className='nodeEntry' style={{minHeight:'300px',backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px'}}
         onSubmit={this.onSubmit}>
-        <FormText>NODE EDITOR</FormText>
+        <FormText>NODE EDITOR (RF)</FormText>
         <hr/>
         <FormGroup>
           <Label for="nodeLabel" className="small text-muted">LABEL</Label>
-          <Input type="text" name="nodeLabel" id="nodeLabel" 
+          <Input type="text" name="nodeLabel" id="nodeLabel"
             value={this.state.label||''}    // necessary to prevent switching from controlled to uncontrolled
             onChange={this.onLabelChange}
-            placeholder="person/group/place/thing/event" 
+            placeholder="person/group/place/thing/event"
             readOnly={!this.state.canEdit}
             />
         </FormGroup>
@@ -140,7 +140,7 @@ class NodeEntry extends React.Component {
         </FormGroup>
         <FormGroup>
           <Label for="notes" className="small text-muted">NOTES</Label>
-          <Input type="textarea" name="note" id="notesText" 
+          <Input type="textarea" name="note" id="notesText"
             value={this.state.notes||''}
             onChange={this.onNotesChange}
             readOnly={!this.state.canEdit}
@@ -148,7 +148,7 @@ class NodeEntry extends React.Component {
         </FormGroup>
         <FormGroup>
           <Label for="info" className="small text-muted">GEOCODE or DATE</Label>
-          <Input type="text" name="info" id="info" 
+          <Input type="text" name="info" id="info"
             value={this.state.info||''}
             onChange={this.onInfoChange}
             readOnly={!this.state.canEdit}
@@ -160,7 +160,7 @@ class NodeEntry extends React.Component {
             hidden={this.state.canEdit}
             onClick={this.onEditButtonClick}
           >Edit</Button>
-          <Button color="primary" size="sm" 
+          <Button color="primary" size="sm"
             hidden={!this.state.canEdit}
           >Save</Button>
         </FormGroup>
