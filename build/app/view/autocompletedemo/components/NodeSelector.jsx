@@ -100,7 +100,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 
-var DBG = false;
+var DBG = true;
 
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
@@ -140,8 +140,8 @@ class NodeSelector extends React.Component {
     /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
 
-    UDATA.OnStateChange('SELECTION',(data)=>{
-      this.handleSelection(data);
+    UDATA.OnStateChange('SELECTION',(change) => {
+      this.handleSelection(change);
     });
 
     this.clearForm                             = this.clearForm.bind(this);
@@ -199,11 +199,17 @@ class NodeSelector extends React.Component {
   handleSelection ( data ) {
     if (DBG) console.log('NodeSelector: got state SELECTION',data);
 
+    // OLD
     // Ignore the update if we're not the active AutoComplete component
-    if (data.activeAutoCompleteId!==thisIdentifier) return;
+    // if (data.activeAutoCompleteId!==thisIdentifier) return;
+    // FIX bad state dependency
+    let { activeAutoCompleteId } = UDATA.State('SELECTION');
+    if (activeAutoCompleteId!==thisIdentifier) return;
 
     if (!this.state.isEditable) {
+      console.log('*** noteditable');
       if (data.nodes && data.nodes.length>0) {
+        if (DBG) console.log('NodeSelector:: updating selection',data.nodes[0]);
         // A node was selected, so load it
         // We're not editing, so it's OK to update the form
         // grab the first node
@@ -219,6 +225,7 @@ class NodeSelector extends React.Component {
         this.clearForm();
       }
     } else {
+      console.log('*** editable');
       // Always update the search label
       // Update the form's node label because that data is only passed via SELECTION
       // AutoComplete calls SELECTION whenever the input field changes

@@ -120,7 +120,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 
-var DBG = false;
+var DBG = true;
 
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
@@ -157,16 +157,19 @@ class AutoComplete extends React.Component {
     UDATA = UNISYS.NewDataLink(this);
 
 
-    UDATA.OnStateChange('SELECTION',(data)=>{
-      if (DBG) console.log('AutoComplete',this.props.identifier,'got state SELECTION',data);
-      if (data.activeAutoCompleteId===this.props.identifier) {
+    UDATA.OnStateChange('SELECTION',( data ) => {
+      if (DBG) console.log('AutoComplete ',this.props.identifier,'got state SELECTION',data);
+
+      // FIX bad state dependency assuming id was in stateChange
+      let { activeAutoCompleteId } = UDATA.State('SELECTION');
+      if (activeAutoCompleteId===this.props.identifier) {
         // This is the currently active AutoComplete field
         // Update the autosuggest input field's value with the current search data
         if (DBG) console.log('...AutoComplete',this.props.identifier,': ACTIVE setting search value to',data.searchLabel);
         if (data.searchLabel!==undefined) {
           this.setState({
-            mode: MODE_ACTIVE,
-            value: data.searchLabel
+            mode  : MODE_ACTIVE,
+            value : data.searchLabel
           });
         }
       } else {

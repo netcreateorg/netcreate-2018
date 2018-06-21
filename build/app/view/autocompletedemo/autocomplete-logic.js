@@ -106,6 +106,32 @@ const TARGET_COLOR     = '#FF0000'
 
 
 
+/// STATE CHANGE HANDLERS /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Handle D3-related updates based on state changes. Subcomponents are
+    responsible for updating themselves.
+/*/ UDATA.OnStateChange('SELECTION',( stateChange ) => {
+
+      let { nodes, edges } = stateChange;
+      let { searchLabel } = stateChange;
+      let { activeAutoCompleteId } = stateChange;
+
+      // NODE LIST UPDATE
+      if (nodes!=undefined) {
+        if (nodes.length>0) {
+          let color = '#0000DD';
+          nodes.forEach( node => m_MarkNodeById(node.id,color));
+        } else {
+          m_UnMarkAllNodes();
+        }
+      }
+      // SEARCH LABEL UPDATE
+      if (searchLabel) m_MarkNodesThatMatch(searchLabel,SOURCE_COLOR);
+
+    });
+
+
+
 /// UNISYS MESSAGE HANDLERS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// these should set state appropriately, and state handlers elsewhere should
@@ -118,17 +144,51 @@ const TARGET_COLOR     = '#FF0000'
 /*/ UDATA.HandleMessage('SOURCE_SELECT', function( data ) {
       let { nodeLabels=[] } = data;
       let nodeLabel = nodeLabels.shift();
-      if (nodeLabel)
-        m_HandleNodeSelect(nodeLabel);
-      else
-        m_HandleNodeSelect();
+      let node = m_FindMatchingNodesByLabel(nodeLabel).shift();
+      let newState;
+
+      if (node===undefined) {
+        newState = {
+          nodes                 : [],
+          edges                 : [],
+          searchLabel           : '',
+          activeAutoCompleteId  : 'nodeSelector'
+        };
+        // update visuals
+        // m_UnMarkAllNodes();
+      } else {
+        let edges = [];
+        edges = edges.concat( D3DATA.edges.filter( edge => edge.source.label===nodeLabel || edge.target.label===nodeLabel) );
+        // create state change object
+        newState = {
+          nodes                 : [ node ],
+          edges                 : edges,
+          searchLabel           : node.label
+        };
+        // update visuals
+        // let color = '#0000DD';
+        // m_MarkNodeById( node.id, color );
+      }
+      // update state
+      UDATA.SetState('SELECTION',newState);
+      // at this point, SELECTION state subscribers should process and update
+      // rather than invoking them here.
     });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ SOURCE_SEARCH sets the current matching term as entered in an AutoComplete
     field.
 /*/ UDATA.HandleMessage('SOURCE_SEARCH', function( data ) {
       let { searchString } = data;
-      m_HandleSourceSearch(searchString);
+      if (!searchString) throw ('expected searchString property');
+      let matches = m_FindMatchingNodesByLabel(searchString);
+      let newState = {
+        suggestedNodeLabels : matches.map(n=>n.label),
+        searchLabel         : searchString,
+        nodes               : [] // undefined // style this should be [] ideally
+      };
+      UDATA.SetState('SELECTION',newState);
+      // at this point, SELECTION state subscribers should process and update
+      // rather than invoking them here.
     });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ SOURCE_HILITE updates the currently rolled-over node name in a list of
@@ -340,77 +400,44 @@ const TARGET_COLOR     = '#FF0000'
 
 /// LOGIC METHODS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_HandleNodeSelect (nodeLabel) {
-  if (DBG) console.log('autocomplete-logic.m_HandleNodeSelect got data',nodeLabel);
+/*/
+/*/ function m_HandleNodeSelect( nodeLabel ) {
+      let node = m_FindMatchingNodesByLabel(nodeLabel).shift();
 
-  // let node = m_GetNodeByLabel( nodeLabel );
-  let node = m_FindMatchingNodesByLabel(nodeLabel).shift();
+      if (node===undefined) { // UNSELECT ALL NODES //
 
-  let selection = UDATA.State('SELECTION');
+        // create state change object
+        let emptyState = {
+          // clear all selections
+          nodes       : [],
+          edges       : [],
+          searchLabel : '',
+          // make NodeSelector's AutoComplete the default
+          activeAutoCompleteId : 'nodeSelector'
+        };
+        // update state
+        UDATA.SetState('SELECTION',emptyState);
+        // update visuals
+        m_UnMarkAllNodes();
 
-  if (node===undefined) {
-    // No node selected, deselect all
+      } else { // SELECT NODE //
 
-    m_UnMarkAllNodes();
-    selection.nodes       = [];
-    selection.edges       = [];
-    selection.searchLabel = '';
-
-    // Make NodeSelector's AutoComplete the default
-    selection.activeAutoCompleteId = 'nodeSelector';
-
-  } else {
-    // Select Node
-
-  // 1. Set the SelectedSourceNode
-  selection.nodes = [node];
-  selection.searchLabel = node.label;
-
-    // 2. Find the related edges
-    //    `edges` needs to always be defined as an array or React rendering will break
-    let edges = [];
-    edges = edges.concat( D3DATA.edges.filter( edge => edge.source.label===nodeLabel || edge.target.label===nodeLabel) );
-    selection.edges = edges;
-
-    // 3. Mark the selected node
-    let color = '#0000DD';
-    m_MarkNodeById( node.id, color );
-  }
-
-  // 4. Set the state
-  UDATA.SetState('SELECTION',selection);
-  // this would be implemented by any component that needed
-  // to know when global state changes
-  // UDATA.OnStateChange('SELECTION', this.globalStateChanged);
-
-}
-
-
-/// User has input a new search string
-function m_HandleSourceSearch (searchString) {
-  // 1. Construct the suggestions list
-  let data = UDATA.State('D3DATA');
-
-  let matches = m_FindMatchingNodesByLabel(searchString);
-
-  let selection = UDATA.State('SELECTION');
-  selection.suggestedNodeLabels = matches.map(n=>n.label);
-
-  // 2. Also set the current search string.
-  selection.searchLabel = searchString;
-
-  // 3. And clear the selected nodes
-  selection.nodes = undefined;
-
-  // 4. Set the SELECTION state.
-  //    This will cause any listeners to update.
-  UDATA.SetState('SELECTION',selection);
-
-  // 5. Mark the selected nodes
-  m_MarkNodesThatMatch( searchString, SOURCE_COLOR);
-
-}
-
+        // find connected edges to this selection
+        let edges = [];
+        edges = edges.concat( D3DATA.edges.filter( edge => edge.source.label===nodeLabel || edge.target.label===nodeLabel) );
+        // create state change object
+        let selectState = {
+          nodes        : node,
+          edges        : edges,
+          searchLabel  : node.label
+        };
+        // update state
+        UDATA.SetState('SELECTION',selectState);
+        // update visuals
+        let color = '#0000DD';
+        m_MarkNodeById( node.id, color );
+      }
+    }
 
 /// User has moused over (or keyboard-arrowed-over) an item in the suggestion list
 function m_HandleSourceHilite (nodeLabel) {

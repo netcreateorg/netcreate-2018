@@ -54,14 +54,14 @@ class NodeDetail extends React.Component {
     /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
 
-    UDATA.OnStateChange('SELECTION',(data)=>{
-      this.handleSelection(data.hilitedNode);
+    UDATA.OnStateChange('SELECTION',( stateChange ) => {
+      this.handleSelection(stateChange.hilitedNode);
     });
 
     this.handleSelection  = this.handleSelection.bind(this);
   }
 
-  handleSelection ( hilitedNode ) {
+  handleSelection( hilitedNode ) {
     let node = hilitedNode || {};
     node.attributes = node.attributes || {};    // validate attributes
     this.setState({

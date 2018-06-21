@@ -203,7 +203,7 @@ class EdgeEditor extends React.Component {
     /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
 
-    UDATA.OnStateChange('SELECTION',(data)=>{
+    UDATA.OnStateChange('SELECTION',(data) => {
       this.handleSelection(data);
     });
 
@@ -255,8 +255,11 @@ class EdgeEditor extends React.Component {
   handleSelection ( data ) {
     if (DBG) console.log('EdgeEditor: got state SELECTION',data);
 
+    // FIX bad state dependency assuming id was in stateChange
+    let { activeAutoCompleteId } = UDATA.State('SELECTION');
+
     // Ignore the update if we're not the active AutoComplete component
-    if (data.activeAutoCompleteId!=='edge'+this.props.edgeID+'target') return;
+    if (activeAutoCompleteId!=='edge'+this.props.edgeID+'target') return;
 
     if (this.state.isEditable) {
       if (data.nodes && data.nodes.length>0) {
