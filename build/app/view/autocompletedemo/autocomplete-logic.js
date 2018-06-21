@@ -39,7 +39,7 @@ const DBG        = false;
     window.FindMatchingNodesByLabel = m_FindMatchingNodesByLabel;
     window.SetMatchingNodesByLabel  = m_SetMatchingNodesByLabel;
     window.SetMatchingNodesByProp   = m_SetMatchingNodesByProp;
-    window.SetAllNodes              = m_SetAllNodes;
+    window.SetAllObjs               = m_SetAllObjs;
     window.UpdateD3Data             = function () {
       UDATA.SetState('D3DATA',D3DATA);
       return "SetState 'D3DATA'";
@@ -289,21 +289,74 @@ const TARGET_COLOR     = '#FF0000'
 
 
 
-/// NODE HELPERS ///////////////////////////////////////////////////////////////
+/// OBJECT HELPERS ////////////////////////////////////////////////////////////
+/// these probably should go into a utility class
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Return array of nodes that match the match_me object keys/values
+/*/ Return array of objects that match the match_me object keys/values
     NOTE: make sure that strings are compared with strings, etc
-/*/ function m_FindMatchingNodeByProp( match_me={} ) {
-      let matches = D3DATA.nodes.filter( node => {
+/*/ function m_FindMatchingObjsByProp( obj_list, match_me={} ) {
+      // operate on arrays only
+      if (!Array.isArray(obj_list))
+        throw Error("FindMatchingObjectsByProp arg1 must be array");
+
+      let matches = obj_list.filter( obj => {
         let pass = true;
         for (let key in match_me) {
-          if (match_me[key]!==node[key]) pass=false; break;
+          if (match_me[key]!==obj[key]) pass=false; break;
         }
         return pass;
       });
       // return array of matches (can be empty array)
       return matches;
     };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Set array of objects that match to key/values of yes/no respectively
+    Returns array of matched objects
+?*/ function m_SetMatchingObjsByProp( obj_list, match_me={}, yes={}, no={} ) {
+      // operate on arrays only
+      if (!Array.isArray(obj_list))
+        throw Error("SetMatchingObjsByPropp arg1 must be array");
+
+      let returnMatches = [];
+      obj_list.forEach( node => {
+        let matched = true;
+        for (let key in match_me) {
+          if (match_me[key]!==node[key]) matched=false; break;
+        }
+        if (matched) {
+          for (let key in yes) node[key]=yes[key];
+          returnMatches.push(node);
+        } else {
+          for (let key in no) node[key]=no[key];
+        }
+      });
+      return returnMatches;
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Update props of everything in obj_list
+/*/ function m_SetAllObjs( obj_list, all={} ) {
+      // operate on arrays only
+      if (!Array.isArray(obj_list))
+        throw Error("SetAllNodes arg1 must be array");
+      obj_list.forEach(obj => {
+        for (let key in all) obj[key]=all[key];
+      });
+    }
+
+
+
+/// NODE HELPERS //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Return array of nodes that match the match_me object keys/values
+    NOTE: make sure that strings are compared with strings, etc
+/*/ function m_FindMatchingNodeByProp( match_me={} ) {
+      return m_FindMatchingObjsByProp(D3DATA.nodes,match_me);
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Convenience function to retrieve node by ID
+/*/ function m_FindNodeById( id ) {
+      return m_FindMatchingNodeByProp({ id })[0];
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return array of nodes with labels that partially match str
 /*/ function m_FindMatchingNodesByLabel( str='' ) {
@@ -314,13 +367,9 @@ const TARGET_COLOR     = '#FF0000'
       return D3DATA.nodes.filter(node=>regex.test(node.label));
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Convenience function to retrieve node by ID
-/*/ function m_FindNodeById( id ) {
-      return m_FindMatchingNodeByProp({ id })[0];
-    }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Set nodes that PARTIALLY match 'str' to 'yes' props.
     All others nodes are set to 'no' props. Return matches
+    Optionally resets all the NON matching nodes as well
 /*/ function m_SetMatchingNodesByLabel( str='', yes={}, no={} ) {
       let returnMatches = [];
       str = u_EscapeRegexChars(str.trim());
@@ -338,29 +387,10 @@ const TARGET_COLOR     = '#FF0000'
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Update props of exact matching nodes, returns matches
+    Optionally resets all the NON matching nodes as well
 /*/ function m_SetMatchingNodesByProp( match_me={}, yes={}, no={} ) {
-      let returnMatches = [];
-      D3DATA.nodes.forEach( node => {
-        let matched = true;
-        for (let key in match_me) {
-          if (match_me[key]!==node[key]) matched=false; break;
-        }
-        if (matched) {
-          for (let key in yes) node[key]=yes[key];
-          returnMatches.push(node);
-        } else {
-          for (let key in no) node[key]=no[key];
-        }
-      });
-      return returnMatches;
+      return m_SetMatchingObjsByProp( D3DATA.nodes, match_me, yes, no );
     };
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Update props of ALL nodes
-/*/ function m_SetAllNodes( all={} ) {
-      D3DATA.nodes.forEach(node => {
-        for (let key in all) node[key]=all[key];
-      });
-    }
 
 
 
@@ -381,21 +411,9 @@ const TARGET_COLOR     = '#FF0000'
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Update props of exact matching edges, returns matches
 /*/ function m_SetMatchingEdgesByProp( match_me={}, yes={}, no={} ) {
-      let returnMatches = [];
-      D3DATA.edges.forEach( edge => {
-        let matched = true;
-        for (let key in match_me) {
-          if (match_me[key]!==edge[key]) matched=false; break;
-        }
-        if (matched) {
-          for (let key in yes) edge[key]=yes[key];
-          returnMatches.push(edge);
-        } else {
-          for (let key in no) edge[key]=no[key];
-        }
-      });
-      return returnMatches;
+      return m_SetMatchingObjsByProp( D3DATA.edges, match_me, yes, no );
     };
+
 
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
@@ -417,7 +435,7 @@ const TARGET_COLOR     = '#FF0000'
 /*/ Visually change all nodes to the deselected color
 /*/ function m_UnMarkAllNodes() {
       let props = { selected : DESELECTED_COLOR };
-      m_SetAllNodes(props);
+      m_SetAllObjs(D3DATA.nodes,props);
       UDATA.SetState('D3DATA',D3DATA);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -493,6 +511,7 @@ const TARGET_COLOR     = '#FF0000'
 //     // })
 //     // this.setState( { data: updatedData })
 //   }
+
 
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
