@@ -169,10 +169,8 @@ const TARGET_COLOR     = '#FF0000'
         // let color = '#0000DD';
         // m_MarkNodeById( node.id, color );
       }
-      // update state
+      // let SELECTION state listeners handle display updates
       UDATA.SetState('SELECTION',newState);
-      // at this point, SELECTION state subscribers should process and update
-      // rather than invoking them here.
     });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ SOURCE_SEARCH sets the current matching term as entered in an AutoComplete
@@ -184,18 +182,25 @@ const TARGET_COLOR     = '#FF0000'
       let newState = {
         suggestedNodeLabels : matches.map(n=>n.label),
         searchLabel         : searchString,
-        nodes               : [] // undefined // style this should be [] ideally
+        nodes               : []
       };
+      // let SELECTION state listeners handle display updates
       UDATA.SetState('SELECTION',newState);
-      // at this point, SELECTION state subscribers should process and update
-      // rather than invoking them here.
     });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ SOURCE_HILITE updates the currently rolled-over node name in a list of
     selections.
 /*/ UDATA.HandleMessage('SOURCE_HILITE', function( data ) {
       let { nodeLabel, color } = data;
-      m_HandleSourceHilite(nodeLabel);
+      // m_HandleSourceHilite(nodeLabel);
+      if (nodeLabel) {
+        // Only mark nodes if something is selected
+        m_UnMarkAllNodes();
+        m_MarkNodeByLabel(nodeLabel,SOURCE_COLOR);
+      }
+      let hilitedNode = m_FindMatchingNodesByLabel(nodeLabel).shift();
+      // let SELECTION state listeners handle display updates
+      UDATA.SetState('SELECTION',{ hilitedNode });
     });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ SOURCE_UPDATE is called when the properties of a node has changed
@@ -424,23 +429,6 @@ const TARGET_COLOR     = '#FF0000'
 
 /// LOGIC METHODS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// User has moused over (or keyboard-arrowed-over) an item in the suggestion list
-function m_HandleSourceHilite (nodeLabel) {
-  if (nodeLabel) {
-    // Only mark nodes if something is selected
-    m_UnMarkAllNodes();
-    m_MarkNodeByLabel( nodeLabel, SOURCE_COLOR );
-  }
-
-  // Update hilitedNode in SELECTION
-  // Always update hilitedNode so that NodeDetail will update
-  let hilitedNode = m_FindMatchingNodesByLabel(nodeLabel).shift();
-
-  let selection = UDATA.State('SELECTION');
-  selection.hilitedNode = hilitedNode;
-  UDATA.SetState('SELECTION',selection);
-}
-
 /// User has hit Save to save a node
 /// Update existing node, or add a new node
 function m_HandleSourceUpdate (newNodeData) {
