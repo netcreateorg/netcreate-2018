@@ -213,7 +213,18 @@ const TARGET_COLOR     = '#FF0000'
 /*/ EDGE_DELETE is called when an edge should be removed from...something?
 /*/ UDATA.HandleMessage('EDGE_DELETE', function( data ) {
       let { edgeID } = data;
-      m_HandleEdgeDelete(edgeID);
+      // remove specified edge from edge list
+      D3DATA.edges = m_DeleteMatchingEdgeByProp({id:edgeID});
+      // Also update selection so edges in EdgeEditor will update
+      // This works because of a HACKY SIDE EFFECT of the NodeSelector
+      // SELECTION state handler which should be fixed
+      let { searchLabel } = UDATA.State('SELECTION');
+      UDATA.SetState('SELECTION',{
+        searchLabel          : searchLabel,
+        nodes                : D3DATA.nodes,
+        edges                : D3DATA.edges,
+        activeAutoCompleteId : 'nodeSelector'
+      });
     })
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ AUTOCOMPLETE_SELECT is called by <AutoComplete> components to tell the
@@ -297,7 +308,20 @@ const TARGET_COLOR     = '#FF0000'
         for (let key in all) node[key]=all[key];
       });
     }
-
+/// EDGE HELPERS //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Return array of edges that DON'T match del_me object keys/values
+/*/ function m_DeleteMatchingEdgeByProp( del_me={} ) {
+      let matches = D3DATA.edges.filter( node => {
+        let pass = false;
+        for (let key in del_me) {
+          if (del_me[key]!==node[key]) pass=true; break;
+        }
+        return pass;
+      });
+      // return array of matches (can be empty array)
+      return matches;
+    };
 
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
@@ -400,45 +424,6 @@ const TARGET_COLOR     = '#FF0000'
 
 /// LOGIC METHODS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ function m_HandleNodeSelect( nodeLabel ) {
-      let node = m_FindMatchingNodesByLabel(nodeLabel).shift();
-
-      if (node===undefined) { // UNSELECT ALL NODES //
-
-        // create state change object
-        let emptyState = {
-          // clear all selections
-          nodes       : [],
-          edges       : [],
-          searchLabel : '',
-          // make NodeSelector's AutoComplete the default
-          activeAutoCompleteId : 'nodeSelector'
-        };
-        // update state
-        UDATA.SetState('SELECTION',emptyState);
-        // update visuals
-        m_UnMarkAllNodes();
-
-      } else { // SELECT NODE //
-
-        // find connected edges to this selection
-        let edges = [];
-        edges = edges.concat( D3DATA.edges.filter( edge => edge.source.label===nodeLabel || edge.target.label===nodeLabel) );
-        // create state change object
-        let selectState = {
-          nodes        : node,
-          edges        : edges,
-          searchLabel  : node.label
-        };
-        // update state
-        UDATA.SetState('SELECTION',selectState);
-        // update visuals
-        let color = '#0000DD';
-        m_MarkNodeById( node.id, color );
-      }
-    }
-
 /// User has moused over (or keyboard-arrowed-over) an item in the suggestion list
 function m_HandleSourceHilite (nodeLabel) {
   if (nodeLabel) {
@@ -455,7 +440,6 @@ function m_HandleSourceHilite (nodeLabel) {
   selection.hilitedNode = hilitedNode;
   UDATA.SetState('SELECTION',selection);
 }
-
 
 /// User has hit Save to save a node
 /// Update existing node, or add a new node
@@ -531,23 +515,6 @@ function m_HandleEdgeUpdate (edgeNode) {
   }
 }
 
-/// User has requested an edge be deleted
-function m_HandleEdgeDelete ( edgeID ) {
-  if (DBG) console.log('m_HandleEdgeDelete',edgeID,'SELECTION.searchLabel',UDATA.State('SELECTION').searchLabel);
-  // REVIEW: Should D3DATA always be read from UDATA.State?
-  D3DATA.edges = D3DATA.edges.filter( edge => {
-    if (edge.id !== edgeID) {
-      return edge;
-    }
-  });
-  UDATA.SetState('D3DATA',D3DATA);
-  // Also update selection so edges in EdgeEditor will update
-  m_HandleNodeSelect( UDATA.State('SELECTION').searchLabel );
-  // Hand control back off to nodeselector
-  let selection = UDATA.State('SELECTION');
-  selection.activeAutoCompleteId = 'nodeSelector';
-  UDATA.SetState('SELECTION',selection);
-}
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
