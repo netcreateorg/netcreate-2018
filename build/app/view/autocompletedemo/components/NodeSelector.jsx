@@ -100,7 +100,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 
-var DBG = true;
+var DBG = false;
 
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
@@ -207,7 +207,6 @@ class NodeSelector extends React.Component {
     if (activeAutoCompleteId!==thisIdentifier) return;
 
     if (!this.state.isEditable) {
-      console.log('*** noteditable');
       if (data.nodes && data.nodes.length>0) {
         if (DBG) console.log('NodeSelector:: updating selection',data.nodes[0]);
         // A node was selected, so load it
@@ -225,7 +224,6 @@ class NodeSelector extends React.Component {
         this.clearForm();
       }
     } else {
-      console.log('*** editable');
       // Always update the search label
       // Update the form's node label because that data is only passed via SELECTION
       // AutoComplete calls SELECTION whenever the input field changes
