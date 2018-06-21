@@ -216,10 +216,10 @@ const TARGET_COLOR     = '#FF0000'
       };
       // set matching nodes
       let updatedNodes = m_SetMatchingNodesByProp({id:node.id},newNode);
-      console.log('HandleSourceUpdate: updated',updatedNodes);
+      if (DBG) console.log('HandleSourceUpdate: updated',updatedNodes);
       // if no nodes had matched, then add a new node!
       if (updatedNodes.length===0) {
-        console.log('pushing',newNode);
+        if (DBG) console.log('pushing node',newNode);
         D3DATA.nodes.push(newNode);
       } else if (updatedNodes.length>1) {
         throw Error("SourceUpdate found duplicate IDs");
@@ -231,7 +231,30 @@ const TARGET_COLOR     = '#FF0000'
 /*/ EDGE_UPDATE is called when the properties of an edge has changed
 /*/ UDATA.HandleMessage('EDGE_UPDATE', function( data ) {
       let { edge } = data;
-      m_HandleEdgeUpdate(edge);
+      let attribs = {
+        'Relationship' : edge.attributes['Relationship'],
+        'Citations'    : edge.attributes['Citations'],
+        'Notes'        : edge.attributes['Notes']
+      };
+      let newEdge = {
+        source         : m_FindNodeById(edge.source),
+        target         : m_FindNodeById(edge.target),
+        attributes     : attribs,
+        id             : edge.id
+      };
+      // set matching nodes
+      let updatedEdges = m_SetMatchingEdgesByProp({id:edge.id},newEdge);
+      if (DBG) console.log('HandleEdgeUpdate: updated',updatedEdges);
+      // if no nodes had matched, then add a new node!
+      if (updatedEdges.length===0) {
+        if (DBG) console.log('pushing edge',newEdge);
+        // created edges should have a default size
+        newEdge.size = 1;
+        D3DATA.edges.push(newEdge);
+      } else if (updatedEdges.length>1) {
+        throw Error("EdgeUpdate found duplicate IDs");
+      }
+      UDATA.SetState('D3DATA',D3DATA);
     });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ EDGE_DELETE is called when an edge should be removed from...something?
@@ -338,19 +361,40 @@ const TARGET_COLOR     = '#FF0000'
         for (let key in all) node[key]=all[key];
       });
     }
+
+
+
 /// EDGE HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return array of edges that DON'T match del_me object keys/values
 /*/ function m_DeleteMatchingEdgeByProp( del_me={} ) {
-      let matches = D3DATA.edges.filter( node => {
+      let matches = D3DATA.edges.filter( edge => {
         let pass = false;
         for (let key in del_me) {
-          if (del_me[key]!==node[key]) pass=true; break;
+          if (del_me[key]!==edge[key]) pass=true; break;
         }
         return pass;
       });
       // return array of matches (can be empty array)
       return matches;
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Update props of exact matching edges, returns matches
+/*/ function m_SetMatchingEdgesByProp( match_me={}, yes={}, no={} ) {
+      let returnMatches = [];
+      D3DATA.edges.forEach( edge => {
+        let matched = true;
+        for (let key in match_me) {
+          if (match_me[key]!==edge[key]) matched=false; break;
+        }
+        if (matched) {
+          for (let key in yes) edge[key]=yes[key];
+          returnMatches.push(edge);
+        } else {
+          for (let key in no) edge[key]=no[key];
+        }
+      });
+      return returnMatches;
     };
 
 
@@ -449,46 +493,6 @@ const TARGET_COLOR     = '#FF0000'
 //     // })
 //     // this.setState( { data: updatedData })
 //   }
-
-
-
-/// LOGIC METHODS /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// User has requested a new edge be created or updated
-function m_HandleEdgeUpdate (edgeNode) {
-  if (DBG) console.log('autocomplete-logic:m_HandleCreateEdge',edgeNode);
-
-  // Are we creating a new edge, or updating existing edge?
-  let found = false;
-  // Update existing node?
-  D3DATA.edges = D3DATA.edges.map( edge => {
-    if (edge.id === edgeNode.id) {
-      edge.id                         = edgeNode.id;
-      edge.source                     = m_FindNodeById(edgeNode.source);
-      edge.target                     = m_FindNodeById(edgeNode.target);
-      edge.attributes["Relationship"] = edgeNode.attributes["Relationship"];
-      edge.attributes["Citations"]    = edgeNode.attributes["Citations"];
-      edge.attributes["Notes"]        = edgeNode.attributes["Notes"];
-      if (DBG) console.log('...updated existing edge',edge.id);
-      found = true;
-    }
-    return edge;
-  });
-  if (!found) {
-    // Not found, add New Node
-
-    // source and target id need to be transformed into nodes
-    edgeNode.source = m_FindNodeById(edgeNode.source);
-    edgeNode.target = m_FindNodeById(edgeNode.target);
-
-    // Need to add `size` property too
-    // REVIEW: This should probably be calculated
-    edgeNode.size = 1;
-
-    D3DATA.edges.push(edgeNode);
-    UDATA.SetState('D3DATA',D3DATA);
-  }
-}
 
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////

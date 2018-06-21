@@ -331,7 +331,6 @@ class NodeSelector extends React.Component {
 
     // Update the data with the selectedNode
     let newNodeData = this.state.formData;
-    console.log('NodeSelector.onSubmit label is',newNodeData.label)
     let node = {
         label: newNodeData.label,
         id:    newNodeData.id,
