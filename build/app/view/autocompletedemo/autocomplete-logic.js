@@ -1,6 +1,6 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    *EVENTS: D3 Graph Updates*
+  * EVENTS: D3 Graph Updates
 
     Mark Node/Edge          When a node or edge is higlighted via an AutoComplete
                             highlight or is selected via AutoComplete selection
@@ -31,47 +31,56 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG      = false;
+const DBG        = false;
+
+/// DEBUG CONSOLE /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    window.FindMatchingNodesByProp  = m_FindMatchingNodeByProp;
+    window.FindMatchingNodesByLabel = m_FindMatchingNodesByLabel;
+    window.SetMatchingNodesByLabel  = m_SetMatchingNodesByLabel;
+    window.SetMatchingNodesByProp   = m_SetMatchingNodesByProp;
+    window.SetAllNodes              = m_SetAllNodes;
+    window.UpdateD3Data             = function () {
+      UDATA.SetState('D3DATA',D3DATA);
+      return "SetState 'D3DATA'";
+    };
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UNISYS   = require('system/unisys');
-const D3       = require('d3');
+const UNISYS     = require('system/unisys');
+const D3         = require('d3');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var MOD        = UNISYS.NewModule(module.id);
-var UDATA      = UNISYS.NewDataLink(MOD);
+var   MOD        = UNISYS.NewModule(module.id);
+var   UDATA      = UNISYS.NewDataLink(MOD);
 
 /// APP STATE/DATA STRUCTURES /////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var D3DATA         = null;
-var SELECTION      = {};
-/*/ STATE DESIGN of NAMESPACES
-    'SELECTION' {
-      activeAutoCompleteId:// 'node-xx' or 'edge-source-xx' or 'edge-target-xx'
-                              where xx = the id of the node/edge of the
-                              AutoComplete field that has the current focus.
-                              This is used to keep track of the currently
-                              active AutoComplete field, disabling the inactive
-                              fields and providing updates as necessary.
-      nodes:               // an array of current selected nodes for editing
-                           // this is the node the user clicked on in the
-                           // graph or selected from the suggestions list
-      edges:               // an array of edge objects for editing
-// REVIEW: Should this be renamed "selectedEdges" to distinguish from D3DATA.edges
-      searchLabel:         // a string representing what the user has typed
-      suggestedNodeLabels: // an array of node labels suggestions that match
-                              the search string
-      hilitedNode:         // a node object the user has hilited in the
-                              suggestion list.
-    }
-    'D3DATA' {
-      nodes: // all nodes (not all may be actually changed)
-      edges: // all edges (not all may be actuallyachanged)
-    }
-/*/
-
+/*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
+    SELECTION
+    * activeAutoCompleteId: id of active <AutoComplete> field
+        of form: 'node-xx' or 'edge-source-xx' or 'edge-target-xx'
+        where xx = the id of the <AutoComplete> field that has input focus.
+        This is used to keep track of the currently active
+        AutoComplete field. Inactive fields and updates are determined by
+        the value of this property.
+    * nodes: an array of current selected nodes for editing.
+        This is the node the user clicked on in the graph or selected from
+        the suggestions list
+    * edges: an array of edge objects for editing
+        *REVIEW*: Should this be renamed "selectedEdges" to distinguish from
+        *D3DATA.edge
+    * searchLabel: a string representing what the user has typed
+    * suggestedNodeLabels: an array of suggested nodes
+        node labels suggestions match the current search string
+    * hilitedNode: node object that user has rolled-over in suggestion list
+        user has not clicked yet, but is browsing through the list
+    D3DATA
+    * nodes: all nodes (not all may be actually changed)
+    * edges: all edges (not all may be actually changed)
+\*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -/*/
+var   SELECTION        = {};      // see above for description
+var   D3DATA           = null;    // see above for description
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -80,236 +89,212 @@ const SOURCE_COLOR     = '#0000DD'
 const TARGET_COLOR     = '#FF0000'
 
 
+
+/// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-MOD.Hook('INITIALIZE',()=>{
-
-  // load data; it will get passed onto
-  D3.json("http://localhost:3000/htmldemos/d3forcedemo/data.reducedlinks.json", (error,_data)=>{
-    if (error) throw Error(error);
-    D3DATA = _data;
-    // communicate to everyone that a new D3 INSTANCE has been created
-    if (DBG) console.log('ACL: broadcasting',D3DATA);
-    // change to use STATE SYSTEM, not messaging system
-    // UDATA.Broadcast('DATA_UPDATE', D3DATA );
-    UDATA.SetState('D3DATA',D3DATA);
-  });
-
-  /// `data` = { nodeLabels: [] }
-  ///
-  ///        Called by:
-  ///          AutoComplete.onSuggestionSelected
-  ///          D3SimpleNetGraph._UpdateGraph click handler
-  ///
-  ///         We use nodeLabels suggestions sent from AutoComplete do not
-  ///         have access to the source node objects.
-  ///
-  UDATA.HandleMessage('SOURCE_SELECT',(data)=> {
-    if (DBG) console.log('SOURCE_SELECT call: received', data );
-    if (data.nodeLabels.length>0) {
-      m_HandleNodeSelect( data.nodeLabels[0] );
-    } else {
-      m_HandleNodeSelect();
-    }
-  }); // REGISTER SOURCE_SELECT
+/*/ LOADASSETS fires during <AutoCompleteDemo>.componentDidMount
+/*/ MOD.Hook('LOADASSETS',()=>{
+      // load data into D3DATA
+      let dataSource = "http://localhost:3000/htmldemos/d3forcedemo/data.reducedlinks.json";
+      D3.json(dataSource, ( error, _data )=>{
+        if (error) throw Error(error);
+        D3DATA = _data;
+        // initialize global state D3DATA as well
+        UDATA.SetState('D3DATA',D3DATA);
+      }); // end D3.json load
+    }); // end INITIALIZE HOOK
 
 
 
-  UDATA.HandleMessage('SOURCE_DRAG',function(data) {
-    console.log('SOURCE_DRAG',data);
-  });
-  UDATA.HandleMessage('FILTER_SOURCES',function(data) {
-    console.log('FILTER_SOURCES',data);
-  });
-  /// `data` = { searchString: "" }
-  UDATA.HandleMessage('SOURCE_SEARCH',function(data) {
-    console.log('SOURCE_SEARCH',data);
-    m_HandleSourceSearch( data.searchString );
-  });
-  /// `data` = { nodeLabel: string, color: string }
-  UDATA.HandleMessage('SOURCE_HILITE',function(data) {
-    console.log('SOURCE_HILITE',data);
-    m_HandleSourceHilite( data.nodeLabel );
-  });
-  /// `data` = { node: node }
-  UDATA.HandleMessage('SOURCE_UPDATE',function(data) {
-    console.log('SOURCE_UPDATE',data);
-    m_HandleSourceUpdate( data.node );
-  });
-  /// `data` = { edge: sourceNode }
-  UDATA.HandleMessage('EDGE_UPDATE',function(data) {
-    if (DBG) console.log('EDGE_UPDATE',data);
-    m_HandleEdgeUpdate( data.edge );
-  });
-  /// `data` = { edgeID: string }
-  UDATA.HandleMessage('EDGE_DELETE',function(data) {
-    if (DBG) console.log('EDGE_DELETE',data);
-    m_HandleEdgeDelete( data.edgeID );
-  })
-  /// AutoComplete components register here to be
-  /// the active component.
-  ///
-  /// `data` = { id: id, searchString: "" }
-  ///          `searchString` needs to be passed so when we
-  ///          switch components, we know what the new value is
-  ///
-  UDATA.HandleMessage('AUTOCOMPLETE_SELECT',function(data) {
-    if (DBG) console.log('AUTOCOMPLETE_SELECT',data);
-    let selection = UDATA.State('SELECTION');
-    selection.activeAutoCompleteId = data.id;
-    // Only set searchLabel if it was passed
-    if (data.searchString!==undefined) {
-      selection.searchLabel = data.searchString;
-    }
-    UDATA.SetState('SELECTION',selection);
-  })
-
-  // console.log('defining SET_D3_INSTANCE');
-  // UDATA.HandleMessage('SET_D3_INSTANCE',(data)=>{
-  //   D3DATA = data.d3NetGraph;
-  //   console.log('SET_D3_INSTANCE received',D3DATA);
-  // }); // D3_INSTANCE
-
-});
-
+/// UNISYS MESSAGE HANDLERS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-MOD.Hook('START',()=>{
+/// these should set state appropriately, and state handlers elsewhere should
+/// respond to state changes
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ SOURCE_SELECT set the selected node by LABEL. There is one selected node in
+    the app at any one time, though nodeLabels is passed as an array.
+    SEE ALSO: AutoComplete.onSuggestionSelected() and
+              D3SimpleNetGraph._UpdateGraph click handler
+/*/ UDATA.HandleMessage('SOURCE_SELECT', function( data ) {
+      let { nodeLabels=[] } = data;
+      let nodeLabel = nodeLabels.shift();
+      if (nodeLabel)
+        m_HandleNodeSelect(nodeLabel);
+      else
+        m_HandleNodeSelect();
+    });
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ SOURCE_SEARCH sets the current matching term as entered in an AutoComplete
+    field.
+/*/ UDATA.HandleMessage('SOURCE_SEARCH', function( data ) {
+      let { searchString } = data;
+      m_HandleSourceSearch(searchString);
+    });
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ SOURCE_HILITE updates the currently rolled-over node name in a list of
+    selections.
+/*/ UDATA.HandleMessage('SOURCE_HILITE', function( data ) {
+      let { nodeLabel, color } = data;
+      m_HandleSourceHilite(nodeLabel);
+    });
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ SOURCE_UPDATE is called when the properties of a node has changed
+/*/ UDATA.HandleMessage('SOURCE_UPDATE', function( data ) {
+      let { node } = data;
+      m_HandleSourceUpdate(node);
+    });
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ EDGE_UPDATE is called when the properties of an edge has changed
+/*/ UDATA.HandleMessage('EDGE_UPDATE', function( data ) {
+      let { edge } = data;
+      m_HandleEdgeUpdate(edge);
+    });
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ EDGE_DELETE is called when an edge should be removed from...something?
+/*/ UDATA.HandleMessage('EDGE_DELETE', function( data ) {
+      let { edgeID } = data;
+      m_HandleEdgeDelete(edgeID);
+    })
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ AUTOCOMPLETE_SELECT is called by <AutoComplete> components to tell the
+    module which one has the current focus. The searchString is also passed
+    so a display update can be triggered immediately.
+/*/ UDATA.HandleMessage('AUTOCOMPLETE_SELECT', function( data ) {
+      let { id, searchString='' } = data;
+      // update SELECTION state object
+      /*REVIEW* treading the selection shouldn't be necessary*/
+      let selection = UDATA.State('SELECTION');
+      selection.activeAutoCompleteId = id;
+      selection.searchLabel          = searchString;
+      UDATA.SetState('SELECTION',selection);
+    })
 
-  // REGISTER STATE MANAGEMENT
-  UDATA.OnStateChange('SELECTION',(state) => {
-    if (DBG) console.log('SELECTION state: contains',state );
-    if (DBG) console.log('SELECTION state: update data structure with new state');
-    // copy AutoCompleteDemo node state stuff here
-  });
-
-}); // START
 
 
-/* WIP */
+/// NODE HELPERS ///////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Return array of nodes that match the match_me object keys/values
+    NOTE: make sure that strings are compared with strings, etc
+/*/ function m_FindMatchingNodeByProp( match_me={} ) {
+      let matches = D3DATA.nodes.filter( node => {
+        let pass = true;
+        for (let key in match_me) {
+          if (match_me[key]!==node[key]) pass=false; break;
+        }
+        return pass;
+      });
+      // return array of matches (can be empty array)
+      return matches;
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Return array of nodes with labels that partially match str
+/*/ function m_FindMatchingNodesByLabel( str='' ) {
+      if (!str) return [];
+      str = u_EscapeRegexChars(str.trim());
+      if (str==='') return [];
+      const regex = new RegExp(/*'^'+*/str,'i');
+      return D3DATA.nodes.filter(node=>regex.test(node.label));
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Convenience function to retrieve node by ID
+/*/ function m_FindNodeById( id ) {
+      return m_FindMatchingNodeByProp({ id })[0];
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Set nodes that PARTIALLY match 'str' to 'yes' props.
+    All others nodes are set to 'no' props.
+/*/ function m_SetMatchingNodesByLabel( str='', yes={}, no={} ) {
+      str = u_EscapeRegexChars(str.trim());
+      if (str==='') return;
+      const regex = new RegExp(/*'^'+*/str,'i');
+      D3DATA.nodes.forEach (node => {
+        if (regex.test(node.label)) {
+          for (let key in yes) node[key]=yes[key];
+        } else {
+          for (let key in no) node[key]=no[key];
+        }
+      });
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Update props of exact matching nodes
+/*/ function m_SetMatchingNodesByProp( match_me={}, yes={}, no={} ) {
+      D3DATA.nodes.forEach( node => {
+        let matched = true;
+        for (let key in match_me) {
+          if (match_me[key]!==node[key]) matched=false; break;
+        }
+        if (matched) {
+          for (let key in yes) node[key]=yes[key];
+        } else {
+          for (let key in no) node[key]=no[key];
+        }
+      });
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Update props of ALL nodes
+/*/ function m_SetAllNodes( all={} ) {
+      D3DATA.nodes.forEach(node => {
+        for (let key in all) node[key]=all[key];
+      });
+    }
+
 
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-// https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions#Using_Special_Characters
-function m_EscapeRegexCharacters (str) { return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-
-// Retrieve a list of suggestions from the lexicon where `value` appears
-function m_GetSuggestions (value, lexicon) {
-  const escapedValue = m_EscapeRegexCharacters(value.trim());
-  if (escapedValue === '') { return []; }
-  // const regex = new RegExp('^' + escapedValue, 'i'); // match start of string only
-  const regex = new RegExp(escapedValue, 'i');
-  const suggestions = lexicon.filter(phrase => regex.test(phrase));
-  if (suggestions.length === 0) {
-    return [
-      { isAddNew: true }
-    ];
-  }
-  if (DBG) console.log('AutoComplete-Logic.m_GetSuggestions found',suggestions);
-  return suggestions;
-}
-
-function m_AppearsIn (searchValue, targetString) {
-  if (typeof searchValue !== 'string') { return false; }
-  const escapedLabel = m_EscapeRegexCharacters(searchValue.trim());
-  if (escapedLabel === '') { return false; }
-  const regex = new RegExp(escapedLabel, 'i'); // case insensitive
-  return regex.test(targetString);
-}
-
-/// Returns the first node that matches the label
-function m_GetNodeByLabel (label) {
-  let found = D3DATA.nodes.filter( node => node.label===label );
-  if (found.length>0) {
-    return found[0];
-  } else {
-    return undefined;
-  }
-}
-
-/// Returns the first node that matches the id
-function m_GetNodeById (id) {
-  let found = D3DATA.nodes.filter( node => node.id===id );
-  if (found.length>0) {
-    return found[0];
-  } else {
-    return undefined;
-  }
-}
+/*/ REGEX: the chars in brackets are part of matching character set.
+    Declaring this as a constant makes the RegEx run faster (I think).
+/*/ const REGEX_REGEXCHARS = /[.*+?^${}()|[\]\\]/g;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Adds a \ in front of characters that have special RegEx meaning
+    From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expression
+/*/ function u_EscapeRegexChars( string ) {
+      return string.replace(REGEX_REGEXCHARS,'\\$&'); // $& means the whole matched string
+    }
 
 
 
 /// NODE MARKING METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_UnMarkAllNodes () {
-  /*STYLE*/// is the intent of this to ensure node.selected has a value of some kind? is it necessary at all?
-//  for (let node of this.state.data.nodes) { node.selected = this.getDeselectedNodeColor( node ) }
-  /*STYLE*///
-  let color = DESELECTED_COLOR
-  D3DATA.nodes = D3DATA.nodes.map( node => {
-    node.selected = DESELECTED_COLOR
-    return node
-  })
-  UDATA.SetState('D3DATA',D3DATA);
-}
-
-/// Sets the `node.selected` property to `color` so it is hilited on graph
-function m_MarkNodeById (id, color) {
-  D3DATA.nodes = D3DATA.nodes.map( node => {
-    if (node.id===id) {
-      node.selected = SOURCE_COLOR;
-// TODO this needs to be implemented
-    //   node.selected = this.getSelectedNodeColor( node, color )
-    // } else {
-    //   node.selected = this.getDeselectedNodeColor( node, color )
-    } else {
-      node.selected = DESELECTED_COLOR;
+/*/ Visually change all nodes to the deselected color
+/*/ function m_UnMarkAllNodes() {
+      let props = { selected : DESELECTED_COLOR };
+      m_SetAllNodes(props);
+      UDATA.SetState('D3DATA',D3DATA);
     }
-    return node
-  })
-  // use state system instead of messaging system
-  // UDATA.Broadcast( 'DATA_UPDATE', D3DATA );
-  UDATA.SetState('D3DATA',D3DATA);
-}
-
-/// Sets the `node.selected` property to `color` so it is hilited on graph
-function m_MarkNodeByLabel (label, color) {
-  D3DATA.nodes = D3DATA.nodes.map( node => {
-    if (node.label===label) {
-      node.selected = color;
-// TODO this needs to be implemented
-    //   node.selected = this.getSelectedNodeColor( node, color )
-    // } else {
-    //   node.selected = this.getDeselectedNodeColor( node, color )
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Sets the `node.selected` property to `color` so it is hilited on graph
+/*/ function m_MarkNodeById( id, color ) {
+      let marked = { selected : SOURCE_COLOR };
+      let normal = { selected : DESELECTED_COLOR };
+      // NOTE: this.getSelectedNodeColor(node,color) and
+      // this.getDeselectedNodeColor(node,color) are not yet implemented
+      // to override the properties
+      m_SetMatchingNodesByProp({id},marked,normal);
+      UDATA.SetState('D3DATA',D3DATA);
     }
-    return node
-  })
-  // use state system instead of messaging system
-  // UDATA.Broadcast( 'DATA_UPDATE', D3DATA );
-  UDATA.SetState('D3DATA',D3DATA);
-}
-
-function m_MarkNodesThatMatch (searchString, color) {
-  if (searchString==='') {
-    m_UnMarkAllNodes();
-    return;
-  }
-  D3DATA.nodes = D3DATA.nodes.map( node => {
-    // search for matches (partial matches are included)
-    if (m_AppearsIn(searchString, node.label)) {
-      node.selected = color;
-    } else {
-      node.selected = DESELECTED_COLOR;
-// TODO this needs to be implemented
-    //   // intent is only to set selected node color if the node doesn't already have one
-    //   node.selected = this.getSelectedNodeColor( node, color )
-    // } else {
-    //   node.selected = this.getDeselectedNodeColor( node, color )
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Sets the `node.selected` property to `color` so it is hilited on graph
+/*/ function m_MarkNodeByLabel( label, color ) {
+      let marked = { selected : color };
+      // NOTE: this.getSelectedNodeColor(node,color) and
+      // this.getDeselectedNodeColor(node,color) are not yet implemented
+      // to override the properties
+      m_SetMatchingNodesByLabel(label,marked);
+      UDATA.SetState('D3DATA',D3DATA);
     }
-    return node;
-  })
-  UDATA.SetState('D3DATA',D3DATA);
-}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Sets matching node labels to the passed selection color
+/*/ function m_MarkNodesThatMatch( searchString, color ) {
+      if (searchString==='') {
+        m_UnMarkAllNodes();
+        return;
+      }
+      let select   = { selected : color };
+      let deselect = { selected : DESELECTED_COLOR };
+      m_SetMatchingNodesByLabel(searchString, select, deselect);
+      UDATA.SetState('D3DATA',D3DATA);
+    }
 
 
 
@@ -358,15 +343,17 @@ function m_MarkNodesThatMatch (searchString, color) {
 function m_HandleNodeSelect (nodeLabel) {
   if (DBG) console.log('autocomplete-logic.m_HandleNodeSelect got data',nodeLabel);
 
-  let node = m_GetNodeByLabel( nodeLabel );
+  // let node = m_GetNodeByLabel( nodeLabel );
+  let node = m_FindMatchingNodesByLabel(nodeLabel).shift();
+
   let selection = UDATA.State('SELECTION');
 
   if (node===undefined) {
     // No node selected, deselect all
 
     m_UnMarkAllNodes();
-    selection.nodes = [];
-    selection.edges = [];
+    selection.nodes       = [];
+    selection.edges       = [];
     selection.searchLabel = '';
 
     // Make NodeSelector's AutoComplete the default
@@ -403,10 +390,11 @@ function m_HandleNodeSelect (nodeLabel) {
 function m_HandleSourceSearch (searchString) {
   // 1. Construct the suggestions list
   let data = UDATA.State('D3DATA');
-  let lexicon = data.nodes.map(function(d){return d.label});
-  let suggestions = m_GetSuggestions(searchString, lexicon);
+
+  let matches = m_FindMatchingNodesByLabel(searchString);
+
   let selection = UDATA.State('SELECTION');
-  selection.suggestedNodeLabels = suggestions;
+  selection.suggestedNodeLabels = matches.map(n=>n.label);
 
   // 2. Also set the current search string.
   selection.searchLabel = searchString;
@@ -434,7 +422,8 @@ function m_HandleSourceHilite (nodeLabel) {
 
   // Update hilitedNode in SELECTION
   // Always update hilitedNode so that NodeDetail will update
-  let hilitedNode = m_GetNodeByLabel(nodeLabel);
+  let hilitedNode = m_FindMatchingNodesByLabel(nodeLabel).shift();
+
   let selection = UDATA.State('SELECTION');
   selection.hilitedNode = hilitedNode;
   UDATA.SetState('SELECTION',selection);
@@ -489,8 +478,8 @@ function m_HandleEdgeUpdate (edgeNode) {
   D3DATA.edges = D3DATA.edges.map( edge => {
     if (edge.id === edgeNode.id) {
       edge.id                         = edgeNode.id;
-      edge.source                     = m_GetNodeById(edgeNode.source);
-      edge.target                     = m_GetNodeById(edgeNode.target);
+      edge.source                     = m_FindNodeById(edgeNode.source);
+      edge.target                     = m_FindNodeById(edgeNode.target);
       edge.attributes["Relationship"] = edgeNode.attributes["Relationship"];
       edge.attributes["Citations"]    = edgeNode.attributes["Citations"];
       edge.attributes["Notes"]        = edgeNode.attributes["Notes"];
@@ -503,8 +492,8 @@ function m_HandleEdgeUpdate (edgeNode) {
     // Not found, add New Node
 
     // source and target id need to be transformed into nodes
-    edgeNode.source = m_GetNodeById(edgeNode.source);
-    edgeNode.target = m_GetNodeById(edgeNode.target);
+    edgeNode.source = m_FindNodeById(edgeNode.source);
+    edgeNode.target = m_FindNodeById(edgeNode.target);
 
     // Need to add `size` property too
     // REVIEW: This should probably be calculated
