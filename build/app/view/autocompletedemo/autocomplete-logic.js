@@ -177,7 +177,6 @@ const TARGET_COLOR     = '#FF0000'
     field.
 /*/ UDATA.HandleMessage('SOURCE_SEARCH', function( data ) {
       let { searchString } = data;
-      if (!searchString) throw ('expected searchString property');
       let matches = m_FindMatchingNodesByLabel(searchString);
       let newState = {
         suggestedNodeLabels : matches.map(n=>n.label),
@@ -192,7 +191,6 @@ const TARGET_COLOR     = '#FF0000'
     selections.
 /*/ UDATA.HandleMessage('SOURCE_HILITE', function( data ) {
       let { nodeLabel, color } = data;
-      // m_HandleSourceHilite(nodeLabel);
       if (nodeLabel) {
         // Only mark nodes if something is selected
         m_UnMarkAllNodes();
@@ -206,7 +204,28 @@ const TARGET_COLOR     = '#FF0000'
 /*/ SOURCE_UPDATE is called when the properties of a node has changed
 /*/ UDATA.HandleMessage('SOURCE_UPDATE', function( data ) {
       let { node } = data;
-      m_HandleSourceUpdate(node);
+      let attribs = {
+        'Node_Type'  : node.type,
+        'Extra Info' : node.info,
+        'Notes'      : node.notes
+      };
+      let newNode = {
+        label        : node.label,
+        attributes   : attribs,
+        id           : node.id
+      };
+      // set matching nodes
+      let updatedNodes = m_SetMatchingNodesByProp({id:node.id},newNode);
+      console.log('HandleSourceUpdate: updated',updatedNodes);
+      // if no nodes had matched, then add a new node!
+      if (updatedNodes.length===0) {
+        console.log('pushing',newNode);
+        D3DATA.nodes.push(newNode);
+      } else if (updatedNodes.length>1) {
+        throw Error("SourceUpdate found duplicate IDs");
+      }
+      UDATA.SetState('D3DATA',D3DATA);
+      UDATA.SetState('SELECTION',{ searchLabel : '' });      // let SELECTION state listeners handle display updates
     });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ EDGE_UPDATE is called when the properties of an edge has changed
@@ -278,22 +297,26 @@ const TARGET_COLOR     = '#FF0000'
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Set nodes that PARTIALLY match 'str' to 'yes' props.
-    All others nodes are set to 'no' props.
+    All others nodes are set to 'no' props. Return matches
 /*/ function m_SetMatchingNodesByLabel( str='', yes={}, no={} ) {
+      let returnMatches = [];
       str = u_EscapeRegexChars(str.trim());
       if (str==='') return;
       const regex = new RegExp(/*'^'+*/str,'i');
       D3DATA.nodes.forEach (node => {
         if (regex.test(node.label)) {
           for (let key in yes) node[key]=yes[key];
+          returnMatches.push(node);
         } else {
           for (let key in no) node[key]=no[key];
         }
       });
+      return returnMatches;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Update props of exact matching nodes
+/*/ Update props of exact matching nodes, returns matches
 /*/ function m_SetMatchingNodesByProp( match_me={}, yes={}, no={} ) {
+      let returnMatches = [];
       D3DATA.nodes.forEach( node => {
         let matched = true;
         for (let key in match_me) {
@@ -301,10 +324,12 @@ const TARGET_COLOR     = '#FF0000'
         }
         if (matched) {
           for (let key in yes) node[key]=yes[key];
+          returnMatches.push(node);
         } else {
           for (let key in no) node[key]=no[key];
         }
       });
+      return returnMatches;
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Update props of ALL nodes
@@ -429,44 +454,6 @@ const TARGET_COLOR     = '#FF0000'
 
 /// LOGIC METHODS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// User has hit Save to save a node
-/// Update existing node, or add a new node
-function m_HandleSourceUpdate (newNodeData) {
-  if (DBG) console.log('autocomplete-logic.m_HandleSourceUpdate',newNodeData);
-  let found = false;
-  D3DATA.nodes = D3DATA.nodes.map( node => {
-    if (node.id === newNodeData.id) {
-      node.label                    = newNodeData.label;
-      node.attributes["Node_Type"]  = newNodeData.type;
-      node.attributes["Extra Info"] = newNodeData.info;  /*STYLE*/// why switch between _ and space?
-      node.attributes["Notes"]      = newNodeData.notes;
-      node.id                       = newNodeData.id;
-      if (DBG) console.log('...updated existing node',node.id);
-      found = true;
-    }
-    return node;
-  });
-  if (!found) {
-    // Add a new node
-    if (DBG) console.log('...adding new node',newNodeData.id);
-    let node = {attributes:{}};
-    node.label                    = newNodeData.label;
-    node.attributes["Node_Type"]  = newNodeData.type;
-    node.attributes["Extra Info"] = newNodeData.info;
-    node.attributes["Notes"]      = newNodeData.notes;
-    node.id                       = newNodeData.id;
-    D3DATA.nodes.push(node);
-  }
-
-  UDATA.SetState('D3DATA',D3DATA);
-
-  // Clear search field
-  let selection = UDATA.State('SELECTION');
-  selection.searchLabel = '';
-  UDATA.SetState('SELECTION',selection);
-}
-
-
 /// User has requested a new edge be created or updated
 function m_HandleEdgeUpdate (edgeNode) {
   if (DBG) console.log('autocomplete-logic:m_HandleCreateEdge',edgeNode);
