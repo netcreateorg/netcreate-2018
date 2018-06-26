@@ -1,6 +1,5 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-
     D3 Simple NetGraph
 
     This is designed to work with the NetGraph React component.
