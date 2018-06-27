@@ -26,7 +26,9 @@
     "babel-preset-react": "^6.24.1",
     "brunch": "^2.10.12",
     "clean-css-brunch": "^2.10.0",
-    "uglify-js-brunch": "^2.10.0"
+    "uglify-js-brunch": "^2.10.0",
+    "eslint": "^5.0.1",
+    "eslint-plugin-react": "^7.10.0"
   },
   "dependencies": {
     "babel-polyfill": "^6.26.0",
