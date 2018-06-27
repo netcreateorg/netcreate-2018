@@ -38,38 +38,46 @@ const UNISYS     = require('system/unisys');
 var   UDATA      = null;
 
 
+
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
 class NetGraph extends React.Component {
-
     constructor (props) {
       super(props)
       this.state = {
         d3NetGraph: {}
       }
       UDATA = UNISYS.NewDataLink(this);
-    }
+    } // constructor
 
-    componentDidMount () {
+
+
+/// REACT LIFECYCLE ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ componentDidMount () {
       // D3NetGraph Constructor
       let el = ReactDOM.findDOMNode( this )
       let d3NetGraph = new D3NetGraph(el);
       this.setState({ d3NetGraph });
     }
-
-    shouldComponentUpdate () {
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ shouldComponentUpdate () {
       // This prevents React from updating the component,
       // allowing D3 to handle the simulation animation updates
       // This is also necessary for D3 to handle the
       // drag events.
       return false
     }
-
-    render () {
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ render () {
       return (<div>SVG</div>)
     }
-}
+} // class NetGraph
+
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
