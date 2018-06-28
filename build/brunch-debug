@@ -28,7 +28,8 @@ global[Symbol.for('start-time')] = Date.now();
 var files = {old: 'cli.js', new: 'run-cli.js'};
 var runSeparateWatchProcess = function(cliPath) {
   process.env.BRUNCH_FORKED_PROCESS = 'true';
-  var args = process.env.BRUNCH_DEVTOOLS ? ['--inspect', '--debug-brk'] : process.execArgv;
+
+  var args = process.env.BRUNCH_DEVTOOLS ? ['--inspect'] : process.execArgv;
   var proc = childProcessFork(cliPath, process.argv.slice(2), {execArgv: args});
   proc.on('message', function(message) {
     if (message === 'reload') {
@@ -36,7 +37,6 @@ var runSeparateWatchProcess = function(cliPath) {
       runSeparateWatchProcess(cliPath);
     }
   });
-
   process.on('SIGTERM', function() {
     proc.kill();
   });

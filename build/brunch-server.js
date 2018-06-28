@@ -7,6 +7,7 @@
 
 const express = require('express');
 const app     = express();
+const UNISYS  = require('./server/unisys-network');
 
 /// MIDDLEWARE ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -42,7 +43,7 @@ const app     = express();
         }
         console.log(`\n\n${errstring}\n### PROGRAM STOP\n`);
         process.exit(err.errno);
-      });;
+      });
 
       // Return the app; it has the `close()` method, which would be ran when
       // Brunch server is terminated. This is a requirement.

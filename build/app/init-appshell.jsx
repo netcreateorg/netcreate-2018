@@ -161,7 +161,7 @@ class AppShell extends React.Component {
                   </DropdownToggle>
                   <DropdownMenu>
                     <DropdownItem>
-                      <NavLink to="/dev-unisys" tag={RRNavLink} replace>Dev ModuleLoader</NavLink>
+                      <NavLink to="/dev-unisys" tag={RRNavLink} replace>UNISYS DevModule</NavLink>
                     </DropdownItem>
                     <DropdownItem>
                       <NavLink to="/simple" tag={RRNavLink} replace>Dev SimpleHTML</NavLink>
