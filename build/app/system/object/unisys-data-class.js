@@ -23,6 +23,7 @@ var   DBG         = {
   send   : false,
   return : true
 };
+      DBG         = false;
 const BAD_OWNER   = "must pass owner object of type React.Component or UniModule with optional 'name' parameter";
 const BAD_NAME    = "name parameter must be a string";
 const BAD_UID     = "unexpected non-unique UID";
@@ -117,7 +118,7 @@ var MESSAGER       = new Messager();
 
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// MESSAGES 
+  /// MESSAGES
   /// mesgName is a string, and is an official event that's defined by the
   /// subclasser of UnisysNode
       HandleMessage( mesgName, listener ) {
@@ -150,7 +151,7 @@ var MESSAGER       = new Messager();
           srcUID         : this.UID(),
           dataReturnFunc : optCallback || _null_callback
         });
-        function _null_callback () {};
+        function _null_callback () {}
       }
 
   } // end UnisysNode

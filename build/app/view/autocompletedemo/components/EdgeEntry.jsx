@@ -3,12 +3,12 @@
 
     Edge Entry
 
-    EdgeEntry is a form for searching for, viewing, selecting, and 
+    EdgeEntry is a form for searching for, viewing, selecting, and
     editing Edge information.
 
     TO USE
 
-          <EdgeEntry 
+          <EdgeEntry
             data={this.state.data}
             selectedSourceNode={this.state.selectedSourceNode}
             selectedTargetNode={this.state.selectedTargetNode}
@@ -23,7 +23,7 @@
 
     PROPS SETTERS (data from Parent)
 
-          data            Used to pass the current graph data from the parent 
+          data            Used to pass the current graph data from the parent
                           component to NodeSelector
 
           selectedEdge    Set the edge selected by AutoCompleteDemo.
@@ -36,7 +36,7 @@
 
     PROPS HANDLERS (data sent to Parent)
 
-          onInputUpdate   A callback function, called whenever user types in 
+          onInputUpdate   A callback function, called whenever user types in
                           search field
 
           onHighlight     A callback function, called whenever user highlights
@@ -67,7 +67,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-
+var DBG = false;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -134,11 +134,11 @@ class EdgeEntry extends React.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UTILITIES
   ///
-  /// 
+  ///
   isEmpty ( obj ) {
     return obj===undefined ||
            obj===null      ||
-           ( obj.constructor === Object && 
+           ( obj.constructor === Object &&
              Object.keys(obj).length===0 )   // = {}
   }
   /// Clear the form with optional label
@@ -231,14 +231,14 @@ class EdgeEntry extends React.Component {
   handleAutoCompleteSuggestionHighlight (nodeLabel) {
     // Find first node that matches highlight
     if (nodeLabel===null) {
-      // Unhighlight 
+      // Unhighlight
       this.setState({ highlightedNode: {} })
     } else {
       let nodes = this.state.data.nodes.filter( node => { return nodeLabel===node.label })
       if ( (nodes!==null) &&
            (Array.isArray(nodes)) &&
            (nodes.length>0) &&
-           (nodes[0]!==null) 
+           (nodes[0]!==null)
          ) {
         // Node is Valid!
         this.setState({ highlightedNode: nodes[0] })
@@ -267,17 +267,17 @@ class EdgeEntry extends React.Component {
       this.setState({
         selectedNode: {
           label:     node.label,
-          type:      node.attributes["Node_Type"],     // HACK This needs to be updated when 
+          type:      node.attributes["Node_Type"],     // HACK This needs to be updated when
           info:      node.attributes["Extra Info"],    // the data format is updated
           notes:     node.attributes["Notes"],         // These were bad keys from Fusion Tables.
           id:        node.id
         },
         isEditable: false
       })
-      
+
       // 2. Propagate to parent to highlight
       this.props.onNodeSelect( node )
-      
+
       // 3. Look for an existing edge
 console.error('REVIEW>>>look for existing edge')
 
@@ -302,33 +302,33 @@ console.error('REVIEW>>>look for existing edge')
     this.setState({ selectedSourceNode: node })
     let edge = this.state.selectedEdge
     edge.label = label
-    this.setState({ selectedEdge: edge }) 
+    this.setState({ selectedEdge: edge })
   }
-  onTypeChange  (event) { 
+  onTypeChange  (event) {
     let edge = this.state.selectedEdge
     edge.relationship = event.target.value
-    this.setState({ selectedEdge: edge }) 
+    this.setState({ selectedEdge: edge })
   }
-  onNotesChange (event) { 
+  onNotesChange (event) {
     let edge = this.state.selectedEdge
     edge.notes = event.target.value
-    this.setState({ selectedEdge: edge }) 
+    this.setState({ selectedEdge: edge })
   }
-  onInfoChange  (event) { 
+  onInfoChange  (event) {
     let edge = this.state.selectedEdge
     edge.info = event.target.value
-    this.setState({ selectedEdge: edge }) 
+    this.setState({ selectedEdge: edge })
   }
   onEditButtonClick (event) {
     event.preventDefault()
 
     this.setState({ isEditable: true })
     let selectedEdge = this.state.selectedEdge
-    
+
     // Add ID if one isn't already defined
     if (selectedEdge.id == '') selectedEdge.id = this.getNewEdgeID()
     this.setState({ selectedEdge: selectedEdge })
-    
+
   }
   onSubmit ( event ) {
     event.preventDefault()
@@ -341,20 +341,20 @@ console.error('REVIEW>>>look for existing edge')
     edge.sourceId = this.state.selectedSourceNode.id
     edge.targetId = this.state.selectedNode.id
 
-    console.group('EdgeEntry.onSubmit submitting',edge)
+if (DBG) console.group('EdgeEntry.onSubmit submitting',edge)
 
     // Notify parent of new edge data
     this.props.onEdgeUpdate( edge )
     // Notify parent to deselect selectedNode
     this.props.onNodeSelect( {} )
 
-console.log('...About to clear form')
+if (DBG) console.log('...About to clear form')
     // Clear the any selections
     this.clearForm()
-    console.log('this.state.selectedEdge',this.state.selectedEdge)
-console.log('...Clear form finished')
+    if (DBG) console.log('this.state.selectedEdge',this.state.selectedEdge)
+if (DBG) console.log('...Clear form finished')
 
-    console.groupEnd()
+if (DBG) console.groupEnd()
 
   }
 
@@ -402,13 +402,13 @@ console.log('...Clear form finished')
     // If parent passes a valid selectedEdge, then load it
     // REVIEW: This can override selectedSourceNode and/or selectedNode
     //         But theoretically it should match?
-    console.log('EdgeEntry.componentWillReceiveProps selectedEdge:',nextProps.selectedEdge)
+    if (DBG) console.log('EdgeEntry.componentWillReceiveProps selectedEdge:',nextProps.selectedEdge)
     let nextEdge = nextProps.selectedEdge
     if (nextEdge!==undefined && Object.keys(nextEdge).length>0) {
-      console.log('...loading selectedEdge')
+      if (DBG) console.log('...loading selectedEdge')
       this.loadFormFromEdge( nextEdge )
     } else {
-      console.log('...clearing selectedEdge')
+      if (DBG) console.log('...clearing selectedEdge')
       this.clearSelectedEdge()
     }
   }
@@ -418,7 +418,7 @@ console.log('...Clear form finished')
     return (
       <Form className='nodeEntry' style={{minHeight:'300px',backgroundColor:'#caf1c7',padding:'5px',marginBottom:'10px'}}
         onSubmit={this.onSubmit}>
-        <FormText>EDGE SELECTOR</FormText>
+        <FormText>EDGE SELECTOR (RF)</FormText>
         <hr/>
         <FormGroup>
           <Label for="source" className="small text-muted">SOURCE</Label>
@@ -429,7 +429,7 @@ console.log('...Clear form finished')
         </FormGroup>
         <FormGroup>
           <Label for="nodeLabel" className="small text-muted">TARGET</Label>
-          <AutoComplete 
+          <AutoComplete
             data={this.state.data}
             value={this.state.selectedNode.label}
             disableSuggestions={!this.state.isEditable}
@@ -440,7 +440,7 @@ console.log('...Clear form finished')
           />
         </FormGroup>
         <div style={{position:'absolute',left:'300px',maxWidth:'300px'}}>
-          <NodeDetail 
+          <NodeDetail
             selectedNode={this.state.highlightedNode}
           />
         </div>
@@ -460,7 +460,7 @@ console.log('...Clear form finished')
         </FormGroup>
         <FormGroup>
           <Label for="notes" className="small text-muted">NOTES</Label>
-          <Input type="textarea" name="note" id="notesText" 
+          <Input type="textarea" name="note" id="notesText"
             value={this.state.selectedEdge.notes||''}
             onChange={this.onNotesChange}
             readOnly={!this.state.isEditable}
@@ -468,7 +468,7 @@ console.log('...Clear form finished')
         </FormGroup>
         <FormGroup>
           <Label for="info" className="small text-muted">APPROXIMATE DATE OF INTERACTION</Label>
-          <Input type="text" name="info" id="info" 
+          <Input type="text" name="info" id="info"
             value={this.state.selectedEdge.info||''}
             onChange={this.onInfoChange}
             readOnly={!this.state.isEditable}
@@ -489,9 +489,9 @@ console.log('...Clear form finished')
             hidden={this.state.isEditable}
             onClick={this.onEditButtonClick}
           >{this.state.selectedEdge.isNewEdge?"Add New Edge":"Edit Edge"}</Button>
-          <Button color="primary" size="sm" 
+          <Button color="primary" size="sm"
             hidden={!this.state.isEditable}
-            disabled={(!this.state.isEditable) && 
+            disabled={(!this.state.isEditable) &&
                       ( this.isEmpty(this.state.selectedSourceNode) ||
                         this.isEmpty(this.state.selectedTargetNode) )}
           >Save</Button>

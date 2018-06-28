@@ -28,16 +28,16 @@
 
     NOTE: HandlerFunctions and CallerReturnFunctions are anotated with the
     udata_id property, which can be set to avoid echoing a message back to
-    the same originating udata source. 
+    the same originating udata source.
 
-    NOTE: When providing a handlerFunc, you might want to bind it to a 
+    NOTE: When providing a handlerFunc, you might want to bind it to a
     specific object context (i.e. 'this') value using bind().
     e.g. handlerFunction = handlerFunction.bind(this);
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 'use strict';
-const DBG = true;
+const DBG          = false;
 
 /// MODULE VARS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,7 +46,7 @@ var   MSGR_IDCOUNT = 0;
 /// UNISYS EMITTER CLASS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-class Messager { 
+class Messager {
 
 /*/ Instances of this class can be used to implement a UNISYS-style message
     passing scheme with shared semantics. It maintains a Map keyed by mesgName
@@ -119,7 +119,7 @@ class Messager {
       this.Send(mesgName,data);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: The Remote Method Invocation version of Send(). It does not include 
+/*/ API: The Remote Method Invocation version of Send(). It does not include
     the 'mesgName' in calling subscriber function, so handlers declare one less
     param (I like conciseness in function declarations)
     TODO: handle asynchronous events, collect results, and work seamlessly
@@ -137,7 +137,7 @@ class Messager {
           }
           // invoke a registered handler, passing inData and a UDATA_API function collection
           let hasFunction = typeof dataReturnFunc==='function' ? "w/callback":"w/out callback";
-          console.log('.. MessagerCall: CALLING HANDLER for',mesgName,hasFunction);
+          if (DBG) console.log('.. MessagerCall: CALLING HANDLER for',mesgName,hasFunction);
           handlerFunc(inData,{
             "return" : dataReturnFunc
           });

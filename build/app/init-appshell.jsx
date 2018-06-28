@@ -57,8 +57,7 @@
 \*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
     const AppDefault        = require('view/AppDefault');
     const Prototype         = require('view/prototype/Prototype');
-//  const AutoCompleteDemo  = require('view/autocompletedemo/AutoCompleteDemo');
-    const AutoCompleteDemo2 = require('view/autocompletedemo-rf/AutoCompleteDemo');
+    const AutoCompleteDemo  = require('view/autocompletedemo/AutoCompleteDemo');
     const DevUnisys         = require('view/dev-unisys/DevUnisys');
     const D3Test            = require('view/d3test/D3Test');
 
@@ -151,7 +150,7 @@ class AppShell extends React.Component {
                   <NavLink to="/d3forcedemo" tag={RRNavLink} replace>D3 ForceDemo</NavLink>
                 </NavItem>
                 <NavItem>
-                  <NavLink to="/autocompletedemo-rf" tag={RRNavLink} replace>AutoComplete Demo RF</NavLink>
+                  <NavLink to="/autocompletedemo" tag={RRNavLink} replace>AutoComplete Demo RF</NavLink>
                 </NavItem>
                 <NavItem>
                   <NavLink to="/prototype" tag={RRNavLink} replace>Prototype</NavLink>
@@ -187,7 +186,7 @@ class AppShell extends React.Component {
             <Route path='/d3forcedemo' exact component={ (props) => {return HTML(props)} }/>
             <Route path='/simple' exact component={ (props) => {return HTML(props)} }/>
             <Route path='/d3test' exact component={D3Test}/>
-            <Route path='/autocompletedemo-rf' exact component={AutoCompleteDemo2}/>
+            <Route path='/autocompletedemo' exact component={AutoCompleteDemo}/>
             <Route path='/dev-unisys' exact component={DevUnisys}/>
             <Route component={NoMatch}/>
           </Switch>

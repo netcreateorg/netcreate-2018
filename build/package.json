@@ -7,7 +7,7 @@
     "build": "echo \"Error: no build/deploy system yet\" && exit 1",
     "clean": "rm -rf public/",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "debug": "LOGGY_STACKS=true brunch watch -s"
+    "debug": "LOGGY_STACKS=true BRUNCH_DEVTOOLS=true ./brunch-debug watch --server"
   },
   "repository": {
     "type": "git",
@@ -26,6 +26,8 @@
     "babel-preset-react": "^6.24.1",
     "brunch": "^2.10.12",
     "clean-css-brunch": "^2.10.0",
+    "eslint": "^5.0.1",
+    "eslint-plugin-react": "^7.10.0",
     "uglify-js-brunch": "^2.10.0"
   },
   "dependencies": {
@@ -38,7 +40,6 @@
     "react": "^16.2.0",
     "react-autosuggest": "^9.3.4",
     "react-dom": "^16.2.0",
-    "react-faux-dom": "^4.1.0",
     "react-popper": "^0.7.4",
     "react-router": "^4.2.0",
     "react-router-dom": "^4.2.2",

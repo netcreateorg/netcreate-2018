@@ -7,3 +7,6 @@
 
 # And don't commit personal log files
 *_log.md
+
+# And don't commit .zip archives either
+*.zip
