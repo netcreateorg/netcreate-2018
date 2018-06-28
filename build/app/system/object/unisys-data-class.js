@@ -151,7 +151,7 @@ var MESSAGER       = new Messager();
           srcUID         : this.UID(),
           dataReturnFunc : optCallback || _null_callback
         });
-        function _null_callback () {};
+        function _null_callback () {}
       }
 
   } // end UnisysNode
