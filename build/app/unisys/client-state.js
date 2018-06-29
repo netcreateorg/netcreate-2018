@@ -12,7 +12,7 @@ const NO_UID_FLTR = "UNISYS.OnStateChange: pass DST_UID parameter to enable echo
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const REACT       = require('react');
-const Messager    = require('system/object/messager-class');
+const Messager    = require('unisys/client-messager-class');
 
 /// MODULE DECLARATIONS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

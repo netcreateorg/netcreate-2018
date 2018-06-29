@@ -10,17 +10,15 @@
 
 const DBG         = true;
 
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const LIFECYCLE   = require('system/unisys-lifecycle');
-const STATE       = require('system/unisys-state');
-
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const Messager    = require('system/object/messager-class');
-const UniData     = require('system/object/unisys-data-class');
-const UniModule   = require('system/object/unisys-module-class');
+const UniData     = require('unisys/client-datalink-class');
+const UniModule   = require('unisys/client-module-class');
 
+/// LIBRARIES /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const LIFECYCLE   = require('unisys/client-lifecycle');
+const STATE       = require('unisys/client-state');
 
 /// INITIALIZE MAIN MODULE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,26 +62,31 @@ var   UDATA       = new UniData(UNISYS);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: application startup after componentDidMount
 /*/ UNISYS.EnterApp = () => {
-      return new Promise( async ( resolve, reject )=>{
+      let p = new Promise( async ( resolve, reject ) => {
         await LIFECYCLE.Execute('INITIALIZE'); // INITIALIZE hook
         await LIFECYCLE.Execute('LOADASSETS'); // LOADASSETS hook
         resolve();
       });
+      return p;
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: configure system before run
 /*/ UNISYS.SetupRun = () => {
-      return new Promise( async ( resolve, reject )=>{
+      return new Promise( async ( resolve, reject ) => {
+        console.log("running RESET");
         await LIFECYCLE.Execute('RESET');
+        console.log("running CONFIGURE");
         await LIFECYCLE.Execute('CONFIGURE');
+        console.log("running START");
         await LIFECYCLE.Execute('START');
+        console.log("StepRun() completed");
         resolve();
       });
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: handle periodic updates for a simulation-driven timestep
 /*/ UNISYS.Run = () => {
-      return new Promise( async ( resolve, reject )=>{
+      return new Promise( async ( resolve, reject ) => {
         await LIFECYCLE.Execute('UPDATE');
         resolve();
       });
@@ -92,7 +95,7 @@ var   UDATA       = new UniData(UNISYS);
 /*/ API: do the Shutdown lifecycle
     NOTE ASYNC ARROW FUNCTION (necessary?)
 /*/ UNISYS.BeforePause = () => {
-      return new Promise( async ( resolve, reject )=>{
+      return new Promise( async ( resolve, reject ) => {
         await LIFECYCLE.Execute('PREPAUSE');
         resolve();
       });
@@ -101,7 +104,7 @@ var   UDATA       = new UniData(UNISYS);
 /*/ API: do the Shutdown lifecycle
     NOTE ASYNC ARROW FUNCTION (necessary?)
 /*/ UNISYS.Paused = () => {
-      return new Promise( async ( resolve, reject )=>{
+      return new Promise( async ( resolve, reject ) => {
         await LIFECYCLE.Execute('PAUSE');
         resolve();
       });
@@ -110,7 +113,7 @@ var   UDATA       = new UniData(UNISYS);
 /*/ API: do the Shutdown lifecycle
     NOTE ASYNC ARROW FUNCTION (necessary?)
 /*/ UNISYS.PostPause = () => {
-      return new Promise( async ( resolve, reject )=>{
+      return new Promise( async ( resolve, reject ) => {
         await LIFECYCLE.Execute('POSTPAUSE');
         resolve();
       });
@@ -119,7 +122,7 @@ var   UDATA       = new UniData(UNISYS);
 /*/ API: do the Shutdown lifecycle
     NOTE ASYNC ARROW FUNCTION (necessary?)
 /*/ UNISYS.CleanupRun = () => {
-      return new Promise( async ( resolve, reject )=>{
+      return new Promise( async ( resolve, reject ) => {
         await LIFECYCLE.Execute('STOP');
         resolve();
       });
@@ -128,7 +131,7 @@ var   UDATA       = new UniData(UNISYS);
 /*/ API: application shutdown
     NOTE ASYNC ARROW FUNCTION (necessary?)
 /*/ UNISYS.ExitApp = () => {
-      return new Promise( async ( resolve, reject )=>{
+      return new Promise( async ( resolve, reject ) => {
         await LIFECYCLE.Execute('UNLOADASSETS');
         await LIFECYCLE.Execute('SHUTDOWN');
         resolve();

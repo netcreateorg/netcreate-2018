@@ -47,7 +47,7 @@ const DBG        = false;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UNISYS     = require('system/unisys');
+const UNISYS     = require('unisys/client');
 const D3         = require('d3');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////

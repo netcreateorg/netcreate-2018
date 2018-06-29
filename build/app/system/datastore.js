@@ -11,7 +11,7 @@
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SETTINGS = require('settings');
-const UNISYS   = require('system/unisys');
+const UNISYS   = require('unisys/client');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

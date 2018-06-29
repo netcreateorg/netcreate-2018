@@ -14,7 +14,7 @@ const NOT_UNIQUE     = "name must be unique";
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const LIFECYCLE      = require('system/unisys-lifecycle');
+const LIFECYCLE      = require('unisys/client-lifecycle');
 const PATH           = require('system/util/path');
 
 /// MODULE DECLARATIONS ///////////////////////////////////////////////////////

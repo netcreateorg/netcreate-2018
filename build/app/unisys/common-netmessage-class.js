@@ -35,9 +35,17 @@ const DBGOUT = true;
 
   const NDEF = {
     // placeholder
-    Get : ()=>{ console.log('Get() is not implemented'); }
+    Get : () => { console.log('Get() is not implemented'); }
   };
   const MSG_TRANSACTION_RETURN = '_TRANS_RET';
+
+/// PRIVATE MODULE FUNCTIONS //////////////////////////////////////////////////
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/	return the hash used for storing transaction callbacks
+/*/	function f_TransHash ( pkt ) {
+      if (pkt.seqnum > 99) console.error('packet seqnum max exceeded!');
+      return pkt.id+'_'+pkt.seqnum.padStart(2,'0');
+    }
 
 /// UNISYS NETMESSAGE CLASS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -69,9 +77,9 @@ const DBGOUT = true;
         // addressing support
         this.addr 		= null;
         // allow calls with null data by setting to empty object
-        data          = data || {};
-        this.msg 	  = msg;
-        this.data 	= data;
+        this.data     = data || {};
+        this.msg 	    = msg;
+        this.data 	  = data;
       } // constructor
 
   /// ACCESSSOR METHODS ///////////////////////////////////////////////////////
@@ -149,7 +157,7 @@ const DBGOUT = true;
           throw 'transaction '+hash.bracket()+' handler error';
         } else {
           funcExec(this.data);
-          delete m_transactions[hash];
+          Reflect.delete(m_transactions[hash]);
         }
       }
   ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -194,7 +202,7 @@ const DBGOUT = true;
   /*/	SetAddress( addr ) {
         if (Array.isArray(addr)) {
           if (!this.addr) this.addr=[];
-          for (var i=0;i<addr.length;i++) {
+          for (var i=0; i<addr.length; i++) {
             this.addr.push(addr[i]);
           }
           return;
@@ -219,14 +227,6 @@ const DBGOUT = true;
       }
   } // class UMessage
 
-
-/// PRIVATE MODULE FUNCTIONS //////////////////////////////////////////////////
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/	return the hash used for storing transaction callbacks
-/*/	function f_TransHash ( pkt ) {
-      if (pkt.seqnum > 99) console.error('packet seqnum max exceeded!');
-      return pkt.id+'_'+pkt.seqnum.padStart(2,'0');
-    }
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

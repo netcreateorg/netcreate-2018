@@ -20,7 +20,7 @@
   var   WSS               = require('ws').Server;
   var   FSE               = require('fs-extra');
   var   PATH              = require('path');
-  var   NetMessage        = require('../app/system/object/netmessage-class');
+  var   NetMessage        = require('./common-netmessage-class');
 
   // websocket data structures
   const DEFAULT_UNET_PORT = 2929;
@@ -35,23 +35,28 @@
 
   var   UNET = {};
 
+  var   DBG = true;
+
 /**	API MAIN METHODS *********************************************************/
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/	creates web socket server and listeners
 /*/	UNET.CreateNetwork = ( options ) => {
-      // save configuration options
-      mu_opt_network = options || {};
-      let { port=DEFAULT_UNET_PORT } = mu_opt_network;
+      options = options || {};
+      options.port = options.port || DEFAULT_UNET_PORT;
       if (mu_wss !== undefined) throw Error(ERR_SS_EXISTS);
       // create listener.
-      mu_wss = new WSS(mu_opt_network);
+      if (DBG) console.log(PR,`CreateNetwork on port ${options.port}`);
+      mu_wss = new WSS(options);
       mu_wss.on('connection',f_NewSocket);
+      // save configuration options
+      mu_opt_network = options;
 
   /** new socket handler *****************************************************/
       function f_NewSocket( socket ) {
         socket.on('message', ( json )=>{
           let obj = JSON.parse(json);
-          // var msg = new NetMessage(msg);
+          var msg = new NetMessage(msg);
+          if (DBG) console.log(PR,'Socket Connected');
         });
       }
     };

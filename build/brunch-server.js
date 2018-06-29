@@ -7,7 +7,9 @@
 
 const express = require('express');
 const app     = express();
-const UNISYS  = require('./server/unisys-network');
+const UNISYS  = require('./app/unisys/server');
+
+const PR      = 'BrunchServer:';
 
 /// MIDDLEWARE ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,7 +28,11 @@ const UNISYS  = require('./server/unisys-network');
 /*/ module.exports = (config, callback) => {
 
       app.listen(config.port, function () {
-        console.log(`APP SERVER LISTENING on PORT ${config.port}`);
+        console.log(PR,`listing on port ${config.port}`);
+
+        UNISYS.CreateNetwork();
+        console.log(PR,`initializing UNISYS`);
+
         callback();
       })
       .on('error', function(err) {

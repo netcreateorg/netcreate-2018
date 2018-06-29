@@ -36,7 +36,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-'use strict';
 const DBG          = false;
 
 /// MODULE VARS ///////////////////////////////////////////////////////////////
@@ -101,13 +100,15 @@ class Messager {
     well.
 /*/ Send( mesgName, data, options={} ) {
       let { srcUID } = options;
-      let etype = (src_uid===undefined) ? 'MessagerSignal' : 'MessagerSend';
+      let etype = (srcUID===undefined)
+        ? 'MessagerSignal'
+        : 'MessagerSend';
       if (DBG) console.log(`${etype}: [${mesgName}] data:`,data);
       const handlers = this.handlerMap.get(mesgName);
       if (handlers) {
         for (let handlerFunc of handlers) {
-          if (src_uid && handlerFunc.udata_id===src_uid) continue;
-          handlerFunc(mesgName, data, src_uid);
+          if (srcUID && handlerFunc.udata_id===srcUID) continue;
+          handlerFunc(mesgName, data, srcUID);
         }
       }
       return this;
@@ -136,7 +137,9 @@ class Messager {
             continue;
           }
           // invoke a registered handler, passing inData and a UDATA_API function collection
-          let hasFunction = typeof dataReturnFunc==='function' ? "w/callback":"w/out callback";
+          let hasFunction = typeof dataReturnFunc==='function'
+            ? "w/callback"
+            : "w/out callback";
           if (DBG) console.log('.. MessagerCall: CALLING HANDLER for',mesgName,hasFunction);
           handlerFunc(inData,{
             "return" : dataReturnFunc

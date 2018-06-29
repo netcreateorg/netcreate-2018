@@ -70,7 +70,7 @@ class D3NetGraph {
 
 
   constructor ( rootElement ) {
-    /// Instance Variables - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    /// Instance Variables - - - - - - - - - - - - - - - - - - - - - - - - - -
     this.rootElement  = rootElement
     this.svg          = {}
     this.simulation   = {}
@@ -86,7 +86,7 @@ class D3NetGraph {
     this.svg = d3.select(rootElement).append('svg')
       .attr('width', _width)
       .attr('height',_height)
-      
+
     this.linkGroup = this.svg.append("g")
       .attr("class", "links")
     this.nodeGroup = this.svg.append("g")
@@ -129,10 +129,10 @@ class D3NetGraph {
   ///     Call this after data has been loaded
   ///     This creates link and node svg objects
   ///     and sets their forceProperties
-  /// 
+  ///
   ///     The component `node` looks like this:
   ///         <g class="node">  // node group object
-  ///            <circle>       
+  ///            <circle>
   ///            <text>         // label
   ///            <title>        // tooltip
   ///         </g>
@@ -205,7 +205,7 @@ class D3NetGraph {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// _InitializeSimulation
-  ///     
+  ///
   _InitializeSimulation ( data ) {
     this.simulation.nodes( data.nodes );
     //     Add forces and associate each with a name

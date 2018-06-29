@@ -25,7 +25,7 @@ const AppShell    = require('init-appshell');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// demo: require system modules; this will likely be removed
 const SETTINGS    = require('settings');
-const UNISYS      = require('system/unisys');
+const UNISYS      = require('unisys/client');
 const DATASTORE   = require('system/datastore');
 
 /// MODULE INITIALIZATION /////////////////////////////////////////////////////

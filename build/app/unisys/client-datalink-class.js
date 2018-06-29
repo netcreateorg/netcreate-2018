@@ -31,9 +31,8 @@ const BAD_UID     = "unexpected non-unique UID";
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UNISTATE    = require('system/unisys-state');
-const Messager    = require('system/object/messager-class');
-
+const UNISTATE    = require('unisys/client-state');
+const Messager    = require('unisys/client-messager-class');
 
 /// NODE MANAGEMENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -61,8 +60,9 @@ var MESSAGER       = new Messager();
         let msgr_type = '?TYPE';
         let msgr_name = '?NAME';
 
-        if ((optName!==undefined) && (typeof optName!=='string'))
-          throw Error (BAD_NAME);
+        if ((optName!==undefined) && (typeof optName!=='string')) {
+          throw Error(BAD_NAME);
+        }
 
         // require an owner that is an object of some kind
         if (typeof owner!=='object') throw Error(BAD_OWNER);
@@ -127,32 +127,44 @@ var MESSAGER       = new Messager();
         if (DBG.register) console.log(`${this.name} handler added [${mesgName}]`);
         MESSAGER.HandleMessage(mesgName,listener,{receiverUID:this.UID()});
       }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       UnhandleMessage( mesgName, listener ) {
         if (DBG.register) console.log(`${this.name} handler removed [${mesgName}]`);
         MESSAGER.UnhandleMessage(mesgName,listener);
       }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       Send( mesgName, data ) {
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
         if (DBG.send) console.log(`${this.name} send [${mesgName}]`);
         MESSAGER.Send(mesgName,data,{
-          srcUID         : this.UID(),
+          srcUID         : this.UID()
         });
       }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       Signal( mesgName, data ) {
         MESSAGER.Signal(mesgName,data);
       }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       Call( mesgName, inData, optCallback ) {
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
-        let hasCallback = typeof optCallback==='function' ? "w/callback" : "w/out callback";
+        let hasCallback = typeof optCallback==='function'
+          ? "w/callback"
+          : "w/out callback";
+
         if (DBG.return) console.log(`${this.name} call [${mesgName}]`,hasCallback);
+
         MESSAGER.Call(mesgName,inData,{
           srcUID         : this.UID(),
-          dataReturnFunc : optCallback || _null_callback
+          dataReturnFunc : optCallback || this.NullCallback
         });
-        function _null_callback () {}
       }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      NullCallback () {
+        if (DBG) console.log('null_callback',this.UID());
+      }
+
 
   } // end UnisysNode
 

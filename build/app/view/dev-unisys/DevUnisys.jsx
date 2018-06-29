@@ -1,6 +1,6 @@
 /// SYSTEM INTEGRATION ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UNISYS      = require('system/unisys');
+const UNISYS      = require('unisys/client');
 const LOGIC       = require('./DevUnisysLogic');
 const REFLECT     = require('system/util/reflection');
 
@@ -23,10 +23,6 @@ const { Alert }   = ReactStrap;
   /// CONSTRUCTOR
       constructor(props) {
         super(props);
-
-        // establish module scope before lifecycle
-        // do this once in the root component as early as possible
-        UNISYS.SystemInitialize(module.id);
 
         // set up data links
         this.udata = UNISYS.NewDataLink(this);
@@ -55,6 +51,7 @@ const { Alert }   = ReactStrap;
 
         // hook start handler to initiate call
         UNISYS.Hook('START',() => {
+          console.log('*** START HOOK ***');
           this.udata.Call('LOGICMELON',{ melon : 'jsxmelon' });
         });
 
@@ -87,6 +84,9 @@ const { Alert }   = ReactStrap;
         let className = REFLECT.ExtractClassName(this);
         console.log(`${className} componentDidMount`);
 
+        // establish module scope before lifecycle
+        // do this once in the root component as early as possible
+        UNISYS.SystemInitialize(module.id);
 
         // kickoff initialization stage by stage
         (async () => {

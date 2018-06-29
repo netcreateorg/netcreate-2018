@@ -17,7 +17,7 @@ const DBG       = {
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SETTINGS  = require('settings');
-const UNISYS    = require('system/unisys');
+const UNISYS    = require('unisys/client');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -94,11 +94,7 @@ PASSED = {
 
       PASSED.startHook = true;
 
-
-
-
-
-      /*/ 
+      /*/
       remote method invocation of JSXMELON is expected to return data in a callback
       /*/
       console.group('CALL INVOCATION TEST');
@@ -108,11 +104,6 @@ PASSED = {
         if ((data.melon==='logicmelon_ack')&&(data.cat==='calico')) PASSED.remoteDataAdd = true;
       });
       console.groupEnd();
-
-
-
-
-
 
       // update the description
       setTimeout( function () {
@@ -127,35 +118,36 @@ PASSED = {
         if (--COUNTER<0) {
           clearInterval(INTERVAL);
           // check all test results
-          Object.entries(PASSED).forEach( ([key,value])=>{
+          let err='';
+          Object.entries(PASSED).forEach( ([key,value]) => {
             if (value!==true) {
-              console.warn(module.id,`test [${key}] failed`);
-              throw Error(`'${key}' test did not succeed`);
+              err += `test [${key}] failed\n`;
             }
           });
+          if (err) {
+            throw 'UNISYS TESTS DID NOT PASS\n'+err;
+          }
+
           console.info('UNISYS TEST: all known tests have succeeded',Object.keys(PASSED).join(', '));
           return;
         }
+
+        // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
+        function u_RandomString() {
+          var text = "";
+          var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+          for (var i = 0; i < 5; i++) {
+            text += possible.charAt(Math.floor(Math.random() * possible.length));
+          }
+          return text;
+        }
+
         let state = { random: u_RandomString() };
         if (DBG.state) console.log(`LOGIC -> state`,state,`via NS 'LOGIC' ${UDATA.UID()}`);
         UDATA.SetState('LOGIC',state,UDATA.UID());
       },500);
 
     }); // end START
-
-
-/// MODULE API ////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Utility function to return a random string.
-    https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
-/*/ function u_RandomString() {
-      var text = "";
-      var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-      for (var i = 0; i < 5; i++)
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-      return text;
-    }
-
 
 
 /// EXPORT MODULE /////////////////////////////////////////////////////////////

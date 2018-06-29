@@ -30,7 +30,7 @@ const React = require('react')
 const ReactStrap = require('reactstrap')
 const { Table, FormText } = ReactStrap
 
-const UNISYS   = require('system/unisys');
+const UNISYS   = require('unisys/client');
 var   UDATA    = null;
 
 

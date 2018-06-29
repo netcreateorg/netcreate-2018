@@ -43,7 +43,7 @@ const ACD_LOGIC    = require('./autocomplete-logic');
 const ReactStrap   = require('reactstrap');
 
 /// NEW SIGNLING SYSTEM LIBRARIES /////////////////////////////////////////////
-const UNISYS       = require('system/unisys');
+const UNISYS       = require('unisys/client');
 var   UDATA        = null; // set in constructor
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
