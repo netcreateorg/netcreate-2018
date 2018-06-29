@@ -22,7 +22,7 @@
   "devDependencies": {
     "auto-reload-brunch": "^2.7.1",
     "babel-brunch": "github:babel/babel-brunch",
-    "babel-preset-env": "^1.6.1",
+    "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "brunch": "^2.10.12",
     "clean-css-brunch": "^2.10.0",
@@ -32,20 +32,20 @@
   },
   "dependencies": {
     "babel-polyfill": "^6.26.0",
-    "bootstrap": "^4.0.0",
-    "classnames": "^2.2.5",
+    "bootstrap": "^4.1.1",
+    "classnames": "^2.2.6",
     "d3": "^4.13.0",
     "fs-extra": "^6.0.1",
     "jquery": "^3.3.1",
-    "popper.js": "^1.12.9",
-    "react": "^16.2.0",
+    "popper.js": "^1.14.3",
+    "react": "^16.4.1",
     "react-autosuggest": "^9.3.4",
-    "react-dom": "^16.2.0",
+    "react-dom": "^16.4.1",
     "react-faux-dom": "^4.1.0",
     "react-popper": "^0.7.4",
-    "react-router": "^4.2.0",
-    "react-router-dom": "^4.2.2",
-    "react-transition-group": "^2.2.1",
-    "reactstrap": "^5.0.0-beta"
+    "react-router": "^4.3.1",
+    "react-router-dom": "^4.3.1",
+    "react-transition-group": "^2.4.0",
+    "reactstrap": "^5.0.0"
   }
 }
