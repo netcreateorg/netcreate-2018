@@ -14,13 +14,6 @@ const { Alert }   = ReactStrap;
 const PROMPTS     = require('system/util/prompts');
 const PR          = PROMPTS.Pad('DevUnisys');
 
-/// INITIALIZE MODULE /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// MUST start UNISYS before any REACT lifecycle events fire, because we need
-// to make sure UNISYS is ready to accept handler registration This call
-// only happens ONCE in the ROOT COMPONENT or ROOT MODULE of our webapp.
-UNISYS.SystemInitialize( module.id );
-
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ This is the root component for the view
@@ -47,6 +40,8 @@ UNISYS.SystemInitialize( module.id );
           data.melon += '_ack';
           ucontrol.return(data);
         });
+        // initialize UNISYS before using any hook functions
+        UNISYS.SystemInitialize(module.id);
         // hook start handler to initiate call
         UNISYS.Hook('START',() => {
           console.log('*** START HOOK ***');

@@ -18,16 +18,16 @@ const DBG = true;
 
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var   WSS           = require('ws').Server;
-var   FSE           = require('fs-extra');
-var   NetMessage    = require('../unisys/common-netmessage-class');
+var   WSS               = require('ws').Server;
+var   FSE               = require('fs-extra');
+var   NetMessage        = require('../unisys/common-netmessage-class');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PROMPTS       = require('../system/util/prompts');
-const PR            = PROMPTS.Pad('USERVE');
-const ERR           = PROMPTS.Pad('!!!');
-const ERR_SS_EXISTS = ERR+"socket server already created";
+const PROMPTS           = require('../system/util/prompts');
+const PR                = PROMPTS.Pad('UNET');
+const ERR               = PROMPTS.Pad('!!!');
+const ERR_SS_EXISTS     = ERR+"socket server already created";
 const DEFAULT_UNET_PORT = 2929;
 const DEFAULT_UNET_ADDR = '127.0.0.1';
 
@@ -69,6 +69,9 @@ var UNET = {};
         /*/
         DO A BUNCH OF STUFF HERE!!!
         /*/
+      });
+      socket.on('close',()=>{
+        console.log(PR,'Socket closed');
       });
     }
 

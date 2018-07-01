@@ -17,6 +17,7 @@ const UniModule   = require('unisys/client-module-class');
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const SETTINGS    = require('settings');
 const LIFECYCLE   = require('unisys/client-lifecycle');
 const STATE       = require('unisys/client-state');
 const NETWORK     = require('unisys/client-network');
@@ -50,16 +51,26 @@ var   UDATA       = new UniData(UNISYS);
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: LIFECYCLE Scope() functions
-/*/ UNISYS.SetScope = ( module_id ) => {
-     LIFECYCLE.SetScope(module_id); // pass phase and hook function
+    The 'scope' is used by LIFECYCLE to determine what modules implementing
+    various HOOKS will be called. The root_module_id is a path that will
+    be considered the umbrella of "allowed to hook" modules. For REACT apps,
+    this is the root directory of the root view component. Additionally,
+    the unisys and system directories are allowed to run their hooks
+/*/ UNISYS.SetScope = ( root_module_id ) => {
+     LIFECYCLE.SetScope(root_module_id); // pass phase and hook function
    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: application initialize (before React receives the DOM completion)
-    This should be placed as early as possible in the root REACT component,
-    passing the value of module.id (a predefined global in brunch modules)
-    so UNISYS.INITIALIZE phase will execute before REACT components
-    activate. This helps with modules to prepare themselves.
+/*/ API: Ensure UNISYS will run correctly
 /*/ UNISYS.SystemInitialize = ( module_id ) => {
+      console.log(PR,'SystemInitialize');
+      // reload if SystemInitialize sees that it's run before
+      const key = 'UNISYS_SYSTEM_INIT';
+      if (SETTINGS.Get(key)) {
+        location.reload();
+        return;
+      }
+      // if reload didn't happen, then save info
+      SETTINGS.Set(key,SETTINGS.EJSProp('client').ukey);
       // initialize lifecycle filtering by active view
       UNISYS.SetScope(module_id);
     }; // SystemInitialize

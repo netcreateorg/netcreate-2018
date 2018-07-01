@@ -32,30 +32,33 @@ const DBG   = true;
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const SETTINGS    = require('settings');
 const PROMPTS     = require('system/util/prompts');
 const PR          = PROMPTS.Pad('NETWORK');
 const WARN        = PROMPTS.Pad('!!!');
 
 /// GLOBAL NETWORK INFO (INJECTED ON INDEX) ///////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var NETINFO   = window.NC_UNISYS;
-var NETSOCK   = NETINFO.socket;
-var NETCLIENT = NETINFO.client;
-var NETSERVER = NETINFO.server;
+var NETSOCK   = SETTINGS.EJSProp('socket');
+var NETCLIENT = SETTINGS.EJSProp('client');
+var NETSERVER = SETTINGS.EJSProp('server');
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var NETWORK   = {};
-var called = false;
+var DBG_CONN  = false;
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Establish connection to UNISYS sever.
 /*/ NETWORK.Connect = function ( opt ) {
-      if (called) {
+      // warn if multiple network connections occur
+      // startup order-of-operation requires knowledge of UNISYS bootstrap
+      // and app switching logic
+      if (DBG_CONN) {
         let err = 'called twice...other views may be calling UNISYS outside of lifecycle';
         console.error(WARN,err);
         return;
       }
-      called = true;
+      DBG_CONN = true;
       // double-check that required parameters are set
       // currently there are no options
       opt = opt || {};
@@ -99,19 +102,19 @@ var called = false;
 /*/ NETWORK.Close = function ( code, reason ) {
       code = code || 1000;
       reason = reason || 'unisys forced close';
-      NETINFO.socket.ws.close(code,reason);
+      NETSOCK.ws.close(code,reason);
   };
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     NETWORK.LocalInfo = function () {
-      return NETINFO.client;
+      return NETCLIENT;
     };
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     NETWORK.ServerInfo = function () {
-      return NETINFO.server;
+      return NETSERVER;
     };
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     NETWORK.SocketInfo = function () {
-      return NETINFO.socket;
+      return NETSOCK;
     };
 
 

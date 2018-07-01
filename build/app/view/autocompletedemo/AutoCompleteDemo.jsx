@@ -46,13 +46,6 @@ const ReactStrap   = require('reactstrap');
 const UNISYS       = require('unisys/client');
 var   UDATA        = null; // set in constructor
 
-/// INITIALIZE MODULE /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// MUST start UNISYS before any REACT lifecycle events fire, because we need
-// to make sure UNISYS is ready to accept handler registration This call
-// only happens ONCE in the ROOT COMPONENT or ROOT MODULE of our webapp.
-UNISYS.SystemInitialize( module.id );
-
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -68,6 +61,10 @@ UNISYS.SystemInitialize( module.id );
   /*/ This is the root component, so this fires after all subcomponents have
       been fully rendered by render().
   /*/ componentDidMount () {
+        UNISYS.SystemInitialize( module.id );
+        UNISYS.NetworkInitialize( function() {
+          console.log('WHAT');
+        });
         // start UNISYS lifecycle after REACT is ready
         (async () => {
           await UNISYS.EnterApp();  // INITIALIZE, LOADASSETS
