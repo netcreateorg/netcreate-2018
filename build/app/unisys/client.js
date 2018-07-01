@@ -19,6 +19,7 @@ const UniModule   = require('unisys/client-module-class');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const LIFECYCLE   = require('unisys/client-lifecycle');
 const STATE       = require('unisys/client-state');
+const NETWORK     = require('unisys/client-network');
 const PROMPTS     = require('system/util/prompts');
 const PR          = PROMPTS.Pad('UNISYS');
 
@@ -59,8 +60,14 @@ var   UDATA       = new UniData(UNISYS);
     so UNISYS.INITIALIZE phase will execute before REACT components
     activate. This helps with modules to prepare themselves.
 /*/ UNISYS.SystemInitialize = ( module_id ) => {
+      // initialize lifecycle filtering by active view
       UNISYS.SetScope(module_id);
     }; // SystemInitialize
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: application startup after componentDidMount
+/*/ UNISYS.NetworkInitialize = ( callback ) => {
+      NETWORK.Connect({success:callback});
+    };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: application startup after componentDidMount
 /*/ UNISYS.EnterApp = () => {
@@ -75,13 +82,13 @@ var   UDATA       = new UniData(UNISYS);
 /*/ API: configure system before run
 /*/ UNISYS.SetupRun = () => {
       return new Promise( async ( resolve, reject ) => {
-        console.log("running RESET");
+        if (DBG) console.log(PR,"running RESET");
         await LIFECYCLE.Execute('RESET');
-        console.log("running CONFIGURE");
+        if (DBG) console.log(PR,"running CONFIGURE");
         await LIFECYCLE.Execute('CONFIGURE');
-        console.log("running START");
+        if (DBG) console.log(PR,"running START");
         await LIFECYCLE.Execute('START');
-        console.log("StepRun() completed");
+        if (DBG) console.log(PR,"StepRun() completed");
         resolve();
       });
     };

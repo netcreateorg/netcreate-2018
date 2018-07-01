@@ -19,25 +19,23 @@
 
 /// DEBUGGING /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var   DBG         = {
-  send   : false,
-  return : true
-};
-      DBG         = false;
-const BAD_OWNER   = "must pass owner object of type React.Component or UniModule with optional 'name' parameter";
-const BAD_NAME    = "name parameter must be a string";
-const BAD_UID     = "unexpected non-unique UID";
-
+var DBG            = false;
+if (DBG) DBG       = { send:false, return:true };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const BAD_OWNER    = "must pass owner object of type React.Component or UniModule with optional 'name' parameter";
+const BAD_NAME     = "name parameter must be a string";
+const BAD_UID      = "unexpected non-unique UID";
+const BAD_NCUNISYS = "NC_UNISYS is undefined, so can not set datalink IP address";
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UNISTATE    = require('unisys/client-state');
-const Messager    = require('unisys/client-messager-class');
+const UNISTATE     = require('unisys/client-state');
+const Messager     = require('unisys/client-messager-class');
 
 /// NODE MANAGEMENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var UNODE         = new Map(); // unisys connector node map (local)
-var UNODE_COUNTER = 100;       // unisys connector node id counter
+var UNODE          = new Map(); // unisys connector node map (local)
+var UNODE_COUNTER  = 100;       // unisys connector node id counter
 
 /// GLOBAL MESSAGES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -78,10 +76,17 @@ var MESSAGER       = new Messager();
           throw Error(BAD_OWNER);
         }
 
-        // save unique id
-        this.uid = `${msgr_type}_${UNODE_COUNTER++}`;
-        this.name = msgr_name;
+        // generate and save unique id
+        this.uid      = `${msgr_type}_${UNODE_COUNTER++}`;
+        this.name     = msgr_name;
         if (UNODE.has(this.uid)) throw Error(BAD_UID+this.uid);
+
+        // save IP information that was injected into index.ejs
+        if (!window.NC_UNISYS) throw Error(BAD_NCUNISYS);
+        this.ustart   = window.NC_UNISYS.server.ustart;
+        this.ukey     = window.NC_UNISYS.client.ukey;
+        this.ip       = window.NC_UNISYS.client.ip;
+        this.hostname = window.NC_UNISYS.client.hostname;
 
         // save module in the global module list
         if (DBG) console.log(`Creating UNODE [${this.uid}] for [${this.name}]`);
@@ -166,7 +171,7 @@ var MESSAGER       = new Messager();
       }
 
 
-  } // end UnisysNode
+  } // class UnisysNode
 
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
