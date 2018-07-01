@@ -20,8 +20,10 @@
 		},
 	// make errors more obvious, de-emphasize warnings
 		"workbench.colorCustomizations": {
-			"editorError.border": "#ff0000",
-			"editorWarning.foreground": "#00ff003f"
+			"editorError.border": "#ff0000"
+		},
+	// other theme overrides
+		"editor.tokenColorCustomizations": {
 		},
 	// langauge specific overrides
 		"[javascript]" : {
