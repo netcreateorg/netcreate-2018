@@ -19,6 +19,8 @@ const UniModule   = require('unisys/client-module-class');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const LIFECYCLE   = require('unisys/client-lifecycle');
 const STATE       = require('unisys/client-state');
+const PROMPTS     = require('system/util/prompts');
+const PR          = PROMPTS.Pad('UNISYS');
 
 /// INITIALIZE MAIN MODULE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

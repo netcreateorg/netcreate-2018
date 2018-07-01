@@ -5,20 +5,27 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const express = require('express');
-const app     = express();
+const EXPRESS = require('express');
+const APP     = EXPRESS();
 const UNISYS  = require('./app/unisys/server');
-
-const PR      = 'BrunchServer:';
+const PATH    = require('path');
+const PROMPTS = require('./app/system/util/prompts');
+const PR      = PROMPTS.Pad('BSRV');
 
 /// MIDDLEWARE ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// serve static files
-    app.use( express.static(__dirname + '/public') );
+    APP.use(EXPRESS.static(PATH.join(__dirname,'/public')));
+
+/// inject javascript test
+    APP.get('/', function (req, res) {
+      res.send('GET request to the homepage')
+    });
+
 
 /// WEBSERVICE STUB ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    app.post('/action', (req, res, next) => {
+    APP.post('/action', (req, res, next) => {
       res.send('POST action completed!');
     });
 
@@ -27,15 +34,12 @@ const PR      = 'BrunchServer:';
 /*/ Export the module like this for Brunch.
 /*/ module.exports = (config, callback) => {
 
-      app.listen(config.port, function () {
-        console.log(PR,`listing on port ${config.port}`);
-
+      APP.listen(config.port, function () {
+        console.log(PR,'initializing UNISYS');
         UNISYS.CreateNetwork();
-        console.log(PR,`initializing UNISYS`);
-
         callback();
-      })
-      .on('error', function(err) {
+      }).
+      on('error', function(err) {
         let errstring = `### NETCREATE STARTUP ERROR: '${err.errno}'\n`;
         switch (err.errno) {
           case 'EADDRINUSE':
@@ -48,11 +52,11 @@ const PR      = 'BrunchServer:';
             console.log(err);
         }
         console.log(`\n\n${errstring}\n### PROGRAM STOP\n`);
-        process.exit(err.errno);
+        throw new Error(err.errno);
       });
 
-      // Return the app; it has the `close()` method, which would be ran when
+      // Return the APP; it has the `close()` method, which would be ran when
       // Brunch server is terminated. This is a requirement.
-      return app;
+      return APP;
 
     };

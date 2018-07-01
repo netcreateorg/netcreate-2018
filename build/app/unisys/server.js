@@ -17,10 +17,10 @@
 /**	LOAD LIBRARIES ***********************************************************/
 
   // required utility libraries
-  var   WSS               = require('ws').Server;
-  var   FSE               = require('fs-extra');
-  var   PATH              = require('path');
-  var   NetMessage        = require('./common-netmessage-class');
+  var   WSS          = require('ws').Server;
+  var   FSE          = require('fs-extra');
+  var   NetMessage   = require('./common-netmessage-class');
+  const PROMPTS      = require('../system/util/prompts');
 
   // websocket data structures
   const DEFAULT_UNET_PORT = 2929;
@@ -28,10 +28,10 @@
   var   mu_opt_network; // match WebSocketServer options
 
   // constants: prompts
-  const PR                = "UNET:";
-  const ERR               = "ERR:";
+  const PR           = PROMPTS.Pad('UNET');
+  const ERR          = PROMPTS.Pad('UNET-ERR');
   // constants: error strings
-  const ERR_SS_EXISTS = ERR+PR+"socket server already created";
+  const ERR_SS_EXISTS = ERR+"socket server already created";
 
   var   UNET = {};
 
@@ -55,7 +55,7 @@
       function f_NewSocket( socket ) {
         socket.on('message', ( json )=>{
           let obj = JSON.parse(json);
-          var msg = new NetMessage(msg);
+          var msg = new NetMessage(obj);
           if (DBG) console.log(PR,'Socket Connected');
         });
       }
