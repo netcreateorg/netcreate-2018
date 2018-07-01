@@ -18,7 +18,7 @@ const EXEC       = require('child_process').exec;
 /// LOCAL CONSTANTS, VARS AND FLAGS ///////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPTS    = require('./app/system/util/prompts');
-const PR         = PROMPTS.Pad('BSRV');
+const PR         = PROMPTS.Pad('AppServer');
 const DP         = PROMPTS.Stars(3);
 const GIT        = PROMPTS.Pad('GIT');
 var   UKEY_IDX   = 0;
@@ -44,13 +44,11 @@ const USRV_START = new Date(Date.now()).toISOString();
 		APP.use(function(req, res, next) {
 			res.header("Access-Control-Allow-Origin", "*");
 			res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-			next();
+      next();
 		});
 /// configure template engine then serve templated index.ejs page
     APP.set('view engine','ejs');
-    APP.get('/', (req, res, next) => {
-      // path to the index.ejs file
-      let indexFile = PATH.join(PATH_TEMPLATE,'/index');
+    APP.get('/', function(req, res, next) {
       // gather important information for client so it
       // can establish a socket connection to UNISYS
       let uaddr = IP.address();      // this server LAN ip
@@ -64,19 +62,20 @@ const USRV_START = new Date(Date.now()).toISOString();
       // ustart+ukey should be adequate to distinguish unique instance
       // on the network
       let ustart = USRV_START;
+      // path to the index.ejs file
+      let indexFile = PATH.join(PATH_TEMPLATE,'/index');
       // render template, passing-in template-accessible vars
-      res.render(indexFile,{
-        // server
+      let templateProps = {
+        // server information
         ustart,
-        // client
-        ip,
-        hostname,
-        ukey,
-        // socket
-        uaddr,
-        uport
-      });
-      next();
+        // client information
+        ip, hostname, ukey,
+        // socket address
+        uaddr, uport
+      };
+      res.render(indexFile,templateProps);
+      // adding next() causes 'headers already sent' error
+      // it might be called internally by res.render()?
     });
 /// serve everything else out of public as static files
 /// our app uses ejs templates
@@ -91,8 +90,9 @@ const USRV_START = new Date(Date.now()).toISOString();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ the brunch build tool will call this exported function to start the server
 /*/ module.exports = (config, callback) => {
+      // start app listener
       APP.listen(config.port, function () {
-        // prompt
+        // setup prompts
         console.log(PR);
         console.log(PR,DP,'GO TO ONE OF THESE URLS in CHROME WEB BROWSER',DP);
         console.log(PR,DP,'MAINAPP - http://localhost:'+config.port);
@@ -109,6 +109,9 @@ const USRV_START = new Date(Date.now()).toISOString();
             console.log(GIT,'You are running the "'+stdout+'" branch');
           }
         });
+        // now start the UNISYS network
+        UNISYS.CreateNetwork();
+        // invoke brunch callback
         callback();
       }).
       on('error', function(err) {
@@ -126,11 +129,7 @@ const USRV_START = new Date(Date.now()).toISOString();
         console.log(`\n\n${errstring}\n### PROGRAM STOP\n`);
         throw new Error(err.errno);
       });
-
-      // now start the UNISYS network
-      UNISYS.CreateNetwork();
       // Return the APP; it has the `close()` method, which would be ran when
       // Brunch server is terminated. This is a requirement.
       return APP;
-
     };
