@@ -8,7 +8,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG         = true;
+const DBG = {
+  hook : false
+};
 
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -62,7 +64,7 @@ var   UDATA       = new UniData(UNISYS);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Ensure UNISYS will run correctly
 /*/ UNISYS.SystemInitialize = ( module_id ) => {
-      console.log(PR,'SystemInitialize');
+      if (DBG.hook) console.log(PR,'SystemInitialize');
       // reload if SystemInitialize sees that it's run before
       const key = 'UNISYS_SYSTEM_INIT';
       if (SETTINGS.Get(key)) {
@@ -93,13 +95,13 @@ var   UDATA       = new UniData(UNISYS);
 /*/ API: configure system before run
 /*/ UNISYS.SetupRun = () => {
       return new Promise( async ( resolve, reject ) => {
-        if (DBG) console.log(PR,"running RESET");
+        if (DBG.hook) console.log(PR,"running RESET");
         await LIFECYCLE.Execute('RESET');
-        if (DBG) console.log(PR,"running CONFIGURE");
+        if (DBG.hook) console.log(PR,"running CONFIGURE");
         await LIFECYCLE.Execute('CONFIGURE');
-        if (DBG) console.log(PR,"running START");
+        if (DBG.hook) console.log(PR,"running START");
         await LIFECYCLE.Execute('START');
-        if (DBG) console.log(PR,"StepRun() completed");
+        if (DBG.hook) console.log(PR,"StepRun() completed");
         resolve();
       });
     };

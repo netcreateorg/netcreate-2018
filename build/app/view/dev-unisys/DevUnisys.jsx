@@ -1,3 +1,4 @@
+var   DBG         = false;
 /// SYSTEM INTEGRATION ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS      = require('unisys/client');
@@ -40,11 +41,11 @@ const PR          = PROMPTS.Pad('DevUnisys');
           data.melon += '_ack';
           ucontrol.return(data);
         });
-        // initialize UNISYS before using any hook functions
+        // initialize UNISYS before declaring any hook functions
         UNISYS.SystemInitialize(module.id);
         // hook start handler to initiate call
         UNISYS.Hook('START',() => {
-          console.log('*** START HOOK ***');
+          if (DBG) console.log('*** START HOOK ***');
           this.udata.Call('LOGICMELON',{ melon : 'jsxmelon' });
         });
       } // constructor
@@ -53,7 +54,7 @@ const PR          = PROMPTS.Pad('DevUnisys');
   /// UNISYS state change handler - registered by UNISYS.OnStateChange()
   /// state is coming from UNISYS
       UnisysStateChange( state ) {
-        console.log(`.. REACT <- state`,state,`via ${this.udata.UID()}'`);
+        if (DBG) console.log(`.. REACT <- state`,state,`via ${this.udata.UID()}'`);
         // update local react state, which should force an update
         this.setState(state);
       }
@@ -66,7 +67,7 @@ const PR          = PROMPTS.Pad('DevUnisys');
         let state = {
           description : target.value
         }
-        console.log(`REACT -> state`,state,`to ${this.udata.UID()}`);
+        if (DBG) console.log(`REACT -> state`,state,`to ${this.udata.UID()}`);
         this.udata.SetState('VIEW',state,this.uni_id);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -74,10 +75,10 @@ const PR          = PROMPTS.Pad('DevUnisys');
       componentDidMount() {
         // start the application phase
         let className = REFLECT.ExtractClassName(this);
-        console.log(`${className} componentDidMount`);
+        if (DBG) console.log(`${className} componentDidMount`);
         // initialize network
         UNISYS.NetworkInitialize(() => {
-          console.log(PR,'unisys network initialized');
+          if (DBG) console.log(PR,'unisys network initialized');
         });
         // kickoff initialization stage by stage
         (async () => {

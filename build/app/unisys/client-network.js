@@ -48,21 +48,27 @@ var NETSERVER = SETTINGS.EJSProp('server');
 var NETWORK   = {};
 var DBG_CONN  = false;
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Establish connection to UNISYS sever.
+/*/ Establish connection to UNISYS server. This is called by client.js during
+    NetworkInitialize(), which itself fires after the application has rendered
+    completely.
 /*/ NETWORK.Connect = function ( opt ) {
-      // warn if multiple network connections occur
-      // startup order-of-operation requires knowledge of UNISYS bootstrap
-      // and app switching logic
+      /** warn **/
+      // if multiple network connections occur, emit warning
+      // warning: don't modify this unless you have a deep knowledge of how
+      // the webapp system works or you might break something
       if (DBG_CONN) {
         let err = 'called twice...other views may be calling UNISYS outside of lifecycle';
         console.error(WARN,err);
         return;
       }
       DBG_CONN = true;
-      // double-check that required parameters are set
-      // currently there are no options
+
+      /** check parms **/
+      // All required parameters are set? (currently there are none)
       opt = opt || {};
-      // create websocket
+
+      /** create websocket **/
+      // uses values that were embedded in index.ejs on load
       let wsURI = `ws://${NETSOCK.uaddr}:${NETSOCK.uport}`;
       NETSOCK.ws = new WebSocket(wsURI);
       if (DBG) console.log(PR,'OPEN SOCKET TO',wsURI);

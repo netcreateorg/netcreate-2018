@@ -11,7 +11,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const DBG       = {
-  state : false
+  state : false,
+  hook  : false
 };
 
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
@@ -54,12 +55,12 @@ PASSED = {
 /*/ MOD.Hook('INITIALIZE', function () {
       PASSED.initHook1 = true;
       let tms = 1000;
-      console.log(`Init Hook P1 will resolve in ${tms} milliseconds...`);
+      if (DBG.hook) console.log(`Init Hook P1 will resolve in ${tms} milliseconds...`);
       let p = new Promise(function (resolve,reject) {
         setTimeout(
           () => {
             resolve(1);
-            console.log('Init Hook P1 resolved!');
+            if (DBG.hook) console.log('Init Hook P1 resolved!');
             PASSED.initHookDeferred = true;
           },
           tms
@@ -72,7 +73,7 @@ PASSED = {
     Enable this feature by returning a Function
 /*/ MOD.Hook('INITIALIZE', function() {
       PASSED.initHook2 = true;
-      console.log('Init Hook P2 resolves immediately');
+      if (DBG.hook) console.log('Init Hook P2 resolves immediately');
 
       UDATA.HandleMessage('LOGICMELON',(data)=>{
         if (data && data.melon) PASSED.callRegInvoke = true;
@@ -97,13 +98,11 @@ PASSED = {
       /*/
       remote method invocation of JSXMELON is expected to return data in a callback
       /*/
-      console.group('CALL INVOCATION TEST');
       UDATA.Call('JSXMELON',{melon:'logicmelon'},(data,ucontrol)=>{
         PASSED.remoteCall = true;
         if (data && data.melon && data.cat) PASSED.remoteData = true;
         if ((data.melon==='logicmelon_ack')&&(data.cat==='calico')) PASSED.remoteDataAdd = true;
       });
-      console.groupEnd();
 
       // update the description
       setTimeout( function () {
