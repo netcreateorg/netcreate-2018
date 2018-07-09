@@ -29,7 +29,7 @@ const USRV_START = new Date(Date.now()).toISOString();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ This happens early because we need to inject UNISYS connection parameters
     into index.ejs
-/*/ let unetOptions = UNISYS.Initialize();
+/*/ let unetOptions = UNISYS.InitializeNetwork();
     console.log(PR,'Created Network',unetOptions);
 
 /// CONFIGURE EXPRESS /////////////////////////////////////////////////////////
@@ -110,7 +110,7 @@ const USRV_START = new Date(Date.now()).toISOString();
           }
         });
         // now start the UNISYS network
-        UNISYS.CreateNetwork();
+        UNISYS.StartNetwork();
         // invoke brunch callback
         callback();
       }).

@@ -53,6 +53,7 @@ let DATE     = new Date();
 /*/ searches through the window.NC_UNISYS object that is injected by web page
     app/static/index.ejs, which contains interesting values from server
 /*/ MOD.EJSProp = ( propName ) => {
+      if (propName===undefined) return EJSPROPS;
       return EJSPROPS[propName];
     };
 
