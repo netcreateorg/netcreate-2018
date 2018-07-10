@@ -6,7 +6,7 @@
     event messaging system. Instances are created with UNISYS.NewDataLink().
 
     Each UNODE has a unique UNISYS_ID (the UID) which represents its
-    local address. Combined with the device address, this makes every UNODE
+    local address. Combined with the device UADDR, this makes every UNODE
     on the network addressable.
 
     * UNODES can get and set global state objects
@@ -30,7 +30,7 @@ const BAD_EJSPROPS = "EJS props (window.NC_UNISYS) is undefined, so can not set 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SETTINGS     = require('settings');
-const UNISTATE     = require('unisys/client-state');
+const STATE        = require('unisys/client-state');
 const Messager     = require('unisys/client-messager-class');
 
 /// NODE MANAGEMENT ///////////////////////////////////////////////////////////
@@ -88,36 +88,36 @@ var MESSAGER       = new Messager();
       }
 
 
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UNIQUE UNISYS ID for local application
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// this is used to differentiate sources of events so they don't echo
       UID() { return this.uid; }
       Name() { return this.name; }
 
 
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// GLOBAL STATE ACCESS
-  /// global UNISTATE module calls are wrapped by unisys node so the unique
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// global STATE module calls are wrapped by unisys node so the unique
   /// UnisysID address can be appended
       State( namespace ) {
-        return UNISTATE.State(namespace);
+        return STATE.State(namespace);
       }
       SetState( namespace, newState ) {
         // uid is "source uid" designating who is making the change
-        UNISTATE.SetState(namespace,newState,this.UID() );
+        STATE.SetState(namespace,newState,this.UID() );
       }
       // uid is "source uid" of subscribing object, to avoid reflection
       // if the subscribing object is also the originating state changer
       OnStateChange( namespace, listener ) {
-        UNISTATE.OnStateChange(namespace,listener,this.UID() );
+        STATE.OnStateChange(namespace,listener,this.UID() );
       }
       OffStateChange( namespace, listener ) {
-        UNISTATE.OffStateChange(namespace,listener);
+        STATE.OffStateChange(namespace,listener);
       }
 
 
+  /// MESSAGES ////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// MESSAGES
   /// mesgName is a string, and is an official event that's defined by the
   /// subclasser of UnisysNode
       HandleMessage( mesgName, listener ) {
@@ -163,9 +163,16 @@ var MESSAGER       = new Messager();
       NullCallback () {
         if (DBG) console.log('null_callback',this.UID());
       }
-
-
   } // class UnisysNode
+
+
+/// STATIC CLASS METHODS //////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ There's a single MESSAGER object that handles all registered messages for
+    UNISYS.
+/*/ UnisysDataLink.MessageNames = function () {
+      return MESSAGER.MessageNames();
+    };
 
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////

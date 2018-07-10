@@ -19,12 +19,12 @@
     "rules": {
         "accessor-pairs": "error",
         "array-bracket-newline": "error",
-        "array-bracket-spacing": "error",
+        "array-bracket-spacing": "off",
         "array-callback-return": "error",
         "array-element-newline": "off",
         "arrow-body-style": "off",
         "arrow-parens": [
-            "warn",
+            "off",
             "always"
         ],
         "arrow-spacing": [
@@ -81,7 +81,7 @@
         "generator-star-spacing": "error",
         "getter-return": "error",
         "global-require": "off",
-        "guard-for-in": "error",
+        "guard-for-in": "off",
         "handle-callback-err": "error",
         "id-blacklist": "error",
         "id-length": "off",
@@ -117,7 +117,7 @@
         "max-len": "off",
         "max-lines": "warn",
         "max-nested-callbacks": "error",
-        "max-params": "error",
+        "max-params": "off",
         "max-statements": [2,50],
         "max-statements-per-line": "off",
         "multiline-comment-style": "off",
