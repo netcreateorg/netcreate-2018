@@ -86,6 +86,7 @@ var   UDATA       = new UniData(UNISYS);
 /*/ UNISYS.EnterApp = () => {
       let p = new Promise( async ( resolve, reject ) => {
         await LIFECYCLE.Execute('INITIALIZE'); // INITIALIZE hook
+        await LIFECYCLE.Execute('UNISYSHOOK'); // UNISYS handlers hook (if needed)
         await LIFECYCLE.Execute('LOADASSETS'); // LOADASSETS hook
         resolve();
       });

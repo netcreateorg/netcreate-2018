@@ -17,6 +17,7 @@ const PATH     = require('system/util/path');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const PHASES = [
       'INITIALIZE',               // executes before REACT renders
+      'UNISYSHOOK',               // configure UNISYS-related hooks
       'LOADASSETS',               // load any external data, make connections
       'RESET',                    // reset runtime data structures
       'CONFIGURE',                // configure runtime data structures
