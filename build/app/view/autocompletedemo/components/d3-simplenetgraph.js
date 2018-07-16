@@ -115,7 +115,7 @@ class D3NetGraph {
             UDATA.Call('SOURCE_SELECT',{ nodeLabels: [] }); }
         )
         .call(d3.zoom().on("zoom", function () {
-          d3.select(this).attr("transform", d3.event.transform);
+          d3.select('.zoomer').attr("transform", d3.event.transform);
         }));
       this.zoomWrapper = this.d3svg.append('g').attr("class","zoomer");
       this.simulation = d3.forceSimulation();
