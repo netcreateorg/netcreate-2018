@@ -28,25 +28,39 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG   = true;
+const DBG           = true;
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const SETTINGS    = require('settings');
-const PROMPTS     = require('system/util/prompts');
-const PR          = PROMPTS.Pad('NETWORK');
-const WARN        = PROMPTS.Pad('!!!');
+const SETTINGS      = require('settings');
+const NetMessage    = require('unisys/common-netmessage-class');
+const UDATA         = require('unisys/client-datalink-class');
+const PROMPTS       = require('system/util/prompts');
+const PR            = PROMPTS.Pad('NETWORK');
+const WARN          = PROMPTS.Pad('!!!');
+const ERR_NM_REQ    = "arg1 must be NetMessage instance";
+const ERR_NO_SOCKET = "Network socket has not been established yet";
 
 /// GLOBAL NETWORK INFO (INJECTED ON INDEX) ///////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var NETSOCK   = SETTINGS.EJSProp('socket');
-var NETCLIENT = SETTINGS.EJSProp('client');
-var NETSERVER = SETTINGS.EJSProp('server');
+var NETSOCK         = SETTINGS.EJSProp('socket');
+var NETCLIENT       = SETTINGS.EJSProp('client');
+var NETSERVER       = SETTINGS.EJSProp('server');
+
+/// NETWORK ID VALUES /////////////////////////////////////////////////////////
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const M0_INIT       = 0;
+const M1_CONNECTING = 1;
+const M2_CONNECTED  = 2;
+const M3_REGISTERED = 3;
+const M4_READY      = 4;
+var   m_status      = M0_INIT;
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var NETWORK   = {};
-var DBG_CONN  = false;
+
+/// CONNECT ///////////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Establish connection to UNISYS server. This is called by client.js during
     NetworkInitialize(), which itself fires after the application has rendered
@@ -56,15 +70,14 @@ var DBG_CONN  = false;
       // if multiple network connections occur, emit warning
       // warning: don't modify this unless you have a deep knowledge of how
       // the webapp system works or you might break something
-      if (DBG_CONN) {
+      if (m_status>0) {
         let err = 'called twice...other views may be calling UNISYS outside of lifecycle';
         console.error(WARN,err);
         return;
       }
-      DBG_CONN = true;
+      m_status = M1_CONNECTING;
 
       /** check parms **/
-      // All required parameters are set? (currently there are none)
       opt = opt || {};
 
       /** create websocket **/
@@ -72,37 +85,73 @@ var DBG_CONN  = false;
       let wsURI = `ws://${NETSOCK.uaddr}:${NETSOCK.uport}`;
       NETSOCK.ws = new WebSocket(wsURI);
       if (DBG) console.log(PR,'OPEN SOCKET TO',wsURI);
-      // handle open connection
-      NETSOCK.ws.addEventListener('open', function( event ) {
-        let out = '';
-        switch (event.currentTarget.readyState) {
-          case 0: out += 'CONNECTING TO';
-            break;
-          case 1: out += 'CONNECTED';
-            break;
-          case 2: out += 'CLOSING';
-            break;
-          case 3: out += 'CLOSED';
-            break;
-          default: out += '<UNKNOWN>'
-        }
-        if (DBG) console.log(PR,'SOCKET',out,event.target.url);
-        /*/
-        send registration message
-        /*/
-        if (typeof (opt.success)==='function') opt.success();
+
+      /** create listeners **/
+      NETWORK.AddListener('open', function( event ) {
+        if (DBG) console.log(PR,'..OPEN',event.target.url);
+        m_status = M2_CONNECTED;
+        // message handling continues in 'message' handler
+        // the first message is assumed to be registration data
       });
-      // handle errors
-      NETSOCK.ws.addEventListener('error', function( event ) {
+      NETWORK.AddListener('close', function( event ) {
+        if (DBG) console.log(PR,'..CLOSE',event.target.url);
+        m_status = M0_INIT;
+      });
+      /** handle socket errors **/
+      NETWORK.AddListener('error', function( event ) {
         console.warn(WARN,'ERROR opening command socket',event);
         throw ("error with command socket");
       });
-      // handle messages
-      NETSOCK.ws.addEventListener('message', function( event ) {
-        if (DBG) console.log(PR,'MESSAGE',event);
-      });
+      /** handle incoming messages **/
+      NETWORK.AddListener('message', m_HandleRegistrationMessage);
     }; // Connect()
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ After 'open' event, we expect the first message on the socket to contain
+    network session-related messages
+/*/ function m_HandleRegistrationMessage( msgEvent ) {
+      let regData = JSON.parse(msgEvent.data);
+      let { HELLO, UADDR } = regData;
+      NetMessage.SetUADDR(UADDR);
+      // after receiving the initial message, switch over to regular
+      // message handler
+      NETWORK.RemoveListener('message', m_HandleRegistrationMessage);
+      m_status = M3_REGISTERED;
+      // DO SOMETHING HERE
+      console.log(PR,'message names',UDATA.MessageNames());
+      // STOP DOING SOMETHING
+      NETWORK.AddListener('message', m_HandleMessage);
+      m_status = M4_READY;
+    }
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    function m_HandleMessage( msgEvent ) {
+      let pkt = new NetMessage(msgEvent.data);
+      if (DBG) console.log(PR,'Received REGULAR MESSAGE',pkt.Data(),pkt.SeqNum());
+    }
 
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Send a packet on socket connection, assuming it is valid
+/*/ NETWORK.Send = function ( pkt ) {
+      if (!(pkt instanceof NetMessage)) throw Error(ERR_NM_REQ);
+      if (NETSOCK.ws.readyState===1) {
+        let json = pkt.JSON();
+        if (DBG) console.log('SENDING',pkt.Message(),pkt.Data(),pkt.SeqNum());
+        NETSOCK.ws.send(json);
+      } else {
+        console.log('Socket not ReadyState 1, is',NETSOCK.ws.readyState);
+      }
+    };
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Send a packet on socket connection, return Promise
+/*/ NETWORK.Call = function ( pkt ) {
+      if (!(pkt instanceof NetMessage)) throw Error(ERR_NM_REQ);
+      if (NETSOCK.ws.readyState===1) {
+        let json = pkt.JSON();
+        if (DBG) console.log('CALLING',pkt.Message(),json);
+        NETSOCK.ws.send(json);
+      } else {
+        console.log('Socket not ReadyState 1, is',NETSOCK.ws.readyState);
+      }
+    };
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Force close of connection, for example if UNISYS.AppReady() fails
 /*/ NETWORK.Close = function ( code, reason ) {
@@ -110,6 +159,22 @@ var DBG_CONN  = false;
       reason = reason || 'unisys forced close';
       NETSOCK.ws.close(code,reason);
   };
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    NETWORK.AddListener = function ( event, handlerFunction ) {
+      if (NETSOCK.ws instanceof WebSocket) {
+        NETSOCK.ws.addEventListener(event, handlerFunction);
+      } else {
+        throw Error(ERR_NO_SOCKET);
+      }
+    }
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    NETWORK.RemoveListener = function ( event, handlerFunction ) {
+      if (NETSOCK.ws instanceof WebSocket) {
+        NETSOCK.ws.removeEventListener(event, handlerFunction);
+      } else {
+        throw Error(ERR_NO_SOCKET);
+      }
+    }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     NETWORK.LocalInfo = function () {
       return NETCLIENT;
@@ -122,7 +187,6 @@ var DBG_CONN  = false;
     NETWORK.SocketInfo = function () {
       return NETSOCK;
     };
-
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

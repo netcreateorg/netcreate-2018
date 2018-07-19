@@ -42,11 +42,9 @@ const DBG          = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var   MSGR_IDCOUNT = 0;
 
-/// UNISYS EMITTER CLASS //////////////////////////////////////////////////////
+/// UNISYS MESSAGER CLASS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 class Messager {
-
 /*/ Instances of this class can be used to implement a UNISYS-style message
     passing scheme with shared semantics. It maintains a Map keyed by mesgName
     strings, containing a Set object filled with handlers for that mesgName.
@@ -97,27 +95,34 @@ class Messager {
 /*/ API: trigger a message with the data object payload, sending to all handlers
     that implement that event. Includer sender's unisys id to prevent the sender
     to receiving its own message back if it happens to implement the message as
-    well.
+    well. dstScope is 'net' or 'local' to limit where to send, or 'all'
+    for everyone on net or local
 /*/ Send( mesgName, data, options={} ) {
-      let { srcUID } = options;
+      let { srcUID, toLocal=true, toNet=true } = options;
       let etype = (srcUID===undefined)
         ? 'MessagerSignal'
         : 'MessagerSend';
       if (DBG) console.log(`${etype}: [${mesgName}] data:`,data);
-      const handlers = this.handlerMap.get(mesgName);
-      if (handlers) {
-        for (let handlerFunc of handlers) {
-          if (srcUID && handlerFunc.udata_id===srcUID) continue;
-          handlerFunc(mesgName, data, srcUID);
+      // look at local handlers
+      if (toLocal) {
+        const handlers = this.handlerMap.get(mesgName);
+        if (handlers) {
+          for (let handlerFunc of handlers) {
+            if (srcUID && handlerFunc.udata_id===srcUID) continue;
+            handlerFunc(mesgName, data, srcUID);
+          }
         }
-      }
+      } // toLocal
+      if (toNet) {
+        console.log('forward packet to Network');
+      } // toNet
       return this;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: wrapper for Send() used when you want every handlerFunc, including
     the sender, to receive the event even if it is the one who sent it
-/*/ Signal( mesgName, data ) {
-      this.Send(mesgName,data);
+/*/ Signal( mesgName, data, options ) {
+      this.Send(mesgName,data,options);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: The Remote Method Invocation version of Send(). It does not include
@@ -127,10 +132,11 @@ class Messager {
     across the network
     TODO: Enable callback support by adding to options, callobjs dict, etc
 /*/ Call( mesgName, inData, options={} ) {
-      let { srcUID, dataReturnFunc } = options;
+      let { srcUID, dataReturnFunc }   = options;
+      let { toLocal=true, toNet=true } = options;
       if (DBG) console.log(`MessagerCall: [${mesgName}] inData:`,inData);
-      const handlers = this.handlerMap.get(mesgName);
-      if (handlers) {
+      if (toLocal) {
+        const handlers = this.handlerMap.get(mesgName);
         for (let handlerFunc of handlers) {
           if (srcUID && handlerFunc.udata_id===srcUID) {
             if (DBG) console.warn(`MessagerCall: [${mesgName}] skip call since origin = destination; use Broadcast() if intended`);
@@ -145,11 +151,24 @@ class Messager {
             "return" : dataReturnFunc
           });
         }
-      }
+      } // toLocal
+      if (toNet) {
+        if (DBG) console.log('MessagerCall: Network async call handling here');
+      } // toNet
       return this;
     }
 
-}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: Return a list of messages handled by this Messager instance
+/*/ MessageNames () {
+      let handlers = [];
+      this.handlerMap.forEach( (value, key ) => {
+        handlers.push(key);
+        console.log('handler: '+key);
+      });
+      return handlers;
+    }
+} // Messager
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

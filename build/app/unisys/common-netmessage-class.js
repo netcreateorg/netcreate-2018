@@ -1,5 +1,3 @@
-const DBGOUT = true;
-
 /** NetMessage ****************************************************************\
 
   NetMessage objects are sent between the browser and server as part of the
@@ -20,6 +18,8 @@ const DBGOUT = true;
 
 ////////////////////////////////////////////////////////////////////////////////
 /** MODULE DECLARATIONS *******************************************************/
+
+  const DBG = true;
 
   var m_id_counter 	= 0;
   var m_id_prefix  	= 'NM';
@@ -54,32 +54,43 @@ const DBGOUT = true;
 /*/ class NetMessage {
       constructor( msg, data ) {
         // OPTION 1
-        // create NetMessage from generic object
-        if ((typeof msg === 'object') && (data === undefined)) {
+        // create NetMessage from (generic object)
+        if ((typeof msg==='object') && (data===undefined)) {
           // make sure it has a msg and data obj
           if ((typeof msg.msg!=='string')||(typeof msg.data!=='object')) throw ERR_NOT_NETMESSAGE;
           // merge properties into this new class instance and return it
           Object.assign(this,msg);
+          m_SeqIncrement(this);
           return this;
         }
         // OPTION 2
-        // create NetMessage from string, object
+        // create NetMessage from JSON-encoded string
+        if ((typeof msg==='string') && (data===undefined)) {
+          let obj = JSON.parse(msg);
+          Object.assign(this,obj);
+          m_SeqIncrement(this);
+          return this;
+        }
+        // OPTION 3
+        // create NetMessage from (string, object)
         // unique id for every NetMessage
         if ((typeof msg!=='string') || (typeof data!=='object')) throw ERR_ERR_BAD_CONSTRUCTION;
 
-        this.id 		  = m_id_prefix+(++m_id_counter).padStart(5,'0');
-        this.desc 		= '';
-        // transaction support
-        this.seqnum		= 0;	// positive when part of transaction
-        this.seqlog 	= [];
-        this.acklog 	= [];
-        this.msglog		= [];
-        // addressing support
-        this.addr 		= null;
         // allow calls with null data by setting to empty object
         this.data     = data || {};
-        this.msg 	    = msg;
-        this.data 	  = data;
+        this.msg      = msg;
+        // id and debugging memo support
+        let idStr     = (++m_id_counter).toString();
+        this.id       = m_id_prefix+'.'+idStr.padStart(5,'0');
+        this.memo     = '';
+        // transaction support
+        this.seqnum   = 0;	  // positive when part of transaction
+        this.seqlog   = [];   // for debugging support
+        this.acklog   = [];   // for debugging support
+        this.msglog   = [];   // for debugging support
+        // addressing support
+        this.s_uaddr  = null; // originating uaddr
+        this.d_uaddrs = null; // dest uaddr(s)
       } // constructor
 
   /// ACCESSSOR METHODS ///////////////////////////////////////////////////////
@@ -109,14 +120,18 @@ const DBGOUT = true;
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ getter/setter for the memo description field
-  /*/ Memo() { return this.desc; }
-      SetMemo( desc ) { this.desc = desc; }
-
+  /*/ Memo() { return this.memo; }
+      SetMemo( memo ) { this.memo = memo; }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ convenience function to return JSON version of this object
+  /*/ JSON() {
+        return JSON.stringify(this);
+      }
 
   /// TRANSACTION SUPPORT /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ The sequence number is positive if this packet is reused
-  /*/ SequenceNum() {
+  /*/ SeqNum() {
         return this.seqnum;
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -201,20 +216,20 @@ const DBGOUT = true;
       of the UNISYS default 'all registered handlers'
   /*/	SetAddress( addr ) {
         if (Array.isArray(addr)) {
-          if (!this.addr) this.addr=[];
+          if (!this.d_addr) this.d_addr=[];
           for (var i=0; i<addr.length; i++) {
-            this.addr.push(addr[i]);
+            this.d_addr.push(addr[i]);
           }
           return;
         }
         var type = typeof addr;
         if (type==='string') {
-          if (!this.addr) this.addr=[];
-          this.addr.push(addr);
+          if (!this.d_addr) this.d_addr=[];
+          this.d_addr.push(addr);
           return;
         }
         if (!type) {
-          this.addr = null;
+          this.d_addr = null;
           return;
         }
         throw ('arg1 must be an address string, array, or falsey');
@@ -223,9 +238,30 @@ const DBGOUT = true;
   /*/	accessor function to return the address array. is null (falsey) if no
       addresses have been set
   /*/	GetAddress() {
-        return this.addr;
+        return this.d_addr;
       }
-  } // class UMessage
+    } // class NetMessage
+
+/// STATIC CLASS METHODS //////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ set the source address (uaddr)
+/*/ NetMessage.SetUADDR = function ( uaddr ) {
+      if (DBG) console.log(PR,'setting global UADDR to ',uaddr);
+      NetMessage.UADDR = uaddr;
+    };
+
+/// PRIVATE CLASS HELPERS /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ when a packet is reconstructed from an existing object or json string,
+    its sequence number is incremented, and the old source uaddr is pushed
+    onto the seqlog stack.
+/*/ function m_SeqIncrement( pkt ) {
+      pkt.seqnum++;
+      pkt.seqlog.push(pkt.s_uaddr);
+      pkt.s_uaddr = NetMessage.UADDR;
+      return pkt;
+    }
+
 
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
