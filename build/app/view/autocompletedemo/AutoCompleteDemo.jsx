@@ -78,11 +78,9 @@ var   UDATA        = null; // set in constructor
         return (
           <div>
             <h1>Auto Complete Demo</h1>
-            <p>This demonstrates how a d3 force simulation, a node selection input
-            field, and a node viewer might be encapsulated into react components
-            and pass data back and forth to each other.</p>
             <p>INSTRUCTIONS: Type in the "Nodes" input field to highlight nodes or
-            a node around to see how it's linked to other nodes.</p>
+          move a node around to see how it's linked to other nodes.</p>
+          <p>To Zoom/Pan: Use mousewheel (or two fingers on a trackpad) to zoom in and out.  Drag the background to pan.</p>
             <div style={{display:'flex', flexFlow:'row nowrap',
                 width:'100%', height:'100%'}}>
               <div id="left" style={{backgroundColor:'#E0ffff',flex:'1 0 auto',maxWidth:'300px',padding:'10px'}}>

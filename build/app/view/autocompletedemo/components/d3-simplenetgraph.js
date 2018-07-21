@@ -16,6 +16,10 @@
     However, this hasn't been reconciled with the `D3 Force Demo` widgets.
     It *might* work, but it *might* not.
 
+    Zooming/panning is handled via D3's zoom() function.  Basically it
+    involves creating a `g` element that wraps the node and link elements
+    and applying transforms on that wrapper.
+
     This is based on:
     *  rdpoor's commented version of mbostock's original code
        https://gist.github.com/rdpoor/3a66b3e082ffeaeb5e6e79961192f7d8
@@ -23,6 +27,8 @@
        https://bl.ocks.org/tezzutezzu/cd04b3f1efee4186ff42aae66c87d1a7
     *  mbostock's general update pattern
        https://bl.ocks.org/mbostock/3808218
+    *  Coderwall's zoom and pan method
+       https://coderwall.com/p/psogia/simplest-way-to-add-zoom-pan-on-d3-js
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -83,6 +89,7 @@ class D3NetGraph {
 
       this.rootElement  = rootElement;
       this.d3svg        = {};
+      this.zoomWrapper  = {};
       this.simulation   = {};
       this.data         = {};
 
@@ -106,20 +113,24 @@ class D3NetGraph {
         .on("click", ( e, event ) => {
             // Deselect
             UDATA.Call('SOURCE_SELECT',{ nodeLabels: [] }); }
-        );
+        )
+        .call(d3.zoom().on("zoom", function () {
+          d3.select('.zoomer').attr("transform", d3.event.transform);
+        }));
+      this.zoomWrapper = this.d3svg.append('g').attr("class","zoomer");
       this.simulation = d3.forceSimulation();
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// END D3 CODE ///////////////////////////////////////////////////////////////
 
       // bind 'this' to function objects so event handlers can access
       // contents of this class+module instance
-      this._Initialize        = this._Initialize.bind(this)
-      this._UpdateGraph       = this._UpdateGraph.bind(this)
-      this._UpdateForces      = this._UpdateForces.bind(this)
-      this._Tick              = this._Tick.bind(this)
-      this._Dragstarted       = this._Dragstarted.bind(this)
-      this._Dragged           = this._Dragged.bind(this)
-      this._Dragended         = this._Dragended.bind(this)
+      this._Initialize        = this._Initialize.bind(this);
+      this._UpdateGraph       = this._UpdateGraph.bind(this);
+      this._UpdateForces      = this._UpdateForces.bind(this);
+      this._Tick              = this._Tick.bind(this);
+      this._Dragstarted       = this._Dragstarted.bind(this);
+      this._Dragged           = this._Dragged.bind(this);
+      this._Dragended         = this._Dragended.bind(this);
 
       // watch for updates to the D3DATA data object
       UDATA.OnStateChange('D3DATA',(data)=>{
@@ -193,11 +204,11 @@ class D3NetGraph {
       // assigning each one an id using the key function.
 
       // nodeElements is a d3.selection object
-      let nodeElements = this.d3svg.selectAll(".node")
+      let nodeElements = this.zoomWrapper.selectAll(".node")
         .data(this.data.nodes, (d) => { return d.id });
 
       // edges is a d3.selection object
-      let linkElements = this.d3svg.selectAll(".edge")
+      let linkElements = this.zoomWrapper.selectAll(".edge")
         .data(this.data.edges, (d) => { return d.source.id+"-"+d.target.id });
 
       // TELL D3 HOW TO HANDLE NEW NODE DATA
@@ -372,12 +383,12 @@ class D3NetGraph {
 /*/ _Tick() {
       // Drawing the nodes: Update the location of each node group element
       // from the x, y fields of the corresponding node object.
-      this.d3svg.selectAll(".node")
+      this.zoomWrapper.selectAll(".node")
         .attr("transform", (d) => { return "translate("+d.x+","+d.y+")" })
 
       // Drawing the links: Update the start and end points of each line element
       // from the x, y fields of the corresponding source and target node objects.
-      this.d3svg.selectAll(".edge")
+      this.zoomWrapper.selectAll(".edge")
         .attr("x1", (d) => { return d.source.x; })
         .attr("y1", (d) => { return d.source.y; })
         .attr("x2", (d) => { return d.target.x; })

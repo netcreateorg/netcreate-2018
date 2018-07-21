@@ -75,6 +75,9 @@ svg {
   flex-basis: 100%;
   min-width: 200px;
 }
+svg {
+  cursor: move;
+}
 /* D3SimpleNetGraph redo removes links group...
 svg .links line {
   stroke: #aaa;
@@ -89,6 +92,9 @@ svg .edge.selected {
 }
 svg .nodes circle {
   pointer-events: all;
+}
+svg .node {
+  cursor: pointer;
 }
 svg .nodes text {
   color: #999;
