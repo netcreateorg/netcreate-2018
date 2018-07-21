@@ -135,8 +135,8 @@ class Messager {
       let { srcUID, dataReturnFunc }   = options;
       let { toLocal=true, toNet=true } = options;
       if (DBG) console.log(`MessagerCall: [${mesgName}] inData:`,inData);
-      if (toLocal) {
-        const handlers = this.handlerMap.get(mesgName);
+      const handlers = this.handlerMap.get(mesgName);
+      if (handlers && toLocal) {
         for (let handlerFunc of handlers) {
           if (srcUID && handlerFunc.udata_id===srcUID) {
             if (DBG) console.warn(`MessagerCall: [${mesgName}] skip call since origin = destination; use Broadcast() if intended`);
