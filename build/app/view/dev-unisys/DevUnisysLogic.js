@@ -23,10 +23,10 @@ var   TESTCOUNTER   = 3;
 var   TESTINTERVAL  = null;
 
 // enable debug output and tests
-TEST('state'  , false);
+TEST('state'  , true);
 TEST('hook'   , true);
 TEST('call'   , true);
-TEST('remote' , false);
+TEST('remote' , true);
 TEST('net'    , false);
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
@@ -51,7 +51,6 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
   /*/ register state change handler
   /*/ if (TEST('state')) {
         UDATA.OnStateChange('VIEW',(state)=>{
-          console.log(`.. LOGIC <- state`,state,`via NS 'VIEW'`);
           TEST.Pass('stateChange');
         });
       }
@@ -59,12 +58,19 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
   /// NETWORK TESTING
   /*/ remote method invocation of REMOTE_CALL_TEST is expected to return data in a callback
   /*/ if (TEST('remote')) {
+
+        UDATA.HandleMessage('REMOTE_CALL_TEST',(data, msgcon) => {
+          // ignoring data entirely
+          // this result will get aggregated into one object
+          return { dog : 'spotted' };
+        });
+
         UDATA.Call('REMOTE_CALL_TEST',{melon:'logicmelon'})
         .then((data) => {
-          console.log('REMOTE_CALL_TEST return data',data);
           TEST.Pass('remoteCall');
           if (data && data.melon && data.cat) TEST.Pass('remoteData');
-          if ((data.melon==='logicmelon_ack')&&(data.cat==='calico')) TEST.Pass('remoteDataAdd');
+          if (data.melon==='logicmelon_ack' && data.cat==='calico') TEST.Pass('remoteDataAdd');
+          if (data.dog && data.dog==='spotted') TEST.Pass('remoteDataMulti');
         });
       }
 
@@ -73,7 +79,6 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
         // update the description after 1000ms
         setTimeout( function () {
           let state = { description : 'test stateChange succeeded' };
-          if (TEST('state')) console.log(`LOGIC -> state`,state,`via NS 'VIEW' ${UDATA.UID()}`);
           UDATA.SetState('VIEW',state,UDATA.UID());
         },1000);
 
@@ -95,7 +100,6 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
           }
 
           let state = { random: u_RandomString() };
-          console.log(`LOGIC -> state`,state,`via NS 'LOGIC' ${UDATA.UID()}`);
           UDATA.SetState('LOGIC',state,UDATA.UID());
         },500);
       }
@@ -109,12 +113,10 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
 /*/ if (TEST('hook')) MOD.Hook('INITIALIZE', function () {
       TEST.Pass('hookInit1');
       let tms = 1000;
-      console.log(`Init Hook P1 will resolve in ${tms} milliseconds...`);
       let p = new Promise(function (resolve,reject) {
         setTimeout(
           () => {
             resolve(1);
-            console.log('Init Hook P1 resolved!');
             TEST.Pass('hookInitDeferred');
           },
           tms
@@ -130,7 +132,6 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
     Enable this feature by returning a Function
 /*/ if (TEST('hook')) MOD.Hook('INITIALIZE', function() {
       TEST.Pass('hookInit2');
-      console.log('Init Hook P2 resolves immediately');
     }); // end INITIALIZE 2
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -19,7 +19,7 @@
 
 /// DEBUGGING /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG          = { send : true, return : true };
+const DBG          = { send : true, return : true, register : true };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const BAD_OWNER    = "must pass owner object of type React.Component or UniModule with optional 'name' parameter";
 const BAD_NAME     = "name parameter must be a string";
@@ -153,12 +153,10 @@ var MESSAGER       = new Messager();
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
         options.srcUID = this.UID();
-        console.group(`Call [${mesgName}]`);
         let promises = MESSAGER.Call(mesgName,inData,options);
         let resArray = await Promise.all(promises);
-        console.groupEnd();
         let resObj = Object.assign({},...resArray);
-        if (DBG.return) console.log(`Returning combined result`,resObj);
+        if (DBG.return) console.log(`[${mesgName}] returning`,JSON.stringify(resObj));
         return resObj;
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

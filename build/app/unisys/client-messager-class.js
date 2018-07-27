@@ -41,6 +41,7 @@ const TEST      = require('test');
 /// MODULE VARS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var   MSGR_IDCOUNT = 0;
+var   DBG          = false;
 
 /// UNISYS MESSAGER CLASS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -63,7 +64,6 @@ class Messager {
         throw new TypeError('arg2 must be a function');
       }
       if (typeof handlerUID==='string') {
-        if (TEST('call')) console.log(`saving udata_id with handlerFunc`);
         // bind the udata uid to the handlerFunc function for convenient access
         // by the message dispatcher
         handlerFunc.udata_id = handlerUID;
@@ -104,14 +104,13 @@ class Messager {
       const handlers = this.handlerMap.get(mesgName);
       let promises = [];
       /// toLocal
-      if (TEST('data')) console.log('indata',inData);
       if (handlers && toLocal) {
         for (let handlerFunc of handlers) {
           // handlerFunc signature: (data,dataReturn) => {}
           // handlerFunc has udata_id property to note originating UDATA object
           // skip "same origin" calls
           if (srcUID && handlerFunc.udata_id===srcUID) {
-            if (TEST('call')) console.warn(`MessagerSend: [${mesgName}] skip call since origin = destination; use Broadcast() if intended`);
+            if (DBG) console.warn(`MessagerSend: [${mesgName}] skip call since origin = destination; use Broadcast() if intended`);
             continue;
           }
           // Create a promise. if handlerFunc returns a promise, it follows
@@ -132,7 +131,6 @@ class Messager {
         if (TEST('net')) console.log('MessagerCall: Network async call handling here');
       } // end toNetwork
       /// return all queued promises
-      if (TEST('call')) console.log(mesgName,'promises',promises);
       return promises;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -146,7 +144,6 @@ class Messager {
 /*/ Call( mesgName, inData, options={} ) {
       let { srcUID }                   = options;
       let { toLocal=true, toNet=true } = options;
-      if (TEST('call')) console.log(`MessagerCall: [${mesgName}] inData:`,inData);
       const handlers = this.handlerMap.get(mesgName);
       let promises = [];
       /// toLocal
@@ -156,7 +153,7 @@ class Messager {
           // handlerFunc has udata_id property to note originating UDATA object
           // skip "same origin" calls
           if (srcUID && handlerFunc.udata_id===srcUID) {
-            if (TEST('call')) console.warn(`MessagerCall: [${mesgName}] skip call since origin = destination; use Broadcast() if intended`);
+            if (DBG) console.warn(`MessagerCall: [${mesgName}] skip call since origin = destination; use Broadcast() if intended`);
             continue;
           }
           // Create a promise. if handlerFunc returns a promise, it follows
@@ -174,7 +171,7 @@ class Messager {
       function f_MakeResolverFunction( handlerFunc ) {
         return new Promise(( resolve, reject ) => {
           let retval = handlerFunc(inData,{/*control functions go here*/});
-          if (TEST('call')) console.log('[INDATA]', JSON.stringify(inData));
+          if (DBG) console.log('[INDATA]', JSON.stringify(inData));
           resolve(retval);
         });
       }
@@ -187,7 +184,7 @@ class Messager {
       let handlers = [];
       this.handlerMap.forEach( (value, key ) => {
         handlers.push(key);
-        if (TEST('call')) console.log('handler: '+key);
+        if (DBG) console.log('handler: '+key);
       });
       return handlers;
     }

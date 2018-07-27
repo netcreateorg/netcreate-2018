@@ -15,7 +15,6 @@ let DBG = true;
       call   : false,       // unisys calls
       state  : false,       // unisys state manager
       hook   : false,       // unisys lifecycle hooks
-      local  : false,       // unisys 'local' call to module
       remote : false,       // unisys 'remote' calls to other module
       net    : false        // unisys 'remote network' calls
     };

@@ -1,4 +1,4 @@
-var   DBG         = true;
+var   DBG         = false;
 /// SYSTEM INTEGRATION ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS      = require('unisys/client');
@@ -47,14 +47,14 @@ const PR          = PROMPTS.Pad('DevUnisys');
         this.udata.OnStateChange('LOGIC', this.UnisysStateChange);
 
         /* UNISYS MESSAGE HANDLER REGISTRATION */
-        if (TEST('remote')) this.udata.HandleMessage('REMOTE_CALL_TEST',(data, msgcon) => {
-          console.log('REMOTE_CALL_TEST got',data,msgcon);
-          // msgcon is message control
-          data.cat = 'calico';
-          data.melon += '_ack';
-          console.log('REMOTE_CALL_TEST returning',data);
-          return data;
-        });
+        if (TEST('remote')) {
+          this.udata.HandleMessage('REMOTE_CALL_TEST',(data, msgcon) => {
+            // msgcon is message control
+            data.cat = 'calico';
+            data.melon += '_ack';
+            return data;
+          });
+        }
 
         if (TEST('call')) this.udata.HandleMessage('TEST_REMOTE_IN',(data)=>{
           if (!data.stack) data.stack=[]; data.stack.push('TRI-JSX');
@@ -70,12 +70,10 @@ const PR          = PROMPTS.Pad('DevUnisys');
         // these run during a hook, but are defined in constructor
         UNISYS.Hook('START',() => {
           if (TEST('call')) {
-            console.log('*** START HOOK ***');
             // INVOKE remove call
             this.udata.Call('TEST_REMOTE_IN',{ source : 'DevUnisysJSX' })
             // test data return
             .then((data)=>{
-              console.log('TEST_REMOTE_IN return data',data);
               if (data && data.source && data.source==='DevUnisysLogic-Return') TEST.Pass('callDataReturn');
               if (data && data.extra && data.extra==='AddedData') TEST.Pass('callDataAdd');
               if (data && data.multi && data.stack && data.stack.length===3 && data.multi==='MultiData') TEST.Pass('callDataMulti');
