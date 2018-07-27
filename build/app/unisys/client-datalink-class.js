@@ -19,8 +19,7 @@
 
 /// DEBUGGING /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var DBG            = false;
-if (DBG) DBG       = { send:false, return:true };
+const DBG          = { send : true, return : true };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const BAD_OWNER    = "must pass owner object of type React.Component or UniModule with optional 'name' parameter";
 const BAD_NAME     = "name parameter must be a string";
@@ -136,28 +135,29 @@ var MESSAGER       = new Messager();
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
         if (DBG.send) console.log(`${this.name} send [${mesgName}]`);
-        MESSAGER.Send(mesgName,data,{
+        let promises = MESSAGER.Send(mesgName,data,{
           srcUID         : this.UID()
         });
+        return Promise.all(promises);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       Signal( mesgName, data ) {
         MESSAGER.Signal(mesgName,data);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      Call( mesgName, inData, optCallback ) {
+  /*/ UDATA wraps Messager.Call(), which returns an array of promises.
+      The UDATA version of Call() also returns a Promise that resolves
+      when all promises resolve.
+  /*/ Call( mesgName, inData, options ) {
+        options = options || {};
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
-        let hasCallback = typeof optCallback==='function'
-          ? "w/callback"
-          : "w/out callback";
-
-        if (DBG.return) console.log(`${this.name} call [${mesgName}]`,hasCallback);
-
-        MESSAGER.Call(mesgName,inData,{
-          srcUID         : this.UID(),
-          dataReturnFunc : optCallback || this.NullCallback
-        });
+        if (DBG.return) console.log(`call [${mesgName}]`);
+        options.srcUID = this.UID();
+        let promises = MESSAGER.Call(mesgName,inData,options);
+        let res = (async()=>{ await Promise.all(promises); })();
+        if (DBG.return) console.log(`Promise.all() result`,res);
+        return res;
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       NullCallback () {

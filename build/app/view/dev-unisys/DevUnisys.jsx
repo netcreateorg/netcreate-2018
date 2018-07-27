@@ -21,33 +21,50 @@ const PR          = PROMPTS.Pad('DevUnisys');
 /*/ class DevUnisys extends React.Component {
       constructor(props) {
         super(props);
-        // set up data links
+
+        /* UNISYS DATA LINK CONNECTION */
         this.udata = UNISYS.NewDataLink(this);
-        // UNISYS state may already be initialized from settings
+
+        /* INITIALIZE COMPONENT STATE from UNISYS */
+        // get any state from 'VIEW' namespace; empty object if nothing
+        // UDATA.State() returns a copy of state obj; mutate/assign freely
         let state = this.udata.State('VIEW');
-        // UNISYS.State() returns a copy of state obj; mutate/assign freely
+        // initialize some state variables
         state.description = state.description || 'uninitialized description';
-        // REACT TIP: you can safely set state directly ONLY in constructor!
+        // REACT TIP: setting state directly works ONLY in React.Component constructor!
         this.state = state;
+
+        /* LOCAL INTERFACE HANDLERS */
+        this.handleTextChange  = this.handleTextChange.bind(this);
+
+        /* UNISYS STATE CHANGE HANDLERS */
         // bind 'this' context to handler function
         // then use for handling UNISYS state changes
         this.UnisysStateChange = this.UnisysStateChange.bind(this);
+        // NOW set up handlers...
         this.udata.OnStateChange('VIEW', this.UnisysStateChange);
-        this.handleTextChange  = this.handleTextChange.bind(this);
         this.udata.OnStateChange('LOGIC', this.UnisysStateChange);
-        // register some handlers
-        this.udata.HandleMessage('JSXMELON',(data,ucontrol) => {
+
+        /* UNISYS MESSAGE HANDLER REGISTRATION */
+        this.udata.HandleMessage('REMOTE_CALL_TEST',(data, msgcon) => {
+          console.log('REMOTE_CALL_TEST got',data,msgcon);
+          // msgcon is message control
           data.cat = 'calico';
           data.melon += '_ack';
-          ucontrol.return(data);
+          console.log('REMOTE_CALL_TEST returning',data);
+          return data;
         });
+
+        /* UNISYS LIFECYCLE INITIALIZATION */
         // initialize UNISYS before declaring any hook functions
         UNISYS.SystemInitialize(module.id);
         // hook start handler to initiate call
         UNISYS.Hook('START',() => {
           if (DBG) console.log('*** START HOOK ***');
-          this.udata.Call('LOGICMELON',{ melon : 'jsxmelon' });
+          // INVOKE remove call
+          this.udata.Call('LOGICMELON',{ melon : 'JSX_CALL_TEST' });
         });
+
       } // constructor
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
