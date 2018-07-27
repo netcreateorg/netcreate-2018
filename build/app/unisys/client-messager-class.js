@@ -36,13 +36,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG          = {
-  local  : false,
-  remote : true,
-  call   : false,
-  data   : false,
-  net    : false
-};
+const TEST      = require('test');
 
 /// MODULE VARS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -69,7 +63,7 @@ class Messager {
         throw new TypeError('arg2 must be a function');
       }
       if (typeof handlerUID==='string') {
-        if (DBG.call) console.log(`saving udata_id with handlerFunc`);
+        if (TEST('call')) console.log(`saving udata_id with handlerFunc`);
         // bind the udata uid to the handlerFunc function for convenient access
         // by the message dispatcher
         handlerFunc.udata_id = handlerUID;
@@ -106,18 +100,18 @@ class Messager {
 /*/ Send( mesgName, inData, options={} ) {
       let { srcUID }                   = options;
       let { toLocal=true, toNet=true } = options;
-      if (DBG.data) console.log(`MessagerSend: [${mesgName}] inData:`,inData);
+      if (TEST('data')) console.log(`MessagerSend: [${mesgName}] inData:`,inData);
       const handlers = this.handlerMap.get(mesgName);
       let promises = [];
       /// toLocal
-      if (DBG.data) console.log('indata',inData);
+      if (TEST('data')) console.log('indata',inData);
       if (handlers && toLocal) {
         for (let handlerFunc of handlers) {
           // handlerFunc signature: (data,dataReturn) => {}
           // handlerFunc has udata_id property to note originating UDATA object
           // skip "same origin" calls
           if (srcUID && handlerFunc.udata_id===srcUID) {
-            if (DBG.local) console.warn(`MessagerSend: [${mesgName}] skip call since origin = destination; use Broadcast() if intended`);
+            if (TEST('call')) console.warn(`MessagerSend: [${mesgName}] skip call since origin = destination; use Broadcast() if intended`);
             continue;
           }
           // Create a promise. if handlerFunc returns a promise, it follows
@@ -135,10 +129,10 @@ class Messager {
 
       /// toNetwork
       if (toNet) {
-        if (DBG.remote) console.log('MessagerCall: Network async call handling here');
+        if (TEST('net')) console.log('MessagerCall: Network async call handling here');
       } // end toNetwork
       /// return all queued promises
-      if (DBG.call) console.log(mesgName,'promises',promises);
+      if (TEST('call')) console.log(mesgName,'promises',promises);
       return promises;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -152,18 +146,17 @@ class Messager {
 /*/ Call( mesgName, inData, options={} ) {
       let { srcUID }                   = options;
       let { toLocal=true, toNet=true } = options;
-      if (DBG.data) console.log(`MessagerCall: [${mesgName}] inData:`,inData);
+      if (TEST('call')) console.log(`MessagerCall: [${mesgName}] inData:`,inData);
       const handlers = this.handlerMap.get(mesgName);
       let promises = [];
       /// toLocal
-      if (DBG.data) console.log('indata',inData);
       if (handlers && toLocal) {
         for (let handlerFunc of handlers) {
           // handlerFunc signature: (data,dataReturn) => {}
           // handlerFunc has udata_id property to note originating UDATA object
           // skip "same origin" calls
           if (srcUID && handlerFunc.udata_id===srcUID) {
-            if (DBG.local) console.warn(`MessagerCall: [${mesgName}] skip call since origin = destination; use Broadcast() if intended`);
+            if (TEST('call')) console.warn(`MessagerCall: [${mesgName}] skip call since origin = destination; use Broadcast() if intended`);
             continue;
           }
           // Create a promise. if handlerFunc returns a promise, it follows
@@ -173,15 +166,15 @@ class Messager {
       }
       /// toNetwork
       if (toNet) {
-        if (DBG.net) console.log('MessagerCall: Network async call handling here');
+        if (TEST('net')) console.log('MessagerCall: Network async call handling here');
       } // end toNetwork
       /// return all queued promises
-      if (DBG.call) console.log(mesgName,'promises',promises);
       return promises;
 
       function f_MakeResolverFunction( handlerFunc ) {
         return new Promise(( resolve, reject ) => {
           let retval = handlerFunc(inData,{/*control functions go here*/});
+          if (TEST('call')) console.log('[INDATA]', JSON.stringify(inData));
           resolve(retval);
         });
       }
@@ -194,7 +187,7 @@ class Messager {
       let handlers = [];
       this.handlerMap.forEach( (value, key ) => {
         handlers.push(key);
-        if (DBG.call) console.log('handler: '+key);
+        if (TEST('call')) console.log('handler: '+key);
       });
       return handlers;
     }

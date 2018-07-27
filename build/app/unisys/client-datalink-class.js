@@ -148,16 +148,18 @@ var MESSAGER       = new Messager();
   /*/ UDATA wraps Messager.Call(), which returns an array of promises.
       The UDATA version of Call() also returns a Promise that resolves
       when all promises resolve.
-  /*/ Call( mesgName, inData, options ) {
+  /*/ async Call( mesgName, inData, options ) {
         options = options || {};
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
-        if (DBG.return) console.log(`call [${mesgName}]`);
         options.srcUID = this.UID();
+        console.group(`Call [${mesgName}]`);
         let promises = MESSAGER.Call(mesgName,inData,options);
-        let res = (async()=>{ await Promise.all(promises); })();
-        if (DBG.return) console.log(`Promise.all() result`,res);
-        return res;
+        let resArray = await Promise.all(promises);
+        console.groupEnd();
+        let resObj = Object.assign({},...resArray);
+        if (DBG.return) console.log(`Returning combined result`,resObj);
+        return resObj;
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       NullCallback () {
