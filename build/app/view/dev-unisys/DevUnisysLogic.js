@@ -211,18 +211,29 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
       // TEST SERVER NETWORK CALL
       if (TEST('server')) {
         let netOnly = { toLocal : false, toNet : true };
-        let p = FR_UDATA.Call('SERVER_REFLECT',{
-          me    : 'DevUnisysLogic:FR_MOD.Start',
-          stack : ['DevUnisysLogic']
-        }, netOnly)
-        .then((data)=>{
-          console.log(FR,'got SERVER_REFLECT',data);
-          TEST.Pass('serverCall');
-          if ((data!==undefined) && (Array.isArray(data.stack))) TEST.Pass('serverData');
-          if ((data.stack.length===2)&&(data.stack[1]==='SRV_01')) TEST.Pass('serverDataAdd');
-          if (data.me && data.me==='DevUnisysLogic:FR_MOD.Start') TEST.Pass('serverReturn');
-        });
-      }
+
+        let sendorder = [];
+        let recvorder = [];
+        for (let i=0; i<5; i++) {
+          setTimeout(function() {
+            sendorder.push(i);
+            FR_UDATA.Call('SERVER_REFLECT',{
+              me    : 'DevUnisysLogic:FR_MOD.Start',
+              stack : ['DevUnisysLogic'],
+              count : i
+            }, netOnly)
+            .then((data)=>{
+              console.log(FR,'got SERVER_REFLECT',data);
+              TEST.Pass('serverCall');
+              if ((data!==undefined) && (Array.isArray(data.stack))) TEST.Pass('serverData');
+              if ((data.stack.length===2)&&(data.stack[1]==='SRV_01')) TEST.Pass('serverDataAdd');
+              if (data.me && data.me==='DevUnisysLogic:FR_MOD.Start') TEST.Pass('serverReturn');
+              recvorder.push(data.count);
+            });
+          },Math.random()*1000);
+        }
+        TEST.AssessArrayMatch('serverCallOrder',sendorder,recvorder);
+      } // end TEST('server')
     });
 
 

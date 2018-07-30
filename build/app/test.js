@@ -22,6 +22,8 @@ let DBG = true;
     };
 /*/ groups of tests to run
 /*/ let PASSED = {};
+/*/ pairs of arrays to match (array of arrays)
+/*/ let ARR_MATCH = [];
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Main TEST ENABLE
@@ -56,8 +58,16 @@ let DBG = true;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: output test results
 /*/ TM.Assess = function () {
+      m_PreTest();
       m_TestResults();
     }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: assess whether passed arrays match during Assess function()
+/*/ TM.AssessArrayMatch = function( subtest, arr1, arr2 ) {
+      ARR_MATCH.push([subtest,arr1,arr2]);
+    }
+
+
 
 /// TEST FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -105,6 +115,7 @@ let DBG = true;
         case 'server':
           subtests = {
             serverCall        : flag,
+            serverCallOrder   : flag,
             serverReturn      : flag,
             serverData        : flag,
             serverDataAdd     : flag
@@ -129,7 +140,21 @@ let DBG = true;
       Object.assign(PASSED,subtests);
       if (DBG) console.log('New PASSED',Object.keys(PASSED).length,PASSED);
     }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    function m_PreTest() {
+      // test arrays
+      ARR_MATCH.forEach(function(pair) {
+        let pass = true;
+        let subtest = pair[0];
+        let arr1 = pair[1];
+        let arr2 = pair[2];
+        pass = pass && (arr1.length===arr2.length);
+        for (let i=0; i<arr1.length; i++) {
+          pass = pass && (arr1[i]===arr2[i]);
+        }
+        if (pass) TM.Pass(subtest);
+      });
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ prints the test output to console
 /*/ function m_TestResults() {
