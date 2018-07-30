@@ -16,6 +16,7 @@ let DBG = true;
       state  : false,       // unisys state manager
       hook   : false,       // unisys lifecycle hooks
       remote : false,       // unisys 'remote' calls to other module
+      server : false,       // unisys 'server implemented' calls
       net    : false        // unisys 'remote network' calls
     };
 /*/ groups of tests to run
@@ -99,6 +100,13 @@ let DBG = true;
             remoteDataAdd     : flag,
             remoteDataMulti   : flag
           };
+          break;
+        case 'server':
+          subtests = {
+            serverCall        : flag,
+            serverReturn      : flag,
+            serverDataAdd     : flag
+          }
           break;
         case 'net':
           subtests = {

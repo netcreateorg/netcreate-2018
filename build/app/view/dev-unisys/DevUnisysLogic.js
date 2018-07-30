@@ -27,7 +27,8 @@ TEST('state'  , true);
 TEST('hook'   , true);
 TEST('call'   , true);
 TEST('remote' , true);
-TEST('net'    , false);
+TEST('net'    , true);
+TEST('server' , true);
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
