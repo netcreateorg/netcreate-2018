@@ -37,6 +37,8 @@
   const ERR_BAD_SEND = ERR+PR+"bad socket; can't send";
   const ERR_DUPE_TRANS = ERR+PR+"this packet transaction is already registered!";
   const ERR_NO_GLOBAL_UADDR = ERR+PR+"packet sending attempted before UADDR is set!";
+  const ERR_UNKNOWN_TYPE = ERR+PR+"packet type is unknown:";
+  const KNOWN_TYPES       = ['mesg','state'];
 
 /// UNISYS NETMESSAGE CLASS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -72,6 +74,7 @@
         // id and debugging memo support
         let idStr     = (++m_id_counter).toString();
         this.id       = m_id_prefix+idStr.padStart(5,'0');
+        this.type     = KNOWN_TYPES[0]; // default to 'mesg'
         this.memo     = '';
         // transaction support
         this.seqnum   = 0;	  // positive when part of transaction
@@ -82,15 +85,17 @@
 
   /// ACCESSSOR METHODS ///////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ returns the type
+  /*/ Type() { return this.type }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ returns the type
+  /*/ SetType( type ) { this.type = m_CheckType(type) }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ returns the message
-  /*/ Message() {
-        return this.msg;
-      }
+  /*/ Message() { return this.msg; }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ sets the message field
-  /*/ SetMessage( msgstr ) {
-        this.msg = msgstr;
-      }
+  /*/ SetMessage( msgstr ) { this.msg = msgstr; }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ returns the entire data payload or the property within the data payload
       (can return undefined if property doesn't exist)
@@ -231,8 +236,15 @@
     }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/	return the hash used for storing transaction callbacks
-/*/	function m_GetHashKey ( pkt ) {
+/*/	function m_GetHashKey( pkt ) {
       return NetMessage.UADDR+':'+pkt.id;
+    }
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ is this an allowed type? throw error if not
+/*/ function m_CheckType( type ) {
+      if (type===undefined) throw 'must past a type string, not '+type;
+      if (!(KNOWN_TYPES.includes(type))) throw `${ERR_UNKNOWN_TYPE} '${type}'`;
+      return type;
     }
 
 

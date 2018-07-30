@@ -23,13 +23,14 @@ var   TESTCOUNTER   = 3;
 var   TESTINTERVAL  = null;
 
 // enable debug output and tests
-TEST('state'  , false);
-TEST('hook'   , false);
-TEST('call'   , false);
-TEST('remote' , false);
-TEST('server' , true);
-TEST('net'    , true);
-TEST('netcall', false); // network calls
+// true = enabled, false = skip
+TEST('state'  , true);  // state events and changes
+TEST('hook'   , true);  // lifecycle hooks
+TEST('call'   , true);  // internal instance calls
+TEST('remote' , true);  // instance-to-instance calls
+TEST('server' , true);  // server calls
+TEST('net'    , true);  // network initialization
+TEST('netcall', false);  // network calls
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

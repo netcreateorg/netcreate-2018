@@ -100,12 +100,9 @@ class Messager {
     well. dstScope is 'net' or 'local' to limit where to send, or 'all'
     for everyone on net or local
 /*/ Send( mesgName, inData, options={} ) {
-      let { srcUID }                   = options;
+      let { srcUID, msgType }          = options;
       let { toLocal=true, toNet=true } = options;
-      if (TEST('data')) console.log(`MessagerSend: [${mesgName}] inData:`,inData);
       const handlers = this.handlerMap.get(mesgName);
-      /// create promises for all registered handlers
-      let promises = [];
       /// toLocal
       if (handlers && toLocal) for (let handlerFunc of handlers) {
         // handlerFunc signature: (data,dataReturn) => {}
@@ -115,37 +112,31 @@ class Messager {
           if (DBG) console.warn(`MessagerSend: [${mesgName}] skip call since origin = destination; use Broadcast() if intended`);
           continue;
         }
-        // Create a promise. if handlerFunc returns a promise, it follows
-        let p = f_MakeResolverFunction( handlerFunc, inData );
-        promises.push(p);
+        // trigger the handler (no return expected)
+        handlerFunc(inData,{/*control functions go here*/});
       } // end toLocal
       /// toNetwork
       if (toNet) {
-        if (TEST('net')) console.log('MessagerCall: Network async call handling here');
+        let pkt = new NetMessage(mesgName,inData);
+        pkt.SetType(msgType);
+        pkt.SocketSend();
       } // end toNetwork
-      /// return all queued promises
-      return promises;
-
-      /// inline utility function /////////////////////////////////////////////
-      function f_MakeResolverFunction( handlerFunc ) {
-        return new Promise(( resolve, reject ) => {
-          let retval = handlerFunc(inData,{/*control functions go here*/});
-          if (typeof retval!=='object') reject(retval);
-          else resolve(retval);
-        });
-      }
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: wrapper for Send() used when you want every handlerFunc, including
-    the sender, to receive the event even if it is the one who sent it
+    the sender, to receive the event even if it is the one who sent it.
 /*/ Signal( mesgName, data, options ) {
+      if (options.srcUID) {
+        console.warn(`overriding srcUID ${options.srcUID} with NULL because Signal() doesn't use it`);
+        options.srcUID = null;
+      }
       this.Send(mesgName,data,options);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Return an array of Promises. Called by UDATA.Call().
 /*/ Call( mesgName, inData, options={} ) {
       let { srcUID }                   = options;
-      let { toLocal=true, toNet=false } = options;
+      let { toLocal=true, toNet=true } = options;
       const handlers = this.handlerMap.get(mesgName);
       let promises = [];
       /// toLocal
@@ -163,11 +154,12 @@ class Messager {
           promises.push(p);
         } // end toLocal
       }
-      /// resolver for local
+      /// resolver function
+      /// remember MESSAGER class is used for more than just Network Calls
+      /// the state manager also uses it, so the resolved value may be of any type
       function f_MakeResolverFunction( handlerFunc ) {
         return new Promise(( resolve, reject ) => {
           let retval = handlerFunc(inData,{/*control functions go here*/});
-          if (DBG) console.log('[INDATA]', JSON.stringify(inData));
           resolve(retval);
         });
       }

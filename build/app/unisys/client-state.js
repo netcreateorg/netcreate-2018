@@ -64,7 +64,7 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
       let msgr = m_GetStateMessager(namespace);
       // don't pass with source_id because state should go everywhere
       // a register exists, even if it's the originating module
-      msgr.Call(namespace,newState);
+      msgr.Send(namespace,newState,{msgType:'state'});
       // future: forward also to network
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

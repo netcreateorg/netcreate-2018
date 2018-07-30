@@ -105,10 +105,20 @@ var NETWORK   = {};
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     function m_HandleMessage( msgEvent ) {
       let pkt = new NetMessage(msgEvent.data);
-      if (DBG) console.log(PR,'received packet w/seqnum',pkt.seqnum,JSON.stringify(pkt.seqlog));
+      /// is it a transaction?
       if (pkt.IsTransaction()) {
-        console.log(PR,'receiving transaction',pkt.Data());
+        console.log(PR,'received transaction',pkt.Message(),pkt.Data());
         pkt.CompleteTransaction();
+        return;
+      }
+      if (pkt.IsType('state')) {
+        console.log(PR,'received state change',pkt.Message(),pkt.Data());
+        return;
+      }
+      if (pkt.IsType('mesg')) {
+        /// is it a local invocation?
+        /// check our local message handlers
+        console.log(PR,'received message',pkt.Message(),pkt.Data());
       }
     }
 

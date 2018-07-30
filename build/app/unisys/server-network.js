@@ -135,8 +135,27 @@ const SERVER_UADDR      = m_GetNewUADDR('SVR'); // special server UADDR prefix
     }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle all incoming socket messages asynchronously through Promises
-/*/ async function m_SocketMessage( socket, json ) {
+/*/ function m_SocketMessage( socket, json ) {
         let pkt = new NetMessage(json);
+        // figure out what to do
+        switch (pkt.Type()) {
+          case 'state':
+            m_HandleState(socket,pkt);
+            break;
+          case 'mesg':
+            m_HandleMessage(socket,pkt);
+            break;
+          default:
+            throw new Error(`${PR} unknown packet type '${pkt.Type()}'`);
+        } // end switch
+    } // end m_SocketMessage()
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ handle global state and rebroadcast
+/*/ function m_HandleState( socket, pkt ) {
+    }
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ handle messages that are a Send(), Signal(), or Call()
+/*/ async function m_HandleMessage( socket, pkt ) {
         // get the valid promises to run
         let promises = m_CheckServerHandlers(pkt);
         if (promises.length===0) promises = m_CheckRegisteredHandlers(pkt);
