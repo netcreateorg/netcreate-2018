@@ -131,23 +131,28 @@ var MESSAGER       = new Messager();
         MESSAGER.UnhandleMessage(mesgName,listener);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      Send( mesgName, data ) {
+  /*/ Sends the data to all message implementors UNLESS it is originating from
+      the same UDATA instance (avoid echoing back to self)
+  /*/ Send( mesgName, inData, options ) {
+        console.log('** DATALINK SEND',mesgName);
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
-        if (DBG.send) console.log(`${this.name} send [${mesgName}]`);
-        let promises = MESSAGER.Send(mesgName,data,{
-          srcUID         : this.UID()
-        });
+        options.srcUID = this.UID();
+        // uid is "source uid" of subscribing object, to avoid reflection
+        // if the subscribing object is also the originating state changer
+        let promises = MESSAGER.Send(mesgName,inData,options);
         return Promise.all(promises);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      Signal( mesgName, data ) {
+  /*/ Sends the data to all message implementors, irregardless of origin.
+  /*/ Signal( mesgName, data, options ) {
+        console.log('** DATALINK SIGNAL',mesgName);
+        options = options || {};
         MESSAGER.Signal(mesgName,data);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ UDATA wraps Messager.Call(), which returns an array of promises.
-      The UDATA version of Call() also returns a Promise that resolves
-      when all promises resolve.
+      The UDATA version of Call() manages the promises, and returns a
   /*/ async Call( mesgName, inData, options ) {
         console.log('** DATALINK CALL ASYNC',mesgName);
         options = options || {};

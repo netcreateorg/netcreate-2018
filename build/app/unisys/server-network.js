@@ -137,7 +137,6 @@ const SERVER_UADDR      = m_GetNewUADDR('SVR'); // special server UADDR prefix
 /*/ Handle all incoming socket messages asynchronously through Promises
 /*/ async function m_SocketMessage( socket, json ) {
         let pkt = new NetMessage(json);
-        if (DBG) console.log(PR,'recv',pkt.Message(),'data',JSON.stringify(pkt.Data()));
         // get the valid promises to run
         let promises = m_CheckServerHandlers(pkt);
         if (promises.length===0) promises = m_CheckRegisteredHandlers(pkt);
@@ -178,7 +177,6 @@ const SERVER_UADDR      = m_GetNewUADDR('SVR'); // special server UADDR prefix
           if (retval===undefined) throw `[${mesgName} message handler MUST return object or error string`;
           if (typeof retval!=='object') reject(retval);
           else resolve(retval);
-          console.log(PR,`resolved ${mesgName}`);
         });
       }
     }

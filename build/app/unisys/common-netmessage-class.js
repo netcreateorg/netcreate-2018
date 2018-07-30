@@ -77,7 +77,7 @@
         this.seqnum   = 0;	  // positive when part of transaction
         this.seqlog   = [];   // for debugging support
         // addressing support
-        this.s_uaddr  = null; // originating uaddr
+        this.s_uaddr  = null; // originating uaddr set by SocketSend()
       } // constructor
 
   /// ACCESSSOR METHODS ///////////////////////////////////////////////////////
@@ -129,12 +129,18 @@
         return this.seqnum;
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Return the originating address of this netmessage packet. It is valid
+      only after the packet has been sent at least once.
+  /*/ SourceAddress() {
+        return this.seqlog[0] || this.s_uaddr;
+      }
+
+    /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Send packet on either provided socket or default socket. Servers provide
       the socket because it's handling multiple sockets from different clients.
   /*/ SocketSend( socket=m_netsocket ) {
         if (!socket) throw ERR_BAD_SEND;
         if (NetMessage.UADDR===undefined) throw ERR_NO_GLOBAL_UADDR;
-        console.log(PR,'sending packet',this.seqlog);
         socket.send(this.JSON());
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

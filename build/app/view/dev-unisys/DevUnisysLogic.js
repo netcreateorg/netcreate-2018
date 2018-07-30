@@ -210,10 +210,11 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
 
       // TEST SERVER NETWORK CALL
       if (TEST('server')) {
-        let netOnly = { toLocal : false, toNet : true };
-
+        // used for order testing
         let sendorder = [];
         let recvorder = [];
+        // only test network calls
+        let netOnly = { toLocal : false, toNet : true };
         for (let i=0; i<5; i++) {
           setTimeout(function() {
             sendorder.push(i);
@@ -226,7 +227,7 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
               console.log(FR,'got SERVER_REFLECT',data);
               TEST.Pass('serverCall');
               if ((data!==undefined) && (Array.isArray(data.stack))) TEST.Pass('serverData');
-              if ((data.stack.length===2)&&(data.stack[1]==='SRV_01')) TEST.Pass('serverDataAdd');
+              if ((data.stack) && (data.stack.length===2)&&(data.stack[1]==='SRV_01')) TEST.Pass('serverDataAdd');
               if (data.me && data.me==='DevUnisysLogic:FR_MOD.Start') TEST.Pass('serverReturn');
               recvorder.push(data.count);
             });

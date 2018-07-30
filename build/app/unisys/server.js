@@ -36,7 +36,7 @@ var UNISYS = {};
       UNET.HandleMessage('SERVER_REFLECT',function(pkt) {
         pkt.Data().serverSays='REFLECTING';
         pkt.Data().stack.push('SRV_01');
-        console.log(PR,'SERVER_REFLECT pkt',pkt.JSON());
+        console.log(PR,'TEST SERVER_REFLECT pkt',pkt.JSON());
         return pkt;
       });
     };
