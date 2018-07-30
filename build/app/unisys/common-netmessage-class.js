@@ -21,10 +21,11 @@
 
   const DBG = true;
 
-  var m_id_counter 	= 0;
-  var m_id_prefix  	= 'NM';
-  var m_owner_id 		= "error-not-initialized";
-  var m_transactions 	= {};
+  var m_id_counter    = 0;
+  var m_id_prefix     = 'NM';
+  var m_owner_id      = "error-not-initialized";
+  var m_transactions  = {};
+  var m_netsocket     = null;
 
   // constants
   const PR  = "NETMESSAGE:";
@@ -32,12 +33,15 @@
   const ERR_NOT_NETMESSAGE = ERR+PR+"obj does not seem to be a NetMessage";
   const ERR_BAD_PROP = ERR+PR+"property argument must be a string";
   const ERR_ERR_BAD_CONSTRUCTION = ERR+PR+"constructor args are string, object";
+  const ERR_BAD_SOCKET = ERR+PR+"sender object must implement send()";
+  const ERR_BAD_SEND = ERR+PR+"bad socket; can't send";
 
   const NDEF = {
     // placeholder
     Get : () => { console.log('Get() is not implemented'); }
   };
   const MSG_TRANSACTION_RETURN = '_TRANS_RET';
+
 
 /// PRIVATE MODULE FUNCTIONS //////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -111,6 +115,13 @@
         if (!prop) return this.data;
         if (typeof prop === 'string') return this.data[prop];
         throw ERR_BAD_PROP;
+      }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ send packet on either provide socket
+  /*/ Send( socket ) {
+        socket = socket || m_netsocket;
+        if (!socket) throw ERR_BAD_SEND;
+        socket.send(this.JSON());
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ returns truthy value (this.data) if the passed msgstr matches the
@@ -209,7 +220,6 @@
         return this.msglog[len-1];
       }
 
-
   /// ADDRESSING SUPPORT //////////////////////////////////////////////////////
   ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/	OPTIONAL set the addresses that this packet should be sent to instead
@@ -245,10 +255,25 @@
 /// STATIC CLASS METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ set the source address (uaddr)
-/*/ NetMessage.SetUADDR = function ( uaddr ) {
-      if (DBG) console.log(PR,'setting global UADDR to ',uaddr);
+/*/ NetMessage.GlobalSetUADDR = function ( uaddr ) {
+      if (DBG) console.log(PR,'setting global UADDR to',uaddr);
       NetMessage.UADDR = uaddr;
     };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ set the NETWORK interface object that implements Send()
+/*/ NetMessage.GlobalSetup = function ( config ) {
+      let { netsocket } = config;
+      if (typeof netsocket.send!=='function') throw ERR_BAD_SOCKET;
+      m_netsocket = netsocket;
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ cleanup any allocated storage
+/*/ NetMessage.GlobalCleanup = function () {
+      if (m_netsocket) {
+        if (DBG) console.log(PR,'GlobalCleanup: deallocating netsocket');
+         m_netsocket = null;
+       }
+    }
 
 /// PRIVATE CLASS HELPERS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

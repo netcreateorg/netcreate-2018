@@ -50,7 +50,7 @@ var UNET = {};
       options.port = options.port || DEFAULT_NET_PORT;
       options.uaddr = options.uaddr || SERVER_UADDR;
       if (mu_wss !== undefined) throw Error(ERR_SS_EXISTS);
-      NetMessage.SetUADDR(options.uaddr);
+      NetMessage.GlobalSetUADDR(options.uaddr);
       mu_options = options;
       return mu_options;
     };

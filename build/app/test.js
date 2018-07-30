@@ -105,11 +105,13 @@ let DBG = true;
           subtests = {
             serverCall        : flag,
             serverReturn      : flag,
+            serverData        : flag,
             serverDataAdd     : flag
           }
           break;
         case 'net':
           subtests = {
+            netMessageInit    : flag,
             netCall           : flag,
             netData           : flag,
             netDataAdd        : flag,

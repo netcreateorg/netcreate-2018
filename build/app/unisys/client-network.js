@@ -3,29 +3,6 @@
     UNISYS NETWORK implements network controls and synchronization.
     It initializes a network connection on the CONNECT lifecycle.
 
-    2045
-    we need to provide a connection method to connect to server
-    where do we get the port options from?
-    we want to read them from a javascript thingy.
-    so we want to inject it on the server side.
-    solution is to add template engine to expressjs
-    2330
-    can we now connect to the socket?
-    2345
-    dispatcher function
-    cmd_port, cmd_uri, status, local_ip, server_ip
-    status:
-      init, gotip, error, linked, ready, closed
-    cmd_socket handlers
-      onerror
-      onmessage
-      onopen
-    cmd_socket.new WebSocket(NDEF.Set('cmd_uri'))
-    cmd_socket also stores socket-related info like:
-      U_ADDR server unisys string (special server sockid)
-      U_GRP group (same as server special sockid)
-      U_STAT status
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const DBG           = true;
@@ -33,8 +10,8 @@ const DBG           = true;
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SETTINGS      = require('settings');
+const TEST          = require('test');
 const NetMessage    = require('unisys/common-netmessage-class');
-const UDATA         = require('unisys/client-datalink-class');
 const PROMPTS       = require('system/util/prompts');
 const PR            = PROMPTS.Pad('NETWORK');
 const WARN          = PROMPTS.Pad('!!!');
@@ -111,14 +88,18 @@ var NETWORK   = {};
 /*/ function m_HandleRegistrationMessage( msgEvent ) {
       let regData = JSON.parse(msgEvent.data);
       let { HELLO, UADDR } = regData;
-      NetMessage.SetUADDR(UADDR);
-      // after receiving the initial message, switch over to regular
+      NetMessage.GlobalSetUADDR(UADDR);
+      // (1) after receiving the initial message, switch over to regular
       // message handler
       NETWORK.RemoveListener('message', m_HandleRegistrationMessage);
       m_status = M3_REGISTERED;
-      // DO SOMETHING HERE
-      console.log(PR,'message names',UDATA.MessageNames());
-      // STOP DOING SOMETHING
+      // (2) initialize global settings for netmessage
+      NetMessage.GlobalSetup({ netsocket : NETSOCK.ws});
+      if (TEST('net')) {
+        console.log(PR,'GlobalSetup got network socket');
+        TEST.Pass('netMessageInit');
+      }
+      // (3) connect regular message handler
       NETWORK.AddListener('message', m_HandleMessage);
       m_status = M4_READY;
     }
