@@ -23,12 +23,13 @@ var   TESTCOUNTER   = 3;
 var   TESTINTERVAL  = null;
 
 // enable debug output and tests
-TEST('state'  , true);
-TEST('hook'   , true);
-TEST('call'   , true);
-TEST('remote' , true);
-TEST('net'    , true);
+TEST('state'  , false);
+TEST('hook'   , false);
+TEST('call'   , false);
+TEST('remote' , false);
 TEST('server' , true);
+TEST('net'    , true);
+TEST('netcall', false); // network calls
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -142,9 +143,9 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
       // is called by DevUnisys Start Lifecycle hook
       if (TEST('call')) {
         UDATA.HandleMessage('TEST_REMOTE_IN',(data)=>{
-          if (data && data.source) TEST.Pass('callRegister');
-          if (typeof data==='object') TEST.Pass('callData');
-          if (typeof data.source==='string' && data.source==='DevUnisysJSX') TEST.Pass('callDataProp');
+          if (data && data.source) TEST.Pass('callHndlrRegister');
+          if (typeof data==='object') TEST.Pass('callHndlrData');
+          if (typeof data.source==='string' && data.source==='DevUnisysJSX') TEST.Pass('callHndlrDataProp');
           data.source = 'DevUnisysLogic-Return';
           if (!data.stack) data.stack=[]; data.stack.push('TRI-1');
           data.extra = 'AddedData';
@@ -184,7 +185,7 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ The Fake Remote testing happens here in a separate module.
 /*/ FR_MOD.Hook('INITIALIZE', function() {
-      if (TEST('net')) {
+      if (TEST('remote')) {
         console.log(FR,'FR Add FAKE_REMOTE Handler #2');
         // TEST RESOLVE remoteData
         FR_UDATA.HandleMessage('FAKE_REMOTE',(data) => {
@@ -197,11 +198,29 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     FR_MOD.Hook('START', function() {
       // TEST INVOKE remoteDataAdd
-      if (TEST('net')) {
+      if (TEST('remote')) {
+        // test remote data call (local, not network)
+        let localOnly = { toLocal : true, toNet : false };
         FR_UDATA.Call('FAKE_REMOTE',{ mycat:'kitty',results:[] })
         .then((data)=>{
           console.log(FR,'got data',data);
           TEST.Pass('remoteDataAdd');
+        }, localOnly);
+      }
+
+      // TEST SERVER NETWORK CALL
+      if (TEST('server')) {
+        let netOnly = { toLocal : false, toNet : true };
+        let p = FR_UDATA.Call('SERVER_REFLECT',{
+          me    : 'DevUnisysLogic:FR_MOD.Start',
+          stack : ['DevUnisysLogic']
+        }, netOnly)
+        .then((data)=>{
+          console.log(FR,'got SERVER_REFLECT',data);
+          TEST.Pass('serverCall');
+          if ((data!==undefined) && (Array.isArray(data.stack))) TEST.Pass('serverData');
+          if ((data.stack.length===2)&&(data.stack[1]==='SRV_01')) TEST.Pass('serverDataAdd');
+          if (data.me && data.me==='DevUnisysLogic:FR_MOD.Start') TEST.Pass('serverReturn');
         });
       }
     });

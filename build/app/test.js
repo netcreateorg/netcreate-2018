@@ -12,12 +12,13 @@ let DBG = true;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ list of tests that are allowed to run
 /*/ let TESTS = {
-      call   : false,       // unisys calls
-      state  : false,       // unisys state manager
-      hook   : false,       // unisys lifecycle hooks
-      remote : false,       // unisys 'remote' calls to other module
-      server : false,       // unisys 'server implemented' calls
-      net    : false        // unisys 'remote network' calls
+      call    : false,  // unisys calls
+      state   : false,  // unisys state manager
+      hook    : false,  // unisys lifecycle hooks
+      remote  : false,  // unisys 'remote' calls to other module
+      net     : false,  // network connection to socket server
+      server  : false,  // unisys 'server implemented' calls
+      netcall : false   // unisys 'remote network' calls
     };
 /*/ groups of tests to run
 /*/ let PASSED = {};
@@ -85,9 +86,9 @@ let DBG = true;
           break;
         case 'call':
           subtests = {
-            callRegister      : flag,
-            callData          : flag,
-            callDataProp      : flag,
+            callHndlrRegister : flag,
+            callHndlrData     : flag,
+            callHndlrDataProp : flag,
             callDataReturn    : flag,
             callDataAdd       : flag,
             callDataMulti     : flag
@@ -111,7 +112,11 @@ let DBG = true;
           break;
         case 'net':
           subtests = {
-            netMessageInit    : flag,
+            netMessageInit    : flag
+          }
+          break;
+        case 'netcall':
+          subtests = {
             netCall           : flag,
             netData           : flag,
             netDataAdd        : flag,

@@ -71,6 +71,7 @@ const PR          = PROMPTS.Pad('DevUnisys');
         UNISYS.Hook('START',() => {
           if (TEST('call')) {
             // INVOKE remove call
+            console.log(PR,'testing call');
             this.udata.Call('TEST_REMOTE_IN',{ source : 'DevUnisysJSX' })
             // test data return
             .then((data)=>{

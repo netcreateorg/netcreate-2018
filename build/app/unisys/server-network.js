@@ -30,18 +30,23 @@ const ERR_NULL_SOCKET   = "require valid socket";
 const DBG_SOCK_BADCLOSE = "closing socket is not in mu_sockets";
 const DEFAULT_NET_PORT  = 2929;
 const DEFAULT_NET_ADDR  = '127.0.0.1';
-const SERVER_UADDR      = m_GetNewUADDR('SVADDR');
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var mu_wss;                       // websocket server
-var mu_options;                   // websocket options
-var mu_sockets     = new Map();   // sockets mapped by socket id
-var mu_sid_counter = 0;           // for generating  unique socket ids
+/// sockets
+var mu_wss;                         // websocket server
+var mu_options;                     // websocket options
+var mu_sockets = new Map();         // sockets mapped by socket id
+var mu_sid_counter = 0;             // for generating  unique socket ids
+// storage
+var m_server_handlers = new Map();  // message map storing sets of functions
+var m_remote_handlers = new Map();  // message map storing other handlers
+
 
 /// API MEHTHODS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var UNET = {};
+var   UNET = {};
+const SERVER_UADDR      = m_GetNewUADDR('SVR'); // special server UADDR prefix
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Initialize() is called by brunch-server.js to define the default UNISYS
     network values, so it can embed them in the index.ejs file for webapps
@@ -50,10 +55,10 @@ var UNET = {};
       options.port = options.port || DEFAULT_NET_PORT;
       options.uaddr = options.uaddr || SERVER_UADDR;
       if (mu_wss !== undefined) throw Error(ERR_SS_EXISTS);
-      NetMessage.GlobalSetUADDR(options.uaddr);
+      NetMessage.GlobalSetup({ uaddr: options.uaddr });
       mu_options = options;
       return mu_options;
-    };
+    }; // end InitializeNetwork()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/	CreateNetwork() is called by brunch-server after the Express webserver
     has started listening, initializing the UNISYS NETWORK socket listener.
@@ -65,7 +70,41 @@ var UNET = {};
         if (DBG) console.log(PR,`listening on port ${mu_options.port}`);
         mu_wss.on('connection',m_NewSocketConnected);
       });
-    };
+    }; // end CreateNetwork()
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ HandleMessage() registers a server-implemented handler.
+    The handlerFunc receives a NetMessage and should return one as well.
+    It can also return a non-object if there is an error.
+    Logic is similar to client-datalink-class.js equivalent
+/*/ UNET.HandleMessage = function( mesgName, handlerFunc ) {
+      if (typeof handlerFunc !== 'function') {
+        throw "arg2 must be a function";
+      }
+      let handlers = m_server_handlers.get(mesgName);
+      if (!handlers) {
+        handlers = new Set();
+        m_server_handlers.set( mesgName, handlers );
+      }
+      handlers.add(handlerFunc);
+      return this;
+    }; // end HandleMessage()
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ UnhandleMessage() de-registers a server-implemented handler, in case you
+    ever want to do that.
+    Logic is similar to client-datalink-class.js equivalent
+/*/ UNET.UnhandleMessage = function( mesgName, handlerFunc ) {
+      if (!arguments.length) {
+        m_server_handlers.clear();
+      } else if (arguments.length===1) {
+        m_server_handlers.delete(mesgName);
+      } else {
+        const handlers = m_server_handlers.get(mesgName);
+        if (handlers) {
+          handlers.delete(handlerFunc);
+        }
+      }
+      return this;
+    }; // end UnhandleMessage()
 
 
 /// MODULE HELPER FUNCTIONS ///////////////////////////////////////////////////
@@ -84,8 +123,10 @@ var UNET = {};
         m_SocketDelete(socket);
       });
     }
-
-    function m_SocketClientAck( socket ) {
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ When a new socket connection happens, send back the special registration
+    packet (WIP)
+/*/ function m_SocketClientAck( socket ) {
       let data = {
         HELLO : 'Welcome to UNISYS',
         UADDR : socket.UADDR
@@ -93,13 +134,62 @@ var UNET = {};
       socket.send(JSON.stringify(data));
     }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ function m_SocketMessage( socket, json ) {
+/*/ Handle all incoming socket messages asynchronously through Promises
+/*/ async function m_SocketMessage( socket, json ) {
         let pkt = new NetMessage(json);
-        if (DBG) console.log(PR,'recv',pkt.Message(),'data',pkt.Data());
-        // Dispatch packet
-        // m_SocketMessage()
+        if (DBG) console.log(PR,'recv',pkt.Message(),'data',JSON.stringify(pkt.Data()));
+        // get the valid promises to run
+        let promises = m_CheckServerHandlers(pkt);
+        if (promises.length===0) promises = m_CheckRegisteredHandlers(pkt);
+        // run promises asynchronously, then combine results
+        let pktArray = await Promise.all(promises);
+        // aggregate the packet data
+        let data = pktArray.reduce((d,p) => {
+          let retval = Object.assign(d,p.Data());
+          // console.log('acc',JSON.stringify(d),'\nadd',JSON.stringify(p.Data()),'\nres',JSON.stringify(retval),'\n');
+          return retval;
+        },{});
+        pkt.SetData(data);
+        // return the packet to the sender
+        pkt.ReturnToSender(socket);
     }
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ m_CheckServerHandlers() returns an array of promises, which should be used
+     by Promises.all() inside an async/await function (m_SocketMessage above)
+    Logic is similar to client-datalink-class.js Call()
+/*/ function m_CheckServerHandlers( pkt ) {
+      let mesgName = pkt.Message();
+      let inData = pkt.Data();
+      const handlers = m_server_handlers.get(mesgName);
+      /// create promises for all registered handlers
+      let promises = [];
+      if (handlers) for (let handlerFunc of handlers) {
+        // handlerFunc signature: (data,dataReturn) => {}
+        let p = f_MakeResolverFunction(handlerFunc);
+        promises.push(p);
+      }
+      /// return all queued promises
+      return promises;
+
+      /// inline utility function /////////////////////////////////////////////
+      function f_MakeResolverFunction( handlerFunc ) {
+        return new Promise(( resolve, reject ) => {
+          let retval = handlerFunc(pkt);
+          if (retval===undefined) throw `[${mesgName} message handler MUST return object or error string`;
+          if (typeof retval!=='object') reject(retval);
+          else resolve(retval);
+          console.log(PR,`resolved ${mesgName}`);
+        });
+      }
+    }
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ If a handler is registered elsewhere on UNET, then dispatch to them for eventual reflection
+    back through server aggregation of data.
+/*/ function m_CheckRegisteredHandlers( pkt ) {
+      // message forwarding is unimplemented for August 8 2018 demo
+      return [];
+    }
+
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ function m_SendMessage( socket, pkt ) {
@@ -120,7 +210,8 @@ var UNET = {};
       if (DBG) m_ListSockets();
     }
     function m_GetNewUADDR( prefix='UADDR' ) {
-      let cstr = (mu_sid_counter++).toString().padStart(4,'0');
+      ++mu_sid_counter;
+      let cstr = mu_sid_counter.toString(10).padStart(2,'0');
       return `${prefix}_${cstr}`;
     }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

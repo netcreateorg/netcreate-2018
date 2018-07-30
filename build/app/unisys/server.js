@@ -8,12 +8,16 @@ const DBG = true;
 
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UNET    = require('./server-network');
+const UNET      = require('./server-network');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PROMPTS           = require('../system/util/prompts');
-const PR                = PROMPTS.Pad('SRVLOAD');
+const PROMPTS    = require('../system/util/prompts');
+const PR         = PROMPTS.Pad('SRVLOAD');
+
+/// MODULE VARS ///////////////////////////////////////////////////////////////
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 
 /// API CREATE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,11 +30,21 @@ var UNISYS = {};
       return UNET.InitializeNetwork(override);
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/	CreateNetwork() is called by brunch-server after the Express webserver
+/*/ RegisterHandlers() is called before network is started, so they're
+    ready to run. These are server-implemented reserved messages.
+/*/ UNISYS.RegisterHandlers = () => {
+      UNET.HandleMessage('SERVER_REFLECT',function(pkt) {
+        pkt.Data().serverSays='REFLECTING';
+        pkt.Data().stack.push('SRV_01');
+        console.log(PR,'SERVER_REFLECT pkt',pkt.JSON());
+        return pkt;
+      });
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/	StartNetwork() is called by brunch-server after the Express webserver
 /*/	UNISYS.StartNetwork = () => {
       UNET.StartNetwork();
     };
-
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

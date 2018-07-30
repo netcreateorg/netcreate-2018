@@ -149,12 +149,15 @@ var MESSAGER       = new Messager();
       The UDATA version of Call() also returns a Promise that resolves
       when all promises resolve.
   /*/ async Call( mesgName, inData, options ) {
+        console.log('** DATALINK CALL ASYNC',mesgName);
         options = options || {};
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
         options.srcUID = this.UID();
         let promises = MESSAGER.Call(mesgName,inData,options);
+        console.log('** awaiting...',promises);
         let resArray = await Promise.all(promises);
+        console.log('** promise fulfilled!',mesgName);
         let resObj = Object.assign({},...resArray);
         if (DBG.return) console.log(`[${mesgName}] returning`,JSON.stringify(resObj));
         return resObj;

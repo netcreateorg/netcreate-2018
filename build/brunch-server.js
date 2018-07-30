@@ -110,6 +110,7 @@ const USRV_START = new Date(Date.now()).toISOString();
           }
         });
         // now start the UNISYS network
+        UNISYS.RegisterHandlers();
         UNISYS.StartNetwork();
         // invoke brunch callback
         callback();

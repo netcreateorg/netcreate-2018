@@ -36,7 +36,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const TEST      = require('test');
+const TEST         = require('test');
 const NetMessage   = require('unisys/common-netmessage-class');
 
 /// MODULE VARS ///////////////////////////////////////////////////////////////
@@ -58,11 +58,12 @@ class Messager {
 /// FIRE ONCE EVENTS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: subscribe a handlerFunc function with a particular unisys id
-    to receive a particular message.
+    to receive a particular message. The handlerFunc receives a data obj
+    and should return one as well. If there is an error, return a string.
 /*/ HandleMessage( mesgName, handlerFunc, options={} ) {
       let { handlerUID } = options;
       if (typeof handlerFunc !== 'function') {
-        throw new TypeError('arg2 must be a function');
+        throw "arg2 must be a function";
       }
       if (typeof handlerUID==='string') {
         // bind the udata uid to the handlerFunc function for convenient access
@@ -82,7 +83,7 @@ class Messager {
 /*/ UnhandleMessage( mesgName, handlerFunc ) {
       if (!arguments.length) {
         this.handlerMap.clear();
-      } else if (arguments.length === 1) {
+      } else if (arguments.length===1) {
         this.handlerMap.delete(mesgName);
       } else {
         const handlers = this.handlerMap.get(mesgName);
@@ -103,36 +104,36 @@ class Messager {
       let { toLocal=true, toNet=true } = options;
       if (TEST('data')) console.log(`MessagerSend: [${mesgName}] inData:`,inData);
       const handlers = this.handlerMap.get(mesgName);
+      /// create promises for all registered handlers
       let promises = [];
       /// toLocal
-      if (handlers && toLocal) {
-        for (let handlerFunc of handlers) {
-          // handlerFunc signature: (data,dataReturn) => {}
-          // handlerFunc has udata_id property to note originating UDATA object
-          // skip "same origin" calls
-          if (srcUID && handlerFunc.udata_id===srcUID) {
-            if (DBG) console.warn(`MessagerSend: [${mesgName}] skip call since origin = destination; use Broadcast() if intended`);
-            continue;
-          }
-          // Create a promise. if handlerFunc returns a promise, it follows
-          let p = f_MakeResolverFunction( handlerFunc, inData );
-          promises.push(p);
-        } // end toLocal
-      }
-
-      function f_MakeResolverFunction( handlerFunc ) {
-        return new Promise(( resolve, reject ) => {
-          let retval = handlerFunc(inData,{/*control functions go here*/});
-          resolve(retval);
-        });
-      }
-
+      if (handlers && toLocal) for (let handlerFunc of handlers) {
+        // handlerFunc signature: (data,dataReturn) => {}
+        // handlerFunc has udata_id property to note originating UDATA object
+        // skip "same origin" calls
+        if (srcUID && handlerFunc.udata_id===srcUID) {
+          if (DBG) console.warn(`MessagerSend: [${mesgName}] skip call since origin = destination; use Broadcast() if intended`);
+          continue;
+        }
+        // Create a promise. if handlerFunc returns a promise, it follows
+        let p = f_MakeResolverFunction( handlerFunc, inData );
+        promises.push(p);
+      } // end toLocal
       /// toNetwork
       if (toNet) {
         if (TEST('net')) console.log('MessagerCall: Network async call handling here');
       } // end toNetwork
       /// return all queued promises
       return promises;
+
+      /// inline utility function /////////////////////////////////////////////
+      function f_MakeResolverFunction( handlerFunc ) {
+        return new Promise(( resolve, reject ) => {
+          let retval = handlerFunc(inData,{/*control functions go here*/});
+          if (typeof retval!=='object') reject(retval);
+          else resolve(retval);
+        });
+      }
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: wrapper for Send() used when you want every handlerFunc, including
@@ -144,7 +145,7 @@ class Messager {
 /*/ API: Return an array of Promises. Called by UDATA.Call().
 /*/ Call( mesgName, inData, options={} ) {
       let { srcUID }                   = options;
-      let { toLocal=true, toNet=true } = options;
+      let { toLocal=true, toNet=false } = options;
       const handlers = this.handlerMap.get(mesgName);
       let promises = [];
       /// toLocal
@@ -162,13 +163,7 @@ class Messager {
           promises.push(p);
         } // end toLocal
       }
-      /// toNetwork
-      if (toNet) {
-        if (TEST('net')) console.log('MessagerCall: Network async call handling here');
-      } // end toNetwork
-      /// return all queued promises
-      return promises;
-
+      /// resolver for local
       function f_MakeResolverFunction( handlerFunc ) {
         return new Promise(( resolve, reject ) => {
           let retval = handlerFunc(inData,{/*control functions go here*/});
@@ -176,7 +171,15 @@ class Messager {
           resolve(retval);
         });
       }
+      /// toNetwork
+      if (toNet) {
+        let pkt = new NetMessage(mesgName,inData);
+        let p = pkt.QueueTransaction();
+        promises.push(p);
+      } // end toNetwork
 
+      /// return all queued promises
+      return promises;
     }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

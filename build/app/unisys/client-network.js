@@ -88,13 +88,12 @@ var NETWORK   = {};
 /*/ function m_HandleRegistrationMessage( msgEvent ) {
       let regData = JSON.parse(msgEvent.data);
       let { HELLO, UADDR } = regData;
-      NetMessage.GlobalSetUADDR(UADDR);
       // (1) after receiving the initial message, switch over to regular
       // message handler
       NETWORK.RemoveListener('message', m_HandleRegistrationMessage);
       m_status = M3_REGISTERED;
       // (2) initialize global settings for netmessage
-      NetMessage.GlobalSetup({ netsocket : NETSOCK.ws});
+      NetMessage.GlobalSetup({ uaddr : UADDR, netsocket : NETSOCK.ws});
       if (TEST('net')) {
         console.log(PR,'GlobalSetup got network socket');
         TEST.Pass('netMessageInit');
@@ -106,7 +105,11 @@ var NETWORK   = {};
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     function m_HandleMessage( msgEvent ) {
       let pkt = new NetMessage(msgEvent.data);
-      if (DBG) console.log(PR,'Received REGULAR MESSAGE',pkt.Data(),pkt.SeqNum());
+      if (DBG) console.log(PR,'received packet w/seqnum',pkt.seqnum,JSON.stringify(pkt.seqlog));
+      if (pkt.IsTransaction()) {
+        console.log(PR,'receiving transaction',pkt.Data());
+        pkt.CompleteTransaction();
+      }
     }
 
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
