@@ -54,6 +54,9 @@ var   UDATA        = null; // set in constructor
         super();
         // UDATA is the interface to unisys messaging and state features
         UDATA = UNISYS.NewDataLink(this);
+        /* UNISYS LIFECYCLE INITIALIZATION */
+        // initialize UNISYS before declaring any hook functions
+        UNISYS.SystemInitialize(module.id);
       }
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
@@ -61,9 +64,8 @@ var   UDATA        = null; // set in constructor
   /*/ This is the root component, so this fires after all subcomponents have
       been fully rendered by render().
   /*/ componentDidMount () {
-        UNISYS.SystemInitialize( module.id );
         UNISYS.NetworkInitialize( function() {
-          console.log('WHAT');
+          if (DBG) console.log('unisys network initialized');
         });
         // start UNISYS lifecycle after REACT is ready
         (async () => {
