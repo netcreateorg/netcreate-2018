@@ -135,26 +135,26 @@ var MESSAGER       = new Messager();
       the same UDATA instance (avoid echoing back to self)
   /*/ Send( mesgName, inData, options ) {
         if (DBG.send) console.log(`${this.uid}_${PR}`,'** DATALINK SEND',mesgName);
+        options = options || { msgType:'mesg' };
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
         options.srcUID = this.UID();
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
-        let promises = MESSAGER.Send(mesgName,inData,options);
-        return Promise.all(promises);
+        MESSAGER.Send(mesgName,inData,options);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Sends the data to all message implementors, irregardless of origin.
   /*/ Signal( mesgName, data, options ) {
         if (DBG.send) console.log(`${this.uid}_${PR}`,'** DATALINK SIGNAL',mesgName);
-        options = options || {};
+        options = options || { msgType:'mesg' };
         MESSAGER.Signal(mesgName,data);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ UDATA wraps Messager.Call(), which returns an array of promises.
       The UDATA version of Call() manages the promises, and returns a
   /*/ async Call( mesgName, inData, options ) {
-        options = options || {};
+        options = options || { msgType:'mesg' };
         if (DBG.send) {
           let status = '';
           if (!options.toNet) status+='NO_NET ';
@@ -176,7 +176,7 @@ var MESSAGER       = new Messager();
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ version of Call that forces local-only calls
   /*/ LocalCall( mesgName, inData, options ) {
-        options = options || {};
+        options = options || { msgType:'mesg' };
         options.toLocal = true;
         options.toNet = false;
         return this.Call(mesgName,inData,options);
