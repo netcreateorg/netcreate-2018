@@ -5,7 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG           = true;
+const DBG           = { connect:false, handle:false };
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -61,17 +61,17 @@ var NETWORK   = {};
       // uses values that were embedded in index.ejs on load
       let wsURI = `ws://${NETSOCK.uaddr}:${NETSOCK.uport}`;
       NETSOCK.ws = new WebSocket(wsURI);
-      if (DBG) console.log(PR,'OPEN SOCKET TO',wsURI);
+      if (DBG.connect) console.log(PR,'OPEN SOCKET TO',wsURI);
 
       /** create listeners **/
       NETWORK.AddListener('open', function( event ) {
-        if (DBG) console.log(PR,'..OPEN',event.target.url);
+        if (DBG.connect) console.log(PR,'..OPEN',event.target.url);
         m_status = M2_CONNECTED;
         // message handling continues in 'message' handler
         // the first message is assumed to be registration data
       });
       NETWORK.AddListener('close', function( event ) {
-        if (DBG) console.log(PR,'..CLOSE',event.target.url);
+        if (DBG.connect) console.log(PR,'..CLOSE',event.target.url);
         m_status = M0_INIT;
       });
       /** handle socket errors **/
@@ -107,18 +107,18 @@ var NETWORK   = {};
       let pkt = new NetMessage(msgEvent.data);
       /// is it a transaction?
       if (pkt.IsTransaction()) {
-        console.log(PR,'received transaction',pkt.Message(),pkt.Data());
+        if (DBG.handle) console.log(PR,'received transaction',pkt.Message(),pkt.Data());
         pkt.CompleteTransaction();
         return;
       }
       if (pkt.IsType('state')) {
-        console.log(PR,'received state change',pkt.Message(),pkt.Data());
+        if (DBG.handle) console.log(PR,'received state change',pkt.Message(),pkt.Data());
         return;
       }
       if (pkt.IsType('mesg')) {
         /// is it a local invocation?
         /// check our local message handlers
-        console.log(PR,'received message',pkt.Message(),pkt.Data());
+        if (DBG.handle) console.log(PR,'received message',pkt.Message(),pkt.Data());
       }
     }
 

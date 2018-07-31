@@ -19,12 +19,13 @@
 
 /// DEBUGGING /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG          = { send : true, return : true, register : true };
+const DBG          = { send:false, return:false, register:false };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const BAD_OWNER    = "must pass owner object of type React.Component or UniModule with optional 'name' parameter";
 const BAD_NAME     = "name parameter must be a string";
 const BAD_UID      = "unexpected non-unique UID";
 const BAD_EJSPROPS = "EJS props (window.NC_UNISYS) is undefined, so can not set datalink IP address";
+const PR           = "UDATA:";
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -67,10 +68,10 @@ var MESSAGER       = new Messager();
 
         // react components or regular objects
         if (owner.name) {
-          msgr_type = 'T_MOD';
+          msgr_type = 'MOD';
           msgr_name = owner.name || optName;
         } else if (owner.constructor.name) {
-          msgr_type = 'T_RCT';
+          msgr_type = 'RCT';
           msgr_name = owner.constructor.name;
         } else {
           throw Error(BAD_OWNER);
@@ -121,19 +122,19 @@ var MESSAGER       = new Messager();
       HandleMessage( mesgName, listener ) {
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
-        if (DBG.register) console.log(`${this.name} handler added [${mesgName}]`);
+        if (DBG.register) console.log(`${this.uid}_${PR}`,`${this.name} handler added [${mesgName}]`);
         MESSAGER.HandleMessage(mesgName,listener,{receiverUID:this.UID()});
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       UnhandleMessage( mesgName, listener ) {
-        if (DBG.register) console.log(`${this.name} handler removed [${mesgName}]`);
+        if (DBG.register) console.log(`${this.uid}_${PR}`,`${this.name} handler removed [${mesgName}]`);
         MESSAGER.UnhandleMessage(mesgName,listener);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Sends the data to all message implementors UNLESS it is originating from
       the same UDATA instance (avoid echoing back to self)
   /*/ Send( mesgName, inData, options ) {
-        console.log('** DATALINK SEND',mesgName);
+        if (DBG.send) console.log(`${this.uid}_${PR}`,'** DATALINK SEND',mesgName);
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
         options.srcUID = this.UID();
@@ -145,7 +146,7 @@ var MESSAGER       = new Messager();
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Sends the data to all message implementors, irregardless of origin.
   /*/ Signal( mesgName, data, options ) {
-        console.log('** DATALINK SIGNAL',mesgName);
+        if (DBG.send) console.log(`${this.uid}_${PR}`,'** DATALINK SIGNAL',mesgName);
         options = options || {};
         MESSAGER.Signal(mesgName,data);
       }
@@ -153,22 +154,36 @@ var MESSAGER       = new Messager();
   /*/ UDATA wraps Messager.Call(), which returns an array of promises.
       The UDATA version of Call() manages the promises, and returns a
   /*/ async Call( mesgName, inData, options ) {
-        console.log('** DATALINK CALL ASYNC',mesgName);
         options = options || {};
+        if (DBG.send) {
+          let status = '';
+          if (!options.toNet) status+='NO_NET ';
+          if (!options.toLocal) status+='NO_LOCAL';
+          if (!(options.toLocal||options.toNet)) status='ERR NO LOCAL OR NET';
+          console.log(`${this.uid}_${PR}`,'** DATALINK CALL ASYNC',mesgName,status);
+        }
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
         options.srcUID = this.UID();
         let promises = MESSAGER.Call(mesgName,inData,options);
-        console.log('** awaiting...',promises);
+        if (DBG.send) console.log(`${this.uid}_${PR}`,'** awaiting...',promises);
         let resArray = await Promise.all(promises);
-        console.log('** promise fulfilled!',mesgName);
+        if (DBG.send) console.log(`${this.uid}_${PR}`,'** promise fulfilled!',mesgName);
         let resObj = Object.assign({},...resArray);
-        if (DBG.return) console.log(`[${mesgName}] returning`,JSON.stringify(resObj));
+        if (DBG.return) console.log(`${this.uid}_${PR}`,`[${mesgName}] returned`,JSON.stringify(resObj));
         return resObj;
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ version of Call that forces local-only calls
+  /*/ LocalCall( mesgName, inData, options ) {
+        options = options || {};
+        options.toLocal = true;
+        options.toNet = false;
+        return this.Call(mesgName,inData,options);
+      }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       NullCallback () {
-        if (DBG) console.log('null_callback',this.UID());
+        if (DBG.send) console.log(`${this.uid}_${PR}`,'null_callback',this.UID());
       }
   } // class UnisysNode
 

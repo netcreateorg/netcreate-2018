@@ -81,13 +81,11 @@ const PR          = PROMPTS.Pad('DevUnisys');
         UNISYS.Hook('START',() => {
           if (TEST('call')) {
             // INVOKE remove call
-            console.log(PR,'testing call');
             this.udata.Call('TEST_REMOTE_IN',{ source : 'DevUnisysJSX' })
             // test data return
             .then((data)=>{
               if (data && data.source && data.source==='DevUnisysLogic-Return') TEST.Pass('callDataReturn');
               if (data && data.extra && data.extra==='AddedData') TEST.Pass('callDataAdd');
-              console.error(data);
               if (data && data.multi && data.stack && data.stack.length===3 && data.multi==='MultiData') TEST.Pass('callDataMulti');
             });
           }

@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 /** MODULE DECLARATIONS *******************************************************/
 
-  const DBG = true;
+  const DBG = false;
 
   var m_id_counter    = 0;
   var m_id_prefix     = 'NM';
@@ -30,14 +30,14 @@
   const PROMPTS           = require('../system/util/prompts');
   const PR                = PROMPTS.Pad('PKT-NM');
   const ERR = ":ERR:";
-  const ERR_NOT_NETMESSAGE = ERR+PR+"obj does not seem to be a NetMessage";
-  const ERR_BAD_PROP = ERR+PR+"property argument must be a string";
-  const ERR_ERR_BAD_CONSTRUCTION = ERR+PR+"constructor args are string, object";
-  const ERR_BAD_SOCKET = ERR+PR+"sender object must implement send()";
-  const ERR_BAD_SEND = ERR+PR+"bad socket; can't send";
-  const ERR_DUPE_TRANS = ERR+PR+"this packet transaction is already registered!";
-  const ERR_NO_GLOBAL_UADDR = ERR+PR+"packet sending attempted before UADDR is set!";
-  const ERR_UNKNOWN_TYPE = ERR+PR+"packet type is unknown:";
+  const ERR_NOT_NETMESG   = ERR+PR+"obj does not seem to be a NetMessage";
+  const ERR_BAD_PROP      = ERR+PR+"property argument must be a string";
+  const ERR_ERR_BAD_CSTR  = ERR+PR+"constructor args are string, object";
+  const ERR_BAD_SOCKET    = ERR+PR+"sender object must implement send()";
+  const ERR_BAD_SEND      = ERR+PR+"bad socket; can't send";
+  const ERR_DUPE_TRANS    = ERR+PR+"this packet transaction is already registered!";
+  const ERR_NO_GLOB_UADDR = ERR+PR+"packet sending attempted before UADDR is set!";
+  const ERR_UNKNOWN_TYPE  = ERR+PR+"packet type is unknown:";
   const KNOWN_TYPES       = ['mesg','state'];
 
 /// UNISYS NETMESSAGE CLASS ///////////////////////////////////////////////////
@@ -50,7 +50,7 @@
         // create NetMessage from (generic object)
         if ((typeof msg==='object') && (data===undefined)) {
           // make sure it has a msg and data obj
-          if ((typeof msg.msg!=='string')||(typeof msg.data!=='object')) throw ERR_NOT_NETMESSAGE;
+          if ((typeof msg.msg!=='string')||(typeof msg.data!=='object')) throw ERR_NOT_NETMESG;
           // merge properties into this new class instance and return it
           Object.assign(this,msg);
           m_SeqIncrement(this);
@@ -67,7 +67,7 @@
         // OPTION 3
         // create new NetMessage from scratch (mesg,data)
         // unique id for every NetMessage
-        if ((typeof msg!=='string') || (typeof data!=='object')) throw ERR_ERR_BAD_CONSTRUCTION;
+        if ((typeof msg!=='string') || (typeof data!=='object')) throw ERR_ERR_BAD_CSTR;
         // allow calls with null data by setting to empty object
         this.data     = data || {};
         this.msg      = msg;
@@ -148,7 +148,7 @@
       the socket because it's handling multiple sockets from different clients.
   /*/ SocketSend( socket=m_netsocket ) {
         if (!socket) throw ERR_BAD_SEND;
-        if (NetMessage.UADDR===undefined) throw ERR_NO_GLOBAL_UADDR;
+        if (NetMessage.UADDR===undefined) throw ERR_NO_GLOB_UADDR;
         socket.send(this.JSON());
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -159,14 +159,14 @@
 
         let p = new Promise((resolve,reject) => {
           var hash = m_GetHashKey(this);
-          console.log(PR,'queueing transaction hash',hash);
+          if (DBG) console.log(PR,'queueing transaction hash',hash);
           if (m_transactions[hash]) {
             reject(Error(ERR_DUPE_TRANS+':'+hash));
           } else {
             // save the resolve function in transactions table;
             // promise will resolve on remote invocation with data
             m_transactions[hash] = function (data)  {
-              console.log(PR,'resolving promise with',data);
+              if (DBG) console.log(PR,'resolving promise with',data);
               resolve(data);
             };
             this.SocketSend();
@@ -186,7 +186,7 @@
   /*/ CompleteTransaction() {
         var hash = m_GetHashKey(this);
         var resolverFunc = m_transactions[hash];
-        console.log(PR,'CompleteTransaction',hash);
+        if (DBG) console.log(PR,'CompleteTransaction',hash);
         if (typeof resolverFunc!=='function') {
           throw `transaction [${hash}] handler error`;
         } else {

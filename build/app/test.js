@@ -6,7 +6,7 @@
 
 console.log(`> TEST MODULE loaded`);
 
-let DBG = true;
+let DBG = false;
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -24,6 +24,7 @@ let DBG = true;
 /*/ let PASSED = {};
 /*/ pairs of arrays to match (array of arrays)
 /*/ let ARR_MATCH = [];
+    let PR = 'TEST:';
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Main TEST ENABLE
@@ -31,6 +32,7 @@ let DBG = true;
 /*/ let TM = ( testname, flag ) => {
       if (typeof testname!=='string') throw "arg1 must be a testname";
       if (!TESTS.hasOwnProperty(testname)) throw `"${testname}" is not a valid testname`;
+      if (DBG) console.log(PR,'TM',testname,flag||'');
       if (flag===undefined) {
         return TESTS[testname];
       } else {
@@ -42,12 +44,14 @@ let DBG = true;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: pass the particular subtest
 /*/ TM.Pass = function ( subtest ) {
+      if (DBG) console.log(PR,'Pass');
       if (PASSED.hasOwnProperty(subtest)) PASSED[subtest] = true;
       else throw `Unknown subtest: ${subtest}`;
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: check if the particular subtests passed have indeed passed
 /*/ TM.Passed = function ( ...args ) {
+      if (DBG) console.log(PR,'Passed');
       let passed = true;
       args.forEach((subtest)=>{
         if (!PASSED.hasOwnProperty(subtest)) throw `"${subtest}" is not valid subtest`;
@@ -58,12 +62,14 @@ let DBG = true;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: output test results
 /*/ TM.Assess = function () {
+      if (DBG) console.log(PR,'Assess');
       m_PreTest();
       m_TestResults();
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: assess whether passed arrays match during Assess function()
 /*/ TM.AssessArrayMatch = function( subtest, arr1, arr2 ) {
+      if (DBG) console.log(PR,'AssessArrayMatch');
       ARR_MATCH.push([subtest,arr1,arr2]);
     }
 

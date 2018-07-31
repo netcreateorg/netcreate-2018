@@ -21,6 +21,7 @@ const TEST      = require('test');
 const TEST_WAIT     = 3000;
 var   TESTCOUNTER   = 3;
 var   TESTINTERVAL  = null;
+const DBG           = { handler:false };
 /// TESTS are enabled in DevUnisys.JSX constructor()
 
 
@@ -106,20 +107,21 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
 /*/ First INITIALIZE Hook takes some time to resolve asynchronously
     Enable this feature by returning a Promise
 /*/ MOD.Hook('INITIALIZE', function () {
-      if (TEST('hook')) {
-        TEST.Pass('hookInit1');
-        let tms = 1000;
-        let p = new Promise(function (resolve,reject) {
-          setTimeout(
-            () => {
-              resolve(1);
-              TEST.Pass('hookInitDeferred');
-            },
-            tms
-          );
-        }); // new Promise
-        return p;
-      } // end TEST('hook')
+      if (!TEST('hook')) return Promise.resolve('immediate');
+      TEST.Pass('hookInit1');
+      let tms = 1000;
+      let p = new Promise(function (resolve,reject) {
+        setTimeout(
+          () => {
+            // if a hook returns a promise, then lifecycle waits
+            // until all promises are resolved
+            TEST.Pass('hookInitDeferred');
+            resolve('hookInitDeferred');
+          },
+          tms
+        );
+      }); // new Promise
+      return p;
     });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Test Hooks
@@ -160,7 +162,7 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
       // note that UDATA also implements 'FAKE_REMOTE'
       if (TEST('remote')) {
         UDATA.HandleMessage('FAKE_REMOTE',(data,ucontrol) => {
-          console.log('FakeRemote got data',data);
+          if (DBG.handler) console.log('FakeRemote got data',data);
           data.results.push('UDATA_instance');
           TEST.Pass('remoteCall');
           if (data!==undefined) TEST.Pass('remoteData');
@@ -184,11 +186,11 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
 /*/ The Fake Remote testing happens here in a separate module.
 /*/ FR_MOD.Hook('INITIALIZE', function() {
       if (TEST('remote')) {
-        console.log(FR,'FR Add FAKE_REMOTE Handler #2');
+        if (DBG.handler) console.log(FR,'FR Add FAKE_REMOTE Handler #2');
         // TEST RESOLVE remoteData
         FR_UDATA.HandleMessage('FAKE_REMOTE',(data) => {
           data.results.push('FR_UDATA_instance');
-          console.log(FR,'got FAKE_REMOTE message with data',data);
+          if (DBG.handler) console.log(FR,'got FAKE_REMOTE message with data',data);
           TEST.Pass('remoteData');
         });
       }
@@ -201,7 +203,7 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
         let localOnly = { toLocal : true, toNet : false };
         FR_UDATA.Call('FAKE_REMOTE',{ mycat:'kitty',results:[] })
         .then((data)=>{
-          console.log(FR,'got data',data);
+          if (DBG.handler) console.log(FR,'got data',data);
           TEST.Pass('remoteDataAdd');
         }, localOnly);
       }
@@ -222,7 +224,7 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
               count : i
             }, netOnly)
             .then((data)=>{
-              console.log(FR,'got SERVER_REFLECT',data);
+              if (DBG.handler) console.log(FR,'got SERVER_REFLECT',data);
               TEST.Pass('serverCall');
               if ((data!==undefined) && (Array.isArray(data.stack))) TEST.Pass('serverData');
               if ((data.stack) && (data.stack.length===2)&&(data.stack[1]==='SRV_01')) TEST.Pass('serverDataAdd');
