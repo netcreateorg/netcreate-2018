@@ -10,6 +10,28 @@
 				min-height: 100%
 			}
 		</style>
+		<script>
+			if (window.NC_UNISYS) {
+				let err  = `**FATAL ERROR** NC_UNISYS already initialized.\n\n`;
+				err += `Take a screen shot with your phone and report the error!`
+				alert(err);
+				throw Error(err);
+			}
+			window.NC_UNISYS = {
+				client : {
+					ip       : '<%=ip%>',
+					hostname : '<%=hostname%>',
+					ukey     : '<%=ukey%>'
+				},
+				server : {
+					ustart    : '<%=ustart%>'
+				},
+				socket : {
+					uaddr     : '<%=uaddr%>',
+					uport     : '<%=uport%>'
+				}
+			};
+		</script>
 		<script src="/scripts/netc-lib.js"></script>
 		<script src="/scripts/netc-app.js"></script>
 		<link rel="stylesheet" href="/styles/netc-app.css" type="text/css">

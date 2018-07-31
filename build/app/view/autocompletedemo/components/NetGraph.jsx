@@ -34,7 +34,7 @@ var DBG = false;
 const React      = require('react')
 const ReactDOM   = require('react-dom')
 const D3NetGraph = require('./d3-simplenetgraph')
-const UNISYS     = require('system/unisys');
+const UNISYS     = require('unisys/client');
 var   UDATA      = null;
 
 

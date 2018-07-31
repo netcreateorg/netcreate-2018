@@ -1,8 +1,11 @@
+var   DBG         = false;
 /// SYSTEM INTEGRATION ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UNISYS      = require('system/unisys');
-const LOGIC       = require('./DevUnisysLogic');
+const UNISYS      = require('unisys/client');
 const REFLECT     = require('system/util/reflection');
+/// MAGIC: DevUnisysLogic will add UNISYS Lifecycle Hooks on require()
+const LOGIC       = require('./DevUnisysLogic');
+const TEST        = require('test');
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -10,53 +13,87 @@ const React       = require('react');
 const ReactStrap  = require('reactstrap');
 const { InputGroup, InputGroupAddon, InputGroupText, Input } = ReactStrap;
 const { Alert }   = ReactStrap;
-
-/// DECLARATIONS //////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PROMPTS     = require('system/util/prompts');
+const PR          = PROMPTS.Pad('DevUnisys');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ This component blah blah
+/*/ This is the root component for the view
 /*/ class DevUnisys extends React.Component {
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// CONSTRUCTOR
       constructor(props) {
         super(props);
 
-        // establish module scope before lifecycle
-        // do this once in the root component as early as possible
-        UNISYS.SystemInitialize(module.id);
-
-        // set up data links
+        /* UNISYS DATA LINK CONNECTION */
         this.udata = UNISYS.NewDataLink(this);
 
-        // UNISYS state may already be initialized from settings
+        /* INITIALIZE COMPONENT STATE from UNISYS */
+        // get any state from 'VIEW' namespace; empty object if nothing
+        // UDATA.State() returns a copy of state obj; mutate/assign freely
         let state = this.udata.State('VIEW');
-        // UNISYS.State() returns a copy of state obj; mutate/assign freely
+        // initialize some state variables
         state.description = state.description || 'uninitialized description';
-        // REACT TIP: you can safely set state directly ONLY in constructor!
+        // REACT TIP: setting state directly works ONLY in React.Component constructor!
         this.state = state;
 
+        /* LOCAL INTERFACE HANDLERS */
+        this.handleTextChange  = this.handleTextChange.bind(this);
+
+        /* UNISYS STATE CHANGE HANDLERS */
         // bind 'this' context to handler function
         // then use for handling UNISYS state changes
         this.UnisysStateChange = this.UnisysStateChange.bind(this);
+        // NOW set up handlers...
         this.udata.OnStateChange('VIEW', this.UnisysStateChange);
-
-        this.handleTextChange  = this.handleTextChange.bind(this);
         this.udata.OnStateChange('LOGIC', this.UnisysStateChange);
 
-        // register some handlers
-        this.udata.HandleMessage('JSXMELON',(data,ucontrol) => {
-          data.cat = 'calico';
-          data.melon += '_ack';
-          ucontrol.return(data);
-        });
-
+        /* UNISYS LIFECYCLE INITIALIZATION */
+        // initialize UNISYS before declaring any hook functions
+        UNISYS.SystemInitialize(module.id);
         // hook start handler to initiate call
-        UNISYS.Hook('START',() => {
-          this.udata.Call('LOGICMELON',{ melon : 'jsxmelon' });
+
+        /* CONFIGURE UNISYS TESTS */
+        // enable debug output and tests
+        // true = enabled, false = skip
+        TEST('state'  , true);  // state events and changes
+        TEST('hook'   , true);  // lifecycle hooks
+        TEST('call'   , true);  // internal instance calls
+        TEST('remote' , true);  // instance-to-instance calls
+        TEST('server' , true);  // server calls
+        TEST('net'    , true);  // network initialization
+        TEST('netcall', true);  // network calls
+
+        /* UNISYS TESTS */
+        // these run during a hook, but are defined in constructor
+        UNISYS.Hook('INITIALIZE',() => {
+          /* UNISYS TEST MESSAGE HANDLER REGISTRATION */
+          if (TEST('remote')) {
+            this.udata.HandleMessage('REMOTE_CALL_TEST',(data, msgcon) => {
+              // msgcon is message control
+              data.cat = 'calico';
+              data.melon += '_ack';
+              return data;
+            });
+          }
+          if (TEST('call')) {
+            this.udata.HandleMessage('TEST_CALL',(data)=>{
+              if (!data.stack) data.stack=[]; data.stack.push('TRI-JSX');
+              return data;
+            });
+          }
         });
+        UNISYS.Hook('START',() => {
+          /* UNISYS TEST MESSAGE HANDLER INVOCATION */
+          if (TEST('call')) {
+            // INVOKE remove call
+            this.udata.Call('TEST_CALL',{ source : 'DevUnisysJSX' })
+            // test data return
+            .then((data)=>{
+              if (data && data.source && data.source==='DevUnisysLogic-Return') TEST.Pass('callDataReturn');
+              if (data && data.extra && data.extra==='AddedData') TEST.Pass('callDataAdd');
+              if (data && data.multi && data.stack && data.stack.length===3 && data.multi==='MultiData') TEST.Pass('callDataMulti');
+            });
+          }
+        }); // START hook
 
       } // constructor
 
@@ -64,7 +101,7 @@ const { Alert }   = ReactStrap;
   /// UNISYS state change handler - registered by UNISYS.OnStateChange()
   /// state is coming from UNISYS
       UnisysStateChange( state ) {
-        console.log(`.. REACT <- state`,state,`via ${this.udata.UID()}'`);
+        if (DBG) console.log(`.. REACT <- state`,state,`via ${this.udata.UID()}'`);
         // update local react state, which should force an update
         this.setState(state);
       }
@@ -77,7 +114,7 @@ const { Alert }   = ReactStrap;
         let state = {
           description : target.value
         }
-        console.log(`REACT -> state`,state,`to ${this.udata.UID()}`);
+        if (DBG) console.log(`REACT -> state`,state,`to ${this.udata.UID()}`);
         this.udata.SetState('VIEW',state,this.uni_id);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -85,9 +122,11 @@ const { Alert }   = ReactStrap;
       componentDidMount() {
         // start the application phase
         let className = REFLECT.ExtractClassName(this);
-        console.log(`${className} componentDidMount`);
-
-
+        if (DBG) console.log(`${className} componentDidMount`);
+        // initialize network
+        UNISYS.NetworkInitialize(() => {
+          console.log(PR,'unisys network initialized');
+        });
         // kickoff initialization stage by stage
         (async () => {
           await UNISYS.EnterApp();
@@ -100,7 +139,7 @@ const { Alert }   = ReactStrap;
   /// COMPONENT render the component template
       render() {
         return (
-          <div style={{padding:'10px'}}>
+          <div id='fdshell' style={{padding:'10px'}}>
             <h2>Unisys Feature Development Shell</h2>
             <h4>TESTING UISTATE</h4>
             <p>{this.state.description}</p>

@@ -96,7 +96,7 @@ const AutoComplete = require('./AutoComplete');
 const NodeDetail   = require('./NodeDetail');
 const EdgeEditor   = require('./EdgeEditor');
 
-const UNISYS   = require('system/unisys');
+const UNISYS   = require('unisys/client');
 var   UDATA    = null;
 
 const thisIdentifier = 'nodeSelector';   // SELECTION identifier
@@ -148,7 +148,7 @@ class NodeSelector extends React.Component {
 /*/ clearForm ( label='' ) {
       this.setState({
         formData: {
-            label:     label,
+            label,
             type:      '',
             info:      '',
             notes:     '',
@@ -212,7 +212,7 @@ class NodeSelector extends React.Component {
         let formData = this.state.formData;
         formData.label = data.searchLabel;
         this.setState({
-          formData: formData
+          formData
         });
       }
     } // handleSelection
@@ -226,7 +226,7 @@ class NodeSelector extends React.Component {
       // Clean data
       // REVIEW: Basic data structure probably needs updating
       let node = {attributes:{}};
-      if (newNode.attributes===undefined) { newNode.attributes = {} };
+      if (newNode.attributes===undefined) { newNode.attributes = {} }
       //
       node.label                    = newNode.label || '';
       node.id                       = newNode.id    || '';
@@ -288,8 +288,8 @@ class NodeSelector extends React.Component {
       this.setState({ isEditable: true });
       // Add ID if one isn't already defined
       let formData = this.state.formData;
-      if (formData.id == '') formData.id = this.getNewNodeID();
-      this.setState({ formData: formData });
+      if (formData.id==='') formData.id = this.getNewNodeID();
+      this.setState({ formData });
     } // onEditButtonClick
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -425,7 +425,11 @@ class NodeSelector extends React.Component {
 /*/ componentDidMount () {
       // console.log('componentDidMount')
       // Register as the active autoComplete Component when we first start up
-      UDATA.Call('AUTOCOMPLETE_SELECT',{id:'nodeSelector', searchString:this.state.formData.label});
+      UNISYS.Hook('START',() => {
+        // always wrap UNISYS calls in a lifescycle hook otherwise you may try to execute a call
+        // before it has been declared in another module
+        UDATA.LocalCall('AUTOCOMPLETE_SELECT',{id:'nodeSelector', searchString:this.state.formData.label});
+      });
     }
 } // class NodeSelector
 

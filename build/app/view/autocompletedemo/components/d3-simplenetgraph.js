@@ -37,7 +37,7 @@ var DBG = false;
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const d3       = require('d3')
-const UNISYS   = require('system/unisys');
+const UNISYS   = require('unisys/client');
 var   UDATA    = null;
 
 

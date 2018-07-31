@@ -3,10 +3,9 @@
   "version": "1.0.0",
   "description": "research project for network graph analysis",
   "scripts": {
+    "bare": "node --inspect brunch-server.js",
     "dev": "brunch watch -s",
-    "build": "echo \"Error: no build/deploy system yet\" && exit 1",
     "clean": "rm -rf public/",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "debug": "LOGGY_STACKS=true BRUNCH_DEVTOOLS=true ./brunch-debug watch --server"
   },
   "repository": {
@@ -26,6 +25,7 @@
     "babel-preset-react": "^6.24.1",
     "brunch": "^2.10.12",
     "clean-css-brunch": "^2.10.0",
+    "ejs": "^2.6.1",
     "eslint": "^5.0.1",
     "eslint-plugin-react": "^7.10.0",
     "uglify-js-brunch": "^2.10.0"
@@ -34,17 +34,21 @@
     "babel-polyfill": "^6.26.0",
     "bootstrap": "^4.1.1",
     "classnames": "^2.2.6",
+    "cookie-parser": "^1.4.3",
     "d3": "^4.13.0",
+    "fs-extra": "^6.0.1",
+    "ip": "^1.1.5",
     "jquery": "^3.3.1",
     "popper.js": "^1.14.3",
     "react": "^16.4.1",
     "react-autosuggest": "^9.3.4",
     "react-dom": "^16.4.1",
-    "react-faux-dom": "^4.2.0",
+    "react-faux-dom": "^4.1.0",
     "react-popper": "^0.7.4",
     "react-router": "^4.3.1",
     "react-router-dom": "^4.3.1",
     "react-transition-group": "^2.4.0",
-    "reactstrap": "^5.0.0"
+    "reactstrap": "^5.0.0",
+    "stacktrace-js": "^2.0.0"
   }
 }

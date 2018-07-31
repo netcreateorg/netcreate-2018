@@ -140,7 +140,7 @@ const { Button, Col, Form, FormGroup, Label, Input, FormText } = ReactStrap;
 const AutoComplete = require('./AutoComplete');
 const NodeDetail   = require('./NodeDetail');
 
-const UNISYS   = require('system/unisys');
+const UNISYS   = require('unisys/client');
 var   UDATA    = null;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////

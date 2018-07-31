@@ -36,18 +36,17 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-'use strict';
-const DBG          = false;
+const TEST         = require('test');
+const NetMessage   = require('unisys/common-netmessage-class');
 
 /// MODULE VARS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var   MSGR_IDCOUNT = 0;
+var   DBG          = false;
 
-/// UNISYS EMITTER CLASS //////////////////////////////////////////////////////
+/// UNISYS MESSAGER CLASS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 class Messager {
-
 /*/ Instances of this class can be used to implement a UNISYS-style message
     passing scheme with shared semantics. It maintains a Map keyed by mesgName
     strings, containing a Set object filled with handlers for that mesgName.
@@ -59,14 +58,15 @@ class Messager {
 /// FIRE ONCE EVENTS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: subscribe a handlerFunc function with a particular unisys id
-    to receive a particular message.
+    to receive a particular message. The handlerFunc receives a data obj
+    and should return one as well. If there is an error, return a string.
 /*/ HandleMessage( mesgName, handlerFunc, options={} ) {
       let { handlerUID } = options;
+      let { syntax } = options;
       if (typeof handlerFunc !== 'function') {
-        throw new TypeError('arg2 must be a function');
+        throw "arg2 must be a function";
       }
       if (typeof handlerUID==='string') {
-        if (DBG) console.log(`saving udata_id with handlerFunc`);
         // bind the udata uid to the handlerFunc function for convenient access
         // by the message dispatcher
         handlerFunc.udata_id = handlerUID;
@@ -76,6 +76,9 @@ class Messager {
         handlers = new Set();
         this.handlerMap.set( mesgName, handlers );
       }
+      // syntax annotation
+      if (syntax) handlerFunc.umesg = { syntax };
+      // saved function to handler
       handlers.add(handlerFunc);
       return this;
     }
@@ -84,7 +87,7 @@ class Messager {
 /*/ UnhandleMessage( mesgName, handlerFunc ) {
       if (!arguments.length) {
         this.handlerMap.clear();
-      } else if (arguments.length === 1) {
+      } else if (arguments.length===1) {
         this.handlerMap.delete(mesgName);
       } else {
         const handlers = this.handlerMap.get(mesgName);
@@ -98,55 +101,94 @@ class Messager {
 /*/ API: trigger a message with the data object payload, sending to all handlers
     that implement that event. Includer sender's unisys id to prevent the sender
     to receiving its own message back if it happens to implement the message as
-    well.
-/*/ Send( mesgName, data, options={} ) {
-      let { srcUID } = options;
-      let etype = (src_uid===undefined) ? 'MessagerSignal' : 'MessagerSend';
-      if (DBG) console.log(`${etype}: [${mesgName}] data:`,data);
+    well. dstScope is 'net' or 'local' to limit where to send, or 'all'
+    for everyone on net or local
+/*/ Send( mesgName, inData, options={} ) {
+      let { srcUID, msgType }          = options;
+      let { toLocal=true, toNet=true } = options;
       const handlers = this.handlerMap.get(mesgName);
-      if (handlers) {
-        for (let handlerFunc of handlers) {
-          if (src_uid && handlerFunc.udata_id===src_uid) continue;
-          handlerFunc(mesgName, data, src_uid);
+      /// toLocal
+      if (handlers && toLocal) for (let handlerFunc of handlers) {
+        // handlerFunc signature: (data,dataReturn) => {}
+        // handlerFunc has udata_id property to note originating UDATA object
+        // skip "same origin" calls
+        if (srcUID && handlerFunc.udata_id===srcUID) {
+          if (DBG) console.warn(`MessagerSend: [${mesgName}] skip call since origin = destination; use Broadcast() if intended`);
+          continue;
         }
-      }
-      return this;
+        // trigger the handler (no return expected)
+        handlerFunc(inData,{/*control functions go here*/});
+      } // end toLocal
+      /// toNetwork
+      if (toNet) {
+        let pkt = new NetMessage(mesgName,inData);
+        pkt.SetType(msgType);
+        pkt.SocketSend();
+      } // end toNetwork
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: wrapper for Send() used when you want every handlerFunc, including
-    the sender, to receive the event even if it is the one who sent it
-/*/ Signal( mesgName, data ) {
-      this.Send(mesgName,data);
+    the sender, to receive the event even if it is the one who sent it.
+/*/ Signal( mesgName, data, options ) {
+      if (options.srcUID) {
+        console.warn(`overriding srcUID ${options.srcUID} with NULL because Signal() doesn't use it`);
+        options.srcUID = null;
+      }
+      this.Send(mesgName,data,options);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: The Remote Method Invocation version of Send(). It does not include
-    the 'mesgName' in calling subscriber function, so handlers declare one less
-    param (I like conciseness in function declarations)
-    TODO: handle asynchronous events, collect results, and work seamlessly
-    across the network
-    TODO: Enable callback support by adding to options, callobjs dict, etc
+/*/ API: Return an array of Promises. Called by UDATA.Call().
 /*/ Call( mesgName, inData, options={} ) {
-      let { srcUID, dataReturnFunc } = options;
-      if (DBG) console.log(`MessagerCall: [${mesgName}] inData:`,inData);
+      let { srcUID }                   = options;
+      let { toLocal=true, toNet=true } = options;
       const handlers = this.handlerMap.get(mesgName);
-      if (handlers) {
+      let promises = [];
+      /// toLocal
+      if (handlers && toLocal) {
         for (let handlerFunc of handlers) {
+          // handlerFunc signature: (data,dataReturn) => {}
+          // handlerFunc has udata_id property to note originating UDATA object
+          // skip "same origin" calls
           if (srcUID && handlerFunc.udata_id===srcUID) {
             if (DBG) console.warn(`MessagerCall: [${mesgName}] skip call since origin = destination; use Broadcast() if intended`);
             continue;
           }
-          // invoke a registered handler, passing inData and a UDATA_API function collection
-          let hasFunction = typeof dataReturnFunc==='function' ? "w/callback":"w/out callback";
-          if (DBG) console.log('.. MessagerCall: CALLING HANDLER for',mesgName,hasFunction);
-          handlerFunc(inData,{
-            "return" : dataReturnFunc
-          });
-        }
+          // Create a promise. if handlerFunc returns a promise, it follows
+          let p = f_MakeResolverFunction( handlerFunc, inData );
+          promises.push(p);
+        } // end toLocal
       }
-      return this;
+      /// resolver function
+      /// remember MESSAGER class is used for more than just Network Calls
+      /// the state manager also uses it, so the resolved value may be of any type
+      function f_MakeResolverFunction( handlerFunc ) {
+        return new Promise(( resolve, reject ) => {
+          let retval = handlerFunc(inData,{/*control functions go here*/});
+          resolve(retval);
+        });
+      }
+      /// toNetwork
+      if (toNet) {
+        let pkt = new NetMessage(mesgName,inData);
+        let p = pkt.QueueTransaction();
+        promises.push(p);
+      } // end toNetwork
+
+      /// return all queued promises
+      return promises;
     }
 
-}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: Return a list of messages handled by this Messager instance
+/*/ MessageNames () {
+      let handlers = [];
+      this.handlerMap.forEach( (value, key ) => {
+        handlers.push(key);
+        if (DBG) console.log('handler: '+key);
+      });
+      return handlers;
+    }
+} // class Messager
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

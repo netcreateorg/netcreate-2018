@@ -33,21 +33,9 @@
 
 const DBG        = false;
 
-/// DEBUG CONSOLE /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    window.FindMatchingNodesByProp  = m_FindMatchingNodeByProp;
-    window.FindMatchingNodesByLabel = m_FindMatchingNodesByLabel;
-    window.SetMatchingNodesByLabel  = m_SetMatchingNodesByLabel;
-    window.SetMatchingNodesByProp   = m_SetMatchingNodesByProp;
-    window.SetAllObjs               = m_SetAllObjs;
-    window.UpdateD3Data             = function () {
-      UDATA.SetState('D3DATA',D3DATA);
-      return "SetState 'D3DATA'";
-    };
-
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UNISYS     = require('system/unisys');
+const UNISYS     = require('unisys/client');
 const D3         = require('d3');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
@@ -89,7 +77,6 @@ const SOURCE_COLOR     = '#0000DD'
 const TARGET_COLOR     = '#FF0000'
 
 
-
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ LOADASSETS fires during <AutoCompleteDemo>.componentDidMount
@@ -104,189 +91,180 @@ const TARGET_COLOR     = '#FF0000'
       }); // end D3.json load
     }); // end INITIALIZE HOOK
 
-
-
-/// STATE CHANGE HANDLERS /////////////////////////////////////////////////////
+/// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Handle D3-related updates based on state changes. Subcomponents are
-    responsible for updating themselves.
-/*/ UDATA.OnStateChange('SELECTION',( stateChange ) => {
-
-      let { nodes, edges } = stateChange;
-      let { searchLabel } = stateChange;
-      let { activeAutoCompleteId } = stateChange;
-
-      // NODE LIST UPDATE
-      if (nodes!=undefined) {
-        if (nodes.length>0) {
-          let color = '#0000DD';
-          nodes.forEach( node => m_MarkNodeById(node.id,color));
-        } else {
-          m_UnMarkAllNodes();
+/*/ UNISYSHOOK fires after CONFIGURE just before START
+/*/ MOD.Hook('UNISYSHOOK', () => {
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ Handle D3-related updates based on state changes. Subcomponents are
+      responsible for updating themselves.
+  /*/ UDATA.OnStateChange('SELECTION',( stateChange ) => {
+        let { nodes, edges } = stateChange;
+        let { searchLabel } = stateChange;
+        let { activeAutoCompleteId } = stateChange;
+        // NODE LIST UPDATE
+        if (nodes!==undefined) {
+          if (nodes.length>0) {
+            let color = '#0000DD';
+            nodes.forEach( node => m_MarkNodeById(node.id,color));
+          } else {
+            m_UnMarkAllNodes();
+          }
         }
-      }
-      // SEARCH LABEL UPDATE
-      if (searchLabel) m_MarkNodesThatMatch(searchLabel,SOURCE_COLOR);
+        // SEARCH LABEL UPDATE
+        if (searchLabel) m_MarkNodesThatMatch(searchLabel,SOURCE_COLOR);
+      }); // StateChange SELECTION
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ SOURCE_SELECT set the selected node by LABEL. There is one selected node
+      in the app at any one time, though nodeLabels is passed as an array.
+      SEE ALSO: AutoComplete.onSuggestionSelected() and
+                D3SimpleNetGraph._UpdateGraph click handler
+  /*/ UDATA.HandleMessage('SOURCE_SELECT', function( data ) {
+        let { nodeLabels=[] } = data;
+        let nodeLabel = nodeLabels.shift();
+        let node = m_FindMatchingNodesByLabel(nodeLabel).shift();
+        let newState;
 
-    });
-
-
-
-/// UNISYS MESSAGE HANDLERS ///////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// these should set state appropriately, and state handlers elsewhere should
-/// respond to state changes
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ SOURCE_SELECT set the selected node by LABEL. There is one selected node in
-    the app at any one time, though nodeLabels is passed as an array.
-    SEE ALSO: AutoComplete.onSuggestionSelected() and
-              D3SimpleNetGraph._UpdateGraph click handler
-/*/ UDATA.HandleMessage('SOURCE_SELECT', function( data ) {
-      let { nodeLabels=[] } = data;
-      let nodeLabel = nodeLabels.shift();
-      let node = m_FindMatchingNodesByLabel(nodeLabel).shift();
-      let newState;
-
-      if (node===undefined) {
-        newState = {
-          nodes                 : [],
-          edges                 : [],
-          searchLabel           : '',
-          activeAutoCompleteId  : 'nodeSelector'
-        };
-        // update visuals
-        // m_UnMarkAllNodes();
-      } else {
-        let edges = [];
-        edges = edges.concat( D3DATA.edges.filter( edge => edge.source.label===nodeLabel || edge.target.label===nodeLabel) );
-        // create state change object
-        newState = {
-          nodes                 : [ node ],
-          edges                 : edges,
-          searchLabel           : node.label
-        };
-        // update visuals
-        // let color = '#0000DD';
-        // m_MarkNodeById( node.id, color );
-      }
-      // let SELECTION state listeners handle display updates
-      UDATA.SetState('SELECTION',newState);
-    });
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ SOURCE_SEARCH sets the current matching term as entered in an AutoComplete
-    field.
-/*/ UDATA.HandleMessage('SOURCE_SEARCH', function( data ) {
-      let { searchString } = data;
-      let matches = m_FindMatchingNodesByLabel(searchString);
-      let newState = {
-        suggestedNodeLabels : matches.map(n=>n.label),
-        searchLabel         : searchString,
-        nodes               : []
-      };
-      // let SELECTION state listeners handle display updates
-      UDATA.SetState('SELECTION',newState);
-    });
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ SOURCE_HILITE updates the currently rolled-over node name in a list of
-    selections.
-/*/ UDATA.HandleMessage('SOURCE_HILITE', function( data ) {
-      let { nodeLabel, color } = data;
-      if (nodeLabel) {
-        // Only mark nodes if something is selected
-        m_UnMarkAllNodes();
-        m_MarkNodeByLabel(nodeLabel,SOURCE_COLOR);
-      }
-      let hilitedNode = m_FindMatchingNodesByLabel(nodeLabel).shift();
-      // let SELECTION state listeners handle display updates
-      UDATA.SetState('SELECTION',{ hilitedNode });
-    });
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ SOURCE_UPDATE is called when the properties of a node has changed
-/*/ UDATA.HandleMessage('SOURCE_UPDATE', function( data ) {
-      let { node } = data;
-      let attribs = {
-        'Node_Type'  : node.type,
-        'Extra Info' : node.info,
-        'Notes'      : node.notes
-      };
-      let newNode = {
-        label        : node.label,
-        attributes   : attribs,
-        id           : node.id
-      };
-      // set matching nodes
-      let updatedNodes = m_SetMatchingNodesByProp({id:node.id},newNode);
-      if (DBG) console.log('HandleSourceUpdate: updated',updatedNodes);
-      // if no nodes had matched, then add a new node!
-      if (updatedNodes.length===0) {
-        if (DBG) console.log('pushing node',newNode);
-        D3DATA.nodes.push(newNode);
-      } else if (updatedNodes.length>1) {
-        throw Error("SourceUpdate found duplicate IDs");
-      }
-      UDATA.SetState('D3DATA',D3DATA);
-      UDATA.SetState('SELECTION',{ searchLabel : '' });      // let SELECTION state listeners handle display updates
-    });
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ EDGE_UPDATE is called when the properties of an edge has changed
-/*/ UDATA.HandleMessage('EDGE_UPDATE', function( data ) {
-      let { edge } = data;
-      let attribs = {
-        'Relationship' : edge.attributes['Relationship'],
-        'Citations'    : edge.attributes['Citations'],
-        'Notes'        : edge.attributes['Notes']
-      };
-      let newEdge = {
-        source         : m_FindNodeById(edge.source),
-        target         : m_FindNodeById(edge.target),
-        attributes     : attribs,
-        id             : edge.id
-      };
-      // set matching nodes
-      let updatedEdges = m_SetMatchingEdgesByProp({id:edge.id},newEdge);
-      if (DBG) console.log('HandleEdgeUpdate: updated',updatedEdges);
-      // if no nodes had matched, then add a new node!
-      if (updatedEdges.length===0) {
-        if (DBG) console.log('pushing edge',newEdge);
-        // created edges should have a default size
-        newEdge.size = 1;
-        D3DATA.edges.push(newEdge);
-      } else if (updatedEdges.length>1) {
-        throw Error("EdgeUpdate found duplicate IDs");
-      }
-      UDATA.SetState('D3DATA',D3DATA);
-    });
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ EDGE_DELETE is called when an edge should be removed from...something?
-/*/ UDATA.HandleMessage('EDGE_DELETE', function( data ) {
-      let { edgeID } = data;
-      // remove specified edge from edge list
-      D3DATA.edges = m_DeleteMatchingEdgeByProp({id:edgeID});
-      // Also update selection so edges in EdgeEditor will update
-      // This works because of a HACKY SIDE EFFECT of the NodeSelector
-      // SELECTION state handler which should be fixed
-      let { searchLabel } = UDATA.State('SELECTION');
-      UDATA.SetState('SELECTION',{
-        searchLabel          : searchLabel,
-        nodes                : D3DATA.nodes,
-        edges                : D3DATA.edges,
-        activeAutoCompleteId : 'nodeSelector'
+        if (node===undefined) {
+          newState = {
+            nodes                 : [],
+            edges                 : [],
+            searchLabel           : '',
+            activeAutoCompleteId  : 'nodeSelector'
+          };
+          // update visuals
+          // m_UnMarkAllNodes();
+        } else {
+          let edges = [];
+          edges = edges.concat( D3DATA.edges.filter( edge => edge.source.label===nodeLabel || edge.target.label===nodeLabel) );
+          // create state change object
+          newState = {
+            nodes                 : [ node ],
+            edges,
+            searchLabel           : node.label
+          };
+          // update visuals
+          // let color = '#0000DD';
+          // m_MarkNodeById( node.id, color );
+        }
+        // let SELECTION state listeners handle display updates
+        UDATA.SetState('SELECTION',newState);
       });
-    })
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ AUTOCOMPLETE_SELECT is called by <AutoComplete> components to tell the
-    module which one has the current focus. The searchString is also passed
-    so a display update can be triggered immediately.
-/*/ UDATA.HandleMessage('AUTOCOMPLETE_SELECT', function( data ) {
-      let { id, searchString='' } = data;
-      // update SELECTION state object
-      /*REVIEW* treading the selection shouldn't be necessary*/
-      let selection = UDATA.State('SELECTION');
-      selection.activeAutoCompleteId = id;
-      selection.searchLabel          = searchString;
-      UDATA.SetState('SELECTION',selection);
-    })
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ SOURCE_SEARCH sets the current matching term as entered in an
+      AutoComplete field.
+  /*/ UDATA.HandleMessage('SOURCE_SEARCH', function( data ) {
+        let { searchString } = data;
+        let matches = m_FindMatchingNodesByLabel(searchString);
+        let newState = {
+          suggestedNodeLabels : matches.map(n=>n.label),
+          searchLabel         : searchString,
+          nodes               : []
+        };
+        // let SELECTION state listeners handle display updates
+        UDATA.SetState('SELECTION',newState);
+      });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ SOURCE_HILITE updates the currently rolled-over node name in a list of
+      selections.
+  /*/ UDATA.HandleMessage('SOURCE_HILITE', function( data ) {
+        let { nodeLabel, color } = data;
+        if (nodeLabel) {
+          // Only mark nodes if something is selected
+          m_UnMarkAllNodes();
+          m_MarkNodeByLabel(nodeLabel,SOURCE_COLOR);
+        }
+        let hilitedNode = m_FindMatchingNodesByLabel(nodeLabel).shift();
+        // let SELECTION state listeners handle display updates
+        UDATA.SetState('SELECTION',{ hilitedNode });
+      });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ SOURCE_UPDATE is called when the properties of a node has changed
+  /*/ UDATA.HandleMessage('SOURCE_UPDATE', function( data ) {
+        let { node } = data;
+        let attribs = {
+          'Node_Type'  : node.type,
+          'Extra Info' : node.info,
+          'Notes'      : node.notes
+        };
+        let newNode = {
+          label        : node.label,
+          attributes   : attribs,
+          id           : node.id
+        };
+        // set matching nodes
+        let updatedNodes = m_SetMatchingNodesByProp({id:node.id},newNode);
+        if (DBG) console.log('HandleSourceUpdate: updated',updatedNodes);
+        // if no nodes had matched, then add a new node!
+        if (updatedNodes.length===0) {
+          if (DBG) console.log('pushing node',newNode);
+          D3DATA.nodes.push(newNode);
+        } else if (updatedNodes.length>1) {
+          throw Error("SourceUpdate found duplicate IDs");
+        }
+        UDATA.SetState('D3DATA',D3DATA);
+        UDATA.SetState('SELECTION',{ searchLabel : '' });      // let SELECTION state listeners handle display updates
+      });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ EDGE_UPDATE is called when the properties of an edge has changed
+  /*/ UDATA.HandleMessage('EDGE_UPDATE', function( data ) {
+        let { edge } = data;
+        let attribs = {
+          'Relationship' : edge.attributes['Relationship'],
+          'Citations'    : edge.attributes['Citations'],
+          'Notes'        : edge.attributes['Notes']
+        };
+        let newEdge = {
+          source         : m_FindNodeById(edge.source),
+          target         : m_FindNodeById(edge.target),
+          attributes     : attribs,
+          id             : edge.id
+        };
+        // set matching nodes
+        let updatedEdges = m_SetMatchingEdgesByProp({id:edge.id},newEdge);
+        if (DBG) console.log('HandleEdgeUpdate: updated',updatedEdges);
+        // if no nodes had matched, then add a new node!
+        if (updatedEdges.length===0) {
+          if (DBG) console.log('pushing edge',newEdge);
+          // created edges should have a default size
+          newEdge.size = 1;
+          D3DATA.edges.push(newEdge);
+        } else if (updatedEdges.length>1) {
+          throw Error("EdgeUpdate found duplicate IDs");
+        }
+        UDATA.SetState('D3DATA',D3DATA);
+      });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ EDGE_DELETE is called when an edge should be removed from...something?
+  /*/ UDATA.HandleMessage('EDGE_DELETE', function( data ) {
+        let { edgeID } = data;
+        // remove specified edge from edge list
+        D3DATA.edges = m_DeleteMatchingEdgeByProp({id:edgeID});
+        // Also update selection so edges in EdgeEditor will update
+        // This works because of a HACKY SIDE EFFECT of the NodeSelector
+        // SELECTION state handler which should be fixed
+        let { searchLabel } = UDATA.State('SELECTION');
+        UDATA.SetState('SELECTION',{
+          searchLabel,
+          nodes                : D3DATA.nodes,
+          edges                : D3DATA.edges,
+          activeAutoCompleteId : 'nodeSelector'
+        });
+      });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ AUTOCOMPLETE_SELECT is called by <AutoComplete> components to tell the
+      module which one has the current focus. The searchString is also passed
+      so a display update can be triggered immediately.
+  /*/ UDATA.HandleMessage('AUTOCOMPLETE_SELECT', function( data ) {
+        let { id, searchString='' } = data;
+        // update SELECTION state object
+        /*REVIEW* treading the selection shouldn't be necessary*/
+        let selection = UDATA.State('SELECTION');
+        selection.activeAutoCompleteId = id;
+        selection.searchLabel          = searchString;
+        UDATA.SetState('SELECTION',selection);
+      });
+    }); // UNISYSHOOK
 
 
 /// OBJECT HELPERS ////////////////////////////////////////////////////////////
@@ -296,9 +274,7 @@ const TARGET_COLOR     = '#FF0000'
     NOTE: make sure that strings are compared with strings, etc
 /*/ function m_FindMatchingObjsByProp( obj_list, match_me={} ) {
       // operate on arrays only
-      if (!Array.isArray(obj_list))
-        throw Error("FindMatchingObjectsByProp arg1 must be array");
-
+      if (!Array.isArray(obj_list)) throw Error("FindMatchingObjectsByProp arg1 must be array");
       let matches = obj_list.filter( obj => {
         let pass = true;
         for (let key in match_me) {
@@ -308,14 +284,13 @@ const TARGET_COLOR     = '#FF0000'
       });
       // return array of matches (can be empty array)
       return matches;
-    };
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Set array of objects that match to key/values of yes/no respectively
     Returns array of matched objects
 ?*/ function m_SetMatchingObjsByProp( obj_list, match_me={}, yes={}, no={} ) {
       // operate on arrays only
-      if (!Array.isArray(obj_list))
-        throw Error("SetMatchingObjsByPropp arg1 must be array");
+      if (!Array.isArray(obj_list)) throw Error("SetMatchingObjsByPropp arg1 must be array");
 
       let returnMatches = [];
       obj_list.forEach( node => {
@@ -336,13 +311,11 @@ const TARGET_COLOR     = '#FF0000'
 /*/ Update props of everything in obj_list
 /*/ function m_SetAllObjs( obj_list, all={} ) {
       // operate on arrays only
-      if (!Array.isArray(obj_list))
-        throw Error("SetAllNodes arg1 must be array");
+      if (!Array.isArray(obj_list)) throw Error("SetAllNodes arg1 must be array");
       obj_list.forEach(obj => {
         for (let key in all) obj[key]=all[key];
       });
     }
-
 
 
 /// NODE HELPERS //////////////////////////////////////////////////////////////
@@ -351,7 +324,7 @@ const TARGET_COLOR     = '#FF0000'
     NOTE: make sure that strings are compared with strings, etc
 /*/ function m_FindMatchingNodeByProp( match_me={} ) {
       return m_FindMatchingObjsByProp(D3DATA.nodes,match_me);
-    };
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Convenience function to retrieve node by ID
 /*/ function m_FindNodeById( id ) {
@@ -373,9 +346,9 @@ const TARGET_COLOR     = '#FF0000'
 /*/ function m_SetMatchingNodesByLabel( str='', yes={}, no={} ) {
       let returnMatches = [];
       str = u_EscapeRegexChars(str.trim());
-      if (str==='') return;
+      if (str==='') return undefined;
       const regex = new RegExp(/*'^'+*/str,'i');
-      D3DATA.nodes.forEach (node => {
+      D3DATA.nodes.forEach(node => {
         if (regex.test(node.label)) {
           for (let key in yes) node[key]=yes[key];
           returnMatches.push(node);
@@ -390,30 +363,30 @@ const TARGET_COLOR     = '#FF0000'
     Optionally resets all the NON matching nodes as well
 /*/ function m_SetMatchingNodesByProp( match_me={}, yes={}, no={} ) {
       return m_SetMatchingObjsByProp( D3DATA.nodes, match_me, yes, no );
-    };
-
+    }
 
 
 /// EDGE HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return array of edges that DON'T match del_me object keys/values
 /*/ function m_DeleteMatchingEdgeByProp( del_me={} ) {
-      let matches = D3DATA.edges.filter( edge => {
+      let matches = D3DATA.edges.filter( (edge) => {
         let pass = false;
         for (let key in del_me) {
-          if (del_me[key]!==edge[key]) pass=true; break;
+          if (del_me[key]!==edge[key]) {
+            pass=true; break;
+          }
         }
         return pass;
       });
       // return array of matches (can be empty array)
       return matches;
-    };
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Update props of exact matching edges, returns matches
 /*/ function m_SetMatchingEdgesByProp( match_me={}, yes={}, no={} ) {
       return m_SetMatchingObjsByProp( D3DATA.edges, match_me, yes, no );
-    };
-
+    }
 
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
@@ -427,7 +400,6 @@ const TARGET_COLOR     = '#FF0000'
 /*/ function u_EscapeRegexChars( string ) {
       return string.replace(REGEX_REGEXCHARS,'\\$&'); // $& means the whole matched string
     }
-
 
 
 /// NODE MARKING METHODS //////////////////////////////////////////////////////
@@ -473,7 +445,6 @@ const TARGET_COLOR     = '#FF0000'
     }
 
 
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// TODO: THESE STILL NEED TO BE CONVERTED
 ///
@@ -513,6 +484,17 @@ const TARGET_COLOR     = '#FF0000'
 //   }
 
 
+/// DEBUG CONSOLE /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    window.FindMatchingNodesByProp  = m_FindMatchingNodeByProp;
+    window.FindMatchingNodesByLabel = m_FindMatchingNodesByLabel;
+    window.SetMatchingNodesByLabel  = m_SetMatchingNodesByLabel;
+    window.SetMatchingNodesByProp   = m_SetMatchingNodesByProp;
+    window.SetAllObjs               = m_SetAllObjs;
+    window.UpdateD3Data             = function () {
+      UDATA.SetState('D3DATA',D3DATA);
+      return "SetState 'D3DATA'";
+    };
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

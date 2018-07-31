@@ -114,7 +114,7 @@ const ReactStrap  = require('reactstrap');
 const { Input }   = ReactStrap;
 const Autosuggest = require('react-autosuggest');
 
-const UNISYS      = require('system/unisys');
+const UNISYS      = require('unisys/client');
 var   UDATA       = null;
 
 const MODE_STATIC   = 'static';   // Can't be edited ever
