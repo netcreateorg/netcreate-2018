@@ -32,6 +32,7 @@ const M2_CONNECTED  = 2;
 const M3_REGISTERED = 3;
 const M4_READY      = 4;
 var   m_status      = M0_INIT;
+var   m_options     = {};
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -55,7 +56,7 @@ var NETWORK   = {};
       m_status = M1_CONNECTING;
 
       /** check parms **/
-      opt = opt || {};
+      m_options = opt || {};
 
       /** create websocket **/
       // uses values that were embedded in index.ejs on load
@@ -95,12 +96,14 @@ var NETWORK   = {};
       // (2) initialize global settings for netmessage
       NetMessage.GlobalSetup({ uaddr : UADDR, netsocket : NETSOCK.ws});
       if (TEST('net')) {
-        console.log(PR,'GlobalSetup got network socket');
+        if (DBG.connect) console.log(PR,'GlobalSetup got network socket');
         TEST.Pass('netMessageInit');
       }
       // (3) connect regular message handler
       NETWORK.AddListener('message', m_HandleMessage);
       m_status = M4_READY;
+      // (4) network is initialized
+      if (typeof m_options.success==='function') m_options.success();
     }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     function m_HandleMessage( msgEvent ) {

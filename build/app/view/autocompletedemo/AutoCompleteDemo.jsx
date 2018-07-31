@@ -64,8 +64,8 @@ var   UDATA        = null; // set in constructor
   /*/ This is the root component, so this fires after all subcomponents have
       been fully rendered by render().
   /*/ componentDidMount () {
-        UNISYS.NetworkInitialize( function() {
-          if (DBG) console.log('unisys network initialized');
+        UNISYS.NetworkInitialize( () => {
+          console.log('unisys network initialized');
         });
         // start UNISYS lifecycle after REACT is ready
         (async () => {

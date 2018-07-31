@@ -121,7 +121,7 @@ const PR          = PROMPTS.Pad('DevUnisys');
         if (DBG) console.log(`${className} componentDidMount`);
         // initialize network
         UNISYS.NetworkInitialize(() => {
-          if (DBG) console.log(PR,'unisys network initialized');
+          console.log(PR,'unisys network initialized');
         });
         // kickoff initialization stage by stage
         (async () => {

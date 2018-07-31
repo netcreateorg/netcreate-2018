@@ -39,6 +39,7 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     function m_StartTests() {
       // set timeout timer for test results
+      console.log('*** RUNNING UNISYS TESTS ***');
       setTimeout( function () {
         TEST.Assess();
       }, TEST_WAIT);
