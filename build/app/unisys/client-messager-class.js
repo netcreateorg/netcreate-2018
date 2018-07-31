@@ -62,6 +62,7 @@ class Messager {
     and should return one as well. If there is an error, return a string.
 /*/ HandleMessage( mesgName, handlerFunc, options={} ) {
       let { handlerUID } = options;
+      let { syntax } = options;
       if (typeof handlerFunc !== 'function') {
         throw "arg2 must be a function";
       }
@@ -75,6 +76,9 @@ class Messager {
         handlers = new Set();
         this.handlerMap.set( mesgName, handlers );
       }
+      // syntax annotation
+      if (syntax) handlerFunc.umesg = { syntax };
+      // saved function to handler
       handlers.add(handlerFunc);
       return this;
     }

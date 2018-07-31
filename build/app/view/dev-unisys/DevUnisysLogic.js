@@ -21,16 +21,8 @@ const TEST      = require('test');
 const TEST_WAIT     = 3000;
 var   TESTCOUNTER   = 3;
 var   TESTINTERVAL  = null;
+/// TESTS are enabled in DevUnisys.JSX constructor()
 
-// enable debug output and tests
-// true = enabled, false = skip
-TEST('state'  , true);  // state events and changes
-TEST('hook'   , true);  // lifecycle hooks
-TEST('call'   , true);  // internal instance calls
-TEST('remote' , true);  // instance-to-instance calls
-TEST('server' , true);  // server calls
-TEST('net'    , true);  // network initialization
-TEST('netcall', false);  // network calls
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -113,28 +105,33 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ First INITIALIZE Hook takes some time to resolve asynchronously
     Enable this feature by returning a Promise
-/*/ if (TEST('hook')) MOD.Hook('INITIALIZE', function () {
-      TEST.Pass('hookInit1');
-      let tms = 1000;
-      let p = new Promise(function (resolve,reject) {
-        setTimeout(
-          () => {
-            resolve(1);
-            TEST.Pass('hookInitDeferred');
-          },
-          tms
-        );
-      });
-      return p;
-    }); // end INITIALIZE 1
-    if (TEST('hook')) MOD.Hook('START', function () {
-      TEST.Pass('hookStart');
+/*/ MOD.Hook('INITIALIZE', function () {
+      if (TEST('hook')) {
+        TEST.Pass('hookInit1');
+        let tms = 1000;
+        let p = new Promise(function (resolve,reject) {
+          setTimeout(
+            () => {
+              resolve(1);
+              TEST.Pass('hookInitDeferred');
+            },
+            tms
+          );
+        }); // new Promise
+        return p;
+      } // end TEST('hook')
     });
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Test Hooks
+/*/ MOD.Hook('START', function () {
+      if (TEST('hook')) TEST.Pass('hookStart');
+    });
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Second INITIALIZE Hook just runs a normal function.
     Enable this feature by returning a Function
-/*/ if (TEST('hook')) MOD.Hook('INITIALIZE', function() {
-      TEST.Pass('hookInit2');
+/*/ MOD.Hook('INITIALIZE', function() {
+      if (TEST('hook')) TEST.Pass('hookInit2');
     }); // end INITIALIZE 2
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

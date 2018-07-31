@@ -88,6 +88,9 @@
   /*/ returns the type
   /*/ Type() { return this.type }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ returns true if type matches
+  /*/ IsType( type ) { return this.type===type }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ returns the type
   /*/ SetType( type ) { this.type = m_CheckType(type) }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

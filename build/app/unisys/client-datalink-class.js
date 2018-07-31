@@ -82,7 +82,6 @@ var MESSAGER       = new Messager();
         if (UNODE.has(this.uid)) throw Error(BAD_UID+this.uid);
 
         // save module in the global module list
-        if (DBG) console.log(`Creating UNODE [${this.uid}] for [${this.name}]`);
         UNODE.set(this.uid,this);
       }
 

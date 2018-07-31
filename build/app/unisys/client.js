@@ -29,7 +29,6 @@ const PR          = PROMPTS.Pad('UNISYS');
 /// INITIALIZE MAIN MODULE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var   UNISYS      = new UniModule(module.id);
-var   UDATA       = new UniData(UNISYS);
 
 /// UNISYS MODULE MAKING //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,6 +59,10 @@ var   UDATA       = new UniData(UNISYS);
     the unisys and system directories are allowed to run their hooks
 /*/ UNISYS.SetScope = ( root_module_id ) => {
      LIFECYCLE.SetScope(root_module_id); // pass phase and hook function
+   }
+   UNISYS.InScope = ( module_id ) => {
+     let currentScope = LIFECYCLE.Scope();
+     return (module_id.includes(currentScope))
    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Ensure UNISYS will run correctly

@@ -138,7 +138,6 @@ let DBG = true;
           throw `Unknown test "${testname}"`
       } // end switch
       Object.assign(PASSED,subtests);
-      if (DBG) console.log('New PASSED',Object.keys(PASSED).length,PASSED);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     function m_PreTest() {

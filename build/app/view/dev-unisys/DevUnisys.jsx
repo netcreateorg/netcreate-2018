@@ -46,7 +46,23 @@ const PR          = PROMPTS.Pad('DevUnisys');
         this.udata.OnStateChange('VIEW', this.UnisysStateChange);
         this.udata.OnStateChange('LOGIC', this.UnisysStateChange);
 
-        /* UNISYS MESSAGE HANDLER REGISTRATION */
+        /* UNISYS LIFECYCLE INITIALIZATION */
+        // initialize UNISYS before declaring any hook functions
+        UNISYS.SystemInitialize(module.id);
+        // hook start handler to initiate call
+
+        /* CONFIGURE UNISYS TESTS */
+        // enable debug output and tests
+        // true = enabled, false = skip
+        TEST('state'  , true);  // state events and changes
+        TEST('hook'   , true);  // lifecycle hooks
+        TEST('call'   , true);  // internal instance calls
+        TEST('remote' , true);  // instance-to-instance calls
+        TEST('server' , true);  // server calls
+        TEST('net'    , true);  // network initialization
+        TEST('netcall', true);  // network calls
+
+        /* UNISYS TEST MESSAGE HANDLER REGISTRATION */
         if (TEST('remote')) {
           this.udata.HandleMessage('REMOTE_CALL_TEST',(data, msgcon) => {
             // msgcon is message control
@@ -55,16 +71,10 @@ const PR          = PROMPTS.Pad('DevUnisys');
             return data;
           });
         }
-
         if (TEST('call')) this.udata.HandleMessage('TEST_REMOTE_IN',(data)=>{
           if (!data.stack) data.stack=[]; data.stack.push('TRI-JSX');
           return data;
         });
-
-        /* UNISYS LIFECYCLE INITIALIZATION */
-        // initialize UNISYS before declaring any hook functions
-        UNISYS.SystemInitialize(module.id);
-        // hook start handler to initiate call
 
         /* UNISYS TESTS */
         // these run during a hook, but are defined in constructor
@@ -77,6 +87,7 @@ const PR          = PROMPTS.Pad('DevUnisys');
             .then((data)=>{
               if (data && data.source && data.source==='DevUnisysLogic-Return') TEST.Pass('callDataReturn');
               if (data && data.extra && data.extra==='AddedData') TEST.Pass('callDataAdd');
+              console.error(data);
               if (data && data.multi && data.stack && data.stack.length===3 && data.multi==='MultiData') TEST.Pass('callDataMulti');
             });
           }
