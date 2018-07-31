@@ -26,6 +26,8 @@ let DBG = false;
 /*/ let ARR_MATCH = [];
     let PR = 'TEST:';
 
+    let E_SHELL, E_OUT, E_HEADER;
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Main TEST ENABLE
     pass the testname (as listed in TESTS) and either true or false)
@@ -42,8 +44,24 @@ let DBG = false;
       }
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    TM.SetTitle = function( text ) {
+      E_HEADER.innerText = text;
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: pass the particular subtest
 /*/ TM.Pass = function ( subtest ) {
+      //
+      if (!E_SHELL) {
+        E_SHELL = document.getElementById('fdshell');
+        E_OUT = document.createElement('pre');
+        E_HEADER = document.createElement('h4');
+        E_HEADER.innerText = "RUNNING TESTS ";
+        E_OUT.innerText = '.';
+        E_SHELL.appendChild(E_HEADER);
+        E_SHELL.appendChild(E_OUT);
+      } else {
+        E_OUT.innerText += '.';
+      }
       if (DBG) console.error(PR,'Pass',`${subtest}`);
       if (PASSED.hasOwnProperty(subtest)) {
         if (PASSED[subtest]) ++PASSED[subtest];
@@ -210,20 +228,16 @@ let DBG = false;
         let out = passed.concat(failed,skipped)
           .sort()
           .join('');
-        out+=`\n${passed.length}=passed`;
-        if (failed.length) out+=` ${failed.length}=failed`;
-        if (skipped.length) out+=` ${skipped.length}=skipped`;
-        console.log(out);
-        let fdshell=document.getElementById('fdshell');
-        let preElement = document.createElement('pre');
-        let headerElement = document.createElement('h4');
-        headerElement.innerHTML = testTitle;
-        preElement.innerText = "OPEN JAVASCRIPT CONSOLE TO SEE TEST RESULTS\n";
-        preElement.innerText += "Mac shortcuts to open console\n";
-        preElement.innerText += "  chrome  : cmd-option-j\n";
-        preElement.innerText += "  firefox : cmd-option-k\n";
-        fdshell.appendChild(headerElement);
-        fdshell.appendChild(preElement);
+        let summary = `${passed.length}=passed`;
+        if (failed.length) summary+=` ${failed.length}=failed`;
+        if (skipped.length) summary+=` ${skipped.length}=skipped`;
+        console.log(`${out}\n${summary}`);
+        E_HEADER.innerHTML = testTitle;
+        E_OUT.innerText = `${summary}\n\n`;
+        E_OUT.innerText += "OPEN JAVASCRIPT CONSOLE TO SEE DETAILS\n";
+        E_OUT.innerText += "Mac shortcuts to open console\n";
+        E_OUT.innerText += "  Chrome  : cmd-option-j\n";
+        E_OUT.innerText += "  Firefox : cmd-option-k\n";
       console.groupEnd();
     }
 
