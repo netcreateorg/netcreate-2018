@@ -44,9 +44,13 @@ let DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: pass the particular subtest
 /*/ TM.Pass = function ( subtest ) {
-      if (DBG) console.log(PR,'Pass');
-      if (PASSED.hasOwnProperty(subtest)) PASSED[subtest] = true;
-      else throw `Unknown subtest: ${subtest}`;
+      if (DBG) console.error(PR,'Pass',`${subtest}`);
+      if (PASSED.hasOwnProperty(subtest)) {
+        if (PASSED[subtest]) ++PASSED[subtest];
+        else PASSED[subtest] = 1;
+      } else {
+        throw Error(`Unknown subtest: ${subtest}`);
+      }
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: check if the particular subtests passed have indeed passed
@@ -114,7 +118,7 @@ let DBG = false;
           subtests = {
             remoteCall        : flag,
             remoteData        : flag,
-            remoteData2        : flag,
+            remoteData2       : flag,
             remoteDataReturn  : flag,
             remoteDataAdd     : flag,
             remoteDataMulti   : flag
@@ -189,10 +193,20 @@ let DBG = false;
             skipped.push(`${(key).padEnd(padding)} [ ]\n`);
             break;
           default:
+            switch (typeof value) {
+              case 'number':
+                if (value>1) passed.push(`${key.padEnd(padding)} [X] x ${value}\n`);
+                else passed.push(`${key.padEnd(padding)} [X]\n`);
+                break;
+              default:
+                passed.push(`${key.padEnd(padding)} [X] '${value}'\n`);
+                break;
+            }
         }
       });
 
-      console.group('UNISYS TEST RESULTS');
+      let testTitle = "UNISYS LOGIC TEST RESULTS";
+      console.group(testTitle);
         let out = passed.concat(failed,skipped)
           .sort()
           .join('');
@@ -200,6 +214,16 @@ let DBG = false;
         if (failed.length) out+=` ${failed.length}=failed`;
         if (skipped.length) out+=` ${skipped.length}=skipped`;
         console.log(out);
+        let fdshell=document.getElementById('fdshell');
+        let preElement = document.createElement('pre');
+        let headerElement = document.createElement('h4');
+        headerElement.innerHTML = testTitle;
+        preElement.innerText = "OPEN JAVASCRIPT CONSOLE TO SEE TEST RESULTS\n";
+        preElement.innerText += "Mac shortcuts to open console\n";
+        preElement.innerText += "  chrome  : cmd-option-j\n";
+        preElement.innerText += "  firefox : cmd-option-k\n";
+        fdshell.appendChild(headerElement);
+        fdshell.appendChild(preElement);
       console.groupEnd();
     }
 

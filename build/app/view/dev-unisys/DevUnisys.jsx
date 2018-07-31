@@ -139,7 +139,7 @@ const PR          = PROMPTS.Pad('DevUnisys');
   /// COMPONENT render the component template
       render() {
         return (
-          <div style={{padding:'10px'}}>
+          <div id='fdshell' style={{padding:'10px'}}>
             <h2>Unisys Feature Development Shell</h2>
             <h4>TESTING UISTATE</h4>
             <p>{this.state.description}</p>

@@ -24,8 +24,6 @@
     const DBG           = { handler:false };
     // these constants are used in m_StartTests()
     const TEST_WAIT     = 3000;
-    var   TESTCOUNTER   = 3;
-    var   TESTINTERVAL  = null;
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -37,16 +35,6 @@
     var   MOD2          = UNISYS.NewModule(module.id);
     var   UDATA2        = UNISYS.NewDataLink(MOD2,'SimRemote');
     const PR2           = PROMPTS.Pad('REMTEST');
-
-
-/// TEST STARTUP //////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ The START phase executes after INITIALIZE has completed.
-    we register handlers to the VIEW state namespace,
-    and also set different namespace states on timers
-/*/ MOD.Hook('START', function () {
-      m_StartTests();
-    }); // end START
 
 
 /// LIFECYCLE TESTS ///////////////////////////////////////////////////////////
@@ -164,7 +152,6 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Now test message handlers during START
 /*/ MOD2.Hook('START', function() {
-
       // TEST SERVER NETWORK CALL
       if (TEST('server')) {
         // used for order testing
@@ -195,67 +182,68 @@
     });
 
 
-/// TEST FUNCTIONS ////////////////////////////////////////////////////////////
+/// TEST STARTUP //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_StartTests() {
-/// ASSESS TESTS AFTER TEST_WAIT MS
-    console.log('*** RUNNING UNISYS TESTS ***');
-    setTimeout( function () {
-      TEST.Assess();
-    }, TEST_WAIT);
-
-/// STATE CHANGE TESTING
-/*/ register state change handler for 'VIEW' namespace
-/*/ if (TEST('state')) {
-      UDATA.OnStateChange('VIEW',(state)=>{
-        TEST.Pass('stateChange');
-      });
-      // Do the state change test!
+/*/ The START phase executes after INITIALIZE has completed.
+    we register handlers to the VIEW state namespace,
+    and also set different namespace states on timers
+/*/ MOD.Hook('START', function () {
+  /// ASSESS TESTS AFTER TEST_WAIT MS
+      console.log('*** RUNNING UNISYS TESTS ***');
       setTimeout( function () {
-        let state = { description : 'test stateChange succeeded' };
-        UDATA.SetState('VIEW',state,UDATA.UID());
-      },1000);
-    } // if TEST state
+        TEST.Assess();
+      }, TEST_WAIT);
 
-/// NETWORK TESTING
-/*/ remote method invocation of REMOTE_CALL_TEST is expected to return data in a callback
-/*/ if (TEST('remote')) {
-      UDATA.HandleMessage('REMOTE_CALL_TEST',(data, msgcon) => {
-        // 'REMOTE_CALL_TEST' is also implemented in DevUnisys.jsx
-        // so its return data will be merged with this
-        return { dog : 'spotted' };
-      });
-      // Do the call test!
-      UDATA.Call('REMOTE_CALL_TEST',{melon:'logicmelon'})
-      .then((data) => {
-        TEST.Pass('remoteCall');
-        if (data && data.melon && data.cat) TEST.Pass('remoteData');
-        if (data.melon==='logicmelon_ack' && data.cat==='calico') TEST.Pass('remoteDataAdd');
-        if (data.dog && data.dog==='spotted') TEST.Pass('remoteDataMulti');
-      });
-    } // if TEST remote
+  /// STATE CHANGE TESTING
+  /*/ register state change handler for 'VIEW' namespace
+  /*/ if (TEST('state')) {
+        UDATA.OnStateChange('VIEW',(state)=>{
+          TEST.Pass('stateChange');
+        });
+        // Do the state change test!
+        setTimeout( function () {
+          let state = { description : 'test stateChange succeeded' };
+          UDATA.SetState('VIEW',state,UDATA.UID());
+        },1000);
+      } // if TEST state
 
-/*/ call counter function 3 times 500ms apart, then check that all tests passed
-    set a periodic timer update
-/*/ TESTCOUNTER  = 3;
-    TESTINTERVAL = setInterval( function() {
-      if (--TESTCOUNTER<0) {
-        clearInterval(TESTINTERVAL);
-      }
-      // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
-      function u_random_string() {
-        var text = "";
-        var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        for (var i = 0; i < 5; i++) {
-          text += possible.charAt(Math.floor(Math.random() * possible.length));
+  /// NETWORK TESTING
+  /*/ remote method invocation of REMOTE_CALL_TEST is expected to return data in a callback
+  /*/ if (TEST('remote')) {
+        UDATA.HandleMessage('REMOTE_CALL_TEST',(data, msgcon) => {
+          // 'REMOTE_CALL_TEST' is also implemented in DevUnisys.jsx
+          // so its return data will be merged with this
+          return { dog : 'spotted' };
+        });
+        // Do the call test!
+        UDATA.Call('REMOTE_CALL_TEST',{melon:'logicmelon'})
+        .then((data) => {
+          if (data && data.melon && data.cat) TEST.Pass('remoteData');
+          if (data.melon==='logicmelon_ack' && data.cat==='calico') TEST.Pass('remoteDataAdd');
+          if (data.dog && data.dog==='spotted') TEST.Pass('remoteDataMulti');
+        });
+      } // if TEST remote
+
+  /*/ call counter function 3 times 500ms apart, then check that all tests passed
+      set a periodic timer update
+  /*/ var TESTCOUNTER = 3;
+      var TESTINTERVAL = setInterval( function() {
+        if (--TESTCOUNTER<0) {
+          clearInterval(TESTINTERVAL);
         }
-        return text;
-      }
-      let state = { random: u_random_string() };
-      UDATA.SetState('LOGIC',state,UDATA.UID());
-    },500);
-} // end m_StartTests
-////////////////////////////////////////////////////////////////////////////////
+        // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
+        function u_random_string() {
+          var text = "";
+          var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+          for (var i = 0; i < 5; i++) {
+            text += possible.charAt(Math.floor(Math.random() * possible.length));
+          }
+          return text;
+        }
+        let state = { random: u_random_string() };
+        UDATA.SetState('LOGIC',state,UDATA.UID());
+      },500);
+  }); // end START TEST HOOK
 
 
 /// EXPORT MODULE /////////////////////////////////////////////////////////////
