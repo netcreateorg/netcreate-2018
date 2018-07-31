@@ -245,7 +245,7 @@
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ is this an allowed type? throw error if not
 /*/ function m_CheckType( type ) {
-      if (type===undefined) throw 'must past a type string, not '+type;
+      if (type===undefined) throw new Error('must pass a type string, not '+type);
       if (!(KNOWN_TYPES.includes(type))) throw `${ERR_UNKNOWN_TYPE} '${type}'`;
       return type;
     }

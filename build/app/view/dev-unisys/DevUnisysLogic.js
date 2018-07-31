@@ -12,98 +12,44 @@
 
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const SETTINGS  = require('settings');
-const UNISYS    = require('unisys/client');
-const TEST      = require('test');
+    const SETTINGS      = require('settings');
+    const UNISYS        = require('unisys/client');
+    // master TEST enable is in DevUnisys.JSX constructor()
+    // but most are tested and passed in this module
+    const TEST          = require('test');
 
-/// DEBUG TESTS ///////////////////////////////////////////////////////////////
+/// DEBUG SUPPORT /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const TEST_WAIT     = 3000;
-var   TESTCOUNTER   = 3;
-var   TESTINTERVAL  = null;
-const DBG           = { handler:false };
-/// TESTS are enabled in DevUnisys.JSX constructor()
-
+    const PROMPTS       = require('system/util/prompts');
+    const DBG           = { handler:false };
+    // these constants are used in m_StartTests()
+    const TEST_WAIT     = 3000;
+    var   TESTCOUNTER   = 3;
+    var   TESTINTERVAL  = null;
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var   MOD         = UNISYS.NewModule( module.id );
-var   UDATA       = UNISYS.NewDataLink( MOD );
-// create new test module
-var   FR_MOD      = UNISYS.NewModule( module.id );
-var   FR_UDATA    = UNISYS.NewDataLink(FR_MOD,'SimRemote');
-const PROMPTS     = require('system/util/prompts');
-const FR          = PROMPTS.Pad('FAKE_REMOTE');
+    // module 1
+    const PR            = PROMPTS.Pad('TEST');
+    var   MOD           = UNISYS.NewModule(module.id);
+    var   UDATA         = UNISYS.NewDataLink( MOD );
+    // module 2
+    var   MOD2          = UNISYS.NewModule(module.id);
+    var   UDATA2        = UNISYS.NewDataLink(MOD2,'SimRemote');
+    const PR2           = PROMPTS.Pad('REMTEST');
 
-/// TEST FUNCTIONS ////////////////////////////////////////////////////////////
+
+/// TEST STARTUP //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    function m_StartTests() {
-      // set timeout timer for test results
-      console.log('*** RUNNING UNISYS TESTS ***');
-      setTimeout( function () {
-        TEST.Assess();
-      }, TEST_WAIT);
-
-  /// STATE CHANGE TESTING
-  /*/ register state change handler
-  /*/ if (TEST('state')) {
-        UDATA.OnStateChange('VIEW',(state)=>{
-          TEST.Pass('stateChange');
-        });
-      }
-
-  /// NETWORK TESTING
-  /*/ remote method invocation of REMOTE_CALL_TEST is expected to return data in a callback
-  /*/ if (TEST('remote')) {
-
-        UDATA.HandleMessage('REMOTE_CALL_TEST',(data, msgcon) => {
-          // ignoring data entirely
-          // this result will get aggregated into one object
-          return { dog : 'spotted' };
-        });
-
-        UDATA.Call('REMOTE_CALL_TEST',{melon:'logicmelon'})
-        .then((data) => {
-          TEST.Pass('remoteCall');
-          if (data && data.melon && data.cat) TEST.Pass('remoteData');
-          if (data.melon==='logicmelon_ack' && data.cat==='calico') TEST.Pass('remoteDataAdd');
-          if (data.dog && data.dog==='spotted') TEST.Pass('remoteDataMulti');
-        });
-      }
-
-      // INVOKE stateChange
-      if (TEST('state')) {
-        // update the description after 1000ms
-        setTimeout( function () {
-          let state = { description : 'test stateChange succeeded' };
-          UDATA.SetState('VIEW',state,UDATA.UID());
-        },1000);
-
-        // call counter function 3 times 500ms apart, then check that all tests passed
-        // set a periodic timer update
-        TESTCOUNTER  = 3;
-        TESTINTERVAL = setInterval( function() {
-          if (--TESTCOUNTER<0) {
-            clearInterval(TESTINTERVAL);
-          }
-          // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
-          function u_RandomString() {
-            var text = "";
-            var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            for (var i = 0; i < 5; i++) {
-              text += possible.charAt(Math.floor(Math.random() * possible.length));
-            }
-            return text;
-          }
-
-          let state = { random: u_RandomString() };
-          UDATA.SetState('LOGIC',state,UDATA.UID());
-        },500);
-      }
-    } // end m_TestChecker
+/*/ The START phase executes after INITIALIZE has completed.
+    we register handlers to the VIEW state namespace,
+    and also set different namespace states on timers
+/*/ MOD.Hook('START', function () {
+      m_StartTests();
+    }); // end START
 
 
-/// LIFECYCLE INIT ////////////////////////////////////////////////////////////
+/// LIFECYCLE TESTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ First INITIALIZE Hook takes some time to resolve asynchronously
     Enable this feature by returning a Promise
@@ -125,26 +71,22 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
       return p;
     });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Test Hooks
-/*/ MOD.Hook('START', function () {
-      if (TEST('hook')) TEST.Pass('hookStart');
-    });
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Second INITIALIZE Hook just runs a normal function.
     Enable this feature by returning a Function
 /*/ MOD.Hook('INITIALIZE', function() {
       if (TEST('hook')) TEST.Pass('hookInit2');
     }); // end INITIALIZE 2
 
+
+/// OTHER TESTS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ handle other handler-based tests
+/*/ Initialize message handlers during INITIALIZE so we can run them later
+    during START
 /*/ MOD.Hook('INITIALIZE', function() {
-      // TEST RESOLVE callDataProp, callData, callRegister
-      // is called by DevUnisys Start Lifecycle hook
       if (TEST('call')) {
-        UDATA.HandleMessage('TEST_REMOTE_IN',(data)=>{
-          if (data && data.source) TEST.Pass('callHndlrRegister');
+        // 'TEST_CALL' is invoked from DevUnisys.jsx
+        UDATA.HandleMessage('TEST_CALL',(data)=>{
+          if (data && data.source) TEST.Pass('callHndlrReg');
           if (typeof data==='object') TEST.Pass('callHndlrData');
           if (typeof data.source==='string' && data.source==='DevUnisysJSX') TEST.Pass('callHndlrDataProp');
           data.source = 'DevUnisysLogic-Return';
@@ -152,62 +94,76 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
           data.extra = 'AddedData';
           return data;
         });
-        UDATA.HandleMessage('TEST_REMOTE_IN',(data)=>{
+        // a second 'TEST_CALL' to test aggregate data return
+        UDATA.HandleMessage('TEST_CALL',(data)=>{
           if (!data.stack) data.stack=[]; data.stack.push('TRI-2');
           return Object.assign(data,{ multi : 'MultiData' });
         });
       }
-      // TEST RESOLVE remoteCall, remoteData
-      // is called by FR_MOD (a separate UDATA instance) lifecycle START on
-      // FR_UDATA instance.
-      // note that UDATA also implements 'FAKE_REMOTE'
+      // 'REMOTE_CALL_TEST' is invoked from MOD2
+      // note that there are multiple handlers for 'REMOTE_CALL_TEST'
+      // to test collecting data from all of them
       if (TEST('remote')) {
-        UDATA.HandleMessage('FAKE_REMOTE',(data,ucontrol) => {
-          if (DBG.handler) console.log('FakeRemote got data',data);
-          data.results.push('UDATA_instance');
+        UDATA.HandleMessage('REMOTE_CALL_TEST',(data,ucontrol) => {
+          if (DBG.handler) console.log('REMOTE_CALL_TEST got data',data);
           TEST.Pass('remoteCall');
-          if (data!==undefined) TEST.Pass('remoteData');
+          if (data&&Array.isArray(data.results)) {
+            TEST.Pass('remoteData');
+            data.results.push('UDATA_instance');
+          }
           // caller should check remoteDataAdd and remoteDataMulti
           return data;
         });
       }
     }); // end INITIALIZE 3
+
+
+/// TEST MESSAGE REGISTRATION /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ The START phase executes after INITIALIZE has completed.
-    we register handlers to the VIEW state namespace,
-    and also set different namespace states on timers
+/*/ This is a placeholder that will eventually be moved into UNISYS proper
 /*/ MOD.Hook('START', function () {
-      m_StartTests();
-    }); // end START
+      if (TEST('hook')) TEST.Pass('hookStart');
+      UNISYS.RegisterMessagesP()
+      .then((data)=>{
+        console.log('RegisterMessagesP: data',data);
+        if (TEST('net')) TEST.Pass('netMessageReg');
+      });
+    });
 
 
-
-/** SECOND FAKE REMOTE MODULE, USING FAKE REMOTE UDATA ***********************/
+/// SECOND MODULE for MODULE-to-MODULE TESTS //////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ The Fake Remote testing happens here in a separate module.
-/*/ FR_MOD.Hook('INITIALIZE', function() {
+/*/ MOD2 is a completely different UNISYS MODULE declaration for ensuring that
+    modules can access data in other modules. Has its own LIFECYCLE naturally.
+    First declare message handlers during INITIALIZE
+/*/ MOD2.Hook('INITIALIZE', function() {
       if (TEST('remote')) {
-        if (DBG.handler) console.log(FR,'FR Add FAKE_REMOTE Handler #2');
-        // TEST RESOLVE remoteData
-        FR_UDATA.HandleMessage('FAKE_REMOTE',(data) => {
-          data.results.push('FR_UDATA_instance');
-          if (DBG.handler) console.log(FR,'got FAKE_REMOTE message with data',data);
-          TEST.Pass('remoteData');
+        UDATA2.HandleMessage('REMOTE_CALL_TEST',(data) => {
+          if (data&&Array.isArray(data.results)) {
+            data.results.push('UDATA2_instance');
+            if (DBG.handler) console.log(PR2,'got REMOTE_CALL_TEST message with data',data);
+            TEST.Pass('remoteData2');
+          }
         });
       }
     });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    FR_MOD.Hook('START', function() {
-      // TEST INVOKE remoteDataAdd
+/*/ Now test message handlers during START
+/*/ MOD2.Hook('START', function() {
       if (TEST('remote')) {
         // test remote data call (local, not network)
         let localOnly = { toLocal : true, toNet : false };
-        FR_UDATA.Call('FAKE_REMOTE',{ mycat:'kitty',results:[] })
+        UDATA2.Call('REMOTE_CALL_TEST',{ mycat:'kitty',results:[] })
         .then((data)=>{
-          if (DBG.handler) console.log(FR,'got data',data);
-          TEST.Pass('remoteDataAdd');
+          if (data.mycat==='kitty') TEST.Pass('remoteDataReturn');
         }, localOnly);
       }
+    });
+
+/// SERVER CALL TESTS /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Now test message handlers during START
+/*/ MOD2.Hook('START', function() {
 
       // TEST SERVER NETWORK CALL
       if (TEST('server')) {
@@ -219,17 +175,17 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
         for (let i=0; i<5; i++) {
           setTimeout(function() {
             sendorder.push(i);
-            FR_UDATA.Call('SERVER_REFLECT',{
-              me    : 'DevUnisysLogic:FR_MOD.Start',
+            UDATA2.Call('SRV_REFLECT',{
+              me    : 'DevUnisysLogic:MOD2.Start',
               stack : ['DevUnisysLogic'],
               count : i
             }, netOnly)
             .then((data)=>{
-              if (DBG.handler) console.log(FR,'got SERVER_REFLECT',data);
+              if (DBG.handler) console.log(PR2,'got SRV_RFLECT',data);
               TEST.Pass('serverCall');
-              if ((data!==undefined) && (Array.isArray(data.stack))) TEST.Pass('serverData');
-              if ((data.stack) && (data.stack.length===2)&&(data.stack[1]==='SRV_01')) TEST.Pass('serverDataAdd');
-              if (data.me && data.me==='DevUnisysLogic:FR_MOD.Start') TEST.Pass('serverReturn');
+              if ((data!==undefined)&&(Array.isArray(data.stack))) TEST.Pass('serverData');
+              if ((data.stack)&&(data.stack.length===2)&&(data.stack[1]==='SRV_01')) TEST.Pass('serverDataAdd');
+              if (data.me && data.me==='DevUnisysLogic:MOD2.Start') TEST.Pass('serverReturn');
               recvorder.push(data.count);
             });
           },Math.random()*1000);
@@ -239,7 +195,67 @@ const FR          = PROMPTS.Pad('FAKE_REMOTE');
     });
 
 
+/// TEST FUNCTIONS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_StartTests() {
+/// ASSESS TESTS AFTER TEST_WAIT MS
+    console.log('*** RUNNING UNISYS TESTS ***');
+    setTimeout( function () {
+      TEST.Assess();
+    }, TEST_WAIT);
 
+/// STATE CHANGE TESTING
+/*/ register state change handler for 'VIEW' namespace
+/*/ if (TEST('state')) {
+      UDATA.OnStateChange('VIEW',(state)=>{
+        TEST.Pass('stateChange');
+      });
+      // Do the state change test!
+      setTimeout( function () {
+        let state = { description : 'test stateChange succeeded' };
+        UDATA.SetState('VIEW',state,UDATA.UID());
+      },1000);
+    } // if TEST state
+
+/// NETWORK TESTING
+/*/ remote method invocation of REMOTE_CALL_TEST is expected to return data in a callback
+/*/ if (TEST('remote')) {
+      UDATA.HandleMessage('REMOTE_CALL_TEST',(data, msgcon) => {
+        // 'REMOTE_CALL_TEST' is also implemented in DevUnisys.jsx
+        // so its return data will be merged with this
+        return { dog : 'spotted' };
+      });
+      // Do the call test!
+      UDATA.Call('REMOTE_CALL_TEST',{melon:'logicmelon'})
+      .then((data) => {
+        TEST.Pass('remoteCall');
+        if (data && data.melon && data.cat) TEST.Pass('remoteData');
+        if (data.melon==='logicmelon_ack' && data.cat==='calico') TEST.Pass('remoteDataAdd');
+        if (data.dog && data.dog==='spotted') TEST.Pass('remoteDataMulti');
+      });
+    } // if TEST remote
+
+/*/ call counter function 3 times 500ms apart, then check that all tests passed
+    set a periodic timer update
+/*/ TESTCOUNTER  = 3;
+    TESTINTERVAL = setInterval( function() {
+      if (--TESTCOUNTER<0) {
+        clearInterval(TESTINTERVAL);
+      }
+      // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
+      function u_random_string() {
+        var text = "";
+        var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        for (var i = 0; i < 5; i++) {
+          text += possible.charAt(Math.floor(Math.random() * possible.length));
+        }
+        return text;
+      }
+      let state = { random: u_random_string() };
+      UDATA.SetState('LOGIC',state,UDATA.UID());
+    },500);
+} // end m_StartTests
+////////////////////////////////////////////////////////////////////////////////
 
 
 /// EXPORT MODULE /////////////////////////////////////////////////////////////

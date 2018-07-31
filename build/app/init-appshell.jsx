@@ -183,10 +183,10 @@ class AppShell extends React.Component {
           {/*/ (2) add route paths here /*/}
             <Route path='/' exact component={AppDefault}/>
             <Route path='/prototype' exact component={Prototype}/>
+            <Route path='/autocompletedemo' exact component={AutoCompleteDemo}/>
             <Route path='/d3forcedemo' exact component={ (props) => {return HTML(props)} }/>
             <Route path='/simple' exact component={ (props) => {return HTML(props)} }/>
             <Route path='/d3test' exact component={D3Test}/>
-            <Route path='/autocompletedemo' exact component={AutoCompleteDemo}/>
             <Route path='/dev-unisys' exact component={DevUnisys}/>
             <Route component={NoMatch}/>
           </Switch>

@@ -102,7 +102,7 @@ let DBG = false;
           break;
         case 'call':
           subtests = {
-            callHndlrRegister : flag,
+            callHndlrReg      : flag,
             callHndlrData     : flag,
             callHndlrDataProp : flag,
             callDataReturn    : flag,
@@ -114,6 +114,8 @@ let DBG = false;
           subtests = {
             remoteCall        : flag,
             remoteData        : flag,
+            remoteData2        : flag,
+            remoteDataReturn  : flag,
             remoteDataAdd     : flag,
             remoteDataMulti   : flag
           };
@@ -129,7 +131,8 @@ let DBG = false;
           break;
         case 'net':
           subtests = {
-            netMessageInit    : flag
+            netMessageInit    : flag,
+            netMessageReg     : flag
           }
           break;
         case 'netcall':

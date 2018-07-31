@@ -13,7 +13,7 @@ const UNET      = require('./server-network');
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPTS    = require('../system/util/prompts');
-const PR         = PROMPTS.Pad('SRVLOAD');
+const PR         = PROMPTS.Pad('USRV');
 
 /// MODULE VARS ///////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,18 +33,25 @@ var UNISYS = {};
 /*/ RegisterHandlers() is called before network is started, so they're
     ready to run. These are server-implemented reserved messages.
 /*/ UNISYS.RegisterHandlers = () => {
-      UNET.HandleMessage('SERVER_REFLECT',function(pkt) {
+
+      UNET.HandleMessage('SRV_REFLECT',function(pkt) {
         pkt.Data().serverSays='REFLECTING';
         pkt.Data().stack.push('SRV_01');
-        console.log(PR,'TEST SERVER_REFLECT pkt',pkt.JSON());
+        console.log(PR,sprint_message(pkt));
+        // return the original packet
         return pkt;
       });
+      // utility function //
+      function sprint_message(pkt) {
+        return `got '${pkt.Message()}' data=${JSON.stringify(pkt.Data())}`;
+      }
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/	StartNetwork() is called by brunch-server after the Express webserver
 /*/	UNISYS.StartNetwork = () => {
       UNET.StartNetwork();
     };
+
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

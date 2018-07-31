@@ -62,26 +62,30 @@ const PR          = PROMPTS.Pad('DevUnisys');
         TEST('net'    , true);  // network initialization
         TEST('netcall', true);  // network calls
 
-        /* UNISYS TEST MESSAGE HANDLER REGISTRATION */
-        if (TEST('remote')) {
-          this.udata.HandleMessage('REMOTE_CALL_TEST',(data, msgcon) => {
-            // msgcon is message control
-            data.cat = 'calico';
-            data.melon += '_ack';
-            return data;
-          });
-        }
-        if (TEST('call')) this.udata.HandleMessage('TEST_REMOTE_IN',(data)=>{
-          if (!data.stack) data.stack=[]; data.stack.push('TRI-JSX');
-          return data;
-        });
-
         /* UNISYS TESTS */
         // these run during a hook, but are defined in constructor
+        UNISYS.Hook('INITIALIZE',() => {
+          /* UNISYS TEST MESSAGE HANDLER REGISTRATION */
+          if (TEST('remote')) {
+            this.udata.HandleMessage('REMOTE_CALL_TEST',(data, msgcon) => {
+              // msgcon is message control
+              data.cat = 'calico';
+              data.melon += '_ack';
+              return data;
+            });
+          }
+          if (TEST('call')) {
+            this.udata.HandleMessage('TEST_CALL',(data)=>{
+              if (!data.stack) data.stack=[]; data.stack.push('TRI-JSX');
+              return data;
+            });
+          }
+        });
         UNISYS.Hook('START',() => {
+          /* UNISYS TEST MESSAGE HANDLER INVOCATION */
           if (TEST('call')) {
             // INVOKE remove call
-            this.udata.Call('TEST_REMOTE_IN',{ source : 'DevUnisysJSX' })
+            this.udata.Call('TEST_CALL',{ source : 'DevUnisysJSX' })
             // test data return
             .then((data)=>{
               if (data && data.source && data.source==='DevUnisysLogic-Return') TEST.Pass('callDataReturn');
