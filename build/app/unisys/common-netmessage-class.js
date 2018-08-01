@@ -22,13 +22,13 @@
   const DBG = false;
 
   var m_id_counter    = 0;
-  var m_id_prefix     = 'NM';
+  var m_id_prefix     = 'PKT';
   var m_transactions  = {};
   var m_netsocket     = null;
 
   // constants
   const PROMPTS           = require('../system/util/prompts');
-  const PR                = PROMPTS.Pad('PKT-NM');
+  const PR                = PROMPTS.Pad('PKT');
   const ERR = ":ERR:";
   const ERR_NOT_NETMESG   = ERR+PR+"obj does not seem to be a NetMessage";
   const ERR_BAD_PROP      = ERR+PR+"property argument must be a string";
@@ -38,14 +38,14 @@
   const ERR_DUPE_TRANS    = ERR+PR+"this packet transaction is already registered!";
   const ERR_NO_GLOB_UADDR = ERR+PR+"packet sending attempted before UADDR is set!";
   const ERR_UNKNOWN_TYPE  = ERR+PR+"packet type is unknown:";
-  const KNOWN_TYPES       = ['mesg','state'];
+  const KNOWN_TYPES       = ['msend','mcall','state','xtran'];
 
 /// UNISYS NETMESSAGE CLASS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ A UNetMessage encapsulates a specific message and data payload for sending
     across the network.
 /*/ class NetMessage {
-      constructor( msg, data ) {
+      constructor( msg, data, type ) {
         // OPTION 1
         // create NetMessage from (generic object)
         if ((typeof msg==='object') && (data===undefined)) {
@@ -67,6 +67,7 @@
         // OPTION 3
         // create new NetMessage from scratch (mesg,data)
         // unique id for every NetMessage
+        if (typeof type==='string') m_CheckType(type);
         if ((typeof msg!=='string') || (typeof data!=='object')) throw ERR_ERR_BAD_CSTR;
         // allow calls with null data by setting to empty object
         this.data     = data || {};
@@ -74,13 +75,14 @@
         // id and debugging memo support
         let idStr     = (++m_id_counter).toString();
         this.id       = m_id_prefix+idStr.padStart(5,'0');
-        this.type     = KNOWN_TYPES[0]; // default to 'mesg'
+        this.type     = type || KNOWN_TYPES[0]; // is default msend if not specified
         this.memo     = '';
         // transaction support
         this.seqnum   = 0;	  // positive when part of transaction
         this.seqlog   = [];   // for debugging support
         // addressing support
         this.s_uaddr  = null; // originating uaddr set by SocketSend()
+        // filtering support
       } // constructor
 
   /// ACCESSSOR METHODS ///////////////////////////////////////////////////////
@@ -121,6 +123,11 @@
          return (msgstr===this.msg) ? this.data : undefined;
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ convenience function return true if server message
+  /*/ IsServerMessage() {
+        return this.msg.startsWith('SRV_');
+      }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ getter/setter for the memo description field
   /*/ Memo() { return this.memo; }
       SetMemo( memo ) { this.memo = memo; }
@@ -129,6 +136,7 @@
   /*/ JSON() {
         return JSON.stringify(this);
       }
+
 
   /// TRANSACTION SUPPORT /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -147,7 +155,10 @@
   /*/ Send packet on either provided socket or default socket. Servers provide
       the socket because it's handling multiple sockets from different clients.
   /*/ SocketSend( socket=m_netsocket ) {
-        if (!socket) throw ERR_BAD_SEND;
+        if (!socket) {
+          console.warn('SocketSend(): netsocket not yet setup; skipping send');
+          return;
+        }
         if (NetMessage.UADDR===undefined) throw ERR_NO_GLOB_UADDR;
         socket.send(this.JSON());
       }
@@ -156,17 +167,17 @@
   /*/ QueueTransaction() {
         // save our current UADDR
         this.seqlog.push(NetMessage.UADDR);
-
+        let dbg = DBG && (!this.IsServerMessage());
         let p = new Promise((resolve,reject) => {
           var hash = m_GetHashKey(this);
-          if (DBG) console.log(PR,'queueing transaction hash',hash);
+          if (dbg) console.log(PR,'queueing transaction hash',hash);
           if (m_transactions[hash]) {
             reject(Error(ERR_DUPE_TRANS+':'+hash));
           } else {
             // save the resolve function in transactions table;
             // promise will resolve on remote invocation with data
             m_transactions[hash] = function (data)  {
-              if (DBG) console.log(PR,'resolving promise with',data);
+              if (dbg) console.log(PR,'resolving promise with',data);
               resolve(data);
             };
             this.SocketSend();
@@ -177,33 +188,35 @@
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ If this packet is a returned transaction, then return true
   /*/ IsTransaction() {
-        return (this.seqnum>0)&&(this.seqlog[0]===NetMessage.UADDR);
+        return (this.type==='xtran')&&(this.seqnum>0)&&(this.seqlog[0]===NetMessage.UADDR);
+      }
+  ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/	update the sequence metadata and return on same socket
+  /*/ ReturnTransaction( socket=m_netsocket ) {
+        let dbg = DBG && (!this.IsServerMessage());
+        // note: seqnum is already incremented by the constructor if this was
+        // a received packet
+        // add this to the sequence log
+        this.seqlog.push(NetMessage.UADDR);
+        this.type = 'xtran';
+        if (dbg) console.log(PR,`'${this.msg}' returning to ${this.SourceAddress()}`);
+        this.SocketSend(socket);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ If this is a transaction packet that is returned, then execute the stored
       resolver function from the promise stored in m_transactions, which will
       then trigger .then() following any calls
   /*/ CompleteTransaction() {
+        let dbg = DBG && (!this.IsServerMessage());
         var hash = m_GetHashKey(this);
         var resolverFunc = m_transactions[hash];
-        if (DBG) console.log(PR,'CompleteTransaction',hash);
+        if (dbg) console.log(PR,'CompleteTransaction',hash);
         if (typeof resolverFunc!=='function') {
           throw `transaction [${hash}] handler error`;
         } else {
           resolverFunc(this.data);
           Reflect.deleteProperty(m_transactions[hash]);
         }
-      }
-
-  /// ADDRESSING SUPPORT //////////////////////////////////////////////////////
-  ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/	update the sequence metadata and return on same socket
-  /*/ ReturnToSender( socket=m_netsocket ) {
-        // note: seqnum is already incremented by the constructor if this was
-        // a received packet
-        // add this to the sequence log
-        this.seqlog.push(NetMessage.UADDR);
-        this.SocketSend(socket);
       }
     } // class NetMessage
 
@@ -225,6 +238,11 @@
         if (DBG) console.log(PR,'GlobalCleanup: deallocating netsocket');
          m_netsocket = null;
        }
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ return the address (socket_id) assigned to this app instance
+/*/ NetMessage.SocketUADDR = function () {
+      return NetMessage.UADDR;
     }
 
 /// PRIVATE CLASS HELPERS /////////////////////////////////////////////////////

@@ -1,3 +1,4 @@
+console.log(`included ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     LifeCycle - A system manager for application lifecycle events.

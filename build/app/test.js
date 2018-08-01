@@ -1,10 +1,9 @@
+console.log(`included ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     TEST
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
-
-console.log(`> TEST MODULE loaded`);
 
 let DBG = false;
 
@@ -17,8 +16,7 @@ let DBG = false;
       hook    : false,  // unisys lifecycle hooks
       remote  : false,  // unisys 'remote' calls to other module
       net     : false,  // network connection to socket server
-      server  : false,  // unisys 'server implemented' calls
-      netcall : false   // unisys 'remote network' calls
+      server  : false   // unisys 'server implemented' calls
     };
 /*/ groups of tests to run
 /*/ let PASSED = {};
@@ -154,13 +152,12 @@ let DBG = false;
         case 'net':
           subtests = {
             netMessageInit    : flag,
-            netMessageReg     : flag
-          }
-          break;
-        case 'netcall':
-          subtests = {
+            netMessageReg     : flag,
             netCall           : flag,
+            netSend           : flag,
+            netSignal         : flag,
             netData           : flag,
+            netDataReturn     : flag,
             netDataAdd        : flag,
             netDataMulti      : flag
           }

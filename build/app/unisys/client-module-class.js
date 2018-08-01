@@ -1,3 +1,4 @@
+console.log(`included ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     UNISYS MODULE SHELL

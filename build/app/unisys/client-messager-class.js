@@ -1,3 +1,4 @@
+console.log(`included ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     Messager - Handle a collection of named events and their handlers
@@ -104,7 +105,7 @@ class Messager {
     well. dstScope is 'net' or 'local' to limit where to send, or 'all'
     for everyone on net or local
 /*/ Send( mesgName, inData, options={} ) {
-      let { srcUID, msgType }          = options;
+      let { srcUID, type }          = options;
       let { toLocal=true, toNet=true } = options;
       const handlers = this.handlerMap.get(mesgName);
       /// toLocal
@@ -121,8 +122,7 @@ class Messager {
       } // end toLocal
       /// toNetwork
       if (toNet) {
-        let pkt = new NetMessage(mesgName,inData);
-        pkt.SetType(msgType);
+        let pkt = new NetMessage(mesgName,inData,type);
         pkt.SocketSend();
       } // end toNetwork
     }
@@ -139,7 +139,7 @@ class Messager {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Return an array of Promises. Called by UDATA.Call().
 /*/ Call( mesgName, inData, options={} ) {
-      let { srcUID }                   = options;
+      let { srcUID, type }             = options;
       let { toLocal=true, toNet=true } = options;
       const handlers = this.handlerMap.get(mesgName);
       let promises = [];
@@ -169,7 +169,8 @@ class Messager {
       }
       /// toNetwork
       if (toNet) {
-        let pkt = new NetMessage(mesgName,inData);
+        type = type || 'mcall';
+        let pkt = new NetMessage(mesgName,inData,type);
         let p = pkt.QueueTransaction();
         promises.push(p);
       } // end toNetwork

@@ -1,4 +1,4 @@
-var   DBG         = false;
+console.log(`included ${module.id}`);
 /// SYSTEM INTEGRATION ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS      = require('unisys/client');
@@ -6,6 +6,7 @@ const REFLECT     = require('system/util/reflection');
 /// MAGIC: DevUnisysLogic will add UNISYS Lifecycle Hooks on require()
 const LOGIC       = require('./DevUnisysLogic');
 const TEST        = require('test');
+var   DBG         = false;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,7 +61,6 @@ const PR          = PROMPTS.Pad('DevUnisys');
         TEST('remote' , true);  // instance-to-instance calls
         TEST('server' , true);  // server calls
         TEST('net'    , true);  // network initialization
-        TEST('netcall', true);  // network calls
 
         /* UNISYS TESTS */
         // these run during a hook, but are defined in constructor

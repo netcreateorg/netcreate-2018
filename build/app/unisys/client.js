@@ -1,3 +1,4 @@
+console.log(`included ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     UNISYS is the top level system module for implementing:
@@ -29,6 +30,7 @@ const PR          = PROMPTS.Pad('UNISYS');
 /// INITIALIZE MAIN MODULE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var   UNISYS      = new UniModule(module.id);
+var   UDATA       = new UniData(UNISYS);
 
 /// UNISYS MODULE MAKING //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -41,6 +43,17 @@ var   UNISYS      = new UniModule(module.id);
 /*/ API: Make new module with UNISYS convenience methods
 /*/ UNISYS.NewDataLink = ( module, optName ) => {
       return new UniData(module,optName);
+    };
+/// UNISYS MESSAGE REGISTRATION ///////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    UNISYS.RegisterMessagesP = () => {
+      let all = UniData.MessageNames();
+      return new Promise((resolve,reject)=>{
+        UDATA.Call('SRV_REG_HANDLERS',{ all })
+        .then((data)=>{
+          resolve(data);
+        });
+      });
     };
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -164,6 +177,12 @@ var   UNISYS      = new UniModule(module.id);
       });
     };
 
+/// NETWORK INFORMATION ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ UNISYS.SocketUADDR = () => {
+      return NETWORK.SocketUADDR();
+    };
 
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////

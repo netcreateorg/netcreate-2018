@@ -1,3 +1,4 @@
+console.log(`included ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     init.jsx
@@ -27,10 +28,6 @@ const AppShell    = require('init-appshell');
 const SETTINGS    = require('settings');
 const UNISYS      = require('unisys/client');
 const DATASTORE   = require('system/datastore');
-
-/// MODULE INITIALIZATION /////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-console.log('> init.jsx loaded');
 
 /// INITIALIZE WHEN DOM HAS FINISHED LOADING //////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

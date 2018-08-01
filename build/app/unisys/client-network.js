@@ -1,3 +1,4 @@
+console.log(`included ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     UNISYS NETWORK implements network controls and synchronization.
@@ -5,7 +6,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG           = { connect:false, handle:false };
+const DBG           = { connect:false, handle:true };
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -108,20 +109,27 @@ var NETWORK   = {};
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     function m_HandleMessage( msgEvent ) {
       let pkt = new NetMessage(msgEvent.data);
-      /// is it a transaction?
-      if (pkt.IsTransaction()) {
-        if (DBG.handle) console.log(PR,'received transaction',pkt.Message(),pkt.Data());
-        pkt.CompleteTransaction();
+      let msg = pkt.Message();
+      let data = pkt.Data();
+      let type = pkt.Type();
+      /// otherwise, incoming invocation
+      switch (type) {
+        case 'xtran':
+          if (DBG.handle) console.log(PR,'completing transaction',msg);
+          pkt.CompleteTransaction();
+          break;
+        case 'state':
+          if (DBG.handle) console.log(PR,'received state change',msg);
+          break;
+        case 'msend':
+          if (DBG.handle && !msg.startsWith('SRV_')) console.warn(PR,'received msend',msg,data);
+          break;
+        case 'mcall':
+          if (DBG.handle && !msg.startsWith('SRV_')) console.warn(PR,'received mcall',msg,data);
+          break;
+        default:
+          throw Error('unknown packet type',type);
         return;
-      }
-      if (pkt.IsType('state')) {
-        if (DBG.handle) console.log(PR,'received state change',pkt.Message(),pkt.Data());
-        return;
-      }
-      if (pkt.IsType('mesg')) {
-        /// is it a local invocation?
-        /// check our local message handlers
-        if (DBG.handle) console.log(PR,'received message',pkt.Message(),pkt.Data());
       }
     }
 
@@ -181,8 +189,12 @@ var NETWORK   = {};
       return NETSERVER;
     };
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    NETWORK.SocketInfo = function () {
+    NETWORK.ServerSocketInfo = function () {
       return NETSOCK;
+    };
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    NETWORK.SocketUADDR = function () {
+      return NetMessage.SocketUADDR();
     };
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////

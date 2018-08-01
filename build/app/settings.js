@@ -1,11 +1,10 @@
+console.log(`included ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     LOCAL SETTINGS
     utility function for managing local
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
-
-console.log(`> SYSTEM SETTINGS loaded`);
 
 /// GLOBAL NETWORK INFO (INJECTED ON INDEX) ///////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

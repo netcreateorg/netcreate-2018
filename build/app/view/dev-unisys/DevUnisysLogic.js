@@ -1,3 +1,4 @@
+console.log(`included ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     TEST REACT INTEGRATION through UNISYS
@@ -118,7 +119,6 @@
       });
     });
 
-
 /// SECOND MODULE for MODULE-to-MODULE TESTS //////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ MOD2 is a completely different UNISYS MODULE declaration for ensuring that
@@ -182,6 +182,31 @@
     });
 
 
+/// UNISYS NETWORK SEND/CALL/SIGNAL TESTS /////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ define test handler
+/*/ MOD2.Hook('INITIALIZE', function() {
+      if (TEST('net')) {
+        UDATA2.HandleMessage('NET_SEND_TEST',(data) => {
+          console.log('received packet',data);
+          TEST.Pass('netSend');
+        });
+      }
+    });
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ invoke test handler on OTHER instance
+/*/ MOD2.Hook('START', function() {
+      setTimeout(delayed_send,2000);
+      // inline function
+      function delayed_send() {
+        if (!TEST('net')) return;
+        let uaddr = UNISYS.SocketUADDR();
+        let data = { text:`hi from ${uaddr}`};
+        console.warn('sending NET_SEND_TEST',JSON.stringify(data));
+        UDATA2.NetSend('NET_SEND_TEST',data);
+      }
+    });
+
 /// TEST STARTUP //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ The START phase executes after INITIALIZE has completed.
@@ -190,6 +215,7 @@
 /*/ MOD.Hook('START', function () {
   /// ASSESS TESTS AFTER TEST_WAIT MS
       console.log('*** RUNNING UNISYS TESTS ***');
+      TEST.SetTitle('RUNNING TESTS');
       setTimeout( function () {
         TEST.Assess();
       }, TEST_WAIT);

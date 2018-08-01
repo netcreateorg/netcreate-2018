@@ -1,3 +1,4 @@
+console.log(`included ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     UNISYS DATALINK CLASS
@@ -135,7 +136,7 @@ var MESSAGER       = new Messager();
       the same UDATA instance (avoid echoing back to self)
   /*/ Send( mesgName, inData, options ) {
         if (DBG.send) console.log(`${this.uid}_${PR}`,'** DATALINK SEND',mesgName);
-        options = options || { msgType:'mesg' };
+        options = options || { type:'msend' };
         // uid is "source uid" of subscribing object, to avoid reflection
         // if the subscribing object is also the originating state changer
         options.srcUID = this.UID();
@@ -147,14 +148,14 @@ var MESSAGER       = new Messager();
   /*/ Sends the data to all message implementors, irregardless of origin.
   /*/ Signal( mesgName, data, options ) {
         if (DBG.send) console.log(`${this.uid}_${PR}`,'** DATALINK SIGNAL',mesgName);
-        options = options || { msgType:'mesg' };
+        options = options || { type:'msend' };
         MESSAGER.Signal(mesgName,data);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ UDATA wraps Messager.Call(), which returns an array of promises.
       The UDATA version of Call() manages the promises, and returns a
   /*/ async Call( mesgName, inData, options ) {
-        options = options || { msgType:'mesg' };
+        options = options || { type:'mcall' };
         if (DBG.send) {
           let status = '';
           if (!options.toNet) status+='NO_NET ';
@@ -176,10 +177,34 @@ var MESSAGER       = new Messager();
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ version of Call that forces local-only calls
   /*/ LocalCall( mesgName, inData, options ) {
-        options = options || { msgType:'mesg' };
+        options = options || { type:'mcall' };
         options.toLocal = true;
         options.toNet = false;
         return this.Call(mesgName,inData,options);
+      }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ version of Send that force network-only calls
+  /*/ LocalSend( mesgName, inData, options ) {
+        options = options || { type:'msend' };
+        options.toLocal = true;
+        options.toNet = false;
+        return this.Send(mesgName,inData,options);
+      }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ version of Call that forces local-only calls
+  /*/ NetCall( mesgName, inData, options ) {
+        options = options || { type:'mcall' };
+        options.toLocal = false;
+        options.toNet = true;
+        return this.Call(mesgName,inData,options);
+      }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ version of Send that force network-only calls
+  /*/ NetSend( mesgName, inData, options ) {
+        options = options || { type:'msend' };
+        options.toLocal = false;
+        options.toNet = true;
+        return this.Send(mesgName,inData,options);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       NullCallback () {
