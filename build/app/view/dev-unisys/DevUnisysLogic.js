@@ -187,9 +187,10 @@ console.log(`included ${module.id}`);
 /*/ define test handler
 /*/ MOD2.Hook('INITIALIZE', function() {
       if (TEST('net')) {
-        UDATA2.HandleMessage('NET_SEND_TEST',(data) => {
+        UDATA2.HandleMessage('NET_DISPATCH_TEST',(data) => {
           console.log('received packet',data);
           TEST.Pass('netSend');
+          return data;
         });
       }
     });
@@ -201,9 +202,14 @@ console.log(`included ${module.id}`);
       function delayed_send() {
         if (!TEST('net')) return;
         let uaddr = UNISYS.SocketUADDR();
-        let data = { text:`hi from ${uaddr}`};
-        console.warn('sending NET_SEND_TEST',JSON.stringify(data));
-        UDATA2.NetSend('NET_SEND_TEST',data);
+        let text = `hi from ${uaddr}`;
+        let send = { send:'netsend', text };
+        let call = { call:'netcall', text };
+        console.warn('calling NET_DISPATCH_TEST',JSON.stringify(call));
+        UDATA2.NetCall('NET_DISPATCH_TEST', call)
+        .then((d)=>{
+          console.log('NET_DISPATCH_TEST call return',JSON.stringify(d));
+        });
       }
     });
 

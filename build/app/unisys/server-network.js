@@ -185,7 +185,7 @@ const SERVER_UADDR      = m_GetNewUADDR('SVR'); // special server UADDR prefix
         // if it wasn't, then see if we have remote handlers defined
         if (promises.length===0) promises = m_CheckRemoteHandlers(pkt);
         if (promises.length===0) {
-          console.log(PR,`'${pkt.Message()}' no handlers defined in UNET`);
+          console.log(PR,`'${pkt.Message()}' no valid UADDR targets`);
           return;
         }
         let dbgout = !pkt.Message().startsWith('SRV_');
@@ -203,7 +203,7 @@ const SERVER_UADDR      = m_GetNewUADDR('SVR'); // special server UADDR prefix
         let data = pktArray.reduce((d,p) => {
           let pdata = (p instanceof NetMessage) ? p.Data() : p;
           let retval = Object.assign(d,pdata);
-          // console.log('acc',JSON.stringify(d),'\nadd',JSON.stringify(p.Data()),'\nres',JSON.stringify(retval),'\n');
+          if (dbgout) console.log(PR,`'${pkt.Message()}' reduce`,JSON.stringify(retval));
           return retval;
         },{});
         json = JSON.stringify(data);
@@ -246,9 +246,15 @@ const SERVER_UADDR      = m_GetNewUADDR('SVR'); // special server UADDR prefix
       let mesgName = pkt.Message();
       // m_message_map contains Sets
       let handlers = m_message_map.get(mesgName);
+      let src_uaddr = pkt.SourceAddress();
+      let type = pkt.Type();
       if (handlers) handlers.forEach((uaddr)=>{
-        let p = f_make_remote_resolver_func(uaddr);
-        promises.push(p);
+        // don't send packet to originating UADDR because it already has handled it
+        // locally
+        if (src_uaddr!==uaddr) {
+          let p = f_make_remote_resolver_func(uaddr);
+          promises.push(p);
+        }
       });
       /// return all queued promises
       return promises;
