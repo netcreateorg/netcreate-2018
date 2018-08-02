@@ -160,12 +160,13 @@ let DBG = false;
             netMessageReg     : flag,
             netCall           : flag,
             netSend           : flag,
+            netSendNoEcho     : flag,
             netSignal         : flag,
             netSignalEcho     : flag,
             netData           : flag,
             netDataReturn     : flag,
             netDataAdd        : flag,
-//            netDataGather     : flag,
+//          netDataGather     : flag,
             netDataMulti      : flag
           }
           break;

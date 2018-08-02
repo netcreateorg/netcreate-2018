@@ -204,7 +204,8 @@ console.log(`included ${module.id}`);
         });
         UDATA.HandleMessage('NET_SEND_TEST',(data) => {
           if (data.test==='netsend') TEST.Pass('netSend');
-          if (data.source===UNISYS.SocketUADDR()) TEST.Fail('netSend');
+          if (data.source) TEST.Pass('netSendNoEcho');
+          if (data.source===UNISYS.SocketUADDR()) TEST.Fail('netSendNoEcho');
         });
       }
     });
