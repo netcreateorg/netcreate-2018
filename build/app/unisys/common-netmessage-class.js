@@ -37,9 +37,10 @@
   const ERR_DUPE_TRANS    = ERR+PR+"this packet transaction is already registered!";
   const ERR_NO_GLOB_UADDR = ERR+PR+"packet sending attempted before UADDR is set!";
   const ERR_UNKNOWN_TYPE  = ERR+PR+"packet type is unknown:";
+  const ERR_NOT_PACKET    = ERR+PR+"passed object is not a NetMessage";
   const ERR_UNKNOWN_RMODE = ERR+PR+"packet routine mode is unknown:";
   const KNOWN_TYPES       = ['msend','msig','mcall','state'];
-  const ROUTING_MODE      = ['req','res','f_req','f_res'];
+  const ROUTING_MODE      = ['req','res'];
 
 /// UNISYS NETMESSAGE CLASS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -82,7 +83,7 @@
         this.seqnum   = 0;	  // positive when part of transaction
         this.seqlog   = [];   // transaction log
         // addressing support
-        this.s_uaddr  = null; // first originating uaddr set by SocketSend()
+        this.s_uaddr  = NetMessage.SocketUADDR() || null; // first originating uaddr set by SocketSend()
         this.s_uid    = null; // first originating UDATA srcUID
         // filtering support
       } // constructor
@@ -152,6 +153,12 @@
   /*/ SourceAddress() {
         return this.seqlog[0] || this.s_uaddr;
       }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      CopySourceAddress( pkt ) {
+        if (pkt.constructor.name!=='NetMessage') throw Error(ERR_NOT_PACKET);
+        this.s_uaddr = pkt.SourceAddress();
+      }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       MakeNewID() {
         let idStr = (++m_id_counter).toString();
         this.id = m_id_prefix+idStr.padStart(5,'0');
@@ -200,9 +207,7 @@
       IsRequest() { return this.rmode==='req'; }
       IsOwnResponse() { return this.rmode==='res'; }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      IsForwardedRequest() { return this.rmode==='f_req'; }
-      IsForwardedResponse() { return this.rmode==='f_res'; }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
   /*/ If this packet is a returned transaction, then return true
   /*/ IsTransaction() {
         return (this.rmode!==ROUTING_MODE[0])&&(this.seqnum>0)&&(this.seqlog[0]===NetMessage.UADDR);
@@ -212,7 +217,8 @@
   /*/ ReturnTransaction( socket=m_netsocket ) {
         // global m_netsocket is not defined on server, since packets arrive on multiple sockets
         if (!socket) throw Error('ReturnTransaction(sock) requires a valid socket');
-        let dbg = (DBG.transact) && (!this.IsServerMessage());
+//        let dbg = (DBG.transact) && (!this.IsServerMessage());
+        let dbg = (!this.IsServerMessage());
         // note: seqnum is already incremented by the constructor if this was
         // a received packet
         // add this to the sequence log
@@ -248,9 +254,7 @@
       // NOTE: m_netsocket is set only on clients since on server, there are multiple sockets
       if (netsocket) {
         if (typeof netsocket.send!=='function') throw ERR_BAD_SOCKET;
-        else m_netsocket = netsocket;
-        // save the server address on client
-        m_netsocket.UADDR = NetMessage.DefaultServerUADDR();
+        m_netsocket = netsocket;
       }
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -279,7 +283,6 @@
     onto the seqlog stack.
 /*/ function m_SeqIncrement( pkt ) {
       pkt.seqnum++;
-      pkt.s_uaddr = NetMessage.UADDR;
       return pkt;
     }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

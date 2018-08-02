@@ -125,7 +125,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
           entry = new Set();
           m_message_map.set(msg,entry);
         }
-        console.log(PR,`adding '${msg}' reference to ${uaddr}`);
+        if (DBG) console.log(PR,`adding '${msg}' reference to ${uaddr}`);
         entry.add(uaddr);
       });
     };
@@ -184,13 +184,13 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
 /*/ handle messages that are a Send(), Signal(), or Call()
 /*/ async function m_HandleMessage( socket, pkt ) {
 
-        // is this a returning packet?
+        // is this a returning packet that was forwarded?
         if (pkt.IsOwnResponse()) {
-          console.log(PR,`-- ${pkt.Message()} completing transaction $${pkt.seqlog.join(':')}`);
+          // console.log(PR,`-- ${pkt.Message()} completing transaction ${pkt.seqlog.join(':')}`);
           pkt.CompleteTransaction();
           return;
         }
-
+        // console.log(PR,`packet source incoming ${pkt.SourceAddress()}-${pkt.Message()}`);
         // (1) first check if this is a server handler
         let promises = m_CheckServerHandlers(pkt);
 
@@ -209,9 +209,9 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
         let json = JSON.stringify(pkt.Data());
 
         /* MAGICAL ASYNC/AWAIT BLOCK *****************************/
-        if (notsrv) console.log(PR,`>> '${pkt.Message()}' queuing ${promises.length} Promises w/ data ${json}'`);
+        // if (notsrv) console.log(PR,`>> '${pkt.Message()}' queuing ${promises.length} Promises w/ data ${json}'`);
         let pktArray = await Promise.all(promises);
-        if (notsrv) console.log(PR,`<< '${pkt.Message()}' resolved`);
+        // if (notsrv) console.log(PR,`<< '${pkt.Message()}' resolved`);
         /* END MAGICAL ASYNC/AWAIT BLOCK *************************/
 
         // (4) only mcall packets need to receive the data back return
@@ -221,11 +221,11 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
         let data = pktArray.reduce((d,p) => {
           let pdata = (p instanceof NetMessage) ? p.Data() : p;
           let retval = Object.assign(d,pdata);
-          if (notsrv) console.log(PR,`'${pkt.Message()}' reduce`,JSON.stringify(retval));
+          // if (notsrv) console.log(PR,`'${pkt.Message()}' reduce`,JSON.stringify(retval));
           return retval;
         },{});
         json = JSON.stringify(data);
-        if (notsrv) console.log(PR,`'${pkt.Message()}' returning transaction data ${json}`);
+        // if (notsrv) console.log(PR,`'${pkt.Message()}' returning transaction data ${json}`);
         pkt.SetData(data);
         pkt.ReturnTransaction(socket);
     } // m_HandleMessage()
@@ -275,7 +275,12 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
             break;
           case 'msend':
           case 'mcall':
-            if (src_uaddr!==uaddr) promises.push(f_make_remote_resolver_func(uaddr));
+            // console.log(PR,`'${pkt.Message()}'`,src_uaddr,'compare',uaddr,JSON.stringify(pkt));
+            if (src_uaddr!==uaddr) {
+              promises.push(f_make_remote_resolver_func(uaddr));
+            } else {
+              // console.log(PR,`'${pkt.Message()}' SKIPPING ${uaddr}`);
+            }
             break;
           default:
             throw Error(`{ERR_UNKNOWN_PKT} ${type}`);
@@ -290,9 +295,10 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
         if (d_sock===undefined) throw Error(ERR_INVALID_DEST+` ${d_uaddr}`);
         // Queue transaction from server
         // sends to destination socket d_sock
-        console.log(PR,`++ '${pkt.Message()}' FWD from ${pkt.SourceAddress()} to ${d_uaddr}`);
+        // console.log(PR,`++ '${pkt.Message()}' FWD from ${pkt.SourceAddress()} to ${d_uaddr}`);
         let newpkt = new NetMessage(pkt);
         newpkt.MakeNewID();
+        newpkt.CopySourceAddress(pkt);
         return newpkt.QueueTransaction(d_sock);
       }
     }

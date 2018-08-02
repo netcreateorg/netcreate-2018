@@ -202,9 +202,9 @@ console.log(`included ${module.id}`);
           if (typeof data.source==='string') TEST.Pass('netSignal');
           if (data.source===UNISYS.SocketUADDR()) TEST.Pass('netSignalEcho');
         });
-        UDATA.HandleMessage('NET_SEND_TEST',(data) => {
-          if (data.test==='netsend') TEST.Pass('netSend');
-          if (data.source) TEST.Pass('netSendNoEcho');
+        UDATA2.HandleMessage('NET_SEND_TEST',(data) => {
+          TEST.Pass('netSend');
+          console.log('received',data,'vs',UNISYS.SocketUADDR());
           if (data.source===UNISYS.SocketUADDR()) TEST.Fail('netSendNoEcho');
         });
       }
@@ -220,7 +220,7 @@ console.log(`included ${module.id}`);
         let greeting = `hi from ${uaddr}`;
         let call = { test:'netcall', greeting };
         // test signal
-        UDATA2.NetSignal('NET_SIGNAL_TEST',{ test:'netsend', source : uaddr });
+        UDATA2.NetSignal('NET_SIGNAL_TEST',{ test:'netsignal', source : uaddr });
         // test call
         UDATA2.NetCall('NET_CALL_TEST', call)
         .then((d)=>{

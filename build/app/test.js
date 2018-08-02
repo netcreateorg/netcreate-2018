@@ -64,7 +64,7 @@ let DBG = false;
       m_InitShell();
       if (DBG) console.error(PR,'Failing',`${subtest}`);
       if (PASSED.hasOwnProperty(subtest)) {
-        if (PASSED[subtest]) {
+        if (PASSED[subtest]===null) {
           PASSED[subtest]=-1; // was true, then falsified
         } else {
           PASSED[subtest]=0;  // deliberately failed once
@@ -160,7 +160,7 @@ let DBG = false;
             netMessageReg     : flag,
             netCall           : flag,
             netSend           : flag,
-            netSendNoEcho     : flag,
+            netSendNoEcho     : 1,
             netSignal         : flag,
             netSignalEcho     : flag,
             netData           : flag,
@@ -189,6 +189,8 @@ let DBG = false;
         }
         if (pass) TM.Pass(subtest);
       });
+      // special test - failed netsend means echo test is invalid too
+      if (!TM.Passed('netSend')) TM.Fail('netSendNoEcho');
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ prints the test output to console
@@ -205,6 +207,7 @@ let DBG = false;
       });
       // scan test results
       pEntries.forEach(( [key,value ]) => {
+        let res = '';
         switch (value) {
           case true:
             passed.push(`${key.padEnd(padding)} [X]\n`);
@@ -218,8 +221,11 @@ let DBG = false;
           default:
             switch (typeof value) {
               case 'number':
-                if (value>1) passed.push(`${key.padEnd(padding)} [X] x ${value}\n`);
-                else passed.push(`${key.padEnd(padding)} [X]\n`);
+                if (value< -1) res=`${key.padEnd(padding)} [!] FAIL x ${-value}\n`;
+                if (value===0) res=`${key.padEnd(padding)} [!] FAIL\n`;
+                if (value===1) res=`${key.padEnd(padding)} [X]\n`;
+                if (value > 1) res=`${key.padEnd(padding)} [X] x ${value}\n`;
+                passed.push(res);
                 break;
               default:
                 passed.push(`${key.padEnd(padding)} [X] '${value}'\n`);
