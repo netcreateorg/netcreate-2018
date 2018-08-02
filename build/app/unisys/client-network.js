@@ -6,7 +6,7 @@ console.log(`included ${module.id}`);
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG           = { connect:false, handle:true };
+const DBG           = { connect:false, handle:false };
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

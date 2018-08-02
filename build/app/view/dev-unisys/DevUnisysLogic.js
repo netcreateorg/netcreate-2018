@@ -114,7 +114,7 @@ console.log(`included ${module.id}`);
       if (TEST('hook')) TEST.Pass('hookStart');
       UNISYS.RegisterMessagesP()
       .then((data)=>{
-        console.log('RegisterMessagesP: data',data);
+        console.log('RegisterMessagesP() registered handlers with server',data);
         if (TEST('net')) TEST.Pass('netMessageReg');
       });
     });

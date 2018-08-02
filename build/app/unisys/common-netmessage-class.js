@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 /** MODULE DECLARATIONS *******************************************************/
 
-  const DBG = false;
+  const DBG = { send:false, transact:false };
 
   var m_id_counter    = 0;
   var m_id_prefix     = 'PKT';
@@ -163,7 +163,7 @@
   /*/ SocketSend( socket=m_netsocket ) {
         // global m_netsocket is not defined on server, since packets arrive on multiple sockets
         if (!socket) throw Error('SocketSend(sock) requires a valid socket');
-        console.log(PR,`sending '${this.Message()}' to ${socket.UADDR}`);
+        if (DBG.send) console.log(PR,`sending '${this.Message()}' to ${socket.UADDR}`);
         socket.send(this.JSON());
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -173,7 +173,7 @@
         if (!socket) throw Error('QueueTransaction(sock) requires a valid socket');
         // save our current UADDR
         this.seqlog.push(NetMessage.UADDR);
-        let dbg = (!this.IsServerMessage());
+        let dbg = (DBG.transact)&&(!this.IsServerMessage());
         let p = new Promise((resolve,reject) => {
           var hash = m_GetHashKey(this);
           if (m_transactions[hash]) {
@@ -212,7 +212,7 @@
   /*/ ReturnTransaction( socket=m_netsocket ) {
         // global m_netsocket is not defined on server, since packets arrive on multiple sockets
         if (!socket) throw Error('ReturnTransaction(sock) requires a valid socket');
-        let dbg = DBG && (!this.IsServerMessage());
+        let dbg = (DBG.transact) && (!this.IsServerMessage());
         // note: seqnum is already incremented by the constructor if this was
         // a received packet
         // add this to the sequence log
@@ -226,7 +226,7 @@
       resolver function from the promise stored in m_transactions, which will
       then trigger .then() following any calls
   /*/ CompleteTransaction() {
-        let dbg = DBG && (!this.IsServerMessage());
+        let dbg = (DBG.transact) && (!this.IsServerMessage());
         var hash = m_GetHashKey(this);
         var resolverFunc = m_transactions[hash];
         if (dbg) console.log(PR,'CompleteTransaction',hash);
@@ -257,7 +257,7 @@
 /*/ cleanup any allocated storage
 /*/ NetMessage.GlobalCleanup = function() {
       if (m_netsocket) {
-        if (DBG) console.log(PR,'GlobalCleanup: deallocating netsocket');
+        console.log(PR,'GlobalCleanup: deallocating netsocket');
          m_netsocket = null;
        }
     }

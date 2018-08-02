@@ -171,7 +171,6 @@ var MESSAGER       = new Messager();
   /*/ Sends the data to all message implementors, irregardless of origin.
   /*/ Signal( mesgName, inData, options={} ) {
         options = Object.assign(options,{type:'msig'});
-        console.log(`** DATALINK SIGNAL ${this.uid}_${PR}`,mesgName,'w/opt',options);
         MESSAGER.Signal(mesgName,inData,options);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
