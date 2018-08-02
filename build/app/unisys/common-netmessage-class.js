@@ -34,11 +34,11 @@
   const ERR_BAD_PROP      = ERR+PR+"property argument must be a string";
   const ERR_ERR_BAD_CSTR  = ERR+PR+"constructor args are string, object";
   const ERR_BAD_SOCKET    = ERR+PR+"sender object must implement send()";
-  const ERR_BAD_SEND      = ERR+PR+"bad socket; can't send";
   const ERR_DUPE_TRANS    = ERR+PR+"this packet transaction is already registered!";
   const ERR_NO_GLOB_UADDR = ERR+PR+"packet sending attempted before UADDR is set!";
   const ERR_UNKNOWN_TYPE  = ERR+PR+"packet type is unknown:";
-  const KNOWN_TYPES       = ['msend','mcall','state','xtran'];
+  const KNOWN_TYPES       = ['msend','msig','mcall','state'];
+  const ROUTING_MODE      = ['dir','fwd','rts'];
 
 /// UNISYS NETMESSAGE CLASS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -75,13 +75,15 @@
         // id and debugging memo support
         let idStr     = (++m_id_counter).toString();
         this.id       = m_id_prefix+idStr.padStart(5,'0');
-        this.type     = type || KNOWN_TYPES[0]; // is default msend if not specified
+        this.rmode     = ROUTING_MODE[0];     // is default 'dir' (direct)
+        this.type     = type || KNOWN_TYPES[0]; // is default 'msend' (no return)
         this.memo     = '';
         // transaction support
         this.seqnum   = 0;	  // positive when part of transaction
-        this.seqlog   = [];   // for debugging support
+        this.seqlog   = [];   // transaction log
         // addressing support
-        this.s_uaddr  = null; // originating uaddr set by SocketSend()
+        this.s_uaddr  = null; // first originating uaddr set by SocketSend()
+        this.s_uid    = null; // first originating UDATA srcUID
         // filtering support
       } // constructor
 
@@ -151,20 +153,20 @@
         return this.seqlog[0] || this.s_uaddr;
       }
 
-    /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Send packet on either provided socket or default socket. Servers provide
       the socket because it's handling multiple sockets from different clients.
   /*/ SocketSend( socket=m_netsocket ) {
-        if (!socket) {
-          console.warn('SocketSend(): netsocket not yet setup; skipping send');
-          return;
-        }
+        // global m_netsocket is not defined on server, since packets arrive on multiple sockets
+        if (!socket) throw Error('SocketSend(sock) requires a valid socket');
         if (NetMessage.UADDR===undefined) throw ERR_NO_GLOB_UADDR;
         socket.send(this.JSON());
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Create a promise to resolve when packet returns
-  /*/ QueueTransaction() {
+  /*/ QueueTransaction( socket=m_netsocket ) {
+        // global m_netsocket is not defined on server, since packets arrive on multiple sockets
+        if (!socket) throw Error('QueueTransaction(sock) requires a valid socket');
         // save our current UADDR
         this.seqlog.push(NetMessage.UADDR);
         let dbg = DBG && (!this.IsServerMessage());
@@ -180,25 +182,37 @@
               if (dbg) console.log(PR,'resolving promise with',data);
               resolve(data);
             };
-            this.SocketSend();
+            this.SocketSend(socket);
           }
         });
         return p;
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ return the 'routing mode', which is 'dir' for direct or 'fwd' or 'rts'
+      for forwarded or return-to-sender packets
+  /*/ RoutingMode() { return this.rmode; }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      IsReturnToSender() { return this.rmode==='rts'; }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      IsForwardedToMe() { return this.rmode==='fwd'; }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      IsDirectToMe() { return this.rmode==='dir'; }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ If this packet is a returned transaction, then return true
   /*/ IsTransaction() {
-        return (this.type==='xtran')&&(this.seqnum>0)&&(this.seqlog[0]===NetMessage.UADDR);
+        return (this.rmode!==ROUTING_MODE[0])&&(this.seqnum>0)&&(this.seqlog[0]===NetMessage.UADDR);
       }
   ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/	update the sequence metadata and return on same socket
   /*/ ReturnTransaction( socket=m_netsocket ) {
+        // global m_netsocket is not defined on server, since packets arrive on multiple sockets
+        if (!socket) throw Error('ReturnTransaction(sock) requires a valid socket');
         let dbg = DBG && (!this.IsServerMessage());
         // note: seqnum is already incremented by the constructor if this was
         // a received packet
         // add this to the sequence log
         this.seqlog.push(NetMessage.UADDR);
-        this.type = 'xtran';
+        this.rmode = 'rts';
         if (dbg) console.log(PR,`'${this.msg}' returning to ${this.SourceAddress()}`);
         this.SocketSend(socket);
       }
@@ -223,7 +237,7 @@
 /// STATIC CLASS METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ set the NETWORK interface object that implements Send()
-/*/ NetMessage.GlobalSetup = function ( config ) {
+/*/ NetMessage.GlobalSetup = function( config ) {
       let { netsocket, uaddr } = config;
       if (uaddr) NetMessage.UADDR = uaddr;
       if (netsocket) {
@@ -233,7 +247,7 @@
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ cleanup any allocated storage
-/*/ NetMessage.GlobalCleanup = function () {
+/*/ NetMessage.GlobalCleanup = function() {
       if (m_netsocket) {
         if (DBG) console.log(PR,'GlobalCleanup: deallocating netsocket');
          m_netsocket = null;
@@ -241,8 +255,13 @@
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ return the address (socket_id) assigned to this app instance
-/*/ NetMessage.SocketUADDR = function () {
+/*/ NetMessage.SocketUADDR = function() {
       return NetMessage.UADDR;
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Return a default server UADDR
+/*/ NetMessage.DefaultServerUADDR = function() {
+      return 'SVR_01';
     }
 
 /// PRIVATE CLASS HELPERS /////////////////////////////////////////////////////

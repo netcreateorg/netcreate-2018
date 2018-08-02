@@ -140,11 +140,10 @@ console.log(`included ${module.id}`);
 /*/ MOD2.Hook('START', function() {
       if (TEST('remote')) {
         // test remote data call (local, not network)
-        let localOnly = { toLocal : true, toNet : false };
-        UDATA2.Call('REMOTE_CALL_TEST',{ mycat:'kitty',results:[] })
+        UDATA2.LocalCall('REMOTE_CALL_TEST',{ mycat:'kitty',results:[] })
         .then((data)=>{
           if (data.mycat==='kitty') TEST.Pass('remoteDataReturn');
-        }, localOnly);
+        });
       }
     });
 
@@ -188,7 +187,7 @@ console.log(`included ${module.id}`);
 /*/ MOD2.Hook('INITIALIZE', function() {
       if (TEST('net')) {
         UDATA2.HandleMessage('NET_DISPATCH_TEST',(data) => {
-          console.log('received packet',data);
+          console.log('*** received packet',data);
           TEST.Pass('netSend');
           return data;
         });
@@ -248,7 +247,7 @@ console.log(`included ${module.id}`);
           return { dog : 'spotted' };
         });
         // Do the call test!
-        UDATA.Call('REMOTE_CALL_TEST',{melon:'logicmelon'})
+        UDATA.LocalCall('REMOTE_CALL_TEST',{melon:'logicmelon'})
         .then((data) => {
           if (data && data.melon && data.cat) TEST.Pass('remoteData');
           if (data.melon==='logicmelon_ack' && data.cat==='calico') TEST.Pass('remoteDataAdd');

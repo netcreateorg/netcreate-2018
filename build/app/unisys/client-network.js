@@ -109,17 +109,22 @@ var NETWORK   = {};
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     function m_HandleMessage( msgEvent ) {
       let pkt = new NetMessage(msgEvent.data);
+      // if RTS and we got it, then it's a returning transaction
       let msg = pkt.Message();
+      if (pkt.IsReturnToSender()) {
+          if (DBG.handle) console.log(PR,'completing transaction',msg);
+          pkt.CompleteTransaction();
+          return;
+      }
       let data = pkt.Data();
       let type = pkt.Type();
       /// otherwise, incoming invocation
       switch (type) {
-        case 'xtran':
-          if (DBG.handle) console.log(PR,'completing transaction',msg);
-          pkt.CompleteTransaction();
-          break;
         case 'state':
           if (DBG.handle) console.log(PR,'received state change',msg);
+          break;
+        case 'msig':
+          if (DBG.handle && !msg.startsWith('SRV_')) console.warn(PR,'received msig',msg,data);
           break;
         case 'msend':
           if (DBG.handle && !msg.startsWith('SRV_')) console.warn(PR,'received msend',msg,data);
@@ -128,8 +133,7 @@ var NETWORK   = {};
           if (DBG.handle && !msg.startsWith('SRV_')) console.warn(PR,'received mcall',msg,data);
           break;
         default:
-          throw Error('unknown packet type',type);
-        return;
+          // throw Error('unknown packet type',type);
       }
     }
 

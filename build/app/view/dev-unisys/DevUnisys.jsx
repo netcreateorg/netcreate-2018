@@ -85,7 +85,7 @@ const PR          = PROMPTS.Pad('DevUnisys');
           /* UNISYS TEST MESSAGE HANDLER INVOCATION */
           if (TEST('call')) {
             // INVOKE remove call
-            this.udata.Call('TEST_CALL',{ source : 'DevUnisysJSX' })
+            this.udata.LocalCall('TEST_CALL',{ source : 'DevUnisysJSX' })
             // test data return
             .then((data)=>{
               if (data && data.source && data.source==='DevUnisysLogic-Return') TEST.Pass('callDataReturn');

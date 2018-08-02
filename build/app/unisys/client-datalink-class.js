@@ -148,8 +148,8 @@ var MESSAGER       = new Messager();
   /*/ Sends the data to all message implementors, irregardless of origin.
   /*/ Signal( mesgName, data, options ) {
         if (DBG.send) console.log(`${this.uid}_${PR}`,'** DATALINK SIGNAL',mesgName);
-        options = options || { type:'msend' };
-        MESSAGER.Signal(mesgName,data);
+        options = options || { type:'msig' };
+        MESSAGER.Signal(mesgName,data,options);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ UDATA wraps Messager.Call(), which returns an array of promises.

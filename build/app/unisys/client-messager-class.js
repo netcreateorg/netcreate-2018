@@ -129,7 +129,7 @@ class Messager {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: wrapper for Send() used when you want every handlerFunc, including
     the sender, to receive the event even if it is the one who sent it.
-/*/ Signal( mesgName, data, options ) {
+/*/ Signal( mesgName, data, options={} ) {
       if (options.srcUID) {
         console.warn(`overriding srcUID ${options.srcUID} with NULL because Signal() doesn't use it`);
         options.srcUID = null;

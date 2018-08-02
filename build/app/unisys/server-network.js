@@ -28,6 +28,7 @@ const ERR               = PROMPTS.Pad('!!!');
 const ERR_SS_EXISTS     = "socket server already created";
 const ERR_NULL_SOCKET   = "require valid socket";
 const DBG_SOCK_BADCLOSE = "closing socket is not in mu_sockets";
+const ERR_INVALID_DEST  = "couldn't find socket with provided address";
 const DEFAULT_NET_PORT  = 2929;
 const DEFAULT_NET_ADDR  = '127.0.0.1';
 
@@ -41,13 +42,13 @@ var mu_sid_counter = 0;             // for generating  unique socket ids
 // storage
 var m_server_handlers = new Map();  // message map storing sets of functions
 var m_message_map     = new Map();  // message map storing other handlers
-var m_socket_msgs_list = new Map();  // message map by uaddr
+var m_socket_msgs_list = new Map(); // message map by uaddr
 
 
 /// API MEHTHODS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var   UNET = {};
-const SERVER_UADDR      = m_GetNewUADDR('SVR'); // special server UADDR prefix
+const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Initialize() is called by brunch-server.js to define the default UNISYS
     network values, so it can embed them in the index.ejs file for webapps
@@ -164,6 +165,7 @@ const SERVER_UADDR      = m_GetNewUADDR('SVR'); // special server UADDR prefix
           case 'state':
             m_HandleState(socket,pkt);
             break;
+          case 'msig':
           case 'msend':
           case 'mcall':
             m_HandleMessage(socket,pkt);
@@ -180,37 +182,45 @@ const SERVER_UADDR      = m_GetNewUADDR('SVR'); // special server UADDR prefix
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ handle messages that are a Send(), Signal(), or Call()
 /*/ async function m_HandleMessage( socket, pkt ) {
-        // first check if this is a server handler
+
+        // (1) first check if this is a server handler
         let promises = m_CheckServerHandlers(pkt);
-        // if it wasn't, then see if we have remote handlers defined
+
+        // (2) if it wasn't, then see if we have remote handlers defined
         if (promises.length===0) promises = m_CheckRemoteHandlers(pkt);
+
+        // (3) FAIL if no promises were returned, because there were no eligible
+        // UADDR targets, possibly because the sources are not allowed to call itself
+        // except in the case of the SIGNAL type
         if (promises.length===0) {
-          console.log(PR,`'${pkt.Message()}' no valid UADDR targets`);
+          console.log(PR,`'${pkt.Message()}' no eligible UADDR targets`);
           return;
         }
-        let dbgout = !pkt.Message().startsWith('SRV_');
+        // got this far? let's skip all server messages for debugging purposes
+        let notsrv = !pkt.Message().startsWith('SRV_');
         let json = JSON.stringify(pkt.Data());
-        if (dbgout) console.log(PR,`'${pkt.Message()}' queuing ${promises.length} Promises w/ data ${json}'`);
-        //
-        // ASYNC/AWAIT BLOCK
+
+        /* MAGICAL ASYNC/AWAIT BLOCK *****************************/
+        if (notsrv) console.log(PR,`'${pkt.Message()}' queuing ${promises.length} Promises w/ data ${json}'`);
         let pktArray = await Promise.all(promises);
-        // END ASYNC/AWAIT BLOCK
-        //
-        if (dbgout) console.log(PR,`'${pkt.Message()}' resolved`);
-        // check packet type to see if return transaction is needed
+        if (notsrv) console.log(PR,`'${pkt.Message()}' resolved`);
+        /* END MAGICAL ASYNC/AWAIT BLOCK *************************/
+
+        // (4) only mcall packets need to receive the data back return
         if (!pkt.IsType('mcall')) return;
-        // this is a call, so gather data and return it
+
+        // (5) got this far? this is a call, so gather data and return it
         let data = pktArray.reduce((d,p) => {
           let pdata = (p instanceof NetMessage) ? p.Data() : p;
           let retval = Object.assign(d,pdata);
-          if (dbgout) console.log(PR,`'${pkt.Message()}' reduce`,JSON.stringify(retval));
+          if (notsrv) console.log(PR,`'${pkt.Message()}' reduce`,JSON.stringify(retval));
           return retval;
         },{});
         json = JSON.stringify(data);
-        if (dbgout) console.log(PR,`'${pkt.Message()}' returning transaction data ${json}`);
+        if (notsrv) console.log(PR,`'${pkt.Message()}' returning transaction data ${json}`);
         pkt.SetData(data);
         pkt.ReturnTransaction(socket);
-    }
+    } // m_HandleMessage()
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ m_CheckServerHandlers() returns an array of promises, which should be used
      by Promises.all() inside an async/await function (m_SocketMessage above)
@@ -259,8 +269,31 @@ const SERVER_UADDR      = m_GetNewUADDR('SVR'); // special server UADDR prefix
       /// return all queued promises
       return promises;
       /// inline utility
-      function f_make_remote_resolver_func() {
-        return Promise.resolve(1);
+      function f_make_remote_resolver_func(d_uaddr) {
+        let d_sock = mu_sockets.get(d_uaddr);
+        if (d_sock===undefined) throw Error(ERR_INVALID_DEST+` ${d_uaddr}`);
+        /*/
+            this promise has to send a packet remotely that will then be returned eventually
+            right now, packets are coming into server-network as messages from a particular
+            socket. the packet has a seqlog that stores the originating address
+            we can probably make this the basis of a mechanism to pop the sequence
+
+            transactions currently work with
+            pkt.QueueTransaction()
+              - pushes the current UADDR onto seqlog
+              - stores a function that calls resolve() on the promises in a transaction hash table
+              - this function will get looked up on COMPLETE TRANSACTION
+              - sends self via pkt.SocketSend()
+            pkt.CompleteTransaction()
+              -
+
+        /*/
+        let p = new Promise((resolve,reject)=>{
+
+
+        });
+
+        return p;
       }
     }
 
