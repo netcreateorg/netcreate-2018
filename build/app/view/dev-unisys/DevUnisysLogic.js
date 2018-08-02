@@ -204,7 +204,6 @@ console.log(`included ${module.id}`);
         });
         UDATA2.HandleMessage('NET_SEND_TEST',(data) => {
           TEST.Pass('netSend');
-          console.log('received',data,'vs',UNISYS.SocketUADDR());
           if (data.source===UNISYS.SocketUADDR()) TEST.Fail('netSendNoEcho');
         });
       }

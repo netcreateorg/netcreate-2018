@@ -217,8 +217,7 @@
   /*/ ReturnTransaction( socket=m_netsocket ) {
         // global m_netsocket is not defined on server, since packets arrive on multiple sockets
         if (!socket) throw Error('ReturnTransaction(sock) requires a valid socket');
-//        let dbg = (DBG.transact) && (!this.IsServerMessage());
-        let dbg = (!this.IsServerMessage());
+        let dbg = (DBG.transact) && (!this.IsServerMessage());
         // note: seqnum is already incremented by the constructor if this was
         // a received packet
         // add this to the sequence log

@@ -234,11 +234,20 @@ let DBG = false;
         }
       });
 
+
       let testTitle = "UNISYS LOGIC TEST RESULTS";
       console.group(testTitle);
         let out = passed.concat(failed,skipped)
           .sort()
           .join('');
+
+        // additional help
+        let tnotes = '';
+        if (!TM.Passed('netCall')) tnotes+= `NOTE: netCall* and netData* need TWO INSTANCES running to pass\n`;
+        if (!TM.Passed('netSend')) tnotes+= `NOTE: netSend* needs TWO INSTANCES running to pass\n`;
+        if (tnotes) out+='\n'+tnotes;
+
+        // summary
         let summary = `${passed.length}=passed`;
         if (failed.length) summary+=` ${failed.length}=failed`;
         if (skipped.length) summary+=` ${skipped.length}=skipped`;
