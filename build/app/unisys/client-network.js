@@ -18,6 +18,7 @@ const PR            = PROMPTS.Pad('NETWORK');
 const WARN          = PROMPTS.Pad('!!!');
 const ERR_NM_REQ    = "arg1 must be NetMessage instance";
 const ERR_NO_SOCKET = "Network socket has not been established yet";
+const ERR_BAD_UDATA = "An instance of 'client-datalink-class' is required";
 
 /// GLOBAL NETWORK INFO (INJECTED ON INDEX) ///////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -38,14 +39,14 @@ var   m_options     = {};
 /// API METHODS ///////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var NETWORK   = {};
+var UDATA     = null; // assigned during NETWORK.Connect()
 
 /// CONNECT ///////////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Establish connection to UNISYS server. This is called by client.js during
     NetworkInitialize(), which itself fires after the application has rendered
     completely.
-/*/ NETWORK.Connect = function ( opt ) {
-      /** warn **/
+/*/ NETWORK.Connect = function ( datalink, opt ) {
       // if multiple network connections occur, emit warning
       // warning: don't modify this unless you have a deep knowledge of how
       // the webapp system works or you might break something
@@ -56,16 +57,18 @@ var NETWORK   = {};
       }
       m_status = M1_CONNECTING;
 
-      /** check parms **/
+      // check and save parms
+      if (datalink.constructor.name!=='UnisysDataLink') throw Error(ERR_BAD_UDATA);
+      if (!UDATA) UDATA = datalink;
       m_options = opt || {};
 
-      /** create websocket **/
+      // create websocket
       // uses values that were embedded in index.ejs on load
       let wsURI = `ws://${NETSOCK.uaddr}:${NETSOCK.uport}`;
       NETSOCK.ws = new WebSocket(wsURI);
       if (DBG.connect) console.log(PR,'OPEN SOCKET TO',wsURI);
 
-      /** create listeners **/
+      // create listeners
       NETWORK.AddListener('open', function( event ) {
         if (DBG.connect) console.log(PR,'..OPEN',event.target.url);
         m_status = M2_CONNECTED;
@@ -76,12 +79,12 @@ var NETWORK   = {};
         if (DBG.connect) console.log(PR,'..CLOSE',event.target.url);
         m_status = M0_INIT;
       });
-      /** handle socket errors **/
+      // handle socket errors
       NETWORK.AddListener('error', function( event ) {
         console.warn(WARN,'ERROR opening command socket',event);
         throw ("error with command socket");
       });
-      /** handle incoming messages **/
+      // handle incoming messages
       NETWORK.AddListener('message', m_HandleRegistrationMessage);
     }; // Connect()
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -109,31 +112,42 @@ var NETWORK   = {};
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     function m_HandleMessage( msgEvent ) {
       let pkt = new NetMessage(msgEvent.data);
-      // if RTS and we got it, then it's a returning transaction
       let msg = pkt.Message();
-      if (pkt.IsReturnToSender()) {
+      if (pkt.IsOwnResponse()) {
           if (DBG.handle) console.log(PR,'completing transaction',msg);
           pkt.CompleteTransaction();
           return;
       }
       let data = pkt.Data();
       let type = pkt.Type();
-      /// otherwise, incoming invocation
+      let dbgout = DBG.handle && !msg.startsWith('SRV_');
+      /// otherwise, incoming invocation from network
       switch (type) {
         case 'state':
-          if (DBG.handle) console.log(PR,'received state change',msg);
+          if (dbgout) console.log(PR,'received state change',msg);
           break;
         case 'msig':
-          if (DBG.handle && !msg.startsWith('SRV_')) console.warn(PR,'received msig',msg,data);
+          if (dbgout) console.warn(PR,'received msig',msg,data);
+          UDATA.LocalSignal(msg,data);
+          pkt.ReturnTransaction();
           break;
         case 'msend':
-          if (DBG.handle && !msg.startsWith('SRV_')) console.warn(PR,'received msend',msg,data);
+          if (dbgout) console.warn(PR,'received msend',msg,data);
+          UDATA.LocalSend(msg,data);
+          pkt.ReturnTransaction();
           break;
         case 'mcall':
-          if (DBG.handle && !msg.startsWith('SRV_')) console.warn(PR,'received mcall',msg,data);
+          if (dbgout) console.warn(PR,`ME_${NetMessage.SocketUADDR()} received mcall '${msg}' from ${pkt.SourceAddress()}`);
+          UDATA.LocalCall(msg,data)
+          .then((result)=>{
+            if (dbgout) console.log(`ME_${NetMessage.SocketUADDR()} forwarded '${msg}', returning ${JSON.stringify(result)}`);
+            // now return the packet
+            pkt.SetData(result);
+            pkt.ReturnTransaction();
+          });
           break;
         default:
-          // throw Error('unknown packet type',type);
+          throw Error('unknown packet type',type);
       }
     }
 

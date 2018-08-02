@@ -186,10 +186,25 @@ console.log(`included ${module.id}`);
 /*/ define test handler
 /*/ MOD2.Hook('INITIALIZE', function() {
       if (TEST('net')) {
-        UDATA2.HandleMessage('NET_DISPATCH_TEST',(data) => {
-          console.log('*** received packet',data);
-          TEST.Pass('netSend');
+        UDATA2.HandleMessage('NET_CALL_TEST',(data) => {
+          data.reply=`hi from ${UNISYS.SocketUADDR()}`;
+          if (data.stack===undefined) data.stack = [];
+          data.stack.push(`${UNISYS.SocketUADDR()}_01`);
+          TEST.Pass('netCall');
           return data;
+        });
+        UDATA2.HandleMessage('NET_CALL_TEST',(data) => {
+          if (data.stack===undefined) data.stack = [];
+          data.stack.push(`${UNISYS.SocketUADDR()}_02`);
+          return data;
+        });
+        UDATA2.HandleMessage('NET_SIGNAL_TEST',(data) => {
+          if (typeof data.source==='string') TEST.Pass('netSignal');
+          if (data.source===UNISYS.SocketUADDR()) TEST.Pass('netSignalEcho');
+        });
+        UDATA.HandleMessage('NET_SEND_TEST',(data) => {
+          if (data.test==='netsend') TEST.Pass('netSend');
+          if (data.source===UNISYS.SocketUADDR()) TEST.Fail('netSend');
         });
       }
     });
@@ -201,14 +216,20 @@ console.log(`included ${module.id}`);
       function delayed_send() {
         if (!TEST('net')) return;
         let uaddr = UNISYS.SocketUADDR();
-        let text = `hi from ${uaddr}`;
-        let send = { send:'netsend', text };
-        let call = { call:'netcall', text };
-        console.warn('calling NET_DISPATCH_TEST',JSON.stringify(call));
-        UDATA2.NetCall('NET_DISPATCH_TEST', call)
+        let greeting = `hi from ${uaddr}`;
+        let call = { test:'netcall', greeting };
+        // test signal
+        UDATA2.NetSignal('NET_SIGNAL_TEST',{ test:'netsend', source : uaddr });
+        // test call
+        UDATA2.NetCall('NET_CALL_TEST', call)
         .then((d)=>{
-          console.log('NET_DISPATCH_TEST call return',JSON.stringify(d));
+          if (typeof d==='object') TEST.Pass('netData');
+          if (typeof d.reply==='string') TEST.Pass('netDataAdd');
+          if (d.greeting===greeting) TEST.Pass('netDataReturn');
+          if (Array.isArray(d.stack) && d.stack.length===2) TEST.Pass('netDataMulti');
         });
+        // test send
+        UDATA2.NetSend('NET_SEND_TEST',{ test:'netsend', source : uaddr  });
       }
     });
 

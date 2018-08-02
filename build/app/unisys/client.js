@@ -95,7 +95,7 @@ var   UDATA       = new UniData(UNISYS);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: application startup after componentDidMount
 /*/ UNISYS.NetworkInitialize = ( callback ) => {
-      NETWORK.Connect({success:callback});
+      NETWORK.Connect(UDATA,{success:callback});
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: application startup after componentDidMount

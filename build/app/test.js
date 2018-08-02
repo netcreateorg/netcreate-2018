@@ -48,18 +48,8 @@ let DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: pass the particular subtest
 /*/ TM.Pass = function ( subtest ) {
-      //
-      if (!E_SHELL) {
-        E_SHELL = document.getElementById('fdshell');
-        E_OUT = document.createElement('pre');
-        E_HEADER = document.createElement('h4');
-        E_HEADER.innerText = "RUNNING TESTS ";
-        E_OUT.innerText = '.';
-        E_SHELL.appendChild(E_HEADER);
-        E_SHELL.appendChild(E_OUT);
-      } else {
-        E_OUT.innerText += '.';
-      }
+      m_InitShell();
+      // initialize tests
       if (DBG) console.error(PR,'Pass',`${subtest}`);
       if (PASSED.hasOwnProperty(subtest)) {
         if (PASSED[subtest]) ++PASSED[subtest];
@@ -68,6 +58,21 @@ let DBG = false;
         throw Error(`Unknown subtest: ${subtest}`);
       }
     };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: fail the particular subtest
+/*/ TM.Fail = function ( subtest ) {
+      m_InitShell();
+      if (DBG) console.error(PR,'Failing',`${subtest}`);
+      if (PASSED.hasOwnProperty(subtest)) {
+        if (PASSED[subtest]) {
+          PASSED[subtest]=-1; // was true, then falsified
+        } else {
+          PASSED[subtest]=0;  // deliberately failed once
+        }
+      } else {
+        throw Error(`Unknown subtest: ${subtest}`);
+      }
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: check if the particular subtests passed have indeed passed
 /*/ TM.Passed = function ( ...args ) {
@@ -156,9 +161,11 @@ let DBG = false;
             netCall           : flag,
             netSend           : flag,
             netSignal         : flag,
+            netSignalEcho     : flag,
             netData           : flag,
             netDataReturn     : flag,
             netDataAdd        : flag,
+//            netDataGather     : flag,
             netDataMulti      : flag
           }
           break;
@@ -236,6 +243,21 @@ let DBG = false;
         E_OUT.innerText += "  Chrome  : cmd-option-j\n";
         E_OUT.innerText += "  Firefox : cmd-option-k\n";
       console.groupEnd();
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ initialize the shell user interface for test results
+/*/ function m_InitShell() {
+      if (!E_SHELL) {
+        E_SHELL = document.getElementById('fdshell');
+        E_OUT = document.createElement('pre');
+        E_HEADER = document.createElement('h4');
+        E_HEADER.innerText = "RUNNING TESTS ";
+        E_OUT.innerText = '.';
+        E_SHELL.appendChild(E_HEADER);
+        E_SHELL.appendChild(E_OUT);
+      } else {
+        E_OUT.innerText += '.';
+      }
     }
 
 

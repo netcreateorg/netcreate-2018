@@ -29,6 +29,7 @@ const ERR_SS_EXISTS     = "socket server already created";
 const ERR_NULL_SOCKET   = "require valid socket";
 const DBG_SOCK_BADCLOSE = "closing socket is not in mu_sockets";
 const ERR_INVALID_DEST  = "couldn't find socket with provided address";
+const ERR_UNKNOWN_PKT   = "unrecognized netmessage packet type";
 const DEFAULT_NET_PORT  = 2929;
 const DEFAULT_NET_ADDR  = '127.0.0.1';
 
@@ -183,6 +184,13 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
 /*/ handle messages that are a Send(), Signal(), or Call()
 /*/ async function m_HandleMessage( socket, pkt ) {
 
+        // is this a returning packet?
+        if (pkt.IsOwnResponse()) {
+          console.log(PR,`-- ${pkt.Message()} completing transaction $${pkt.seqlog.join(':')}`);
+          pkt.CompleteTransaction();
+          return;
+        }
+
         // (1) first check if this is a server handler
         let promises = m_CheckServerHandlers(pkt);
 
@@ -201,9 +209,9 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
         let json = JSON.stringify(pkt.Data());
 
         /* MAGICAL ASYNC/AWAIT BLOCK *****************************/
-        if (notsrv) console.log(PR,`'${pkt.Message()}' queuing ${promises.length} Promises w/ data ${json}'`);
+        if (notsrv) console.log(PR,`>> '${pkt.Message()}' queuing ${promises.length} Promises w/ data ${json}'`);
         let pktArray = await Promise.all(promises);
-        if (notsrv) console.log(PR,`'${pkt.Message()}' resolved`);
+        if (notsrv) console.log(PR,`<< '${pkt.Message()}' resolved`);
         /* END MAGICAL ASYNC/AWAIT BLOCK *************************/
 
         // (4) only mcall packets need to receive the data back return
@@ -242,7 +250,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       function f_make_resolver_func( handlerFunc ) {
         return new Promise(( resolve, reject ) => {
           let retval = handlerFunc(pkt);
-          if (retval===undefined) throw `[${mesgName} message handler MUST return object or error string`;
+          if (retval===undefined) throw `'${mesgName}' message handler MUST return object or error string`;
           if (typeof retval!=='object') reject(retval);
           else resolve(retval);
         });
@@ -261,39 +269,31 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       if (handlers) handlers.forEach((uaddr)=>{
         // don't send packet to originating UADDR because it already has handled it
         // locally
-        if (src_uaddr!==uaddr) {
-          let p = f_make_remote_resolver_func(uaddr);
-          promises.push(p);
+        switch (type) {
+          case 'msig':
+            promises.push(f_make_remote_resolver_func(uaddr));
+            break;
+          case 'msend':
+          case 'mcall':
+            if (src_uaddr!==uaddr) promises.push(f_make_remote_resolver_func(uaddr));
+            break;
+          default:
+            throw Error(`{ERR_UNKNOWN_PKT} ${type}`);
         }
       });
       /// return all queued promises
       return promises;
       /// inline utility
       function f_make_remote_resolver_func(d_uaddr) {
+        // get the address of the destination implementor of MESSAGE
         let d_sock = mu_sockets.get(d_uaddr);
         if (d_sock===undefined) throw Error(ERR_INVALID_DEST+` ${d_uaddr}`);
-        /*/
-            this promise has to send a packet remotely that will then be returned eventually
-            right now, packets are coming into server-network as messages from a particular
-            socket. the packet has a seqlog that stores the originating address
-            we can probably make this the basis of a mechanism to pop the sequence
-
-            transactions currently work with
-            pkt.QueueTransaction()
-              - pushes the current UADDR onto seqlog
-              - stores a function that calls resolve() on the promises in a transaction hash table
-              - this function will get looked up on COMPLETE TRANSACTION
-              - sends self via pkt.SocketSend()
-            pkt.CompleteTransaction()
-              -
-
-        /*/
-        let p = new Promise((resolve,reject)=>{
-
-
-        });
-
-        return p;
+        // Queue transaction from server
+        // sends to destination socket d_sock
+        console.log(PR,`++ '${pkt.Message()}' FWD from ${pkt.SourceAddress()} to ${d_uaddr}`);
+        let newpkt = new NetMessage(pkt);
+        newpkt.MakeNewID();
+        return newpkt.QueueTransaction(d_sock);
       }
     }
 

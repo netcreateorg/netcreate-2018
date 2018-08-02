@@ -37,8 +37,9 @@
   const ERR_DUPE_TRANS    = ERR+PR+"this packet transaction is already registered!";
   const ERR_NO_GLOB_UADDR = ERR+PR+"packet sending attempted before UADDR is set!";
   const ERR_UNKNOWN_TYPE  = ERR+PR+"packet type is unknown:";
+  const ERR_UNKNOWN_RMODE = ERR+PR+"packet routine mode is unknown:";
   const KNOWN_TYPES       = ['msend','msig','mcall','state'];
-  const ROUTING_MODE      = ['dir','fwd','rts'];
+  const ROUTING_MODE      = ['req','res','f_req','f_res'];
 
 /// UNISYS NETMESSAGE CLASS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -73,9 +74,8 @@
         this.data     = data || {};
         this.msg      = msg;
         // id and debugging memo support
-        let idStr     = (++m_id_counter).toString();
-        this.id       = m_id_prefix+idStr.padStart(5,'0');
-        this.rmode     = ROUTING_MODE[0];     // is default 'dir' (direct)
+        this.id       = this.MakeNewID();
+        this.rmode    = ROUTING_MODE[0];       // is default 't_req' (trans request)
         this.type     = type || KNOWN_TYPES[0]; // is default 'msend' (no return)
         this.memo     = '';
         // transaction support
@@ -152,14 +152,18 @@
   /*/ SourceAddress() {
         return this.seqlog[0] || this.s_uaddr;
       }
-
+      MakeNewID() {
+        let idStr = (++m_id_counter).toString();
+        this.id = m_id_prefix+idStr.padStart(5,'0');
+        return this.id;
+      }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Send packet on either provided socket or default socket. Servers provide
       the socket because it's handling multiple sockets from different clients.
   /*/ SocketSend( socket=m_netsocket ) {
         // global m_netsocket is not defined on server, since packets arrive on multiple sockets
         if (!socket) throw Error('SocketSend(sock) requires a valid socket');
-        if (NetMessage.UADDR===undefined) throw ERR_NO_GLOB_UADDR;
+        console.log(PR,`sending '${this.Message()}' to ${socket.UADDR}`);
         socket.send(this.JSON());
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -169,17 +173,16 @@
         if (!socket) throw Error('QueueTransaction(sock) requires a valid socket');
         // save our current UADDR
         this.seqlog.push(NetMessage.UADDR);
-        let dbg = DBG && (!this.IsServerMessage());
+        let dbg = (!this.IsServerMessage());
         let p = new Promise((resolve,reject) => {
           var hash = m_GetHashKey(this);
-          if (dbg) console.log(PR,'queueing transaction hash',hash);
           if (m_transactions[hash]) {
             reject(Error(ERR_DUPE_TRANS+':'+hash));
           } else {
             // save the resolve function in transactions table;
             // promise will resolve on remote invocation with data
             m_transactions[hash] = function (data)  {
-              if (dbg) console.log(PR,'resolving promise with',data);
+              if (dbg) console.log(PR,'resolving promise with',JSON.stringify(data));
               resolve(data);
             };
             this.SocketSend(socket);
@@ -188,15 +191,17 @@
         return p;
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ return the 'routing mode', which is 'dir' for direct or 'fwd' or 'rts'
-      for forwarded or return-to-sender packets
+  /*/ return the 'routing mode':
+        req/res is request/reply (message requests and optional response)
+        f_req/f_res is forwarded request/reply (forwarded messages and optional return)
+        the f_res is converted to res and sent back to original requester
   /*/ RoutingMode() { return this.rmode; }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      IsReturnToSender() { return this.rmode==='rts'; }
+      IsRequest() { return this.rmode==='req'; }
+      IsOwnResponse() { return this.rmode==='res'; }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      IsForwardedToMe() { return this.rmode==='fwd'; }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      IsDirectToMe() { return this.rmode==='dir'; }
+      IsForwardedRequest() { return this.rmode==='f_req'; }
+      IsForwardedResponse() { return this.rmode==='f_res'; }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ If this packet is a returned transaction, then return true
   /*/ IsTransaction() {
@@ -212,7 +217,7 @@
         // a received packet
         // add this to the sequence log
         this.seqlog.push(NetMessage.UADDR);
-        this.rmode = 'rts';
+        this.rmode = m_CheckRMode('res');
         if (dbg) console.log(PR,`'${this.msg}' returning to ${this.SourceAddress()}`);
         this.SocketSend(socket);
       }
@@ -240,9 +245,12 @@
 /*/ NetMessage.GlobalSetup = function( config ) {
       let { netsocket, uaddr } = config;
       if (uaddr) NetMessage.UADDR = uaddr;
+      // NOTE: m_netsocket is set only on clients since on server, there are multiple sockets
       if (netsocket) {
         if (typeof netsocket.send!=='function') throw ERR_BAD_SOCKET;
         else m_netsocket = netsocket;
+        // save the server address on client
+        m_netsocket.UADDR = NetMessage.DefaultServerUADDR();
       }
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -277,7 +285,8 @@
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/	return the hash used for storing transaction callbacks
 /*/	function m_GetHashKey( pkt ) {
-      return NetMessage.UADDR+':'+pkt.id;
+      let hash = `${pkt.SourceAddress()}:${pkt.id}`;
+      return hash;
     }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ is this an allowed type? throw error if not
@@ -286,7 +295,13 @@
       if (!(KNOWN_TYPES.includes(type))) throw `${ERR_UNKNOWN_TYPE} '${type}'`;
       return type;
     }
-
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ is this an allowed mode? throw error if not
+/*/ function m_CheckRMode( mode ) {
+      if (mode===undefined) throw new Error('must pass a mode string, not '+mode);
+      if (!(ROUTING_MODE.includes(mode))) throw `${ERR_UNKNOWN_RMODE} '${mode}'`;
+      return mode;
+    }
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
