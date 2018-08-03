@@ -147,9 +147,11 @@ var MESSAGER       = new Messager();
         // if the subscribing object is also the originating state changer
         options.srcUID = this.UID();
         let promises = MESSAGER.Call(mesgName,inData,options);
+        /// MAGICAL ASYNC/AWAIT BLOCK ///////
         if (DBG.send) console.log(`${this.uid}_${PR}`,'** awaiting...',promises);
         let resArray = await Promise.all(promises);
         if (DBG.send) console.log(`${this.uid}_${PR}`,'** promise fulfilled!',mesgName);
+        /// END MAGICAL ASYNC/AWAIT BLOCK ///
         let resObj = Object.assign({},...resArray);
         if (DBG.return) console.log(`${this.uid}_${PR}`,`[${mesgName}] returned`,JSON.stringify(resObj));
         return resObj;

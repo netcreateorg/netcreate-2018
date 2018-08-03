@@ -73,6 +73,7 @@ var   UDATA       = new UniData(UNISYS);
 /*/ UNISYS.SetScope = ( root_module_id ) => {
      LIFECYCLE.SetScope(root_module_id); // pass phase and hook function
    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    UNISYS.InScope = ( module_id ) => {
      let currentScope = LIFECYCLE.Scope();
      return (module_id.includes(currentScope))
