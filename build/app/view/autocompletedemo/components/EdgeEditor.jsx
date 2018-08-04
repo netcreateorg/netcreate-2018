@@ -444,9 +444,10 @@ class EdgeEditor extends React.Component {
 /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ This is not yet implemented as of React 16.2.  It's implemented in 16.3.
-/*/ getDerivedStateFromProps (props, state) {
+    getDerivedStateFromProps (props, state) {
       console.error('getDerivedStateFromProps!!!');
     }
+/*/
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ render () {
