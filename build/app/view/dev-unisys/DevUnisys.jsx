@@ -5,6 +5,9 @@ const UNISYS      = require('unisys/client');
 const REFLECT     = require('system/util/reflection');
 /// MAGIC: DevUnisysLogic will add UNISYS Lifecycle Hooks on require()
 const LOGIC       = require('./DevUnisysLogic');
+const {Switch, Route, Redirect, Link} = require('react-router-dom');
+
+
 const TEST        = require('test');
 var   DBG         = false;
 
@@ -135,19 +138,30 @@ const PR          = PROMPTS.Pad('DevUnisys');
 
       } // componentDidMount
 
+    StudentRender ({ match }) {
+      console.log('-- STUDENT RENDER --');
+      return (
+        <p style={{color:'red'}}><small>matching subroute: {match.params.unit} {match.params.user}!</small></p>
+      );
+    }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// COMPONENT render the component template
-      render() {
+  /*/ Try to route the following
+      http://localhost:3000/#dev-unisys/use/student/UNIT_KEY/USER_KEY/
+  /*/ render() {
         return (
-          <div id='fdshell' style={{padding:'10px'}}>
-            <h2>Unisys Feature Development Shell</h2>
-            <h4>TESTING UISTATE</h4>
-            <p>{this.state.description}</p>
-            <Input type="text" name="desc" id="desc" placeholder="text to change" onChange={this.handleTextChange} />
-            <p>random string from LOGIC: {this.state.random || 'notset'}</p>
-          </div>
+            <div id='fdshell' style={{padding:'10px'}}>
+              <h2>Unisys Feature Development Shell</h2>
+              <Route path={`${this.props.match.path}/student/:unit/:user`} component={this.StudentRender}/>
+              <h4>UISTATE TESTS</h4>
+              <p>{this.state.description}</p>
+              <Input type="text" name="desc" id="desc" placeholder="text to change" onChange={this.handleTextChange} />
+              <p>random string from LOGIC: {this.state.random || 'notset'}</p>
+            </div>
         );
       } // render
+
+
     } // class DevUnisys
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
