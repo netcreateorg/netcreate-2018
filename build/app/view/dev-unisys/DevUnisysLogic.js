@@ -25,6 +25,7 @@ console.log(`included ${module.id}`);
     const DBG           = { handler:false };
     // these constants are used in m_StartTests()
     const TEST_WAIT     = 3000;
+    var   TEST_TIMER    = null;
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -187,13 +188,15 @@ console.log(`included ${module.id}`);
 /*/ MOD2.Hook('INITIALIZE', function() {
       if (TEST('net')) {
         UDATA2.HandleMessage('NET_CALL_TEST',(data) => {
+          // console.log(`*** NET_CALL_TEST (1) got data called by ${JSON.stringify(data.stack)} from socket ${UNISYS.SocketUADDR()}`);
           data.reply=`hi from ${UNISYS.SocketUADDR()}`;
           if (data.stack===undefined) data.stack = [];
           data.stack.push(`${UNISYS.SocketUADDR()}_01`);
-          TEST.Pass('netCall');
+          TEST.Pass('netCallHndlr');
           return data;
         });
         UDATA2.HandleMessage('NET_CALL_TEST',(data) => {
+          // console.log(`*** NET_CALL_TEST (2) got data called by ${JSON.stringify(data.stack)} from socket ${UNISYS.SocketUADDR()}`);
           if (data.stack===undefined) data.stack = [];
           data.stack.push(`${UNISYS.SocketUADDR()}_02`);
           return data;
@@ -204,14 +207,14 @@ console.log(`included ${module.id}`);
         });
         UDATA2.HandleMessage('NET_SEND_TEST',(data) => {
           // send only targets other instances, not the sending one
-          console.log('*** NET_SEND_TEST got data called by to self',data.source,UNISYS.SocketUADDR());
+          // console.log(`*** NET_SEND_TEST got data called by ${data.source} from socket ${UNISYS.SocketUADDR()}`);
           if (data.source===UNISYS.SocketUADDR()) {
             TEST.Fail('netSendNoEcho');
-            console.log('*** NET_SEND_TEST fail netSendNoEcho');
+            // console.log(`*** NET_SEND_TEST fail netSendNoEcho`);
           } else {
             // this triggers if the data source DOES NOT MATCH our own data socket
-            TEST.Pass('netSend');
-            console.log('*** NET_SEND_TEST pass netSend');
+            TEST.Pass('netSendHndlr');
+            // console.log(`*** NET_SEND_TEST pass netSend`);
           }
         });
       }
@@ -228,13 +231,14 @@ console.log(`included ${module.id}`);
         let call = { test:'netcall', greeting };
         // test signal
         UDATA2.NetSignal('NET_SIGNAL_TEST',{ test:'netsignal', source : uaddr });
-        // test call
-        UDATA2.NetCall('NET_CALL_TEST', call)
+        // test call (note this is from UDATA, not UDATA2)
+        UDATA.NetCall('NET_CALL_TEST', call)
         .then((d)=>{
+          // console.log(`*** NET_CALL_TEST (REPLY) got data returned ${JSON.stringify(d.stack)} from socket ${UNISYS.SocketUADDR()}`);
           if (typeof d==='object') TEST.Pass('netData');
           if (typeof d.reply==='string') TEST.Pass('netDataAdd');
           if (d.greeting===greeting) TEST.Pass('netDataReturn');
-          if (Array.isArray(d.stack) && d.stack.length===2) TEST.Pass('netDataMulti');
+          if (Array.isArray(d.stack) && d.stack.length>1) TEST.Pass('netDataMulti');
         });
         // test send
         UDATA2.NetSend('NET_SEND_TEST',{ test:'netsend', source : uaddr  });
@@ -250,9 +254,8 @@ console.log(`included ${module.id}`);
   /// ASSESS TESTS AFTER TEST_WAIT MS
       console.log('*** RUNNING UNISYS TESTS ***');
       TEST.SetTitle('RUNNING TESTS');
-      setTimeout( function () {
-        TEST.Assess();
-      }, TEST_WAIT);
+      TEST.SetMeta('socket',UNISYS.SocketUADDR());
+      TEST_TIMER = setTimeout(TEST.Assess,TEST_WAIT);
 
   /// STATE CHANGE TESTING
   /*/ register state change handler for 'VIEW' namespace

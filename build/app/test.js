@@ -23,8 +23,12 @@ let DBG = false;
 /*/ pairs of arrays to match (array of arrays)
 /*/ let ARR_MATCH = [];
     let PR = 'TEST:';
+    let m_meta_info = {};
 
     let E_SHELL, E_OUT, E_HEADER;
+    let m_failed   = [];
+    let m_skipped  = [];
+    let m_passed   = [];
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Main TEST ENABLE
@@ -37,7 +41,7 @@ let DBG = false;
         return TESTS[testname];
       } else {
         TESTS[testname]=flag;
-        if (flag) m_ConfigureTestFlags(testname,flag);
+        m_ConfigureTestFlags(testname,flag);
         return flag;
       }
     };
@@ -46,11 +50,32 @@ let DBG = false;
       E_HEADER.innerText = text;
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    TM.SetMeta = function( meta, value ) {
+      if (typeof meta==='string') {
+        let obj = {};
+        obj[meta]=value;
+        meta = obj;
+      }
+      if (typeof meta==='object') {
+        Object.assign(m_meta_info,meta);
+      } else {
+        throw Error('SetMeta() expected either object or string,value');
+      }
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    TM.MetaString = function() {
+      let o = '';
+      let e = Object.entries(m_meta_info).forEach(([k,v])=>{
+        o+=`${k}:${v} `;
+      });
+      return o;
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: pass the particular subtest
 /*/ TM.Pass = function ( subtest ) {
       m_InitShell();
       // initialize tests
-      if (DBG) console.error(PR,'Pass',`${subtest}`);
+      if (DBG) console.log(`${PR} %cPass %c${subtest}`,"color:green","color:black");
       if (PASSED.hasOwnProperty(subtest)) {
         if (PASSED[subtest]) ++PASSED[subtest];
         else PASSED[subtest] = 1;
@@ -62,16 +87,32 @@ let DBG = false;
 /*/ API: fail the particular subtest
 /*/ TM.Fail = function ( subtest ) {
       m_InitShell();
-      if (DBG) console.error(PR,'Failing',`${subtest}`);
+      if (DBG) console.error(`${PR} %cFail ${subtest}`,"color:red;font-weight:bold");
       if (PASSED.hasOwnProperty(subtest)) {
-        if (PASSED[subtest]===null) {
-          PASSED[subtest]=-1; // was true, then falsified
-        } else {
-          PASSED[subtest]=0;  // deliberately failed once
+        // 'null' for 'condition succeed' tests
+        // '0' for 'no error detected' tests
+        let flag = PASSED[subtest];
+        if (typeof flag==='string') {
+          // this has already failed with error
+          PASSED[subtest]=flag+'+';
+          return;
         }
-      } else {
-        throw Error(`Unknown subtest: ${subtest}`);
+        if (flag===null) return; // null flag are skipped
+        if (flag===0) {
+          PASSED[subtest]=-1; // failed once
+          return;
+        }
+        if (flag<=0) {
+          --PASSED[subtest];  // multiple failures
+          return;
+        }
+        // bizarre 'succeeded but now failed'
+        if (flag>0) {
+          PASSED[subtest]=`succeeded ${flag} times, then failed`;
+          return;
+        }
       }
+      throw Error(`Unknown subtest: ${subtest}`);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: check if the particular subtests passed have indeed passed
@@ -88,6 +129,9 @@ let DBG = false;
 /*/ API: output test results
 /*/ TM.Assess = function () {
       if (DBG) console.log(PR,'Assess');
+      m_failed   = [];
+      m_skipped  = [];
+      m_passed   = [];
       m_PreTest();
       m_TestResults();
     }
@@ -96,6 +140,12 @@ let DBG = false;
 /*/ TM.AssessArrayMatch = function( subtest, arr1, arr2 ) {
       if (DBG) console.log(PR,'AssessArrayMatch');
       ARR_MATCH.push([subtest,arr1,arr2]);
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: return TRUE if there were no failing tests in the last test.
+    Call TM.Assess() again to retest
+/*/ TM.AllPassed = function () {
+      return m_failed.length!==0;
     }
 
 
@@ -158,9 +208,9 @@ let DBG = false;
           subtests = {
             netMessageInit    : flag,
             netMessageReg     : flag,
-            netCall           : flag,
-            netSend           : flag,
-            netSendNoEcho     : 1,
+            netCallHndlr      : flag,
+            netSendHndlr      : flag,
+            netSendNoEcho     : 0,    // if this stays 0, then NOERR has passed
             netSignal         : flag,
             netSignalEcho     : flag,
             netData           : flag,
@@ -189,16 +239,11 @@ let DBG = false;
         }
         if (pass) TM.Pass(subtest);
       });
-      // special test - failed netsend means echo test is invalid too
-      if (!TM.Passed('netSend')) TM.Fail('netSendNoEcho');
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ prints the test output to console
 /*/ function m_TestResults() {
       // check all test results
-      let failed   = [];
-      let skipped  = [];
-      let passed   = [];
       let pEntries = Object.entries(PASSED);
       let padding  = 0;
       // find longest string
@@ -208,51 +253,64 @@ let DBG = false;
       // scan test results
       pEntries.forEach(( [key,value ]) => {
         let res = '';
-        switch (value) {
-          case true:
-            passed.push(`${key.padEnd(padding)} [X]\n`);
+        if (value===null) {
+          res = `${(key).padEnd(padding)} [ ]\n`;
+          m_skipped.push(res);
+        } else switch (typeof value) {
+          case 'number':
+            if (value>=1) {
+              if (value===1) res=`${key.padEnd(padding)} [OK]\n`;
+              if (value > 1) res=`${key.padEnd(padding)} [OK] x ${value}\n`;
+              m_passed.push(res);
+            } else {
+              if (value===0) {
+                res=`${key.padEnd(padding)} [NP]\n`;
+                m_passed.push(res);
+              }
+              if (value===-1) {
+                res=`${key.padEnd(padding)} [!!] FAIL\n`;
+                m_failed.push(res);
+              }
+              if (value< -1) {
+                res=`${key.padEnd(padding)} [!!] FAIL x ${-value}\n`;
+                m_failed.push(res);
+              }
+            }
             break;
-          case false:
-            failed.push(`${key.padEnd(padding)} [!] FAIL\n`);
-            break;
-          case null:
-            skipped.push(`${(key).padEnd(padding)} [ ]\n`);
+          case 'boolean':
+            if (value) {
+              res=`${key.padEnd(padding)} [OK]\n`;
+              m_passed.push(res);
+            } else {
+              res=`${key.padEnd(padding)} [!!] FAIL\n`;
+              m_failed.push(res);
+            }
             break;
           default:
-            switch (typeof value) {
-              case 'number':
-                if (value< -1) res=`${key.padEnd(padding)} [!] FAIL x ${-value}\n`;
-                if (value===0) res=`${key.padEnd(padding)} [!] FAIL\n`;
-                if (value===1) res=`${key.padEnd(padding)} [X]\n`;
-                if (value > 1) res=`${key.padEnd(padding)} [X] x ${value}\n`;
-                passed.push(res);
-                break;
-              default:
-                passed.push(`${key.padEnd(padding)} [X] '${value}'\n`);
-                break;
-            }
-        }
-      });
-
+            m_passed.push(`${key.padEnd(padding)} [OK] '${value}'\n`);
+            break;
+        } // switch typeof value
+      }); // pEntries.forEach
 
       let testTitle = "UNISYS LOGIC TEST RESULTS";
       console.group(testTitle);
-        let out = passed.concat(failed,skipped)
+        let out = m_passed.concat(m_failed,m_skipped)
           .sort()
           .join('');
 
         // additional help
         let tnotes = '';
-        if (!TM.Passed('netCall')) tnotes+= `NOTE: netCall* and netData* need TWO INSTANCES running to pass\n`;
-        if (!TM.Passed('netSend')) tnotes+= `NOTE: netSend* needs TWO INSTANCES running to pass\n`;
+        if (!TM.Passed('netCallHndlr')) tnotes+= `NOTE: netCallHndlr passes when REMOTE calls LOCAL NET_CALL_TEST\n`;
+        if (!TM.Passed('netSendHndlr')) tnotes+= `NOTE: netSendHndlr passes when REMOTE sends LOCAL NET_SEND_TEST\n`;
+        if (!TM.Passed('netData')) tnotes+= `NOTE: netData* passes when a REMOTE implementer of NET_CALL_TEST returns data to LOCAL\n`;
         if (tnotes) out+='\n'+tnotes;
 
         // summary
-        let summary = `${passed.length}=passed`;
-        if (failed.length) summary+=` ${failed.length}=failed`;
-        if (skipped.length) summary+=` ${skipped.length}=skipped`;
+        let summary = `${m_passed.length}=passed`;
+        if (m_failed.length) summary+=` ${m_failed.length}=failed`;
+        if (m_skipped.length) summary+=` ${m_skipped.length}=skipped`;
         console.log(`${out}\n${summary}`);
-        E_HEADER.innerHTML = testTitle;
+        TM.SetTitle(`${testTitle} ${TM.MetaString()}`);
         E_OUT.innerText = `${summary}\n\n`;
         E_OUT.innerText += "OPEN JAVASCRIPT CONSOLE TO SEE DETAILS\n";
         E_OUT.innerText += "Mac shortcuts to open console\n";
