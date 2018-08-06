@@ -46,6 +46,9 @@ class Prototype extends React.Component {
 /*/ constructor () {
     super();
     this.handleClick.bind(this);
+    /* UNISYS LIFECYCLE INITIALIZATION */
+    // initialize UNISYS before declaring any hook functions
+    UNISYS.SystemInitialize(module.id);
   }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */

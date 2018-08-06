@@ -55,6 +55,7 @@
   --- COMPONENT BELOW ---
   <RequiredComponent>  |     div       this is a child of a flexbox
 \*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+    const SETTINGS          = require('settings');
     const AppDefault        = require('view/AppDefault');
     const Prototype         = require('view/prototype/Prototype');
     const AutoCompleteDemo  = require('view/autocompletedemo/AutoCompleteDemo');
@@ -77,9 +78,10 @@
                                        width:100%
   init-appshell.HTML() |       iframe  flex:1 0 auto, border:0
 \*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-    function HTML ( props ) {
+  function HTML ( props ) {
+    SETTINGS.ForceReloadSingleApp();
     let loc = props.location.pathname.substring(1);
-    loc     = '/htmldemos/'+loc+'/'+loc+'.html';
+    loc  = '/htmldemos/'+loc+'/'+loc+'.html';
     return (
       <div style={{display:'flex', flexFlow:'column nowrap',
            width:'100%', height:'100%'}}>

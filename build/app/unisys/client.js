@@ -80,16 +80,11 @@ var   UDATA       = new UniData(UNISYS);
    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Ensure UNISYS will run correctly
+    module_id is a subpath nested below 'app'
 /*/ UNISYS.SystemInitialize = ( module_id ) => {
-      if (DBG.hook) console.log(PR,'SystemInitialize');
-      // reload if SystemInitialize sees that it's run before
-      const key = 'UNISYS_SYSTEM_INIT';
-      if (SETTINGS.Get(key)) {
-        location.reload();
-        return;
-      }
-      // if reload didn't happen, then save info
-      SETTINGS.Set(key,SETTINGS.EJSProp('client').ukey);
+      if (DBG.hook) console.log(PR,'SystemInitialize',module_id);
+      // make sure users of UNISYS are
+      SETTINGS.ForceReloadSingleApp();
       // initialize lifecycle filtering by active view
       UNISYS.SetScope(module_id);
     }; // SystemInitialize

@@ -44,6 +44,18 @@ let DATE     = new Date();
       return MOD( key )
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Force Reload if another module was navigated to and we want to ensure the
+    entire browser was refreshed so only one set of app modules is loaded
+/*/ MOD.ForceReloadSingleApp = () => {
+      const key = 'APP_LOAD_INIT';
+      if (MOD.Get(key)) {
+        location.reload();
+        return;
+      }
+      // if reload didn't happen, then save info
+      MOD.Set(key,true);
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ test time function
 /*/ MOD.CurrentTime = () => {
       return DATE.toDateString();

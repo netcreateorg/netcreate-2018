@@ -128,9 +128,15 @@
     /// INTEGRATION with NETCREATE MODULES ///////////////////////////////////////
         require("babel-polyfill"); // enables regenerators for async/await
 
+
         // note that DATASTORE is loading assets during LOADASSETS phase
         const DATASTORE = require('system/datastore');
         const UNISYS = require('unisys/client');
+
+        /* UNISYS LIFECYCLE INITIALIZATION */
+        // initialize UNISYS before declaring any hook functions
+        UNISYS.SystemInitialize('d3forcedemo');
+        // note that SystemInitialize() usually accepts module.id
 
         // register hook for START phase
         UNISYS.Hook('START',()=>{

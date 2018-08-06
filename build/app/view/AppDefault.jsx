@@ -1,6 +1,7 @@
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
+const UNISYS = require('unisys/client');
 
 /** REACT COMPONENT **********************************************************\
     Used by render()'s <Switch> to load a React component (what we call a
@@ -16,6 +17,12 @@ const React = require('react');
     <RequiredComponent>  |     div       this is a child of a flexbox
 \* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 class AppDefault extends React.Component {
+  constructor() {
+    super();
+    /* UNISYS LIFECYCLE INITIALIZATION */
+    // initialize UNISYS before declaring any hook functions
+    UNISYS.SystemInitialize('assets/htmldemos/d3forcedemo');
+  }
   render() {
     return (
     <div style={{display:'flex', flexFlow:'row nowrap',
