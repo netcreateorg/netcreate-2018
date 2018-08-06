@@ -151,7 +151,11 @@
   /*/ Return the originating address of this netmessage packet. It is valid
       only after the packet has been sent at least once.
   /*/ SourceAddress() {
-        return this.seqlog[0] || this.s_uaddr;
+        if (this.s_uaddr===NetMessage.DefaultServerUADDR() && (!this.msg.startsWith('SVR_'))) {
+          console.error(PR,'SourceAddress Mismatch',JSON.stringify(this));
+          throw Error(`${PR} SourceAddress Mismatch`);
+        }
+        return this.s_uaddr || this.seqlog[0];
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       CopySourceAddress( pkt ) {

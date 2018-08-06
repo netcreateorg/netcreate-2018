@@ -203,8 +203,16 @@ console.log(`included ${module.id}`);
           if (data.source===UNISYS.SocketUADDR()) TEST.Pass('netSignalEcho');
         });
         UDATA2.HandleMessage('NET_SEND_TEST',(data) => {
-          TEST.Pass('netSend');
-          if (data.source===UNISYS.SocketUADDR()) TEST.Fail('netSendNoEcho');
+          // send only targets other instances, not the sending one
+          console.log('*** NET_SEND_TEST got data called by to self',data.source,UNISYS.SocketUADDR());
+          if (data.source===UNISYS.SocketUADDR()) {
+            TEST.Fail('netSendNoEcho');
+            console.log('*** NET_SEND_TEST fail netSendNoEcho');
+          } else {
+            // this triggers if the data source DOES NOT MATCH our own data socket
+            TEST.Pass('netSend');
+            console.log('*** NET_SEND_TEST pass netSend');
+          }
         });
       }
     });

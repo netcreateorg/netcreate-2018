@@ -127,12 +127,12 @@ var UDATA     = null; // assigned during NETWORK.Connect()
           if (dbgout) console.log(PR,'received state change',msg);
           break;
         case 'msig':
-          if (dbgout) console.warn(PR,'received msig',msg,data);
+          if (dbgout) console.warn(PR,`ME_${NetMessage.SocketUADDR()} received msig '${msg}' from ${pkt.SourceAddress()}`,data);
           UDATA.LocalSignal(msg,data);
           pkt.ReturnTransaction();
           break;
         case 'msend':
-          if (dbgout) console.warn(PR,'received msend',msg,data);
+          if (dbgout) console.warn(PR,`ME_${NetMessage.SocketUADDR()} received msend '${msg}' from ${pkt.SourceAddress()}`,data);
           UDATA.LocalSend(msg,data);
           pkt.ReturnTransaction();
           break;

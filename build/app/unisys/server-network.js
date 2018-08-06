@@ -183,7 +183,6 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ handle messages that are a Send(), Signal(), or Call()
 /*/ async function m_HandleMessage( socket, pkt ) {
-
         // is this a returning packet that was forwarded?
         if (pkt.IsOwnResponse()) {
           // console.log(PR,`-- ${pkt.Message()} completing transaction ${pkt.seqlog.join(':')}`);
@@ -240,16 +239,16 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       let promises = [];
       if (handlers) for (let handlerFunc of handlers) {
         // handlerFunc signature: (data,dataReturn) => {}
-        let p = f_make_resolver_func(handlerFunc);
+        let p = f_make_resolver_func(pkt,handlerFunc);
         promises.push(p);
       }
       /// return all queued promises
       return promises;
 
       /// inline utility function /////////////////////////////////////////////
-      function f_make_resolver_func( handlerFunc ) {
+      function f_make_resolver_func( srcPkt, handlerFunc ) {
         return new Promise(( resolve, reject ) => {
-          let retval = handlerFunc(pkt);
+          let retval = handlerFunc(srcPkt);
           if (retval===undefined) throw `'${mesgName}' message handler MUST return object or error string`;
           if (typeof retval!=='object') reject(retval);
           else resolve(retval);
@@ -260,26 +259,28 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
 /*/ If a handler is registered elsewhere on UNET, then dispatch to them for
     eventual reflection back through server aggregation of data.
 /*/ function m_CheckRemoteHandlers( pkt ) {
+      // debugging values
+      let s_uaddr = pkt.SourceAddress();
+      // logic values
       let promises = [];
       let mesgName = pkt.Message();
-      // m_message_map contains Sets
-      let handlers = m_message_map.get(mesgName);
-      let src_uaddr = pkt.SourceAddress();
       let type = pkt.Type();
-      if (handlers) handlers.forEach((uaddr)=>{
+      // iterate!
+      let handlers = m_message_map.get(mesgName);
+      if (handlers) handlers.forEach((d_uaddr)=>{
         // don't send packet to originating UADDR because it already has handled it
         // locally
         switch (type) {
           case 'msig':
-            promises.push(f_make_remote_resolver_func(uaddr));
+            promises.push(f_make_remote_resolver_func(pkt,d_uaddr));
             break;
           case 'msend':
           case 'mcall':
-            // console.log(PR,`'${pkt.Message()}'`,src_uaddr,'compare',uaddr,JSON.stringify(pkt));
-            if (src_uaddr!==uaddr) {
-              promises.push(f_make_remote_resolver_func(uaddr));
+            if (s_uaddr!==d_uaddr) {
+              console.log(PR,`${type} '${pkt.Message()}' ${s_uaddr} to ${d_uaddr}`);
+              promises.push(f_make_remote_resolver_func(pkt,d_uaddr));
             } else {
-              // console.log(PR,`'${pkt.Message()}' SKIPPING ${uaddr}`);
+              // console.log(PR,`${type} '${pkt.Message()}' -NO ECHO- ${d_uaddr}`);
             }
             break;
           default:
@@ -288,17 +289,22 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       });
       /// return all queued promises
       return promises;
-      /// inline utility
-      function f_make_remote_resolver_func(d_uaddr) {
+      /// f_make_remote_resolver_function returns the promise created by QueueTransaction()
+      /// made on a new netmessage.
+      function f_make_remote_resolver_func(srcPkt ,d_uaddr,opt={}) {
+        let {verbose} = opt;
         // get the address of the destination implementor of MESSAGE
         let d_sock = mu_sockets.get(d_uaddr);
         if (d_sock===undefined) throw Error(ERR_INVALID_DEST+` ${d_uaddr}`);
         // Queue transaction from server
         // sends to destination socket d_sock
         // console.log(PR,`++ '${pkt.Message()}' FWD from ${pkt.SourceAddress()} to ${d_uaddr}`);
-        let newpkt = new NetMessage(pkt);
+        let newpkt = new NetMessage(srcPkt);
         newpkt.MakeNewID();
-        newpkt.CopySourceAddress(pkt);
+        newpkt.CopySourceAddress(srcPkt);
+        if (verbose) {
+          console.log('make_resolver_func:',`PKT: ${srcPkt.Type()} '${srcPkt.Message()}' from ${srcPkt.SourceAddress()} to d_uaddr:${d_uaddr} dispatch to d_sock.UADDR:${d_sock.UADDR}`);
+        }
         return newpkt.QueueTransaction(d_sock);
       }
     }
