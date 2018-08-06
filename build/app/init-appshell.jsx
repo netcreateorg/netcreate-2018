@@ -58,8 +58,9 @@
     const AppDefault        = require('view/AppDefault');
     const Prototype         = require('view/prototype/Prototype');
     const AutoCompleteDemo  = require('view/autocompletedemo/AutoCompleteDemo');
-    const DevUnisys         = require('view/dev-unisys/DevUnisys');
     const D3Test            = require('view/d3test/D3Test');
+    const DevUnisys         = require('view/dev-unisys/DevUnisys');
+    const DevDB             = require('view/dev-db/DevDB');
 
 
 /** (2) ROUTED FUNCTIONS *****************************************************\
@@ -161,13 +162,16 @@ class AppShell extends React.Component {
                   </DropdownToggle>
                   <DropdownMenu>
                     <DropdownItem>
-                      <NavLink to="/dev-unisys" tag={RRNavLink} replace>UNISYS DevModule</NavLink>
+                      <NavLink to="/dev-unisys" tag={RRNavLink} replace>TEST DevUnisys</NavLink>
                     </DropdownItem>
                     <DropdownItem>
-                      <NavLink to="/simple" tag={RRNavLink} replace>Dev SimpleHTML</NavLink>
+                      <NavLink to="/dev-db" tag={RRNavLink} replace>TEST DevDB</NavLink>
                     </DropdownItem>
                     <DropdownItem>
-                      <NavLink to="/d3test" tag={RRNavLink} replace>D3Test</NavLink>
+                      <NavLink to="/simple" tag={RRNavLink} replace>TEST SimpleHTML</NavLink>
+                    </DropdownItem>
+                    <DropdownItem>
+                      <NavLink to="/d3test" tag={RRNavLink} replace>TEST D3</NavLink>
                     </DropdownItem>
                     <DropdownItem divider />
                     <DropdownItem>
@@ -188,6 +192,7 @@ class AppShell extends React.Component {
             <Route path='/simple' exact component={ (props) => {return HTML(props)} }/>
             <Route path='/d3test' exact component={D3Test}/>
             <Route path='/dev-unisys' component={DevUnisys}/>
+            <Route path='/dev-db' component={DevDB}/>
             <Route component={NoMatch}/>
           </Switch>
         </div>

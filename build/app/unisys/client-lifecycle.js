@@ -22,6 +22,7 @@ const PATH     = require('system/util/path');
       'LOADASSETS',               // load any external data, make connections
       'RESET',                    // reset runtime data structures
       'CONFIGURE',                // configure runtime data structures
+      'NETSYNC',                  // synchronize network
       'START',                    // start normal execution run
       'UPDATE',                   // system is running (periodic call w/ time)
       'PREPAUSE',                 // system wants to pause run

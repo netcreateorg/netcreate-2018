@@ -188,7 +188,7 @@ console.log(`included ${module.id}`);
 /*/ MOD2.Hook('INITIALIZE', function() {
       if (TEST('net')) {
         UDATA2.HandleMessage('NET_CALL_TEST',(data) => {
-          // console.log(`*** NET_CALL_TEST (1) got data called by ${JSON.stringify(data.stack)} from socket ${UNISYS.SocketUADDR()}`);
+          console.log(`*** NET_CALL_TEST (1) got data called by ${JSON.stringify(data.stack)} from socket ${UNISYS.SocketUADDR()}`);
           data.reply=`hi from ${UNISYS.SocketUADDR()}`;
           if (data.stack===undefined) data.stack = [];
           data.stack.push(`${UNISYS.SocketUADDR()}_01`);
@@ -196,7 +196,7 @@ console.log(`included ${module.id}`);
           return data;
         });
         UDATA2.HandleMessage('NET_CALL_TEST',(data) => {
-          // console.log(`*** NET_CALL_TEST (2) got data called by ${JSON.stringify(data.stack)} from socket ${UNISYS.SocketUADDR()}`);
+          console.log(`*** NET_CALL_TEST (2) got data called by ${JSON.stringify(data.stack)} from socket ${UNISYS.SocketUADDR()}`);
           if (data.stack===undefined) data.stack = [];
           data.stack.push(`${UNISYS.SocketUADDR()}_02`);
           return data;
@@ -210,11 +210,11 @@ console.log(`included ${module.id}`);
           // console.log(`*** NET_SEND_TEST got data called by ${data.source} from socket ${UNISYS.SocketUADDR()}`);
           if (data.source===UNISYS.SocketUADDR()) {
             TEST.Fail('netSendNoEcho');
-            // console.log(`*** NET_SEND_TEST fail netSendNoEcho`);
+            console.log(`*** NET_SEND_TEST fail netSendNoEcho`);
           } else {
             // this triggers if the data source DOES NOT MATCH our own data socket
             TEST.Pass('netSendHndlr');
-            // console.log(`*** NET_SEND_TEST pass netSend`);
+            console.log(`*** NET_SEND_TEST pass netSend`);
           }
         });
       }

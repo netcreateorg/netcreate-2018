@@ -116,6 +116,8 @@ var   UDATA       = new UniData(UNISYS);
         if (DBG.hook) console.log(PR,"running RESET");
         await LIFECYCLE.Execute('RESET');
         if (DBG.hook) console.log(PR,"running CONFIGURE");
+        await LIFECYCLE.Execute('NETSYNC');
+        if (DBG.hook) console.log(PR,"running NETSYNC");
         await LIFECYCLE.Execute('CONFIGURE');
         if (DBG.hook) console.log(PR,"running START");
         await LIFECYCLE.Execute('START');
