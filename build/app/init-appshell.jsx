@@ -57,11 +57,11 @@
 \*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
     const SETTINGS          = require('settings');
     const AppDefault        = require('view/AppDefault');
-    const Prototype         = require('view/prototype/Prototype');
     const AutoCompleteDemo  = require('view/autocompletedemo/AutoCompleteDemo');
-    const D3Test            = require('view/d3test/D3Test');
     const DevUnisys         = require('view/dev-unisys/DevUnisys');
     const DevDB             = require('view/dev-db/DevDB');
+//  const Prototype         = require('view/prototype/Prototype');
+//  const D3Test            = require('view/d3test/D3Test');
 
 
 /** (2) ROUTED FUNCTIONS *****************************************************\
@@ -141,36 +141,36 @@ class AppShell extends React.Component {
       return (
         <div style={{display:'flex', flexFlow:'column nowrap', width:'100%', height:'100vh'}}>
           <Navbar fixed="top" light expand="md" style={{ backgroundColor:'#f0f0f0'}}>
-            <NavbarBrand href="#">NetCreate</NavbarBrand>
+            <NavbarBrand href="#">NetCreate Demo 1808</NavbarBrand>
             <NavbarToggler onClick={this.toggle} />
             <Collapse isOpen={this.state.isOpen} navbar>
             {/*/ (1) add navigation links here /*/}
               <Nav className="ml-auto" navbar>
+            { /*
                 <NavItem>
-                  <NavLink to="/" activeClassName="active" tag={RRNavLink} replace>Welcome</NavLink>
+                  <NavLink to="/autocompletedemo" tag={RRNavLink} replace>Demo 1808</NavLink>
                 </NavItem>
                 <NavItem>
                   <NavLink to="/d3forcedemo" tag={RRNavLink} replace>D3 ForceDemo</NavLink>
                 </NavItem>
                 <NavItem>
-                  <NavLink to="/autocompletedemo" tag={RRNavLink} replace>AutoComplete Demo RF</NavLink>
-                </NavItem>
-                <NavItem>
                   <NavLink to="/prototype" tag={RRNavLink} replace>Prototype</NavLink>
                 </NavItem>
+            */ }
                 <UncontrolledDropdown nav>
                   <DropdownToggle nav caret>
-                    Templates
+                    Developer
                   </DropdownToggle>
                   <DropdownMenu>
                     <DropdownItem>
-                      <NavLink to="/dev-unisys" tag={RRNavLink} replace>TEST DevUnisys</NavLink>
+                      <NavLink to="/dev-unisys" tag={RRNavLink} replace>UNISYS tests</NavLink>
                     </DropdownItem>
                     <DropdownItem>
-                      <NavLink to="/dev-db" tag={RRNavLink} replace>TEST DevDB</NavLink>
+                      <NavLink to="/dev-db" tag={RRNavLink} replace>DATABASE tests</NavLink>
                     </DropdownItem>
+                { /*
                     <DropdownItem>
-                      <NavLink to="/simple" tag={RRNavLink} replace>TEST SimpleHTML</NavLink>
+                      <NavLink to="/simple" tag={RRNavLink} replace>SimpleHTML</NavLink>
                     </DropdownItem>
                     <DropdownItem>
                       <NavLink to="/d3test" tag={RRNavLink} replace>TEST D3</NavLink>
@@ -179,6 +179,7 @@ class AppShell extends React.Component {
                     <DropdownItem>
                       <NavLink to="/test3" tag={RRNavLink} replace>Test Descriptions</NavLink>
                     </DropdownItem>
+                */ }
                   </DropdownMenu>
                 </UncontrolledDropdown>
               </Nav>
@@ -187,14 +188,16 @@ class AppShell extends React.Component {
           <div style={{height:'3.5em'}}>{/*/ add space underneath the fixed navbar /*/}</div>
           <Switch>
           {/*/ (2) add route paths here /*/}
-            <Route path='/' exact component={AppDefault}/>
-            <Route path='/prototype' exact component={Prototype}/>
+            <Route path='/' exact component={AutoCompleteDemo}/>
+            <Route path='/dev-unisys' component={DevUnisys}/>
+            <Route path='/dev-db' component={DevDB}/>
+          {/*
             <Route path='/autocompletedemo' exact component={AutoCompleteDemo}/>
+            <Route path='/prototype' exact component={Prototype}/>
             <Route path='/d3forcedemo' exact component={ (props) => {return HTML(props)} }/>
             <Route path='/simple' exact component={ (props) => {return HTML(props)} }/>
             <Route path='/d3test' exact component={D3Test}/>
-            <Route path='/dev-unisys' component={DevUnisys}/>
-            <Route path='/dev-db' component={DevDB}/>
+          */}
             <Route component={NoMatch}/>
           </Switch>
         </div>
