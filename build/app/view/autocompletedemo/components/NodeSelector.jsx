@@ -428,7 +428,7 @@ class NodeSelector extends React.Component {
       UNISYS.Hook('START',() => {
         // always wrap UNISYS calls in a lifescycle hook otherwise you may try to execute a call
         // before it has been declared in another module
-        UDATA.LocalCall('AUTOCOMPLETE_SELECT',{id:'nodeSelector', searchString:this.state.formData.label});
+        UDATA.Call('AUTOCOMPLETE_SELECT',{id:'nodeSelector', searchString:this.state.formData.label});
       });
     }
 } // class NodeSelector

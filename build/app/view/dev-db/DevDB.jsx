@@ -47,8 +47,9 @@ const PR          = PROMPTS.Pad('DevUnisys');
         // NOW set up handlers...
         this.udata.OnStateChange('VIEW', this.UnisysStateChange);
 
-        /* UNISYS LIFECYCLE INITIALIZATION */
-        // initialize UNISYS before declaring any hook functions
+        /* (1) UNISYS LIFECYCLE INITIALIZATION                        */
+        /* must initialize UNISYS before declaring any hook functions */
+        /* then call UNISYS.NetworkInitialize() in componentDidMount  */
         UNISYS.SystemInitialize(module.id);
 
       } // constructor
@@ -79,16 +80,18 @@ const PR          = PROMPTS.Pad('DevUnisys');
         // start the application phase
         let className = REFLECT.ExtractClassName(this);
         if (DBG) console.log(`${className} componentDidMount`);
-        // initialize network
+        /* (2) UNISYS NETWORK INITIALIZATION                            */
+        /* now that UI is completely rendered, connect to UNISYS net!   */
         UNISYS.NetworkInitialize(() => {
           console.log(PR,'unisys network initialized');
+          /* (3) UNISYS LIFECYCLE INITIALIZATION                        */
+          /* all program logic should be located in a UNISYS LIFECYCLE  */
+          (async () => {
+            await UNISYS.EnterApp();  // INITIALIZE, UNISYS_INIT, LOADASSETS
+            await UNISYS.SetupRun();  // RESET, CONFIGURE, UNISYS_SYNC, START
+          })();
         });
-        // kickoff initialization stage by stage
-        (async () => {
-          await UNISYS.EnterApp();
-          await UNISYS.SetupRun();
-        })();
-
+        // NOTE: see unisys-lifecycle.js for more run modes
       } // componentDidMount
 
     StudentRender ({ match }) {

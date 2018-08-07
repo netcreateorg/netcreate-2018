@@ -50,9 +50,9 @@ console.log(`included ${module.id}`);
       });
     });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ One NETSYNC is required to ensure that all registered messages are logged
-    before START happens
-/*/ MOD.Hook('NETSYNC', function () {
+/*/ EXPERIMENTAL: UNISYS_INIT is required to ensure that all registered
+    messages are logged before START happens
+/*/ MOD.Hook('UNISYS_INIT', function () {
       return new Promise((resolve,reject) => {
         let timeout = setTimeout(()=>{
           reject(Error('UNISYS REGISTER TIMEOUT'));

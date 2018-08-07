@@ -97,9 +97,9 @@ var   UDATA       = new UniData(UNISYS);
 /*/ API: application startup after componentDidMount
 /*/ UNISYS.EnterApp = () => {
       let p = new Promise( async ( resolve, reject ) => {
-        await LIFECYCLE.Execute('INITIALIZE'); // INITIALIZE hook
-        await LIFECYCLE.Execute('UNISYSHOOK'); // UNISYS handlers hook (if needed)
-        await LIFECYCLE.Execute('LOADASSETS'); // LOADASSETS hook
+        await LIFECYCLE.Execute('INITIALIZE');  // INITIALIZE hook
+        await LIFECYCLE.Execute('UNISYS_INIT'); // UNISYS handlers hook (if needed)
+        await LIFECYCLE.Execute('LOADASSETS');  // LOADASSETS hook
         resolve();
       });
       return p;
@@ -111,9 +111,9 @@ var   UDATA       = new UniData(UNISYS);
         if (DBG.hook) console.log(PR,"running RESET");
         await LIFECYCLE.Execute('RESET');
         if (DBG.hook) console.log(PR,"running CONFIGURE");
-        await LIFECYCLE.Execute('NETSYNC');
-        if (DBG.hook) console.log(PR,"running NETSYNC");
         await LIFECYCLE.Execute('CONFIGURE');
+        if (DBG.hook) console.log(PR,"running UNISYS_SYNC");
+        await LIFECYCLE.Execute('UNISYS_SYNC'); // UNISYS network connection
         if (DBG.hook) console.log(PR,"running START");
         await LIFECYCLE.Execute('START');
         if (DBG.hook) console.log(PR,"StepRun() completed");

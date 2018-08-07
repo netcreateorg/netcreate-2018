@@ -129,13 +129,12 @@ const PR          = PROMPTS.Pad('DevUnisys');
         // initialize network
         UNISYS.NetworkInitialize(() => {
           console.log(PR,'unisys network initialized');
+          // kickoff initialization stage by stage
+          (async () => {
+            await UNISYS.EnterApp();
+            await UNISYS.SetupRun();
+          })();
         });
-        // kickoff initialization stage by stage
-        (async () => {
-          await UNISYS.EnterApp();
-          await UNISYS.SetupRun();
-        })();
-
       } // componentDidMount
 
     StudentRender ({ match }) {

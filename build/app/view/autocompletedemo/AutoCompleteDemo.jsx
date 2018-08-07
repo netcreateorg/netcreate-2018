@@ -33,6 +33,8 @@
 
 /// DEBUG SWITCHES ////////////////////////////////////////////////////////////
 var   DBG          = false;
+const PROMPTS      = require('system/util/prompts');
+const PR           = PROMPTS.Pad('AutoCompleteDemo');
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -54,8 +56,9 @@ var   UDATA        = null; // set in constructor
         super();
         // UDATA is the interface to unisys messaging and state features
         UDATA = UNISYS.NewDataLink(this);
-        /* UNISYS LIFECYCLE INITIALIZATION */
-        // initialize UNISYS before declaring any hook functions
+        /* (1) UNISYS LIFECYCLE INITIALIZATION                        */
+        /* must initialize UNISYS before declaring any hook functions */
+        /* then call UNISYS.NetworkInitialize() in componentDidMount  */
         UNISYS.SystemInitialize(module.id);
       }
 
@@ -64,14 +67,19 @@ var   UDATA        = null; // set in constructor
   /*/ This is the root component, so this fires after all subcomponents have
       been fully rendered by render().
   /*/ componentDidMount () {
-        UNISYS.NetworkInitialize( () => {
-          console.log('unisys network initialized');
-        });
         // start UNISYS lifecycle after REACT is ready
-        (async () => {
-          await UNISYS.EnterApp();  // INITIALIZE, LOADASSETS
-          await UNISYS.SetupRun();  // RESET, CONFIGURE, START
-        })();
+        console.log('** ACD MAIN componentDidMount');
+        /* (2) UNISYS NETWORK INITIALIZATION                            */
+        /* now that UI is completely rendered, connect to UNISYS net!   */
+        UNISYS.NetworkInitialize(() => {
+          console.log(PR,'unisys network initialized');
+          /* (3) UNISYS LIFECYCLE INITIALIZATION                        */
+          /* all program logic should be located in a UNISYS LIFECYCLE  */
+          (async () => {
+            await UNISYS.EnterApp();  // INITIALIZE, UNISYS_INIT, LOADASSETS
+            await UNISYS.SetupRun();  // RESET, CONFIGURE, UNISYS_SYNC, START
+          })();
+        });
         // NOTE: see unisys-lifecycle.js for more run modes
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
