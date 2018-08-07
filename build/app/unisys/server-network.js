@@ -19,6 +19,7 @@ const DBG = true;
 var   WSS               = require('ws').Server;
 var   FSE               = require('fs-extra');
 var   NetMessage        = require('../unisys/common-netmessage-class');
+var   Loki              = require('lokijs');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,6 +33,7 @@ const ERR_INVALID_DEST  = "couldn't find socket with provided address";
 const ERR_UNKNOWN_PKT   = "unrecognized netmessage packet type";
 const DEFAULT_NET_PORT  = 2929;
 const DEFAULT_NET_ADDR  = '127.0.0.1';
+const DB_FILE           = 'netcreate-loki.json';
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -44,7 +46,9 @@ var mu_sid_counter = 0;             // for generating  unique socket ids
 var m_server_handlers = new Map();  // message map storing sets of functions
 var m_message_map     = new Map();  // message map storing other handlers
 var m_socket_msgs_list = new Map(); // message map by uaddr
+// database
 
+var m_db = new Loki(DB_FILE);       // LokiJS memory-based database
 
 /// API MEHTHODS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
