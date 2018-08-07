@@ -46,7 +46,7 @@ var   UDATA       = new UniData(UNISYS);
     };
 /// UNISYS MESSAGE REGISTRATION ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    UNISYS.RegisterMessagesP = () => {
+    UNISYS.RegisterMessagesPromise = () => {
       let all = UniData.MessageNames();
       return new Promise((resolve,reject)=>{
         UDATA.Call('SRV_REG_HANDLERS',{ all })

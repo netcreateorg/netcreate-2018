@@ -7,6 +7,7 @@ console.log(`included ${module.id}`);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const SETTINGS      = require('settings');
     const UNISYS        = require('unisys/client');
+    const DATASTORE     = require('system/datastore');
 
 /// DEBUG SUPPORT /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -57,7 +58,7 @@ console.log(`included ${module.id}`);
         let timeout = setTimeout(()=>{
           reject(Error('UNISYS REGISTER TIMEOUT'));
         },5000);
-        UNISYS.RegisterMessagesP()
+        UNISYS.RegisterMessagesPromise()
         .then((data)=>{
           clearTimeout(timeout);
           console.log('RegisterMessagesP() registered handlers with server',data);
@@ -76,6 +77,46 @@ console.log(`included ${module.id}`);
       UDATA.NetCall('NET_CALL_TEST',{});
     });
 
+/// COMMAND LINE UTILITIES ////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    let CMD = [];
+    MOD.Hook('INITIALIZE', m_InitCLI);
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Command: RESET THE DATABASE from default data
+/*/ CMD.push(function ncResetDatabase() {
+      DATASTORE.LoadDefaultDataPromise()
+      .then((data)=>{
+        console.log(PR,'Loaded Default Data');
+        // UDATA.Call() returns a promise, so return it to
+        // continue the asynchronous chain
+        return UDATA.Call('SRV_DATABASE_INIT',{ data });
+      })
+      .then((d)=>{
+        console.log(PR,'Server Database Initialized',d);
+      });
+    });
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Initialize the CLI interface by loading functions in CMD array into
+    window space, then print out instructions
+/*/ function m_InitCLI() {
+      var E_SHELL = document.getElementById('fdshell');
+      var E_OUT = document.createElement('pre');
+      var E_HEADER = document.createElement('h4');
+      E_SHELL.appendChild(E_HEADER);
+      E_SHELL.appendChild(E_OUT);
+      E_HEADER.innerHTML='Command Information';
+      E_OUT.innerHTML = 'The following CLI commands are available:\n\n';
+      CMD.forEach((f)=>{
+        window[f.name] = f;
+        E_OUT.innerHTML+=`  ${f.name}()\n`;
+      });
+      E_OUT.innerText += "\n";
+      E_OUT.innerText += "Mac shortcuts to open console\n";
+      E_OUT.innerText += "  Chrome  : cmd-option-j\n";
+      E_OUT.innerText += "  Firefox : cmd-option-k\n";
+      E_OUT.innerText += "PC use ctrl-shift instead\n";
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// EXPORT MODULE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

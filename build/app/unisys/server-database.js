@@ -43,6 +43,10 @@ var   DB = {};
       m_options = ropt;
       console.log(PR,`Initialized LokiJS Database '${DB_FILE}'`);
     };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    DB.PKT_SetDatabase = function ( pkt ) {
+      console.log(PR,`PKT_SetDatabase`);
+    }
 
 /// SUPPORTING FUNCTIONS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

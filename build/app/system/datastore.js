@@ -31,9 +31,8 @@ let DATA          = {};
       return DATA;
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Placeholder DATA loader; eventually will talk to the database on the
-    server instead of loading manually
-/*/ MOD.LoadData = function () {
+/*/ Load default data set from a JSON file
+/*/ MOD.LoadDefaultDataPromise = function () {
       if (DBG) console.log(PR,'loading data via Promise...');
       let promise = new Promise((resolve,reject)=>{
         let xobj = new XMLHttpRequest();
@@ -52,6 +51,10 @@ let DATA          = {};
       });
       return promise;
     };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Placeholder DATA loader; eventually will talk to the database on the
+    server instead of loading manually
+/*/ MOD.LoadDataPromise = MOD.LoadDefaultDataPromise;
 
 /// EXPORT MODULE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

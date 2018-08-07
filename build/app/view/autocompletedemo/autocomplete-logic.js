@@ -83,7 +83,7 @@ const TARGET_COLOR     = '#FF0000'
 /*/ LOADASSETS fires during <AutoCompleteDemo>.componentDidMount
 /*/ MOD.Hook('LOADASSETS',()=>{
       // load data into D3DATA
-      DATASTORE.LoadData()
+      DATASTORE.LoadDataPromise()
       .then((data)=>{
         D3DATA = data;
         UDATA.SetState('D3DATA',D3DATA);

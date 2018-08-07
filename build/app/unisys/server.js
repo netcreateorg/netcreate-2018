@@ -9,6 +9,7 @@ const DBG = false;
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNET      = require('./server-network');
+const UDB       = require('./server-database');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,6 +28,7 @@ var UNISYS = {};
     network values, so it can embed them in the index.ejs file for webapps
     override = { port }
 /*/ UNISYS.InitializeNetwork = ( override ) => {
+      UDB.InitializeDatabase(override);
       return UNET.InitializeNetwork(override);
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,9 +48,14 @@ var UNISYS = {};
         if (DBG) console.log(PR,sprint_message(pkt));
         // now need to store the handlers somehow.
         UNET.RegisterRemoteHandlers(pkt);
-
         // or return a new data object that will replace pkt.data
-        return { info:'can return object' };
+        return { info:'registered handlers' };
+      });
+
+      UNET.HandleMessage('SRV_DATABASE_INIT',function(pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        UDB.PKT_SetDatabase(pkt);
+        return { info:'Database Set' };
       });
 
       // utility function //

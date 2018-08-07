@@ -60,8 +60,6 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       options.uaddr = options.uaddr || SERVER_UADDR;
       if (mu_wss !== undefined) throw Error(ERR_SS_EXISTS);
       NetMessage.GlobalSetup({ uaddr: options.uaddr });
-      // options.testPeriodicInsert = true;
-      DB.InitializeDatabase(options);
       mu_options = options;
       return mu_options;
     }; // end InitializeNetwork()

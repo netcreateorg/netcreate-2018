@@ -107,11 +107,9 @@ const PR          = PROMPTS.Pad('DevUnisys');
   /*/ render() {
         return (
             <div id='fdshell' style={{padding:'10px'}}>
-              <h2>Unisys Feature Development Shell</h2>
+              <h2>DB DEVTEST SHELL</h2>
               <Route path={`${this.props.match.path}/student/:unit/:user`} component={this.StudentRender}/>
-              <h4>DB TESTS</h4>
               <p>{this.state.description}</p>
-              <Input type="text" name="desc" id="desc" placeholder="text to change" onChange={this.handleTextChange} />
             </div>
         );
       } // render

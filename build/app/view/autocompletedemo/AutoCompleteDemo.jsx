@@ -67,10 +67,9 @@ var   UDATA        = null; // set in constructor
   /*/ This is the root component, so this fires after all subcomponents have
       been fully rendered by render().
   /*/ componentDidMount () {
-        // start UNISYS lifecycle after REACT is ready
-        console.log('** ACD MAIN componentDidMount');
         /* (2) UNISYS NETWORK INITIALIZATION                            */
         /* now that UI is completely rendered, connect to UNISYS net!   */
+        /* see also constructor for UNISYS initialization               */
         UNISYS.NetworkInitialize(() => {
           console.log(PR,'unisys network initialized');
           /* (3) UNISYS LIFECYCLE INITIALIZATION                        */
