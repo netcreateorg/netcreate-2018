@@ -166,7 +166,7 @@ class NodeSelector extends React.Component {
       let highestID = 0;
       let ids  = UDATA.State('D3DATA').nodes.map( node => { return node.id } );
       if (ids.length>0) {
-        let highestID = ids.reduce( (a,b) => { return Math.max(a,b) } );
+        highestID = ids.reduce( (a,b) => { return Math.max(a,b) } );
       }
       // REVIEW: Should ids be strings or numbers?
       // Right now most edge ids are strings
