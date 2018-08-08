@@ -207,7 +207,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
           console.log(PR,`'${pkt.Message()}' no eligible UADDR targets`);
           // return transaction to resolve callee
           pkt.SetData({NOP:true});
-          pkt.ReturnTransaction(socket);
+          if (pkt.IsType('mcall')) pkt.ReturnTransaction(socket);
           return;
         }
         // got this far? let's skip all server messages for debugging purposes
