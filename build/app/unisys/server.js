@@ -4,7 +4,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = true;
+const DBG = false;
 
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -13,7 +13,7 @@ const UNET      = require('./server-network');
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPTS    = require('../system/util/prompts');
-const PR         = PROMPTS.Pad('USRV');
+const PR         = PROMPTS.Pad('SRV');
 
 /// MODULE VARS ///////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -37,10 +37,20 @@ var UNISYS = {};
       UNET.HandleMessage('SRV_REFLECT',function(pkt) {
         pkt.Data().serverSays='REFLECTING';
         pkt.Data().stack.push('SRV_01');
-        console.log(PR,sprint_message(pkt));
+        if (DBG) console.log(PR,sprint_message(pkt));
         // return the original packet
         return pkt;
       });
+
+      UNET.HandleMessage('SRV_REG_HANDLERS',function(pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        // now need to store the handlers somehow.
+        UNET.RegisterRemoteHandlers(pkt);
+
+        // or return a new data object that will replace pkt.data
+        return { info:'can return object' };
+      });
+
       // utility function //
       function sprint_message(pkt) {
         return `got '${pkt.Message()}' data=${JSON.stringify(pkt.Data())}`;

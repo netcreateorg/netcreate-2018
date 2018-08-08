@@ -3,12 +3,10 @@ console.log(`included ${module.id}`);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS      = require('unisys/client');
 const REFLECT     = require('system/util/reflection');
-/// MAGIC: DevUnisysLogic will add UNISYS Lifecycle Hooks on require()
-const LOGIC       = require('./DevUnisysLogic');
+/// MAGIC: DevDBLogic will add UNISYS Lifecycle Hooks on require()
+const LOGIC       = require('./DevDBLogic');
 const {Switch, Route, Redirect, Link} = require('react-router-dom');
 
-
-const TEST        = require('test');
 var   DBG         = false;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
@@ -23,7 +21,7 @@ const PR          = PROMPTS.Pad('DevUnisys');
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ This is the root component for the view
-/*/ class DevUnisys extends React.Component {
+/*/ class DevDB extends React.Component {
       constructor(props) {
         super(props);
 
@@ -48,55 +46,11 @@ const PR          = PROMPTS.Pad('DevUnisys');
         this.UnisysStateChange = this.UnisysStateChange.bind(this);
         // NOW set up handlers...
         this.udata.OnStateChange('VIEW', this.UnisysStateChange);
-        this.udata.OnStateChange('LOGIC', this.UnisysStateChange);
 
-        /* UNISYS LIFECYCLE INITIALIZATION */
-        // initialize UNISYS before declaring any hook functions
+        /* (1) UNISYS LIFECYCLE INITIALIZATION                        */
+        /* must initialize UNISYS before declaring any hook functions */
+        /* then call UNISYS.NetworkInitialize() in componentDidMount  */
         UNISYS.SystemInitialize(module.id);
-        // hook start handler to initiate call
-
-        /* CONFIGURE UNISYS TESTS */
-        // enable debug output and tests
-        // true = enabled, false = skip
-        TEST('state'  , true);  // state events and changes
-        TEST('hook'   , true);  // lifecycle hooks
-        TEST('call'   , true);  // internal instance calls
-        TEST('remote' , true);  // instance-to-instance calls
-        TEST('server' , true);  // server calls
-        TEST('net'    , true);  // network initialization
-
-        /* UNISYS TESTS */
-        // these run during a hook, but are defined in constructor
-        UNISYS.Hook('INITIALIZE',() => {
-          /* UNISYS TEST MESSAGE HANDLER REGISTRATION */
-          if (TEST('remote')) {
-            this.udata.HandleMessage('REMOTE_CALL_TEST',(data, msgcon) => {
-              // msgcon is message control
-              data.cat = 'calico';
-              data.melon += '_ack';
-              return data;
-            });
-          }
-          if (TEST('call')) {
-            this.udata.HandleMessage('TEST_CALL',(data)=>{
-              if (!data.stack) data.stack=[]; data.stack.push('TRI-JSX');
-              return data;
-            });
-          }
-        });
-        UNISYS.Hook('START',() => {
-          /* UNISYS TEST MESSAGE HANDLER INVOCATION */
-          if (TEST('call')) {
-            // INVOKE remove call
-            this.udata.LocalCall('TEST_CALL',{ source : 'DevUnisysJSX' })
-            // test data return
-            .then((data)=>{
-              if (data && data.source && data.source==='DevUnisysLogic-Return') TEST.Pass('callDataReturn');
-              if (data && data.extra && data.extra==='AddedData') TEST.Pass('callDataAdd');
-              if (data && data.multi && data.stack && data.stack.length===3 && data.multi==='MultiData') TEST.Pass('callDataMulti');
-            });
-          }
-        }); // START hook
 
       } // constructor
 
@@ -126,15 +80,18 @@ const PR          = PROMPTS.Pad('DevUnisys');
         // start the application phase
         let className = REFLECT.ExtractClassName(this);
         if (DBG) console.log(`${className} componentDidMount`);
-        // initialize network
+        /* (2) UNISYS NETWORK INITIALIZATION                            */
+        /* now that UI is completely rendered, connect to UNISYS net!   */
         UNISYS.NetworkInitialize(() => {
           console.log(PR,'unisys network initialized');
-          // kickoff initialization stage by stage
+          /* (3) UNISYS LIFECYCLE INITIALIZATION                        */
+          /* all program logic should be located in a UNISYS LIFECYCLE  */
           (async () => {
-            await UNISYS.EnterApp();
-            await UNISYS.SetupRun();
+            await UNISYS.EnterApp();  // INITIALIZE, UNISYS_INIT, LOADASSETS
+            await UNISYS.SetupRun();  // RESET, CONFIGURE, UNISYS_SYNC, START
           })();
         });
+        // NOTE: see unisys-lifecycle.js for more run modes
       } // componentDidMount
 
     StudentRender ({ match }) {
@@ -152,10 +109,9 @@ const PR          = PROMPTS.Pad('DevUnisys');
             <div id='fdshell' style={{padding:'10px'}}>
               <h2>Unisys Feature Development Shell</h2>
               <Route path={`${this.props.match.path}/student/:unit/:user`} component={this.StudentRender}/>
-              <h4>UISTATE TESTS</h4>
+              <h4>DB TESTS</h4>
               <p>{this.state.description}</p>
               <Input type="text" name="desc" id="desc" placeholder="text to change" onChange={this.handleTextChange} />
-              <p>random string from LOGIC: {this.state.random || 'notset'}</p>
             </div>
         );
       } // render
@@ -165,4 +121,4 @@ const PR          = PROMPTS.Pad('DevUnisys');
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = DevUnisys;
+module.exports = DevDB;

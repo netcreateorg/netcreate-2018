@@ -1,3 +1,4 @@
+console.log(`included ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     LifeCycle - A system manager for application lifecycle events.
@@ -17,10 +18,11 @@ const PATH     = require('system/util/path');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const PHASES = [
       'INITIALIZE',               // executes before REACT renders
-      'UNISYSHOOK',               // configure UNISYS-related hooks
+      'UNISYS_INIT',              // (opt) configure UNISYS-related hooks
       'LOADASSETS',               // load any external data, make connections
       'RESET',                    // reset runtime data structures
       'CONFIGURE',                // configure runtime data structures
+      'UNISYS_SYNC',              // synchronize to UNISYS network server
       'START',                    // start normal execution run
       'UPDATE',                   // system is running (periodic call w/ time)
       'PREPAUSE',                 // system wants to pause run

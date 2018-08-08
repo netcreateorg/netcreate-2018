@@ -69,6 +69,7 @@ var   UDATA      = UNISYS.NewDataLink(MOD);
 \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -/*/
 var   SELECTION        = {};      // see above for description
 var   D3DATA           = null;    // see above for description
+const DATASTORE        = require('system/datastore');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -82,19 +83,17 @@ const TARGET_COLOR     = '#FF0000'
 /*/ LOADASSETS fires during <AutoCompleteDemo>.componentDidMount
 /*/ MOD.Hook('LOADASSETS',()=>{
       // load data into D3DATA
-      let dataSource = "http://localhost:3000/htmldemos/d3forcedemo/data.reducedlinks.json";
-      D3.json(dataSource, ( error, _data )=>{
-        if (error) throw Error(error);
-        D3DATA = _data;
-        // initialize global state D3DATA as well
+      DATASTORE.LoadData()
+      .then((data)=>{
+        D3DATA = data;
         UDATA.SetState('D3DATA',D3DATA);
-      }); // end D3.json load
+      });
     }); // end INITIALIZE HOOK
 
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ UNISYSHOOK fires after CONFIGURE just before START
-/*/ MOD.Hook('UNISYSHOOK', () => {
+/*/ UNIPRESYNC fires after CONFIGURE just before START
+/*/ MOD.Hook('UNISYS_INIT', () => {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ Handle D3-related updates based on state changes. Subcomponents are
       responsible for updating themselves.

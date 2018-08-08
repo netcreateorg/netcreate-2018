@@ -1,11 +1,10 @@
+console.log(`included ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     LOCAL SETTINGS
     utility function for managing local
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
-
-console.log(`> SYSTEM SETTINGS loaded`);
 
 /// GLOBAL NETWORK INFO (INJECTED ON INDEX) ///////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -43,6 +42,18 @@ let DATE     = new Date();
 /*/ alternate call to retrieve a key
 /*/ MOD.Get = ( key ) => {
       return MOD( key )
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Force Reload if another module was navigated to and we want to ensure the
+    entire browser was refreshed so only one set of app modules is loaded
+/*/ MOD.ForceReloadSingleApp = () => {
+      const key = 'APP_LOAD_INIT';
+      if (MOD.Get(key)) {
+        location.reload();
+        return;
+      }
+      // if reload didn't happen, then save info
+      MOD.Set(key,true);
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ test time function

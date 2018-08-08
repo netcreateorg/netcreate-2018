@@ -19,15 +19,18 @@ const DBG = true;
 var   WSS               = require('ws').Server;
 var   FSE               = require('fs-extra');
 var   NetMessage        = require('../unisys/common-netmessage-class');
+var   DB                = require('../unisys/server-database');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPTS           = require('../system/util/prompts');
-const PR                = PROMPTS.Pad('UNET');
+const PR                = PROMPTS.Pad('SRV-NET');
 const ERR               = PROMPTS.Pad('!!!');
 const ERR_SS_EXISTS     = "socket server already created";
 const ERR_NULL_SOCKET   = "require valid socket";
 const DBG_SOCK_BADCLOSE = "closing socket is not in mu_sockets";
+const ERR_INVALID_DEST  = "couldn't find socket with provided address";
+const ERR_UNKNOWN_PKT   = "unrecognized netmessage packet type";
 const DEFAULT_NET_PORT  = 2929;
 const DEFAULT_NET_ADDR  = '127.0.0.1';
 
@@ -40,13 +43,14 @@ var mu_sockets = new Map();         // sockets mapped by socket id
 var mu_sid_counter = 0;             // for generating  unique socket ids
 // storage
 var m_server_handlers = new Map();  // message map storing sets of functions
-var m_remote_handlers = new Map();  // message map storing other handlers
+var m_message_map     = new Map();  // message map storing other handlers
+var m_socket_msgs_list = new Map(); // message map by uaddr
 
 
 /// API MEHTHODS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var   UNET = {};
-const SERVER_UADDR      = m_GetNewUADDR('SVR'); // special server UADDR prefix
+const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Initialize() is called by brunch-server.js to define the default UNISYS
     network values, so it can embed them in the index.ejs file for webapps
@@ -56,6 +60,8 @@ const SERVER_UADDR      = m_GetNewUADDR('SVR'); // special server UADDR prefix
       options.uaddr = options.uaddr || SERVER_UADDR;
       if (mu_wss !== undefined) throw Error(ERR_SS_EXISTS);
       NetMessage.GlobalSetup({ uaddr: options.uaddr });
+      // options.testPeriodicInsert = true;
+      DB.InitializeDatabase(options);
       mu_options = options;
       return mu_options;
     }; // end InitializeNetwork()
@@ -105,6 +111,27 @@ const SERVER_UADDR      = m_GetNewUADDR('SVR'); // special server UADDR prefix
       }
       return this;
     }; // end UnhandleMessage()
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ RegisterRemoteHandlers() accepts a RegistrationPacket with data = { all }
+    and writes to the two main maps for handling incoming messages
+/*/ UNET.RegisterRemoteHandlers = function( pkt ) {
+      if (pkt.Message()!=='SRV_REG_HANDLERS') throw Error('not a registration packet');
+      let uaddr = pkt.SourceAddress();
+      let { all=[] } = pkt.Data();
+      // save message list, for later when having to delete
+      m_socket_msgs_list.set(uaddr,all);
+      // add uaddr for each message in the list
+      // m_message_map[mesg] contains a Set
+      all.forEach((msg)=>{
+        let entry = m_message_map.get(msg);
+        if (!entry) {
+          entry = new Set();
+          m_message_map.set(msg,entry);
+        }
+        if (DBG) console.log(PR,`adding '${msg}' reference to ${uaddr}`);
+        entry.add(uaddr);
+      });
+    };
 
 
 /// MODULE HELPER FUNCTIONS ///////////////////////////////////////////////////
@@ -142,7 +169,9 @@ const SERVER_UADDR      = m_GetNewUADDR('SVR'); // special server UADDR prefix
           case 'state':
             m_HandleState(socket,pkt);
             break;
-          case 'mesg':
+          case 'msig':
+          case 'msend':
+          case 'mcall':
             m_HandleMessage(socket,pkt);
             break;
           default:
@@ -157,55 +186,130 @@ const SERVER_UADDR      = m_GetNewUADDR('SVR'); // special server UADDR prefix
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ handle messages that are a Send(), Signal(), or Call()
 /*/ async function m_HandleMessage( socket, pkt ) {
-        // get the valid promises to run
+        // is this a returning packet that was forwarded?
+        if (pkt.IsOwnResponse()) {
+          // console.log(PR,`-- ${pkt.Message()} completing transaction ${pkt.seqlog.join(':')}`);
+          pkt.CompleteTransaction();
+          return;
+        }
+        // console.log(PR,`packet source incoming ${pkt.SourceAddress()}-${pkt.Message()}`);
+        // (1) first check if this is a server handler
         let promises = m_CheckServerHandlers(pkt);
-        if (promises.length===0) promises = m_CheckRegisteredHandlers(pkt);
-        // run promises asynchronously, then combine results
+
+        // (2) if it wasn't, then see if we have remote handlers defined
+        if (promises.length===0) promises = m_CheckRemoteHandlers(pkt);
+
+        // (3) FAIL if no promises were returned, because there were no eligible
+        // UADDR targets, possibly because the sources are not allowed to call itself
+        // except in the case of the SIGNAL type
+        if (promises.length===0) {
+          console.log(PR,`'${pkt.Message()}' no eligible UADDR targets`);
+          return;
+        }
+        // got this far? let's skip all server messages for debugging purposes
+        let notsrv = !pkt.Message().startsWith('SRV_');
+        let json = JSON.stringify(pkt.Data());
+
+        /* MAGICAL ASYNC/AWAIT BLOCK *****************************/
+        // if (notsrv) console.log(PR,`>> '${pkt.Message()}' queuing ${promises.length} Promises w/ data ${json}'`);
         let pktArray = await Promise.all(promises);
-        // aggregate the packet data
+        // if (notsrv) console.log(PR,`<< '${pkt.Message()}' resolved`);
+        /* END MAGICAL ASYNC/AWAIT BLOCK *************************/
+
+        // (4) only mcall packets need to receive the data back return
+        if (!pkt.IsType('mcall')) return;
+
+        // (5) got this far? this is a call, so gather data and return it
         let data = pktArray.reduce((d,p) => {
-          let retval = Object.assign(d,p.Data());
-          // console.log('acc',JSON.stringify(d),'\nadd',JSON.stringify(p.Data()),'\nres',JSON.stringify(retval),'\n');
+          let pdata = (p instanceof NetMessage) ? p.Data() : p;
+          let retval = Object.assign(d,pdata);
+          // if (notsrv) console.log(PR,`'${pkt.Message()}' reduce`,JSON.stringify(retval));
           return retval;
         },{});
+        json = JSON.stringify(data);
+        // if (notsrv) console.log(PR,`'${pkt.Message()}' returning transaction data ${json}`);
         pkt.SetData(data);
-        // return the packet to the sender
-        pkt.ReturnToSender(socket);
-    }
+        pkt.ReturnTransaction(socket);
+    } // m_HandleMessage()
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ m_CheckServerHandlers() returns an array of promises, which should be used
      by Promises.all() inside an async/await function (m_SocketMessage above)
     Logic is similar to client-datalink-class.js Call()
 /*/ function m_CheckServerHandlers( pkt ) {
       let mesgName = pkt.Message();
-      let inData = pkt.Data();
       const handlers = m_server_handlers.get(mesgName);
       /// create promises for all registered handlers
       let promises = [];
       if (handlers) for (let handlerFunc of handlers) {
         // handlerFunc signature: (data,dataReturn) => {}
-        let p = f_MakeResolverFunction(handlerFunc);
+        let p = f_make_resolver_func(pkt,handlerFunc);
         promises.push(p);
       }
       /// return all queued promises
       return promises;
 
       /// inline utility function /////////////////////////////////////////////
-      function f_MakeResolverFunction( handlerFunc ) {
+      function f_make_resolver_func( srcPkt, handlerFunc ) {
         return new Promise(( resolve, reject ) => {
-          let retval = handlerFunc(pkt);
-          if (retval===undefined) throw `[${mesgName} message handler MUST return object or error string`;
+          let retval = handlerFunc(srcPkt);
+          if (retval===undefined) throw `'${mesgName}' message handler MUST return object or error string`;
           if (typeof retval!=='object') reject(retval);
           else resolve(retval);
         });
       }
     }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ If a handler is registered elsewhere on UNET, then dispatch to them for eventual reflection
-    back through server aggregation of data.
-/*/ function m_CheckRegisteredHandlers( pkt ) {
-      // message forwarding is unimplemented for August 8 2018 demo
-      return [];
+/*/ If a handler is registered elsewhere on UNET, then dispatch to them for
+    eventual reflection back through server aggregation of data.
+/*/ function m_CheckRemoteHandlers( pkt ) {
+      // debugging values
+      let s_uaddr = pkt.SourceAddress();
+      // logic values
+      let promises = [];
+      let mesgName = pkt.Message();
+      let type = pkt.Type();
+      // iterate!
+      let handlers = m_message_map.get(mesgName);
+      if (handlers) handlers.forEach((d_uaddr)=>{
+        // don't send packet to originating UADDR because it already has handled it
+        // locally
+        switch (type) {
+          case 'msig':
+            promises.push(f_make_remote_resolver_func(pkt,d_uaddr));
+            break;
+          case 'msend':
+          case 'mcall':
+            if (s_uaddr!==d_uaddr) {
+              console.log(PR,`${type} '${pkt.Message()}' ${s_uaddr} to ${d_uaddr}`);
+              promises.push(f_make_remote_resolver_func(pkt,d_uaddr));
+            } else {
+              // console.log(PR,`${type} '${pkt.Message()}' -NO ECHO- ${d_uaddr}`);
+            }
+            break;
+          default:
+            throw Error(`{ERR_UNKNOWN_PKT} ${type}`);
+        }
+      });
+      /// return all queued promises
+      return promises;
+      /// f_make_remote_resolver_function returns the promise created by QueueTransaction()
+      /// made on a new netmessage.
+      function f_make_remote_resolver_func(srcPkt ,d_uaddr,opt={}) {
+        let {verbose} = opt;
+        // get the address of the destination implementor of MESSAGE
+        let d_sock = mu_sockets.get(d_uaddr);
+        if (d_sock===undefined) throw Error(ERR_INVALID_DEST+` ${d_uaddr}`);
+        // Queue transaction from server
+        // sends to destination socket d_sock
+        // console.log(PR,`++ '${pkt.Message()}' FWD from ${pkt.SourceAddress()} to ${d_uaddr}`);
+        let newpkt = new NetMessage(srcPkt);
+        newpkt.MakeNewID();
+        newpkt.CopySourceAddress(srcPkt);
+        if (verbose) {
+          console.log('make_resolver_func:',`PKT: ${srcPkt.Type()} '${srcPkt.Message()}' from ${srcPkt.SourceAddress()} to d_uaddr:${d_uaddr} dispatch to d_sock.UADDR:${d_sock.UADDR}`);
+        }
+        return newpkt.QueueTransaction(d_sock);
+      }
     }
 
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -225,7 +329,7 @@ const SERVER_UADDR      = m_GetNewUADDR('SVR'); // special server UADDR prefix
       // save socket
       mu_sockets.set(sid,socket);
       if (DBG) console.log(PR,`saving ${socket.UADDR} to mu_sockets`);
-      if (DBG) m_ListSockets();
+      if (DBG) m_ListSockets(`add ${sid}`);
     }
     function m_GetNewUADDR( prefix='UADDR' ) {
       ++mu_sid_counter;
@@ -235,19 +339,30 @@ const SERVER_UADDR      = m_GetNewUADDR('SVR'); // special server UADDR prefix
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ function m_SocketDelete( socket ) {
-      if (!mu_sockets.has(socket.UADDR)) throw Error(DBG_SOCK_BADCLOSE);
-      if (DBG) console.log(PR,`deleting ${socket.UADDR} from mu_sockets`);
-      mu_sockets.delete(socket.UADDR);
-      if (DBG) m_ListSockets();
+      let uaddr = socket.UADDR;
+      if (!mu_sockets.has(uaddr)) throw Error(DBG_SOCK_BADCLOSE);
+      if (DBG) console.log(PR,`deleting ${uaddr} from mu_sockets`);
+      mu_sockets.delete(uaddr);
+      // delete socket reference from previously registered handlers
+      let rmesgs = m_socket_msgs_list.get(uaddr);
+      if (Array.isArray(rmesgs)) {
+        rmesgs.forEach( (msg) => {
+          let handlers = m_message_map.get(msg);
+          if (DBG) console.log(PR,`deleting '${msg}' reference to ${uaddr}`);
+          if (handlers) handlers.delete(uaddr);
+        });
+      }
+      if (DBG) m_ListSockets(`del ${socket.UADDR}`);
     }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
-/*/ function m_ListSockets() {
-      console.log(PR,'RegisteredSocketIds');
+/*/ function m_ListSockets( change ) {
+      console.log(PR,'SocketList change:',change);
       // let's use iterators! for..of
       let values = mu_sockets.values();
+      let count = 1;
       for (let socket of values) {
-       console.log(PR,'>',socket.UADDR);
+       console.log(PR,`${count} - ${socket.UADDR}`);
       }
     }
 
