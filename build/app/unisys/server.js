@@ -47,9 +47,9 @@ var UNISYS = {};
       UNET.HandleMessage('SRV_REG_HANDLERS',function(pkt) {
         if (DBG) console.log(PR,sprint_message(pkt));
         // now need to store the handlers somehow.
-        UNET.RegisterRemoteHandlers(pkt);
+        let data = UNET.RegisterRemoteHandlers(pkt);
         // or return a new data object that will replace pkt.data
-        return { info:'registered handlers' };
+        return data;
       });
 
       UNET.HandleMessage('SRV_DATABASE_INIT',function(pkt) {

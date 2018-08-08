@@ -34,7 +34,7 @@
 /// DEBUG SWITCHES ////////////////////////////////////////////////////////////
 var   DBG          = false;
 const PROMPTS      = require('system/util/prompts');
-const PR           = PROMPTS.Pad('AutoCompleteDemo');
+const PR           = PROMPTS.Pad('ACD');
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -59,6 +59,7 @@ var   UDATA        = null; // set in constructor
         /* (1) UNISYS LIFECYCLE INITIALIZATION                        */
         /* must initialize UNISYS before declaring any hook functions */
         /* then call UNISYS.NetworkInitialize() in componentDidMount  */
+        console.log(`${PR}constructor(): UNISYS (1) SYSTEM INITIALIZE`);
         UNISYS.SystemInitialize(module.id);
       }
 
@@ -71,7 +72,8 @@ var   UDATA        = null; // set in constructor
         /* now that UI is completely rendered, connect to UNISYS net!   */
         /* see also constructor for UNISYS initialization               */
         UNISYS.NetworkInitialize(() => {
-          console.log(PR,'unisys network initialized');
+          console.log(`${PR}componentDidMount(): UNISYS (2) NETWORK CONNECTED`);
+          console.log(`${PR}componentDidMount(): UNISYS (3) LIFECYCLE BEGIN`);
           /* (3) UNISYS LIFECYCLE INITIALIZATION                        */
           /* all program logic should be located in a UNISYS LIFECYCLE  */
           (async () => {

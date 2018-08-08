@@ -33,7 +33,7 @@ const PR          = PROMPTS.Pad('DevUnisys');
         // UDATA.State() returns a copy of state obj; mutate/assign freely
         let state = this.udata.State('VIEW');
         // initialize some state variables
-        state.description = state.description || 'uninitialized description';
+        state.description = state.description || 'exerciser for database server testing';
         // REACT TIP: setting state directly works ONLY in React.Component constructor!
         this.state = state;
 

@@ -29,7 +29,7 @@ var   DB = {};
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Initializez the database
+/*/ API: Initialize the database
 /*/ DB.InitializeDatabase = function( options={} ) {
       let ropt = {
         autoload         : true,

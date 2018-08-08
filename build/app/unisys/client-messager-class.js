@@ -189,6 +189,12 @@ class Messager {
       });
       return handlers;
     }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: Verify that message exists
+/*/ HasMessageName ( msg='' ) {
+      return this.handlerMap.has(msg);
+    }
+
 } // class Messager
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////

@@ -316,6 +316,7 @@ let DBG = false;
         E_OUT.innerText += "Mac shortcuts to open console\n";
         E_OUT.innerText += "  Chrome  : cmd-option-j\n";
         E_OUT.innerText += "  Firefox : cmd-option-k\n";
+        E_OUT.innerText += "PC use ctrl-shift instead\n";
       console.groupEnd();
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

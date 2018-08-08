@@ -46,10 +46,18 @@ var   UDATA       = new UniData(UNISYS);
     };
 /// UNISYS MESSAGE REGISTRATION ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    UNISYS.RegisterMessagesPromise = () => {
-      let all = UniData.MessageNames();
+    UNISYS.RegisterMessagesPromise = ( messages=[] ) => {
+      if (messages.length) {
+        try {
+          messages = UniData.ValidateMessageNames(messages);
+        } catch (e) {
+          console.error(e);
+        }
+      } else {
+        messages = UniData.MessageNames();
+      }
       return new Promise((resolve,reject)=>{
-        UDATA.Call('SRV_REG_HANDLERS',{ all })
+        UDATA.Call('SRV_REG_HANDLERS',{ messages })
         .then((data)=>{
           resolve(data);
         });

@@ -110,17 +110,18 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       return this;
     }; // end UnhandleMessage()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ RegisterRemoteHandlers() accepts a RegistrationPacket with data = { all }
+/*/ RegisterRemoteHandlers() accepts a RegistrationPacket with data = { messages }
     and writes to the two main maps for handling incoming messages
 /*/ UNET.RegisterRemoteHandlers = function( pkt ) {
       if (pkt.Message()!=='SRV_REG_HANDLERS') throw Error('not a registration packet');
       let uaddr = pkt.SourceAddress();
-      let { all=[] } = pkt.Data();
+      let { messages=[] } = pkt.Data();
+      let regd=[];
       // save message list, for later when having to delete
-      m_socket_msgs_list.set(uaddr,all);
+      m_socket_msgs_list.set(uaddr,messages);
       // add uaddr for each message in the list
       // m_message_map[mesg] contains a Set
-      all.forEach((msg)=>{
+      messages.forEach((msg)=>{
         let entry = m_message_map.get(msg);
         if (!entry) {
           entry = new Set();
@@ -128,7 +129,9 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
         }
         if (DBG) console.log(PR,`adding '${msg}' reference to ${uaddr}`);
         entry.add(uaddr);
+        regd.push(msg);
       });
+      return { registered: regd };
     };
 
 
@@ -202,6 +205,9 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
         // except in the case of the SIGNAL type
         if (promises.length===0) {
           console.log(PR,`'${pkt.Message()}' no eligible UADDR targets`);
+          // return transaction to resolve callee
+          pkt.SetData({NOP:true});
+          pkt.ReturnTransaction(socket);
           return;
         }
         // got this far? let's skip all server messages for debugging purposes
@@ -224,7 +230,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
           // if (notsrv) console.log(PR,`'${pkt.Message()}' reduce`,JSON.stringify(retval));
           return retval;
         },{});
-        json = JSON.stringify(data);
+        // json = JSON.stringify(data);
         // if (notsrv) console.log(PR,`'${pkt.Message()}' returning transaction data ${json}`);
         pkt.SetData(data);
         pkt.ReturnTransaction(socket);

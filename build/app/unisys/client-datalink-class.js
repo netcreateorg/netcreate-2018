@@ -236,6 +236,16 @@ var MESSAGER       = new Messager();
 /*/ UnisysDataLink.MessageNames = function () {
       return MESSAGER.MessageNames();
     };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Filter any bad messages from the passed array of strings
+/*/ UnisysDataLink.ValidateMessageNames = function ( msgs=[] ) {
+      let valid=[];
+      msgs.forEach((name)=>{
+        if (MESSAGER.HasMessageName(name)) valid.push(name);
+        else throw new Error(`ValidateMessageNames() found invalid message '${name}'`);
+      });
+      return valid;
+    };
 
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
