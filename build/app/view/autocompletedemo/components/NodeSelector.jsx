@@ -163,8 +163,11 @@ class NodeSelector extends React.Component {
 /*/ Return a new unique ID
     REVIEW: Should this be in autocomplete-logic?
 /*/ getNewNodeID () {
+      let highestID = 0;
       let ids  = UDATA.State('D3DATA').nodes.map( node => { return node.id } );
-      let highestID = ids.reduce( (a,b) => { return Math.max(a,b) } );
+      if (ids.length>0) {
+        let highestID = ids.reduce( (a,b) => { return Math.max(a,b) } );
+      }
       // REVIEW: Should ids be strings or numbers?
       // Right now most edge ids are strings
       return (highestID+1).toString();
@@ -172,8 +175,11 @@ class NodeSelector extends React.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return a new unique ID
 /*/ getNewEdgeID () {
+      let highestID = 0;
       let ids  = UDATA.State('D3DATA').edges.map( edge => { return edge.id } )
-      let highestID = ids.reduce( (a,b) => { return Math.max(a,b) } )
+      if (ids.length>0) {
+        highestID = ids.reduce( (a,b) => { return Math.max(a,b) } );
+      }
       // REVIEW: Should ids be strings or numbers?
       // Right now most edge ids are strings
       return (highestID+1).toString();
