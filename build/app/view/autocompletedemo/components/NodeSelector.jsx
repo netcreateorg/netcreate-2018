@@ -201,20 +201,24 @@ class NodeSelector extends React.Component {
           this.setState({
             edges: data.edges
           })
+          // Exit now because we just selected a node and don't want to
+          // override the form label with form updates.  Otherwise, the
+          // the form label is overriden with old form data.
+          return;
         } else {
           if (DBG) console.log('NodeSelector: No data.nodes, so clearing form');
           this.clearForm();
         }
-      } else {
-        // Always update the search label
-        // Update the form's node label because that data is only passed via SELECTION
-        // AutoComplete calls SELECTION whenever the input field changes
-        let formData = this.state.formData;
-        formData.label = data.searchLabel;
-        this.setState({
-          formData
-        });
       }
+      // Always update the search label
+      // Update the form's node label because that data is only passed via SELECTION
+      // AutoComplete calls SELECTION whenever the input field changes
+      let formData = this.state.formData;
+      formData.label = data.searchLabel;
+      this.setState({
+        formData
+      });
+
     } // handleSelection
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Copy the node data passed via SELECTION in the form

@@ -113,6 +113,8 @@ See class comments in `build/app/view/autocompletedemo/components/NetGraph.jsx` 
 
 ## TESTING
 
+Updated 8/3/2018
+
 * Modes: Search vs Select vs View vs Edit vs Add New
 
         SEARCH
@@ -154,6 +156,9 @@ See class comments in `build/app/view/autocompletedemo/components/NetGraph.jsx` 
                displayed in the ID field.
             => The bottom right button should display "Save"
 
+            6A. "Add New Node" variant 1: Type in label field, then click "Add"
+            6B. "Add New Node" variant 2: Click "Add", then type in label fld.
+
         EDIT NODE
         7.  If you click on "Edit Node" button
             => The form items should become enabled (editable)
@@ -162,6 +167,8 @@ See class comments in `build/app/view/autocompletedemo/components/NetGraph.jsx` 
             => You should be able to type in the GEOCODE or DATE field
             => The current node ID should be displayed
             => The bottom right button should display "Save"
+
+            7A. "Edit Node" variant 1: Start editing a node, then select a second node (e.g. you change your mind about what to edit) -- should this be prevented?  Or should the system allow you to stop editing the first?  In either case, we probably want to catch it.
 
         SAVE
         8.  If you click on the "Save" button

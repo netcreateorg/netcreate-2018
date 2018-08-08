@@ -175,8 +175,7 @@ const TARGET_COLOR     = '#FF0000'
           m_MarkNodeByLabel(nodeLabel,SOURCE_COLOR);
         }
         let hilitedNode = m_FindMatchingNodesByLabel(nodeLabel).shift();
-        // let SELECTION state listeners handle display updates
-        UDATA.SetState('SELECTION',{ hilitedNode });
+        // let HIGHLIGHT state listeners handle display updates
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ SOURCE_UPDATE is called when the properties of a node has changed

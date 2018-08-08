@@ -121,7 +121,7 @@ const MODE_STATIC   = 'static';   // Can't be edited ever
 const MODE_DISABLED = 'disabled'; // Can be edited, but not at the moment
 const MODE_ACTIVE   = 'active';   // Currently able to edit
 
-
+var   _IsMounted  = false;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -179,11 +179,15 @@ class AutoComplete extends React.Component {
         // This is not the active AutoComplete field
         // Use the disabledValue prop to display
         // REVIEW: this probably is handled better in render()
-        if (DBG) console.log('...AutoComplete',this.props.identifier,': NOT ACTIVE setting search value to',this.props.disabledValue);
-        this.setState({
-          mode    : this.props.inactiveMode,
-          value   : this.props.disabledValue
-        });
+        if (_IsMounted) {
+          if (DBG) console.log('...AutoComplete',this.props.identifier,': NOT ACTIVE setting search value to',this.props.disabledValue);
+          this.setState({
+            mode    : this.props.inactiveMode,
+            value   : this.props.disabledValue
+          });
+        } else {
+          if (DBG) console.log('...AutoComplete',this.props.identifier,': NOT ACTIVE, but skipping update because component is unmounted');
+        }
       }
     } // onStateChange_SELECTION
 
@@ -281,9 +285,22 @@ class AutoComplete extends React.Component {
 
 /// REACT LIFECYCLE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ AutoComplete fields are routinely constructed and deconstructed as different
+    edges and nodes are selected.  We need to keep track of whether it's
+    mounted or not so that we know when it's valid to call setState.  Otherwise
+    we might call setState on an unmounted component and generate a React warning.
+    https://reactjs.org/blog/2015/12/16/ismounted-antipattern.html
+/*/ componentDidMount () {
+      _IsMounted = true;
+    }
+/*/
+/*/ componentWillUnmount () {
+      _IsMounted = false;
+    }
+
 /*/ Conditionally render components based on current 'mode'. The mode
     is passed
-/*/ render() {
+/*/ render () {
       const { value, suggestions } = this.state;
       const inputProps = {
         placeholder : "Type node name...",
