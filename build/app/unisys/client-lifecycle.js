@@ -1,4 +1,4 @@
-console.log(`included ${module.id}`);
+if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     LifeCycle - A system manager for application lifecycle events.

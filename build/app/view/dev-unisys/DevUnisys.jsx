@@ -1,4 +1,4 @@
-console.log(`included ${module.id}`);
+if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
 /// SYSTEM INTEGRATION ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS      = require('unisys/client');

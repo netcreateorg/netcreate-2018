@@ -1,4 +1,4 @@
-console.log(`included ${module.id}`);
+if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     init.jsx
@@ -34,7 +34,6 @@ const DATASTORE   = require('system/datastore');
 const APP_CONTAINER = '#app-container';
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('init.jsx: initializing AppShell into', APP_CONTAINER);
   ReactDOM.render((
     <HashRouter hashType="noslash">
       <AppShell />

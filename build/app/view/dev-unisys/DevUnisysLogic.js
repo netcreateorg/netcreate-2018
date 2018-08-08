@@ -1,4 +1,4 @@
-console.log(`included ${module.id}`);
+if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     TEST REACT INTEGRATION through UNISYS

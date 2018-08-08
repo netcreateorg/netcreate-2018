@@ -1,4 +1,4 @@
-console.log(`included ${module.id}`);
+if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     UNISYS is the top level system module for implementing:
