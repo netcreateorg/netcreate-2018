@@ -113,7 +113,7 @@ if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
 /*/ This is a placeholder that will eventually be moved into UNISYS proper
 /*/ MOD.Hook('START', function () {
       if (TEST('hook')) TEST.Pass('hookStart');
-      UNISYS.RegisterMessagesP()
+      UNISYS.RegisterMessagesPromise()
       .then((data)=>{
         console.log('RegisterMessagesP() registered handlers with server',data);
         if (TEST('net')) TEST.Pass('netMessageReg');
