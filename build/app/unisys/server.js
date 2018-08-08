@@ -52,10 +52,19 @@ var UNISYS = {};
         return data;
       });
 
-      UNET.HandleMessage('SRV_DATABASE_INIT',function(pkt) {
+      UNET.HandleMessage('SRV_DBGET',function(pkt) {
         if (DBG) console.log(PR,sprint_message(pkt));
-        UDB.PKT_SetDatabase(pkt);
-        return { info:'Database Set' };
+        return UDB.PKT_GetDatabase(pkt);
+      });
+
+      UNET.HandleMessage('SRV_DBSET',function(pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_SetDatabase(pkt);
+      });
+
+      UNET.HandleMessage('SRV_DBUPDATE',function(pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_Update(pkt);
       });
 
       // utility function //

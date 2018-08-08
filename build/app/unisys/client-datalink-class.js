@@ -25,6 +25,7 @@ const DBG          = { send:false, return:false, register:false };
 const BAD_OWNER    = "must pass owner object of type React.Component or UniModule with optional 'name' parameter";
 const BAD_NAME     = "name parameter must be a string";
 const BAD_UID      = "unexpected non-unique UID";
+const NO_DATAOBJ   = "syntax error: missing data object";
 const BAD_EJSPROPS = "EJS props (window.NC_UNISYS) is undefined, so can not set datalink IP address";
 const PR           = "UDATA:";
 
@@ -134,7 +135,7 @@ var MESSAGER       = new Messager();
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ UDATA wraps Messager.Call(), which returns an array of promises.
       The UDATA version of Call() manages the promises, and returns a
-  /*/ async Call( mesgName, inData, options={} ) {
+  /*/ async Call( mesgName, inData={}, options={} ) {
         options = Object.assign(options,{type:'mcall'});
         if (DBG.send) {
           let status = '';
@@ -159,7 +160,7 @@ var MESSAGER       = new Messager();
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Sends the data to all message implementors UNLESS it is originating from
       the same UDATA instance (avoid echoing back to self)
-  /*/ Send( mesgName, inData, options={} ) {
+  /*/ Send( mesgName, inData={}, options={} ) {
         if (DBG.send) console.log(`${this.uid}_${PR}`,'** DATALINK SEND',mesgName);
         options = Object.assign(options,{type:'msend'});
         // uid is "source uid" of subscribing object, to avoid reflection
@@ -171,7 +172,7 @@ var MESSAGER       = new Messager();
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Sends the data to all message implementors, irregardless of origin.
-  /*/ Signal( mesgName, inData, options={} ) {
+  /*/ Signal( mesgName, inData={}, options={} ) {
         options = Object.assign(options,{type:'msig'});
         MESSAGER.Signal(mesgName,inData,options);
       }

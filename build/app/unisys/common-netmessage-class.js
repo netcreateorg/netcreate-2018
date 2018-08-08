@@ -240,7 +240,7 @@
         var resolverFunc = m_transactions[hash];
         if (dbg) console.log(PR,'CompleteTransaction',hash);
         if (typeof resolverFunc!=='function') {
-          throw `transaction [${hash}] handler error`;
+          throw Error(`transaction [${hash}] resolverFunction is type ${typeof resolverFunc}`);
         } else {
           resolverFunc(this.data);
           Reflect.deleteProperty(m_transactions[hash]);

@@ -83,17 +83,26 @@ if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
     MOD.Hook('INITIALIZE', m_InitCLI);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Command: RESET THE DATABASE from default data
-/*/ CMD.push(function ncResetDatabase() {
-      DATASTORE.LoadDefaultDataPromise()
+/*/ CMD.push(function ncPushDatabase( jsonFile ) {
+      jsonFile = jsonFile || 'data.reducedlinks.json';
+      DATASTORE.LoadDataFilePromise(jsonFile)
       .then((data)=>{
-        console.log(PR,'Loaded Default Data');
+        // data is { nodes, edges }
+        console.log(PR,`Sending data from ${jsonFile} to Server`,data);
         // UDATA.Call() returns a promise, so return it to
         // continue the asynchronous chain
-        return UDATA.Call('SRV_DATABASE_INIT',{ data });
+        return UDATA.Call('SRV_DBSET', data);
       })
       .then((d)=>{
-        console.log(PR,'Server Database Initialized',d);
+        if (d.OK) {
+          console.log(`${PR} %cServer Database has been overwritten with ${jsonFile}`,'color:blue');
+          console.log(`${PR} Reload apps to see new data`);
+        } else {
+          console.error(PR,'Server Error',d);
+        }
       });
+      // return syntax help
+      return "FYI: ncPushDatabase(jsonFile) can load file in assets/data";
     });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Initialize the CLI interface by loading functions in CMD array into

@@ -87,6 +87,7 @@ const TARGET_COLOR     = '#FF0000'
       // load data into D3DATA
       DATASTORE.LoadDataPromise()
       .then((data)=>{
+        console.log(PR,'DATASTORE returned data',data);
         D3DATA = data;
         UDATA.SetState('D3DATA',D3DATA);
       });
