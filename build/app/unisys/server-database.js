@@ -55,11 +55,9 @@ var DB = {};
       }
       //
       function f_AutosaveStatus( ) {
-        if (m_options.testPeriodicInsert) {
-          let nodeCount = NODES.count();
-          let edgeCount = EDGES.count();
-          console.log(PR,`autosaving ${nodeCount} nodes and ${edgeCount} edges...`);
-        }
+        let nodeCount = NODES.count();
+        let edgeCount = EDGES.count();
+        console.log(PR,`autosaving ${nodeCount} nodes and ${edgeCount} edges...`);
       }
     }; // InitializeDatabase()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -87,7 +85,35 @@ var DB = {};
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     DB.PKT_Update = function ( pkt ) {
-      console.log(PR,`PKT_Update`);
+      console.log(PR,`PKT_Update`,JSON.stringify(pkt.Data()));
+      let { op, node, edge, edgeID } = pkt.Data();
+      switch (op) {
+        case 'update':
+          if (node) {
+            console.log(PR,`node ${JSON.stringify(node)} matching`);
+            NODES.findAndUpdate({id:node.id},(n)=>{
+              console.log(PR,`updating node ${node.id} ${JSON.stringify(node)}`);
+              Object.assign(n,node);
+            });
+          }
+          if (edge) {
+            console.log(PR,`edge ${JSON.stringify(edge)} matching`);
+            EDGES.findAndUpdate({id:edge.id},(e)=>{
+              console.log(PR,`updating edge ${edge.id} ${JSON.stringify(edge)}`);
+              Object.assign(e,edge);
+            });
+          }
+          break;
+        case 'delete':
+          if (edgeID!==undefined) {
+            console.log(PR,`removing edge ${edgeID}`);
+            EDGES.findAndRemove({id:edgeID});
+          }
+          break;
+        default:
+          throw new Error(`Unexpected UPDATE op: '${op}'`);
+      }
+      return { OK:true };
     }
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////

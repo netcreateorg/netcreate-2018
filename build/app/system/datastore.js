@@ -26,17 +26,20 @@ let D3DATA        = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ establish message handlers during INITIALIZE phase
 /*/ MOD.Hook('INITIALIZE',()=>{
-      UDATA.HandleMessage('SOURCE_UPDATE',( node ) => {
+      UDATA.HandleMessage('SOURCE_UPDATE',( data ) => {
+        let { node } = data;
         console.log(PR,'SOURCE_UPDATE node',node);
-        MOD.Update({ opUpdate:true, node });
+        MOD.Update({ op:'update', node });
       });
-      UDATA.HandleMessage('EDGE_UPDATE',( edge ) => {
+      UDATA.HandleMessage('EDGE_UPDATE',( data ) => {
+        let { edge } = data;
         console.log(PR,'EDGE_UPDATE edge',edge);
-        MOD.Update({ opUpdate:true, edge });
+        MOD.Update({ op:'update', edge });
       });
-      UDATA.HandleMessage('EDGE_DELETE',( edgeID ) => {
+      UDATA.HandleMessage('EDGE_DELETE',( data ) => {
+        let { edgeID } = data;
         console.log(PR,'EDGE_DELETE edgeID',edgeID);
-        MOD.Update({ opDelete:true, edgeID });
+        MOD.Update({ op:'delete', edgeID });
       });
     });
 
@@ -49,6 +52,14 @@ let D3DATA        = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Write update to database
 /*/ MOD.Update = function( data ) {
+      UDATA.Call('SRV_DBUPDATE',data)
+      .then((res)=>{
+        if (res.OK) {
+          console.log(PR,`server db ${data.op}`,data,`success`);
+        } else {
+          console.log(PR,'error updating server db',res);
+        }
+      });
     };
 
 
@@ -88,7 +99,7 @@ let D3DATA        = {};
         UDATA.Call('SRV_DBSET',d3data)
         .then((res)=>{
           if (res.OK) {
-            console.log(PR,`datavase set OK`);
+            console.log(PR,`database set OK`);
             resolve(res);
           } else {
             reject(new Error(JSON.stringify(res)));
