@@ -1,4 +1,5 @@
 # NetCreate ignored directories
+/runtime
 
 # Also ignore build system directories
 .npmignore

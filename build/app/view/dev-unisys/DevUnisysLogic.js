@@ -1,3 +1,4 @@
+if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     TEST REACT INTEGRATION through UNISYS
@@ -24,6 +25,7 @@
     const DBG           = { handler:false };
     // these constants are used in m_StartTests()
     const TEST_WAIT     = 3000;
+    var   TEST_TIMER    = null;
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -111,13 +113,12 @@
 /*/ This is a placeholder that will eventually be moved into UNISYS proper
 /*/ MOD.Hook('START', function () {
       if (TEST('hook')) TEST.Pass('hookStart');
-      UNISYS.RegisterMessagesP()
+      UNISYS.RegisterMessagesPromise()
       .then((data)=>{
-        console.log('RegisterMessagesP: data',data);
+        console.log('RegisterMessagesP() registered handlers with server',data);
         if (TEST('net')) TEST.Pass('netMessageReg');
       });
     });
-
 
 /// SECOND MODULE for MODULE-to-MODULE TESTS //////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -140,11 +141,10 @@
 /*/ MOD2.Hook('START', function() {
       if (TEST('remote')) {
         // test remote data call (local, not network)
-        let localOnly = { toLocal : true, toNet : false };
-        UDATA2.Call('REMOTE_CALL_TEST',{ mycat:'kitty',results:[] })
+        UDATA2.LocalCall('REMOTE_CALL_TEST',{ mycat:'kitty',results:[] })
         .then((data)=>{
           if (data.mycat==='kitty') TEST.Pass('remoteDataReturn');
-        }, localOnly);
+        });
       }
     });
 
@@ -182,6 +182,69 @@
     });
 
 
+/// UNISYS NETWORK SEND/CALL/SIGNAL TESTS /////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ define test handler
+/*/ MOD2.Hook('INITIALIZE', function() {
+      if (TEST('net')) {
+        UDATA2.HandleMessage('NET_CALL_TEST',(data) => {
+          console.log(`*** NET_CALL_TEST (1) got data called by ${JSON.stringify(data.stack)} from socket ${UNISYS.SocketUADDR()}`);
+          data.reply=`hi from ${UNISYS.SocketUADDR()}`;
+          if (data.stack===undefined) data.stack = [];
+          data.stack.push(`${UNISYS.SocketUADDR()}_01`);
+          TEST.Pass('netCallHndlr');
+          return data;
+        });
+        UDATA2.HandleMessage('NET_CALL_TEST',(data) => {
+          console.log(`*** NET_CALL_TEST (2) got data called by ${JSON.stringify(data.stack)} from socket ${UNISYS.SocketUADDR()}`);
+          if (data.stack===undefined) data.stack = [];
+          data.stack.push(`${UNISYS.SocketUADDR()}_02`);
+          return data;
+        });
+        UDATA2.HandleMessage('NET_SIGNAL_TEST',(data) => {
+          if (typeof data.source==='string') TEST.Pass('netSignal');
+          if (data.source===UNISYS.SocketUADDR()) TEST.Pass('netSignalEcho');
+        });
+        UDATA2.HandleMessage('NET_SEND_TEST',(data) => {
+          // send only targets other instances, not the sending one
+          // console.log(`*** NET_SEND_TEST got data called by ${data.source} from socket ${UNISYS.SocketUADDR()}`);
+          if (data.source===UNISYS.SocketUADDR()) {
+            TEST.Fail('netSendNoEcho');
+            console.log(`*** NET_SEND_TEST fail netSendNoEcho`);
+          } else {
+            // this triggers if the data source DOES NOT MATCH our own data socket
+            TEST.Pass('netSendHndlr');
+            console.log(`*** NET_SEND_TEST pass netSend`);
+          }
+        });
+      }
+    });
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ invoke test handler on OTHER instance
+/*/ MOD2.Hook('START', function() {
+      setTimeout(delayed_send,2000);
+      // inline function
+      function delayed_send() {
+        if (!TEST('net')) return;
+        let uaddr = UNISYS.SocketUADDR();
+        let greeting = `hi from ${uaddr}`;
+        let call = { test:'netcall', greeting };
+        // test signal
+        UDATA2.NetSignal('NET_SIGNAL_TEST',{ test:'netsignal', source : uaddr });
+        // test call (note this is from UDATA, not UDATA2)
+        UDATA.NetCall('NET_CALL_TEST', call)
+        .then((d)=>{
+          // console.log(`*** NET_CALL_TEST (REPLY) got data returned ${JSON.stringify(d.stack)} from socket ${UNISYS.SocketUADDR()}`);
+          if (typeof d==='object') TEST.Pass('netData');
+          if (typeof d.reply==='string') TEST.Pass('netDataAdd');
+          if (d.greeting===greeting) TEST.Pass('netDataReturn');
+          if (Array.isArray(d.stack) && d.stack.length>1) TEST.Pass('netDataMulti');
+        });
+        // test send
+        UDATA2.NetSend('NET_SEND_TEST',{ test:'netsend', source : uaddr  });
+      }
+    });
+
 /// TEST STARTUP //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ The START phase executes after INITIALIZE has completed.
@@ -190,9 +253,9 @@
 /*/ MOD.Hook('START', function () {
   /// ASSESS TESTS AFTER TEST_WAIT MS
       console.log('*** RUNNING UNISYS TESTS ***');
-      setTimeout( function () {
-        TEST.Assess();
-      }, TEST_WAIT);
+      TEST.SetTitle('RUNNING TESTS');
+      TEST.SetMeta('socket',UNISYS.SocketUADDR());
+      TEST_TIMER = setTimeout(TEST.Assess,TEST_WAIT);
 
   /// STATE CHANGE TESTING
   /*/ register state change handler for 'VIEW' namespace
@@ -216,7 +279,7 @@
           return { dog : 'spotted' };
         });
         // Do the call test!
-        UDATA.Call('REMOTE_CALL_TEST',{melon:'logicmelon'})
+        UDATA.LocalCall('REMOTE_CALL_TEST',{melon:'logicmelon'})
         .then((data) => {
           if (data && data.melon && data.cat) TEST.Pass('remoteData');
           if (data.melon==='logicmelon_ack' && data.cat==='calico') TEST.Pass('remoteDataAdd');

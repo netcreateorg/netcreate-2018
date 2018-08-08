@@ -1,3 +1,4 @@
+if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     UNISYS is the top level system module for implementing:
@@ -29,6 +30,7 @@ const PR          = PROMPTS.Pad('UNISYS');
 /// INITIALIZE MAIN MODULE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var   UNISYS      = new UniModule(module.id);
+var   UDATA       = new UniData(UNISYS);
 
 /// UNISYS MODULE MAKING //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -41,6 +43,25 @@ var   UNISYS      = new UniModule(module.id);
 /*/ API: Make new module with UNISYS convenience methods
 /*/ UNISYS.NewDataLink = ( module, optName ) => {
       return new UniData(module,optName);
+    };
+/// UNISYS MESSAGE REGISTRATION ///////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    UNISYS.RegisterMessagesPromise = ( messages=[] ) => {
+      if (messages.length) {
+        try {
+          messages = UniData.ValidateMessageNames(messages);
+        } catch (e) {
+          console.error(e);
+        }
+      } else {
+        messages = UniData.MessageNames();
+      }
+      return new Promise((resolve,reject)=>{
+        UDATA.Call('SRV_REG_HANDLERS',{ messages })
+        .then((data)=>{
+          resolve(data);
+        });
+      });
     };
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,37 +81,33 @@ var   UNISYS      = new UniModule(module.id);
 /*/ UNISYS.SetScope = ( root_module_id ) => {
      LIFECYCLE.SetScope(root_module_id); // pass phase and hook function
    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    UNISYS.InScope = ( module_id ) => {
      let currentScope = LIFECYCLE.Scope();
      return (module_id.includes(currentScope))
    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Ensure UNISYS will run correctly
+    module_id is a subpath nested below 'app'
 /*/ UNISYS.SystemInitialize = ( module_id ) => {
-      if (DBG.hook) console.log(PR,'SystemInitialize');
-      // reload if SystemInitialize sees that it's run before
-      const key = 'UNISYS_SYSTEM_INIT';
-      if (SETTINGS.Get(key)) {
-        location.reload();
-        return;
-      }
-      // if reload didn't happen, then save info
-      SETTINGS.Set(key,SETTINGS.EJSProp('client').ukey);
+      if (DBG.hook) console.log(PR,'SystemInitialize',module_id);
+      // make sure users of UNISYS are
+      SETTINGS.ForceReloadSingleApp();
       // initialize lifecycle filtering by active view
       UNISYS.SetScope(module_id);
     }; // SystemInitialize
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: application startup after componentDidMount
 /*/ UNISYS.NetworkInitialize = ( callback ) => {
-      NETWORK.Connect({success:callback});
+      NETWORK.Connect(UDATA,{success:callback});
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: application startup after componentDidMount
 /*/ UNISYS.EnterApp = () => {
       let p = new Promise( async ( resolve, reject ) => {
-        await LIFECYCLE.Execute('INITIALIZE'); // INITIALIZE hook
-        await LIFECYCLE.Execute('UNISYSHOOK'); // UNISYS handlers hook (if needed)
-        await LIFECYCLE.Execute('LOADASSETS'); // LOADASSETS hook
+        await LIFECYCLE.Execute('INITIALIZE');  // INITIALIZE hook
+        await LIFECYCLE.Execute('UNISYS_INIT'); // UNISYS handlers hook (if needed)
+        await LIFECYCLE.Execute('LOADASSETS');  // LOADASSETS hook
         resolve();
       });
       return p;
@@ -103,6 +120,8 @@ var   UNISYS      = new UniModule(module.id);
         await LIFECYCLE.Execute('RESET');
         if (DBG.hook) console.log(PR,"running CONFIGURE");
         await LIFECYCLE.Execute('CONFIGURE');
+        if (DBG.hook) console.log(PR,"running UNISYS_SYNC");
+        await LIFECYCLE.Execute('UNISYS_SYNC'); // UNISYS network connection
         if (DBG.hook) console.log(PR,"running START");
         await LIFECYCLE.Execute('START');
         if (DBG.hook) console.log(PR,"StepRun() completed");
@@ -164,6 +183,12 @@ var   UNISYS      = new UniModule(module.id);
       });
     };
 
+/// NETWORK INFORMATION ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ UNISYS.SocketUADDR = () => {
+      return NETWORK.SocketUADDR();
+    };
 
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////

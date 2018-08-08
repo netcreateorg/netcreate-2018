@@ -1,3 +1,4 @@
+if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     UNISYS DATALINK CLASS
@@ -24,6 +25,7 @@ const DBG          = { send:false, return:false, register:false };
 const BAD_OWNER    = "must pass owner object of type React.Component or UniModule with optional 'name' parameter";
 const BAD_NAME     = "name parameter must be a string";
 const BAD_UID      = "unexpected non-unique UID";
+const NO_DATAOBJ   = "syntax error: missing data object";
 const BAD_EJSPROPS = "EJS props (window.NC_UNISYS) is undefined, so can not set datalink IP address";
 const PR           = "UDATA:";
 
@@ -131,30 +133,10 @@ var MESSAGER       = new Messager();
         MESSAGER.UnhandleMessage(mesgName,listener);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Sends the data to all message implementors UNLESS it is originating from
-      the same UDATA instance (avoid echoing back to self)
-  /*/ Send( mesgName, inData, options ) {
-        if (DBG.send) console.log(`${this.uid}_${PR}`,'** DATALINK SEND',mesgName);
-        options = options || { msgType:'mesg' };
-        // uid is "source uid" of subscribing object, to avoid reflection
-        // if the subscribing object is also the originating state changer
-        options.srcUID = this.UID();
-        // uid is "source uid" of subscribing object, to avoid reflection
-        // if the subscribing object is also the originating state changer
-        MESSAGER.Send(mesgName,inData,options);
-      }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Sends the data to all message implementors, irregardless of origin.
-  /*/ Signal( mesgName, data, options ) {
-        if (DBG.send) console.log(`${this.uid}_${PR}`,'** DATALINK SIGNAL',mesgName);
-        options = options || { msgType:'mesg' };
-        MESSAGER.Signal(mesgName,data);
-      }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ UDATA wraps Messager.Call(), which returns an array of promises.
       The UDATA version of Call() manages the promises, and returns a
-  /*/ async Call( mesgName, inData, options ) {
-        options = options || { msgType:'mesg' };
+  /*/ async Call( mesgName, inData={}, options={} ) {
+        options = Object.assign(options,{type:'mcall'});
         if (DBG.send) {
           let status = '';
           if (!options.toNet) status+='NO_NET ';
@@ -166,20 +148,80 @@ var MESSAGER       = new Messager();
         // if the subscribing object is also the originating state changer
         options.srcUID = this.UID();
         let promises = MESSAGER.Call(mesgName,inData,options);
+        /// MAGICAL ASYNC/AWAIT BLOCK ///////
         if (DBG.send) console.log(`${this.uid}_${PR}`,'** awaiting...',promises);
         let resArray = await Promise.all(promises);
         if (DBG.send) console.log(`${this.uid}_${PR}`,'** promise fulfilled!',mesgName);
+        /// END MAGICAL ASYNC/AWAIT BLOCK ///
         let resObj = Object.assign({},...resArray);
         if (DBG.return) console.log(`${this.uid}_${PR}`,`[${mesgName}] returned`,JSON.stringify(resObj));
         return resObj;
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Sends the data to all message implementors UNLESS it is originating from
+      the same UDATA instance (avoid echoing back to self)
+  /*/ Send( mesgName, inData={}, options={} ) {
+        if (DBG.send) console.log(`${this.uid}_${PR}`,'** DATALINK SEND',mesgName);
+        options = Object.assign(options,{type:'msend'});
+        // uid is "source uid" of subscribing object, to avoid reflection
+        // if the subscribing object is also the originating state changer
+        options.srcUID = this.UID();
+        // uid is "source uid" of subscribing object, to avoid reflection
+        // if the subscribing object is also the originating state changer
+        MESSAGER.Send(mesgName,inData,options);
+      }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Sends the data to all message implementors, irregardless of origin.
+  /*/ Signal( mesgName, inData={}, options={} ) {
+        options = Object.assign(options,{type:'msig'});
+        MESSAGER.Signal(mesgName,inData,options);
+      }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ version of Call that forces local-only calls
-  /*/ LocalCall( mesgName, inData, options ) {
-        options = options || { msgType:'mesg' };
+  /*/ LocalCall( mesgName, inData, options={} ) {
+        options = Object.assign(options,{type:'mcall'});
         options.toLocal = true;
         options.toNet = false;
         return this.Call(mesgName,inData,options);
+      }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ version of Send that force network-only calls
+  /*/ LocalSend( mesgName, inData, options={} ) {
+        options = Object.assign(options,{type:'msend'});
+        options.toLocal = true;
+        options.toNet = false;
+        return this.Send(mesgName,inData,options);
+      }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ version of Send that force network-only calls
+  /*/ LocalSignal( mesgName, inData, options={} ) {
+        options = Object.assign(options,{type:'msig'});
+        options.toLocal = true;
+        options.toNet = false;
+        return this.Signal(mesgName,inData,options);
+      }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ version of Call that forces local-only calls
+  /*/ NetCall( mesgName, inData, options={} ) {
+        options = Object.assign(options,{type:'mcall'});
+        options.toLocal = false;
+        options.toNet = true;
+        return this.Call(mesgName,inData,options);
+      }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ version of Send that force network-only calls
+  /*/ NetSend( mesgName, inData, options={} ) {
+        options = Object.assign(options,{type:'msend'});
+        options.toLocal = false;
+        options.toNet = true;
+        return this.Send(mesgName,inData,options);
+      }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ version of Signal that forces network-only signal
+  /*/ NetSignal( mesgName, inData, options={} ) {
+        options.toLocal = false;
+        options.toNet = true;
+        this.Signal(mesgName,inData,options);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       NullCallback () {
@@ -194,6 +236,16 @@ var MESSAGER       = new Messager();
     UNISYS.
 /*/ UnisysDataLink.MessageNames = function () {
       return MESSAGER.MessageNames();
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Filter any bad messages from the passed array of strings
+/*/ UnisysDataLink.ValidateMessageNames = function ( msgs=[] ) {
+      let valid=[];
+      msgs.forEach((name)=>{
+        if (MESSAGER.HasMessageName(name)) valid.push(name);
+        else throw new Error(`ValidateMessageNames() found invalid message '${name}'`);
+      });
+      return valid;
     };
 
 

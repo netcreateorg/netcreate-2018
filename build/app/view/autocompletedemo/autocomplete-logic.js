@@ -69,6 +69,9 @@ var   UDATA      = UNISYS.NewDataLink(MOD);
 \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -/*/
 var   SELECTION        = {};      // see above for description
 var   D3DATA           = null;    // see above for description
+const DATASTORE        = require('system/datastore');
+const PROMPTS          = require('system/util/prompts');
+const PR               = PROMPTS.Pad('ACDLogic');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -82,19 +85,18 @@ const TARGET_COLOR     = '#FF0000'
 /*/ LOADASSETS fires during <AutoCompleteDemo>.componentDidMount
 /*/ MOD.Hook('LOADASSETS',()=>{
       // load data into D3DATA
-      let dataSource = "http://localhost:3000/htmldemos/d3forcedemo/data.reducedlinks.json";
-      D3.json(dataSource, ( error, _data )=>{
-        if (error) throw Error(error);
-        D3DATA = _data;
-        // initialize global state D3DATA as well
+      DATASTORE.LoadDataPromise()
+      .then((data)=>{
+        console.log(PR,'DATASTORE returned data',data);
+        D3DATA = data;
         UDATA.SetState('D3DATA',D3DATA);
-      }); // end D3.json load
+      });
     }); // end INITIALIZE HOOK
 
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ UNISYSHOOK fires after CONFIGURE just before START
-/*/ MOD.Hook('UNISYSHOOK', () => {
+/*/ UNIPRESYNC fires after CONFIGURE just before START
+/*/ MOD.Hook('UNISYS_INIT', () => {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ Handle D3-related updates based on state changes. Subcomponents are
       responsible for updating themselves.
@@ -263,7 +265,30 @@ const TARGET_COLOR     = '#FF0000'
         selection.searchLabel          = searchString;
         UDATA.SetState('SELECTION',selection);
       });
-    }); // UNISYSHOOK
+
+      /// STILL PART OF UNISYS_INIT PHASE
+      /// RETURN PROMISE to prevent phase from continuing until after registration
+      /// of messages is successful
+      return new Promise((resolve,reject) => {
+        console.log(`${PR}HOOK 'UNISYS_INIT' Registering Message Handlers...`);
+        // timeout for broken network registration
+        let timeout = setTimeout(()=>{
+          reject(new Error('UNISYS REGISTER TIMEOUT'));
+        },5000);
+        // register ONLY messages we want to make public
+        UNISYS.RegisterMessagesPromise([
+          'SOURCE_UPDATE',
+          'EDGE_UPDATE',
+          'EDGE_DELETE'
+        ])
+        .then((d)=>{
+          clearTimeout(timeout);
+          console.log(`${PR}HOOK 'UNISYS_INIT' Registered Message Handlers ${JSON.stringify(d.registered)}`);
+          console.log(`INFO: %cMy socket address is ${UNISYS.SocketUADDR()}`,'color:blue;font-weight:bold' );
+          resolve();
+        });
+      });
+    }); // end UNISYS_INIT
 
 
 /// OBJECT HELPERS ////////////////////////////////////////////////////////////

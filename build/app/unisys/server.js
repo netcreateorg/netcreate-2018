@@ -4,16 +4,17 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = true;
+const DBG = false;
 
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNET      = require('./server-network');
+const UDB       = require('./server-database');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPTS    = require('../system/util/prompts');
-const PR         = PROMPTS.Pad('USRV');
+const PR         = PROMPTS.Pad('SRV');
 
 /// MODULE VARS ///////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,6 +28,7 @@ var UNISYS = {};
     network values, so it can embed them in the index.ejs file for webapps
     override = { port }
 /*/ UNISYS.InitializeNetwork = ( override ) => {
+      UDB.InitializeDatabase(override);
       return UNET.InitializeNetwork(override);
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -37,10 +39,34 @@ var UNISYS = {};
       UNET.HandleMessage('SRV_REFLECT',function(pkt) {
         pkt.Data().serverSays='REFLECTING';
         pkt.Data().stack.push('SRV_01');
-        console.log(PR,sprint_message(pkt));
+        if (DBG) console.log(PR,sprint_message(pkt));
         // return the original packet
         return pkt;
       });
+
+      UNET.HandleMessage('SRV_REG_HANDLERS',function(pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        // now need to store the handlers somehow.
+        let data = UNET.RegisterRemoteHandlers(pkt);
+        // or return a new data object that will replace pkt.data
+        return data;
+      });
+
+      UNET.HandleMessage('SRV_DBGET',function(pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_GetDatabase(pkt);
+      });
+
+      UNET.HandleMessage('SRV_DBSET',function(pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_SetDatabase(pkt);
+      });
+
+      UNET.HandleMessage('SRV_DBUPDATE',function(pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_Update(pkt);
+      });
+
       // utility function //
       function sprint_message(pkt) {
         return `got '${pkt.Message()}' data=${JSON.stringify(pkt.Data())}`;

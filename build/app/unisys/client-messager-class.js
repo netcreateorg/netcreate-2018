@@ -1,3 +1,4 @@
+if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     Messager - Handle a collection of named events and their handlers
@@ -104,7 +105,7 @@ class Messager {
     well. dstScope is 'net' or 'local' to limit where to send, or 'all'
     for everyone on net or local
 /*/ Send( mesgName, inData, options={} ) {
-      let { srcUID, msgType }          = options;
+      let { srcUID, type }          = options;
       let { toLocal=true, toNet=true } = options;
       const handlers = this.handlerMap.get(mesgName);
       /// toLocal
@@ -121,15 +122,14 @@ class Messager {
       } // end toLocal
       /// toNetwork
       if (toNet) {
-        let pkt = new NetMessage(mesgName,inData);
-        pkt.SetType(msgType);
+        let pkt = new NetMessage(mesgName,inData,type);
         pkt.SocketSend();
       } // end toNetwork
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: wrapper for Send() used when you want every handlerFunc, including
     the sender, to receive the event even if it is the one who sent it.
-/*/ Signal( mesgName, data, options ) {
+/*/ Signal( mesgName, data, options={} ) {
       if (options.srcUID) {
         console.warn(`overriding srcUID ${options.srcUID} with NULL because Signal() doesn't use it`);
         options.srcUID = null;
@@ -139,7 +139,7 @@ class Messager {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Return an array of Promises. Called by UDATA.Call().
 /*/ Call( mesgName, inData, options={} ) {
-      let { srcUID }                   = options;
+      let { srcUID, type }             = options;
       let { toLocal=true, toNet=true } = options;
       const handlers = this.handlerMap.get(mesgName);
       let promises = [];
@@ -169,7 +169,8 @@ class Messager {
       }
       /// toNetwork
       if (toNet) {
-        let pkt = new NetMessage(mesgName,inData);
+        type = type || 'mcall';
+        let pkt = new NetMessage(mesgName,inData,type);
         let p = pkt.QueueTransaction();
         promises.push(p);
       } // end toNetwork
@@ -188,6 +189,12 @@ class Messager {
       });
       return handlers;
     }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: Verify that message exists
+/*/ HasMessageName ( msg='' ) {
+      return this.handlerMap.has(msg);
+    }
+
 } // class Messager
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////

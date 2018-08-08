@@ -1,3 +1,4 @@
+if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     UNISYS MODULE SHELL

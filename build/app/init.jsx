@@ -1,3 +1,4 @@
+if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     init.jsx
@@ -28,16 +29,11 @@ const SETTINGS    = require('settings');
 const UNISYS      = require('unisys/client');
 const DATASTORE   = require('system/datastore');
 
-/// MODULE INITIALIZATION /////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-console.log('> init.jsx loaded');
-
 /// INITIALIZE WHEN DOM HAS FINISHED LOADING //////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const APP_CONTAINER = '#app-container';
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('init.jsx: initializing AppShell into', APP_CONTAINER);
   ReactDOM.render((
     <HashRouter hashType="noslash">
       <AppShell />
