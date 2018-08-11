@@ -1,4 +1,4 @@
-if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
+if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     TEST
@@ -302,7 +302,7 @@ let DBG = false;
         let tnotes = '';
         if (!TM.Passed('netCallHndlr')) tnotes+= `NOTE: netCallHndlr passes when REMOTE calls LOCAL NET_CALL_TEST\n`;
         if (!TM.Passed('netSendHndlr')) tnotes+= `NOTE: netSendHndlr passes when REMOTE sends LOCAL NET_SEND_TEST\n`;
-        if (!TM.Passed('netData')) tnotes+= `NOTE: netData* passes when a REMOTE implementer of NET_CALL_TEST returns data to LOCAL\n`;
+        if (!TM.Passed('netData')) tnotes+= `NOTE: netData* passes when a REMOTE implementer of NET_CALL_TEST returns data (not NOP) to LOCAL\n`;
         if (tnotes) out+='\n'+tnotes;
 
         // summary
