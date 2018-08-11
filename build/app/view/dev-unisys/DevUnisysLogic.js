@@ -1,4 +1,4 @@
-if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
+if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     TEST REACT INTEGRATION through UNISYS
@@ -115,7 +115,7 @@ if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
       if (TEST('hook')) TEST.Pass('hookStart');
       UNISYS.RegisterMessagesPromise()
       .then((data)=>{
-        console.log('RegisterMessagesP() registered handlers with server',data);
+        console.log('RegisterMessagesPromise() registered handlers with server',data);
         if (TEST('net')) TEST.Pass('netMessageReg');
       });
     });
@@ -235,7 +235,7 @@ if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
         UDATA.NetCall('NET_CALL_TEST', call)
         .then((d)=>{
           // console.log(`*** NET_CALL_TEST (REPLY) got data returned ${JSON.stringify(d.stack)} from socket ${UNISYS.SocketUADDR()}`);
-          if (typeof d==='object') TEST.Pass('netData');
+          if ((typeof d==='object')&&(!d.NOP)) TEST.Pass('netData');
           if (typeof d.reply==='string') TEST.Pass('netDataAdd');
           if (d.greeting===greeting) TEST.Pass('netDataReturn');
           if (Array.isArray(d.stack) && d.stack.length>1) TEST.Pass('netDataMulti');

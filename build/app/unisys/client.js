@@ -1,4 +1,4 @@
-if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
+if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     UNISYS is the top level system module for implementing:
@@ -15,22 +15,23 @@ const DBG = {
 
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UniData     = require('unisys/client-datalink-class');
-const UniModule   = require('unisys/client-module-class');
+const UniData      = require('unisys/client-datalink-class');
+const UniModule    = require('unisys/client-module-class');
+const UniComponent = require('unisys/client-react-component');
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const SETTINGS    = require('settings');
-const LIFECYCLE   = require('unisys/client-lifecycle');
-const STATE       = require('unisys/client-state');
-const NETWORK     = require('unisys/client-network');
-const PROMPTS     = require('system/util/prompts');
-const PR          = PROMPTS.Pad('UNISYS');
+const SETTINGS     = require('settings');
+const LIFECYCLE    = require('unisys/client-lifecycle');
+const STATE        = require('unisys/client-state');
+const NETWORK      = require('unisys/client-network');
+const PROMPTS      = require('system/util/prompts');
+const PR           = PROMPTS.Pad('UNISYS');
 
 /// INITIALIZE MAIN MODULE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var   UNISYS      = new UniModule(module.id);
-var   UDATA       = new UniData(UNISYS);
+var   UNISYS       = new UniModule(module.id);
+var   UDATA        = new UniData(UNISYS);
 
 /// UNISYS MODULE MAKING //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -66,13 +67,19 @@ var   UDATA       = new UniData(UNISYS);
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: LIFECYCLE Hook() functions
-/*/ UNISYS.Hook = (phase,f) => {
+/*/ UNISYS.Hook = ( phase, f ) => {
       if (typeof phase!=='string') throw Error('arg1 is phase as string');
       if (typeof f!=='function') throw Error('arg2 is function callback');
       LIFECYCLE.Hook(phase,f,UNISYS.ModuleID()); // pass phase and hook function
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: LIFECYCLE Scope() functions
+/*/ API: System Initialize
+/*/ UNISYS.SystemInitialize = ( module_id ) => {
+      UNISYS.SetScope(module_id);
+      SETTINGS.ForceReloadSingleApp();
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API HELPER: LIFECYCLE Scope() functions
     The 'scope' is used by LIFECYCLE to determine what modules implementing
     various HOOKS will be called. The root_module_id is a path that will
     be considered the umbrella of "allowed to hook" modules. For REACT apps,
@@ -80,60 +87,66 @@ var   UDATA       = new UniData(UNISYS);
     the unisys and system directories are allowed to run their hooks
 /*/ UNISYS.SetScope = ( root_module_id ) => {
      LIFECYCLE.SetScope(root_module_id); // pass phase and hook function
-   }
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-   UNISYS.InScope = ( module_id ) => {
+/*/ API HELPER: SETTINGS ForceReloadSingleApp
+    checks to see if settings flag is "dirty"; if it is, then reload the
+    location to ensure no linger apps are running in the background. Yes
+    this is a bit of a hack.
+/*/ UNISYS.ForceReloadSingleApp = () => {
+      SETTINGS.ForceReloadSingleApp();
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API HELPER: return TRUE if passed module.id is within the current set
+    scope
+/*/ UNISYS.InScope = ( module_id ) => {
      let currentScope = LIFECYCLE.Scope();
      return (module_id.includes(currentScope))
    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Ensure UNISYS will run correctly
-    module_id is a subpath nested below 'app'
-/*/ UNISYS.SystemInitialize = ( module_id ) => {
-      if (DBG.hook) console.log(PR,'SystemInitialize',module_id);
-      // make sure users of UNISYS are
-      SETTINGS.ForceReloadSingleApp();
-      // initialize lifecycle filtering by active view
-      UNISYS.SetScope(module_id);
-    }; // SystemInitialize
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: application startup after componentDidMount
+/*/ API: application startup
 /*/ UNISYS.NetworkInitialize = ( callback ) => {
       NETWORK.Connect(UDATA,{success:callback});
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: application startup after componentDidMount
+/*/ API: application startup
 /*/ UNISYS.EnterApp = () => {
-      let p = new Promise( async ( resolve, reject ) => {
-        await LIFECYCLE.Execute('INITIALIZE');  // INITIALIZE hook
-        await LIFECYCLE.Execute('UNISYS_INIT'); // UNISYS handlers hook (if needed)
-        await LIFECYCLE.Execute('LOADASSETS');  // LOADASSETS hook
-        resolve();
+      return new Promise( async ( resolve, reject ) => {
+        try {
+          await LIFECYCLE.Execute('INITIALIZE');  // INITIALIZE hook
+          await LIFECYCLE.Execute('UNISYS_INIT'); // UNISYS handlers hook (if needed)
+          await LIFECYCLE.Execute('LOADASSETS');  // LOADASSETS hook
+          resolve();
+        } catch (e) {
+          console.error('EnterApp() Lifecycle Error. Check phase execution order effect on data validity.\n',e);
+        }
       });
-      return p;
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: configure system before run
 /*/ UNISYS.SetupRun = () => {
       return new Promise( async ( resolve, reject ) => {
-        if (DBG.hook) console.log(PR,"running RESET");
-        await LIFECYCLE.Execute('RESET');
-        if (DBG.hook) console.log(PR,"running CONFIGURE");
-        await LIFECYCLE.Execute('CONFIGURE');
-        if (DBG.hook) console.log(PR,"running UNISYS_SYNC");
-        await LIFECYCLE.Execute('UNISYS_SYNC'); // UNISYS network connection
-        if (DBG.hook) console.log(PR,"running START");
-        await LIFECYCLE.Execute('START');
-        if (DBG.hook) console.log(PR,"StepRun() completed");
-        resolve();
+        try {
+          await LIFECYCLE.Execute('RESET');
+          await LIFECYCLE.Execute('CONFIGURE');
+          await LIFECYCLE.Execute('UNISYS_READY'); // UNISYS network connection
+          await LIFECYCLE.Execute('START');
+          resolve();
+        } catch (e) {
+          console.error('SetupRun() Lifecycle Error. Check phase execution order effect on data validity.\n',e);
+        }
       });
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: handle periodic updates for a simulation-driven timestep
 /*/ UNISYS.Run = () => {
       return new Promise( async ( resolve, reject ) => {
-        await LIFECYCLE.Execute('UPDATE');
-        resolve();
+        try {
+          await LIFECYCLE.Execute('UPDATE');
+          resolve();
+        } catch (e) {
+          console.error(e);
+        }
       });
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -189,6 +202,10 @@ var   UDATA       = new UniData(UNISYS);
 /*/ UNISYS.SocketUADDR = () => {
       return NETWORK.SocketUADDR();
     };
+
+/// REACT INTEGRATION /////////////////////////////////////////////////////////
+/*/
+/*/ UNISYS.Component = UniComponent;
 
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////

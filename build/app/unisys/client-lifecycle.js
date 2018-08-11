@@ -1,4 +1,4 @@
-if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
+if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     LifeCycle - A system manager for application lifecycle events.
@@ -17,12 +17,12 @@ const PATH     = require('system/util/path');
     var PHASE_HOOKS = new Map();  // functions that might right a Promise
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const PHASES = [
-      'INITIALIZE',               // executes before REACT renders
-      'UNISYS_INIT',              // (opt) configure UNISYS-related hooks
+      'INITIALIZE',               // very early initialization
+      'UNISYS_INIT',              // configure early UNISYS-related hooks
       'LOADASSETS',               // load any external data, make connections
       'RESET',                    // reset runtime data structures
       'CONFIGURE',                // configure runtime data structures
-      'UNISYS_SYNC',              // synchronize to UNISYS network server
+      'UNISYS_READY',             // synchronize to UNISYS network server
       'START',                    // start normal execution run
       'UPDATE',                   // system is running (periodic call w/ time)
       'PREPAUSE',                 // system wants to pause run
@@ -39,20 +39,20 @@ const PATH     = require('system/util/path');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     var MOD = {
       name  : 'LifeCycle',
-      scope : false
+      scope : 'system/booting'    // overwritten by UNISYS.SystemInitialize()
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ UTILITY: compare the destination scope with the acceptable scope (the
     module.id of the root JSX component in a view). Any module not in the
     system directory will not get called
-/*/ function m_CheckedHookCall( phase, o ) {
+/*/ function m_ExecuteScopedPhase( phase, o ) {
       // check for special unisys or system directory
       if (o.scope.indexOf('system')===0) return o.f();
       if (o.scope.indexOf('unisys')===0) return o.f();
       // check for subdirectory
       if (o.scope.includes(MOD.scope,0)) return o.f();
       // else do nothing
-        if (DBG) console.info(`LIFECYCLE: skipping [${phase}] ${o.scope} because scope is ${MOD.scope}`);
+        if (DBG) console.info(`LIFECYCLE: skipping [${phase}] for ${o.scope} because scope is ${MOD.scope}`);
         return undefined;
     }
 
@@ -101,7 +101,7 @@ const PATH     = require('system/util/path');
       if (DBG) console.group(phase);
       // o contains f, scope pushed in Hook() above
       let promises = hooks.map((o) => {
-        let retval = m_CheckedHookCall(phase,o);
+        let retval = m_ExecuteScopedPhase(phase,o);
         if (retval instanceof Promise) return retval;
         icount++;
         // return undefined to signal no special handling

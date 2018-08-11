@@ -60,9 +60,9 @@
     const AutoCompleteDemo  = require('view/autocompletedemo/AutoCompleteDemo');
     const DevUnisys         = require('view/dev-unisys/DevUnisys');
     const DevDB             = require('view/dev-db/DevDB');
+    const DevReact          = require('view/dev-react/DevReact');
 //  const Prototype         = require('view/prototype/Prototype');
 //  const D3Test            = require('view/d3test/D3Test');
-
 
 /** (2) ROUTED FUNCTIONS *****************************************************\
   Used by render()'s <Switch> to load a plain html page that is
@@ -90,7 +90,6 @@
     );
 }
 
-
 /** (3) NO ROUTE *************************************************************\
   Used by render()'s <Switch> when there are no matching routes
 \*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
@@ -100,8 +99,6 @@
       <Alert color="warning">No Match for route <tt>#{hash}</tt></Alert>
     );
   }
-
-
 
 /** APPLICATION NAVBAR + SWITCHED ROUTER VIEW ********************************\
 
@@ -136,7 +133,6 @@ class AppShell extends React.Component {
   To add a new HTML, add the link to both the <Nav> and <Switch> staments.
   To add a new VIEW, load the component
 /*/ render() {
-
       /// return component with matching routed view
       return (
         <div style={{display:'flex', flexFlow:'column nowrap', width:'100%', height:'100vh'}}>
@@ -148,13 +144,7 @@ class AppShell extends React.Component {
               <Nav className="ml-auto" navbar>
             { /*
                 <NavItem>
-                  <NavLink to="/autocompletedemo" tag={RRNavLink} replace>Demo 1808</NavLink>
-                </NavItem>
-                <NavItem>
                   <NavLink to="/d3forcedemo" tag={RRNavLink} replace>D3 ForceDemo</NavLink>
-                </NavItem>
-                <NavItem>
-                  <NavLink to="/prototype" tag={RRNavLink} replace>Prototype</NavLink>
                 </NavItem>
             */ }
                 <UncontrolledDropdown nav>
@@ -163,7 +153,10 @@ class AppShell extends React.Component {
                   </DropdownToggle>
                   <DropdownMenu>
                     <DropdownItem>
-                      <NavLink to="/dev-unisys" tag={RRNavLink} replace>UNISYS tests</NavLink>
+                      <NavLink to="/dev-react" tag={RRNavLink} replace>REACT INTEGRATION tests</NavLink>
+                    </DropdownItem>
+                    <DropdownItem>
+                      <NavLink to="/dev-unisys" tag={RRNavLink} replace>NET and STATE tests</NavLink>
                     </DropdownItem>
                     <DropdownItem>
                       <NavLink to="/dev-db" tag={RRNavLink} replace>DATABASE tests</NavLink>
@@ -171,13 +164,6 @@ class AppShell extends React.Component {
                 { /*
                     <DropdownItem>
                       <NavLink to="/simple" tag={RRNavLink} replace>SimpleHTML</NavLink>
-                    </DropdownItem>
-                    <DropdownItem>
-                      <NavLink to="/d3test" tag={RRNavLink} replace>TEST D3</NavLink>
-                    </DropdownItem>
-                    <DropdownItem divider />
-                    <DropdownItem>
-                      <NavLink to="/test3" tag={RRNavLink} replace>Test Descriptions</NavLink>
                     </DropdownItem>
                 */ }
                   </DropdownMenu>
@@ -191,12 +177,10 @@ class AppShell extends React.Component {
             <Route path='/' exact component={AutoCompleteDemo}/>
             <Route path='/dev-unisys' component={DevUnisys}/>
             <Route path='/dev-db' component={DevDB}/>
-          {/*
-            <Route path='/autocompletedemo' exact component={AutoCompleteDemo}/>
-            <Route path='/prototype' exact component={Prototype}/>
-            <Route path='/d3forcedemo' exact component={ (props) => {return HTML(props)} }/>
+            <Route path='/dev-react' component={DevReact}/>
             <Route path='/simple' exact component={ (props) => {return HTML(props)} }/>
-            <Route path='/d3test' exact component={D3Test}/>
+          {/*
+            <Route path='/d3forcedemo' exact component={ (props) => {return HTML(props)} }/>
           */}
             <Route component={NoMatch}/>
           </Switch>
@@ -204,7 +188,6 @@ class AppShell extends React.Component {
       );
     }
   }
-
 
 
 /// EXPORT REACT CLASS ////////////////////////////////////////////////////////

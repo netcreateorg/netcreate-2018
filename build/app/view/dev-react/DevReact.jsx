@@ -3,23 +3,21 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS      = require('unisys/client');
 const REFLECT     = require('system/util/reflection');
-/// MAGIC: DevDBLogic will add UNISYS Lifecycle Hooks on require()
-const LOGIC       = require('./DevDBLogic');
-const {Switch, Route, Redirect, Link} = require('react-router-dom');
+const LOGIC       = require('./DevReactLogic');
+const {Route}     = require('react-router-dom');
 
-var   DBG         = false;
+var   DBG         = true;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React       = require('react');
-const ReactStrap  = require('reactstrap');
 const PROMPTS     = require('system/util/prompts');
-const PR          = PROMPTS.Pad('DevDB');
+const PR          = PROMPTS.Pad('DevReact');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ This is the root component for the view
-/*/ class DevDB extends UNISYS.Component {
+/*/ class DevReact extends UNISYS.Component {
       constructor(props) {
         super(props);
         UNISYS.SystemInitialize(module.id);
@@ -36,31 +34,18 @@ const PR          = PROMPTS.Pad('DevDB');
         /* UNISYS STATE CHANGE HANDLERS */
         // bind 'this' context to handler function
         // then use for handling UNISYS state changes
-        this.UnisysStateChange = this.UnisysStateChange.bind(this);
+        this.AppStateChange = this.AppStateChange.bind(this);
         // NOW set up handlers...
-        this.OnAppStateChange('VIEW', this.UnisysStateChange);
+        this.OnAppStateChange('VIEW',this.AppStateChange);
 
       } // constructor
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UNISYS state change handler - registered by UNISYS.OnStateChange()
   /// state is coming from UNISYS
-      UnisysStateChange( state ) {
-        if (DBG) console.log(`.. REACT <- state`,state,`via ${this.udata.UID()}'`);
+      AppStateChange( state ) {
+        if (DBG) console.log(`.. REACT <- state`,state,`via ${this.UDATA.UID()}'`);
         // update local react state, which should force an update
         this.setState(state);
-      }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// COMPONENT state change handler - registered in render()
-  /// state is coming FROM component, which is updating already
-      handleTextChange( event ) {
-        let target = event.target;
-        let state = {
-          description : target.value
-        }
-        if (DBG) console.log(`REACT -> state`,state,`to ${this.udata.UID()}`);
-        this.SetAppState('VIEW',state,this.uni_id);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// COMPONENT this interface has composed
@@ -83,15 +68,16 @@ const PR          = PROMPTS.Pad('DevDB');
   /*/ render() {
         return (
             <div id='fdshell' style={{padding:'10px'}}>
-              <h2>DB DEVTEST SHELL</h2>
+              <h2>UNISYS-REACT INTEGRATION TEST SHELL</h2>
               <Route path={`${this.props.match.path}/student/:unit/:user`} component={this.StudentRender}/>
               <p>{this.state.description}</p>
             </div>
         );
       } // render
 
+
     } // class DevUnisys
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = DevDB;
+module.exports = DevReact;

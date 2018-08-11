@@ -206,7 +206,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
         if (promises.length===0) {
           console.log(PR,`'${pkt.Message()}' no eligible UADDR targets`);
           // return transaction to resolve callee
-          pkt.SetData({NOP:true});
+          pkt.SetData({NOP:`no handler found for '${pkt.Message()}'`});
           if (pkt.IsType('mcall')) pkt.ReturnTransaction(socket);
           return;
         }

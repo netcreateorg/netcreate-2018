@@ -1,4 +1,4 @@
-if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
+if (window.NC_DBG) console.log(`inc ${module.id}`);
 /// SYSTEM INTEGRATION ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS      = require('unisys/client');
@@ -26,6 +26,7 @@ const PR          = PROMPTS.Pad('DevUnisys');
 /*/ class DevUnisys extends React.Component {
       constructor(props) {
         super(props);
+        UNISYS.SystemInitialize(module.id);
 
         /* UNISYS DATA LINK CONNECTION */
         this.udata = UNISYS.NewDataLink(this);
@@ -49,11 +50,6 @@ const PR          = PROMPTS.Pad('DevUnisys');
         // NOW set up handlers...
         this.udata.OnStateChange('VIEW', this.UnisysStateChange);
         this.udata.OnStateChange('LOGIC', this.UnisysStateChange);
-
-        /* UNISYS LIFECYCLE INITIALIZATION */
-        // initialize UNISYS before declaring any hook functions
-        UNISYS.SystemInitialize(module.id);
-        // hook start handler to initiate call
 
         /* CONFIGURE UNISYS TESTS */
         // enable debug output and tests
@@ -127,14 +123,6 @@ const PR          = PROMPTS.Pad('DevUnisys');
         let className = REFLECT.ExtractClassName(this);
         if (DBG) console.log(`${className} componentDidMount`);
         // initialize network
-        UNISYS.NetworkInitialize(() => {
-          console.log(PR,'unisys network initialized');
-          // kickoff initialization stage by stage
-          (async () => {
-            await UNISYS.EnterApp();
-            await UNISYS.SetupRun();
-          })();
-        });
       } // componentDidMount
 
     StudentRender ({ match }) {

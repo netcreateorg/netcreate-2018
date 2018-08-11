@@ -1,4 +1,4 @@
-if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
+if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     init.jsx
@@ -14,30 +14,33 @@ require("babel-polyfill"); // enables regenerators for async/await
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ReactDOM    = require('react-dom');
-const React       = require('react');
-const HashRouter  = require('react-router-dom').HashRouter;
-
-/// REACT COMPONENTS //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const AppShell    = require('init-appshell');
+const ReactDOM      = require('react-dom');
+const React         = require('react');
+const HashRouter    = require('react-router-dom').HashRouter;
 
 /// SYSTEM MODULES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// demo: require system modules; this will likely be removed
-const SETTINGS    = require('settings');
-const UNISYS      = require('unisys/client');
-const DATASTORE   = require('system/datastore');
+const UNISYS        = require('unisys/client');
+const AppShell      = require('init-appshell');
 
-/// INITIALIZE WHEN DOM HAS FINISHED LOADING //////////////////////////////////
+/// UNISYS LIFECYCLE LOADER ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const APP_CONTAINER = '#app-container';
+/*/ When the DOM is loaded, initialize UNISYS
+/*/ document.addEventListener('DOMContentLoaded', () => {
+      ReactDOM.render((
+        <HashRouter hashType="noslash">
+          <AppShell />
+        </HashRouter>
+        ),
+        document.querySelector( '#app-container' ),
+        ()=>{
+          UNISYS.NetworkInitialize(() => {
+            (async () => {
+              await UNISYS.EnterApp();  // INITIALIZE, UNISYS_INIT, REACT_INIT, LOADASSETS
+              await UNISYS.SetupRun();  // RESET, CONFIGURE, UNISYS_READY, START
+            })();
+          });
+        });
+    });
 
-document.addEventListener('DOMContentLoaded', () => {
-  ReactDOM.render((
-    <HashRouter hashType="noslash">
-      <AppShell />
-    </HashRouter>
-    ), document.querySelector( APP_CONTAINER ));
-});
-/// execution continues in init-appshell.jsx

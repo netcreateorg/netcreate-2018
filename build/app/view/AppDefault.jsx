@@ -1,3 +1,4 @@
+if (window.NC_DBG) console.log(`inc ${module.id}`);
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
