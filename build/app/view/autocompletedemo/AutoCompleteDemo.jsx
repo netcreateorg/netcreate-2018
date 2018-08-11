@@ -53,7 +53,7 @@ const ACD_LOGIC    = require('./autocomplete-logic');
 /*/ class AutoCompleteDemo extends React.Component {
       constructor () {
         super();
-        UNISYS.SystemInitialize(module.id);
+        UNISYS.ForceReloadOnNavigation();
       }
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
@@ -94,6 +94,11 @@ const ACD_LOGIC    = require('./autocomplete-logic');
         ); // end return
       } // end render()
     } // end class AutoCompleteDemo
+
+/// EXPORT UNISYS SIGNATURE ///////////////////////////////////////////////////
+/// used in init.jsx to set module scope early
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+AutoCompleteDemo.UMOD = module.id;
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

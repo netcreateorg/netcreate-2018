@@ -18,28 +18,16 @@
 /// REACT LIBRARIES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const React = require('react');
-    const {
-      Alert,
-      Collapse,
-      Navbar,
-      NavbarToggler,
-      NavbarBrand,
-      Nav,
-      NavItem,
-      NavLink,
-      UncontrolledDropdown,
-      DropdownToggle,
-      DropdownMenu,
-      DropdownItem
-      } = require('reactstrap');
-    const {
-      Switch,
-      Route,
-      Redirect,
-      Link
-      } = require('react-router-dom');
+    const { Alert, Collapse } = require('reactstrap');
+    const { Navbar, NavbarToggler } = require('reactstrap');
+    const { NavbarBrand, Nav, NavItem, NavLink } = require('reactstrap');
+    const { UncontrolledDropdown, DropdownToggle } = require('reactstrap');
+    const { DropdownMenu, DropdownItem } = require('reactstrap');
+    const { Switch, Route, Redirect, Link } = require('react-router-dom');
     // workaround name collision in ReactRouterNavLink with ReactStrap
     const RRNavLink = require('react-router-dom').NavLink;
+    //
+    const { renderRoutes } = require('react-router-config');
 
 
 /** (1) ROUTED COMPONENTS ****************************************************\
@@ -64,6 +52,36 @@
 //  const Prototype         = require('view/prototype/Prototype');
 //  const D3Test            = require('view/d3test/D3Test');
 
+    const Routes = [
+      {
+        path: '/',
+        exact: true,
+        component: AutoCompleteDemo
+      },
+      {
+        path: '/dev-unisys',
+        component: DevUnisys
+      },
+      {
+        path: '/dev-db',
+        component: DevDB
+      },
+      {
+        path: '/dev-react',
+        component: DevReact
+      },
+      {
+        path: '/simple',
+        component: (props) => {return HTML(props)}
+      },
+      {
+        path: '*',
+        restricted: false,
+        component: NoMatch
+      }
+    ];
+
+
 /** (2) ROUTED FUNCTIONS *****************************************************\
   Used by render()'s <Switch> to load a plain html page that is
   located at app/htmldemos/<route>/<route.html>
@@ -79,7 +97,7 @@
   init-appshell.HTML() |       iframe  flex:1 0 auto, border:0
 \*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
   function HTML ( props ) {
-    SETTINGS.ForceReloadSingleApp();
+    SETTINGS.ForceReloadOnNavigation();
     let loc = props.location.pathname.substring(1);
     loc  = '/htmldemos/'+loc+'/'+loc+'.html';
     return (
@@ -137,35 +155,33 @@ class AppShell extends React.Component {
       return (
         <div style={{display:'flex', flexFlow:'column nowrap', width:'100%', height:'100vh'}}>
           <Navbar fixed="top" light expand="md" style={{ backgroundColor:'#f0f0f0'}}>
-            <NavbarBrand href="#">NetCreate Demo 1808</NavbarBrand>
+            <NavbarBrand href="#">NetCreate August Demo</NavbarBrand>
             <NavbarToggler onClick={this.toggle} />
             <Collapse isOpen={this.state.isOpen} navbar>
             {/*/ (1) add navigation links here /*/}
               <Nav className="ml-auto" navbar>
-            { /*
+            { /* extra menu items
                 <NavItem>
                   <NavLink to="/d3forcedemo" tag={RRNavLink} replace>D3 ForceDemo</NavLink>
                 </NavItem>
             */ }
-                <UncontrolledDropdown nav>
-                  <DropdownToggle nav caret>
+                <UncontrolledDropdown direction="right" nav>
+                  <DropdownToggle>
                     Developer
                   </DropdownToggle>
                   <DropdownMenu>
                     <DropdownItem>
-                      <NavLink to="/dev-react" tag={RRNavLink} replace>REACT INTEGRATION tests</NavLink>
+                      <NavLink to="/dev-react" tag={RRNavLink} replace>LIFECYCLE-REACT tests</NavLink>
                     </DropdownItem>
                     <DropdownItem>
-                      <NavLink to="/dev-unisys" tag={RRNavLink} replace>NET and STATE tests</NavLink>
+                      <NavLink to="/dev-unisys" tag={RRNavLink} replace>MESSAGING tests</NavLink>
                     </DropdownItem>
                     <DropdownItem>
                       <NavLink to="/dev-db" tag={RRNavLink} replace>DATABASE tests</NavLink>
                     </DropdownItem>
-                { /*
                     <DropdownItem>
-                      <NavLink to="/simple" tag={RRNavLink} replace>SimpleHTML</NavLink>
+                      <NavLink to="/simple" tag={RRNavLink} replace>SimpleHTML Example</NavLink>
                     </DropdownItem>
-                */ }
                   </DropdownMenu>
                 </UncontrolledDropdown>
               </Nav>
@@ -173,22 +189,15 @@ class AppShell extends React.Component {
           </Navbar>
           <div style={{height:'3.5em'}}>{/*/ add space underneath the fixed navbar /*/}</div>
           <Switch>
-          {/*/ (2) add route paths here /*/}
-            <Route path='/' exact component={AutoCompleteDemo}/>
-            <Route path='/dev-unisys' component={DevUnisys}/>
-            <Route path='/dev-db' component={DevDB}/>
-            <Route path='/dev-react' component={DevReact}/>
-            <Route path='/simple' exact component={ (props) => {return HTML(props)} }/>
-          {/*
-            <Route path='/d3forcedemo' exact component={ (props) => {return HTML(props)} }/>
-          */}
-            <Route component={NoMatch}/>
+            {renderRoutes(Routes)}
           </Switch>
         </div>
       );
-    }
-  }
+    } // render()
+  } // AppShell()
 
+/// EXPORT ROUTE INFO /////////////////////////////////////////////////////////
+AppShell.Routes = Routes;
 
 /// EXPORT REACT CLASS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

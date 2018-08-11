@@ -14,8 +14,8 @@ require("babel-polyfill"); // enables regenerators for async/await
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ReactDOM      = require('react-dom');
 const React         = require('react');
+const ReactDOM      = require('react-dom');
 const HashRouter    = require('react-router-dom').HashRouter;
 
 /// SYSTEM MODULES ////////////////////////////////////////////////////////////
@@ -28,19 +28,43 @@ const AppShell      = require('init-appshell');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ When the DOM is loaded, initialize UNISYS
 /*/ document.addEventListener('DOMContentLoaded', () => {
-      ReactDOM.render((
-        <HashRouter hashType="noslash">
-          <AppShell />
-        </HashRouter>
-        ),
-        document.querySelector( '#app-container' ),
-        ()=>{
-          UNISYS.NetworkInitialize(() => {
-            (async () => {
-              await UNISYS.EnterApp();  // INITIALIZE, UNISYS_INIT, REACT_INIT, LOADASSETS
-              await UNISYS.SetupRun();  // RESET, CONFIGURE, UNISYS_READY, START
-            })();
-          });
-        });
+      m_SetLifecycleScope();
+      // lifecycle
+      (async () => {
+        await UNISYS.EnterNet();  // UNISYS socket connection (that is all)
+        await UNISYS.EnterApp();  // INITIALIZE, UNISYS_INIT, LOADASSETS
+        await m_RenderApp();      // REACT initial view rendering
+        await UNISYS.SetupRun();  // RESET, CONFIGURE, UNISYS_READY, START
+      })();
     });
 
+/// LIFECYCLE HELPERS /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ helper to infer view module scope before module is routed lated (!)
+/*/ function m_SetLifecycleScope() {
+      // set scope for UNISYS execution
+      let routes = AppShell.Routes;
+      let loc = '/'+window.location.hash.substring(1);
+      let matches = routes.filter((route)=>{return route.path===loc});
+      let component = matches[0].component;
+      if (component.UMOD===undefined) console.warn(`WARNING: root view '${loc}' has no UMOD property, so can not set UNISYS scope`);
+      let modscope = component.UMOD || '<undefined>/init.jsx';
+      UNISYS.SetScope(modscope);
+  }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Wraps ReactDOM.render() in a Promise. Execution continues in <AppShell>
+    and the routed view in AppShell.Routes
+/*/ function m_RenderApp() {
+      return new Promise(( resolve, reject ) => {
+        try {
+          ReactDOM.render((
+            <HashRouter hashType="noslash">
+              <AppShell />
+            </HashRouter>
+            ), document.querySelector( '#app-container' ), resolve)
+        } catch (e) {
+          console.error('m_RenderApp() Lifecycle Error. Check phase execution order effect on data validity.\n',e);
+          debugger;
+        }
+      }); // promise
+    }

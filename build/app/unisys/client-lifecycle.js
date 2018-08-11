@@ -52,8 +52,8 @@ const PATH     = require('system/util/path');
       // check for subdirectory
       if (o.scope.includes(MOD.scope,0)) return o.f();
       // else do nothing
-        if (DBG) console.info(`LIFECYCLE: skipping [${phase}] for ${o.scope} because scope is ${MOD.scope}`);
-        return undefined;
+      if (DBG) console.info(`LIFECYCLE: skipping [${phase}] for ${o.scope} because scope is ${MOD.scope}`);
+      return undefined;
     }
 
 

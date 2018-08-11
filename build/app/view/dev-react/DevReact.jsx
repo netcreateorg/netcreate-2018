@@ -20,7 +20,7 @@ const PR          = PROMPTS.Pad('DevReact');
 /*/ class DevReact extends UNISYS.Component {
       constructor(props) {
         super(props);
-        UNISYS.SystemInitialize(module.id);
+        UNISYS.ForceReloadOnNavigation()
 
         /* INITIALIZE COMPONENT STATE from UNISYS */
         // get any state from 'VIEW' namespace; empty object if nothing
@@ -77,6 +77,11 @@ const PR          = PROMPTS.Pad('DevReact');
 
 
     } // class DevUnisys
+
+/// EXPORT UNISYS SIGNATURE ///////////////////////////////////////////////////
+/// used in init.jsx to set module scope early
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DevReact.UMOD = module.id;
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

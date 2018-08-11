@@ -26,7 +26,7 @@ const PR          = PROMPTS.Pad('DevUnisys');
 /*/ class DevUnisys extends React.Component {
       constructor(props) {
         super(props);
-        UNISYS.SystemInitialize(module.id);
+        UNISYS.ForceReloadOnNavigation();
 
         /* UNISYS DATA LINK CONNECTION */
         this.udata = UNISYS.NewDataLink(this);
@@ -150,6 +150,11 @@ const PR          = PROMPTS.Pad('DevUnisys');
 
 
     } // class DevUnisys
+
+/// EXPORT UNISYS SIGNATURE ///////////////////////////////////////////////////
+/// used in init.jsx to set module scope early
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DevUnisys.UMOD = module.id;
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

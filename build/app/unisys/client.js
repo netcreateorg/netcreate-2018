@@ -93,8 +93,8 @@ var   UDATA        = new UniData(UNISYS);
     checks to see if settings flag is "dirty"; if it is, then reload the
     location to ensure no linger apps are running in the background. Yes
     this is a bit of a hack.
-/*/ UNISYS.ForceReloadSingleApp = () => {
-      SETTINGS.ForceReloadSingleApp();
+/*/ UNISYS.ForceReloadOnNavigation = () => {
+      SETTINGS.ForceReloadOnNavigation();
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API HELPER: return TRUE if passed module.id is within the current set
@@ -103,11 +103,7 @@ var   UDATA        = new UniData(UNISYS);
      let currentScope = LIFECYCLE.Scope();
      return (module_id.includes(currentScope))
    }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: application startup
-/*/ UNISYS.NetworkInitialize = ( callback ) => {
-      NETWORK.Connect(UDATA,{success:callback});
-    };
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: application startup
 /*/ UNISYS.EnterApp = () => {
@@ -119,6 +115,19 @@ var   UDATA        = new UniData(UNISYS);
           resolve();
         } catch (e) {
           console.error('EnterApp() Lifecycle Error. Check phase execution order effect on data validity.\n',e);
+          debugger;
+        }
+      });
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: network startup
+/*/ UNISYS.EnterNet = () => {
+      return new Promise(( resolve, reject ) => {
+        try {
+          NETWORK.Connect(UDATA,{success: resolve});
+        } catch (e) {
+          console.error('EnterNet() Lifecycle Error. Check phase execution order effect on data validity.\n',e);
+          debugger;
         }
       });
     };
@@ -134,6 +143,7 @@ var   UDATA        = new UniData(UNISYS);
           resolve();
         } catch (e) {
           console.error('SetupRun() Lifecycle Error. Check phase execution order effect on data validity.\n',e);
+          debugger;
         }
       });
     };

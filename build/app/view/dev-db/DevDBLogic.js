@@ -51,9 +51,9 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
       });
     });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ EXPERIMENTAL: UNISYS_INIT is required to ensure that all registered
+/*/ EXPERIMENTAL: UNISYS_READY is required to ensure that all registered
     messages are logged before START happens
-/*/ MOD.Hook('UNISYS_INIT', function () {
+/*/ MOD.Hook('UNISYS_READY', function () {
       return new Promise((resolve,reject) => {
         let timeout = setTimeout(()=>{
           reject(Error('UNISYS REGISTER TIMEOUT'));
