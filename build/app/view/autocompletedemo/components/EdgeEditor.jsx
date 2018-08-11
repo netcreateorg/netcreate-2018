@@ -141,12 +141,11 @@ const AutoComplete = require('./AutoComplete');
 const NodeDetail   = require('./NodeDetail');
 
 const UNISYS   = require('unisys/client');
-var   UDATA    = null;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
-class EdgeEditor extends React.Component {
+class EdgeEditor extends UNISYS.Component {
     constructor (props) {
       super(props);
       this.state = {
@@ -185,11 +184,9 @@ class EdgeEditor extends React.Component {
       this.onInfoChange         = this.onInfoChange.bind(this);
       this.onSubmit             = this.onSubmit.bind(this);
 
-      // Initialize UNISYS DATA LINK for REACT
-      UDATA = UNISYS.NewDataLink(this);
       // Always make sure class methods are bind()'d before using them
       // as a handler, otherwise object context is lost
-      UDATA.OnStateChange('SELECTION',(data) => {
+      this.OnAppStateChange('SELECTION',(data) => {
         this.handleSelection(data);
       });
     } // constructor
@@ -233,7 +230,7 @@ class EdgeEditor extends React.Component {
       if (DBG) console.log('EdgeEditor.loadSourceAndTarget!')
       let edgeID = this.props.edgeID || '';
 
-      let D3DATA = UDATA.State('D3DATA');
+      let D3DATA = this.AppState('D3DATA');
 
       let edges = D3DATA.edges.filter( edge=>edge.id===edgeID );
       if (!edges) {
@@ -258,7 +255,7 @@ class EdgeEditor extends React.Component {
         // placeholder for now, otherwise, the render will choke on an invalid targetNode.
         targetNodes = [{label:'pick one...'}];
         // set this autoComplete field as current
-        UDATA.Call('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'target', searchString:''});
+        this.Call('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'target', searchString:''});
         // Define `edge` so it can be loaded later during setState.
         edge = {
           id: edgeID,
@@ -324,7 +321,7 @@ class EdgeEditor extends React.Component {
       if (DBG) console.log('EdgeEditor: got state SELECTION',data);
 
       // FIX bad state dependency assuming id was in stateChange
-      let { activeAutoCompleteId } = UDATA.State('SELECTION');
+      let { activeAutoCompleteId } = this.AppState('SELECTION');
 
       // Ignore the update if we're not the active AutoComplete component
       if (activeAutoCompleteId!=='edge'+this.props.edgeID+'target') return;
@@ -363,7 +360,7 @@ class EdgeEditor extends React.Component {
         this.setState({ isExpanded: false });
 
         // pass currentAutoComplete back to nodeselector
-        UDATA.Call('AUTOCOMPLETE_SELECT',{id:'nodeSelector'});
+        this.Call('AUTOCOMPLETE_SELECT',{id:'nodeSelector'});
       } else {
         // expand, but don't set the autocomplete field, since we're not editing
         this.setState({ isExpanded: true });
@@ -373,7 +370,7 @@ class EdgeEditor extends React.Component {
 /*/
 /*/ onDeleteButtonClick () {
       this.clearForm();
-      UDATA.Call('EDGE_DELETE',{edgeID:this.props.edgeID});
+      this.Call('EDGE_DELETE',{edgeID:this.props.edgeID});
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -432,9 +429,9 @@ class EdgeEditor extends React.Component {
       }
       if (DBG) console.group('EdgeEntry.onSubmit submitting',edge)
       // Notify parent of new edge data
-      UDATA.Call('EDGE_UPDATE',{edge:edge});
+      this.Call('EDGE_UPDATE',{edge:edge});
       // Notify parent to deselect selectedNode
-      UDATA.Call('SOURCE_SELECT',{nodeLabels:[]});
+      this.Call('SOURCE_SELECT',{nodeLabels:[]});
       // Clear the any selections
       this.clearForm()
     } // onSubmit

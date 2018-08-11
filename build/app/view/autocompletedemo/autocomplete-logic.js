@@ -265,7 +265,11 @@ const TARGET_COLOR     = '#FF0000'
         selection.searchLabel          = searchString;
         UDATA.SetState('SELECTION',selection);
       });
+    }); // end UNISYS_INIT
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ UNISYS APP REGISTRATION TIME
+/*/ MOD.Hook('UNISYS_READY', () => {
       /// STILL PART OF UNISYS_INIT PHASE
       /// RETURN PROMISE to prevent phase from continuing until after registration
       /// of messages is successful
@@ -275,6 +279,7 @@ const TARGET_COLOR     = '#FF0000'
         let timeout = setTimeout(()=>{
           reject(new Error('UNISYS REGISTER TIMEOUT'));
         },5000);
+
         // register ONLY messages we want to make public
         UNISYS.RegisterMessagesPromise([
           'SOURCE_UPDATE',
@@ -288,7 +293,8 @@ const TARGET_COLOR     = '#FF0000'
           resolve();
         });
       });
-    }); // end UNISYS_INIT
+    }); // end UNISYS_READY
+
 
 
 /// OBJECT HELPERS ////////////////////////////////////////////////////////////

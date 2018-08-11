@@ -35,20 +35,18 @@ const React      = require('react')
 const ReactDOM   = require('react-dom')
 const D3NetGraph = require('./d3-simplenetgraph')
 const UNISYS     = require('unisys/client');
-var   UDATA      = null;
 
 
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
-class NetGraph extends React.Component {
+class NetGraph extends UNISYS.Component {
     constructor (props) {
       super(props)
       this.state = {
         d3NetGraph: {}
       }
-      UDATA = UNISYS.NewDataLink(this);
     } // constructor
 
 

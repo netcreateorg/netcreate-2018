@@ -97,14 +97,14 @@ const NodeDetail   = require('./NodeDetail');
 const EdgeEditor   = require('./EdgeEditor');
 
 const UNISYS   = require('unisys/client');
-var   UDATA    = null;
 
 const thisIdentifier = 'nodeSelector';   // SELECTION identifier
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
-class NodeSelector extends React.Component {
+class NodeSelector extends UNISYS.Component {
+
     constructor (props) {
       super(props);
       this.state = {
@@ -119,8 +119,6 @@ class NodeSelector extends React.Component {
         edges: [],
         isEditable:      false
       };
-      // Initialize UNISYS DATA LINK for REACT
-      UDATA = UNISYS.NewDataLink(this);
       // Bind functions to this component's object context
       this.clearForm                             = this.clearForm.bind(this);
       this.getNewNodeID                          = this.getNewNodeID.bind(this);
@@ -135,8 +133,13 @@ class NodeSelector extends React.Component {
       this.onSubmit                              = this.onSubmit.bind(this);
       // NOTE: assign UDATA handlers AFTER functions have been bind()'ed
       // otherwise they will lose context
-      UDATA.OnStateChange('SELECTION',(change) => {
+      this.OnAppStateChange('SELECTION',(change) => {
         this.handleSelection(change);
+      });
+      this.Hook('START',() => {
+        // always wrap UNISYS calls in a lifescycle hook otherwise you may try to execute a call
+        // before it has been declared in another module
+        this.Call('AUTOCOMPLETE_SELECT',{id:'nodeSelector', searchString:this.state.formData.label});
       });
     } // constructor
 
@@ -164,7 +167,7 @@ class NodeSelector extends React.Component {
     REVIEW: Should this be in autocomplete-logic?
 /*/ getNewNodeID () {
       let highestID = 0;
-      let ids  = UDATA.State('D3DATA').nodes.map( node => { return node.id } );
+      let ids  = this.AppState('D3DATA').nodes.map( node => { return node.id } );
       if (ids.length>0) {
         highestID = ids.reduce( (a,b) => { return Math.max(a,b) } );
       }
@@ -176,7 +179,7 @@ class NodeSelector extends React.Component {
 /*/ Return a new unique ID
 /*/ getNewEdgeID () {
       let highestID = 0;
-      let ids  = UDATA.State('D3DATA').edges.map( edge => { return edge.id } )
+      let ids  = this.AppState('D3DATA').edges.map( edge => { return edge.id } )
       if (ids.length>0) {
         highestID = ids.reduce( (a,b) => { return Math.max(a,b) } );
       }
@@ -192,7 +195,7 @@ class NodeSelector extends React.Component {
       // Ignore the update if we're not the active AutoComplete component
       // if (data.activeAutoCompleteId!==thisIdentifier) return;
       // FIX bad state dependency
-      let { activeAutoCompleteId } = UDATA.State('SELECTION');
+      let { activeAutoCompleteId } = this.AppState('SELECTION');
       if (activeAutoCompleteId!==thisIdentifier) return;
 
       if (!this.state.isEditable) {
@@ -336,7 +339,7 @@ class NodeSelector extends React.Component {
           notes: newNodeData.notes
       };
       // tell other unisys subscribers interested in this state
-      UDATA.Call('SOURCE_UPDATE', {node: node});
+      this.Call('SOURCE_UPDATE', { node });
       // Clear form data
       this.clearForm();
     } // onSubmit
@@ -429,17 +432,6 @@ class NodeSelector extends React.Component {
           </div>
         </div>
       )
-    }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ REACT calls this when initial render() has completely finished
-/*/ componentDidMount () {
-      // console.log('componentDidMount')
-      // Register as the active autoComplete Component when we first start up
-      UNISYS.Hook('START',() => {
-        // always wrap UNISYS calls in a lifescycle hook otherwise you may try to execute a call
-        // before it has been declared in another module
-        UDATA.Call('AUTOCOMPLETE_SELECT',{id:'nodeSelector', searchString:this.state.formData.label});
-      });
     }
 } // class NodeSelector
 

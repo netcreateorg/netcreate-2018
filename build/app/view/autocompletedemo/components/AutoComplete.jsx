@@ -115,7 +115,6 @@ const { Input }   = ReactStrap;
 const Autosuggest = require('react-autosuggest');
 
 const UNISYS      = require('unisys/client');
-var   UDATA       = null;
 
 const MODE_STATIC   = 'static';   // Can't be edited ever
 const MODE_DISABLED = 'disabled'; // Can be edited, but not at the moment
@@ -126,7 +125,7 @@ var   _IsMounted  = false;
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
-class AutoComplete extends React.Component {
+class AutoComplete extends UNISYS.Component {
 
     constructor() {
       super();
@@ -147,11 +146,9 @@ class AutoComplete extends React.Component {
       this.onSuggestionHighlighted     = this.onSuggestionHighlighted.bind(this);
       this.shouldRenderSuggestions     = this.shouldRenderSuggestions.bind(this);
 
-      // Initialize UNISYS DATA LINK for REACT
       // NOTE: do this AFTER you have used bind() on the class method
       // otherwise the call will fail due to missing 'this' context
-      UDATA = UNISYS.NewDataLink(this);
-      UDATA.OnStateChange('SELECTION', this.onStateChange_SELECTION);
+      this.OnAppStateChange('SELECTION', this.onStateChange_SELECTION);
 
     } // constructor
 
@@ -162,7 +159,7 @@ class AutoComplete extends React.Component {
       // grab entire global state for 'SELECTION
       // REVIEW // autocompleteid probab;y should be stored elsewhere or use a
       // different mechanism
-      let { activeAutoCompleteId } = UDATA.State('SELECTION');
+      let { activeAutoCompleteId } = this.AppState('SELECTION');
 
       // setState() only if the currentID matches this one
       if (activeAutoCompleteId===this.props.identifier) {
@@ -200,7 +197,7 @@ class AutoComplete extends React.Component {
       // which will in turn pass the searchLabel back to the SELECTION
       // state handler in the constructor, which will in turn set the stae
       // of the input value to be passed on to AutoSuggest
-      UDATA.Call('SOURCE_SEARCH', { searchString: newValue });
+      this.Call('SOURCE_SEARCH', { searchString: newValue });
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle Autosuggest's request to set the value of the input field when
@@ -241,7 +238,7 @@ class AutoComplete extends React.Component {
     We construct the list on the fly based on the D3DATA data.  If the data model
     changes, we'll need to update this lexicon constructor.
 /*/ onSuggestionsFetchRequested () {
-      let data = UDATA.State('SELECTION');
+      let data = this.AppState('SELECTION');
       if (data.suggestedNodeLabels) {
         this.setState({
           suggestions: (data.suggestedNodeLabels)
@@ -265,16 +262,16 @@ class AutoComplete extends React.Component {
       if (suggestion.isAddNew) {
         // User selected the "Add New Node" item in the suggestion list
         // console.log('Add new:', this.state.value, 'suggestion',suggestion);
-        UDATA.Call('SOURCE_SELECT',{ nodeLabels: [this.state.value] });
+        this.Call('SOURCE_SELECT',{ nodeLabels: [this.state.value] });
       } else {
         // User selected an existing node in the suggestion list
-        UDATA.Call('SOURCE_SELECT',{ nodeLabels: [suggestion] });
+        this.Call('SOURCE_SELECT',{ nodeLabels: [suggestion] });
       }
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Autosuggest calls this whenever the user has highlighted a different suggestion
 /*/ onSuggestionHighlighted ({ suggestion }) {
-      UDATA.Call('SOURCE_HILITE',{ nodeLabel: suggestion });
+      this.Call('SOURCE_HILITE',{ nodeLabel: suggestion });
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Autosuggest checks this before rendering suggestions
