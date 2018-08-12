@@ -58,7 +58,7 @@ const PATH     = require('system/util/path');
       return undefined;
     }
 
-
+/// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: register a Phase Handler which is invoked by MOD.Execute()
     phase is a string constant from PHASES array above
@@ -86,9 +86,9 @@ const PATH     = require('system/util/path');
     function returns control to the calling code.
 /*/ MOD.Execute = async (phase) => {
       // require scope to be set
-      if (MOD.scope===false) throw Error(`Root JSX component must call UNISYS.SystemInitialize(module.id)`);
+      if (MOD.scope===false) throw Error(`UNISYS.SetScope() must be set to RootJSX View's module.id. Aborting.`);
 
-      // contents of PHASE_HOOKs are promise-generating functions
+      // note: contents of PHASE_HOOKs are promise-generating functions
       if (!PHASES.includes(phase)) throw Error(`${phase} is not a recognized lifecycle phase`);
       let hooks = PHASE_HOOKS.get(phase);
       if (hooks===undefined) {
@@ -98,9 +98,11 @@ const PATH     = require('system/util/path');
 
       // phase housekeeping
       PHASE = phase+'_PENDING';
+
       // now execute handlers and promises
       let icount = 0;
       if (DBG) console.group(phase);
+      // get an array of promises
       // o contains f, scope pushed in Hook() above
       let promises = hooks.map((o) => {
         let retval = m_ExecuteScopedPhase(phase,o);
@@ -111,11 +113,14 @@ const PATH     = require('system/util/path');
         // return undefined to signal no special handling
         return undefined;
       });
-      if (icount && DBG) console.log(`[${phase}] EXECUTED DONE: ${icount}`);
+      promises = promises.filter((e)=>{return e!==undefined});
+      if (DBG && hooks.length) console.log(`[${phase}] HANDLERS PROCESSED : ${hooks.length}`);
+      if (DBG && icount) console.log(`[${phase}] PROMISES QUEUED    : ${icount}`);
+
       // wait for all promises to execute
       await Promise.all(promises).
       then((values) => {
-        if (DBG) console.log(`[${phase}] PROMISES DONE: ${values.length}`);
+        if (DBG && values.length) console.log(`[${phase}] PROMISES RETURNED  : ${values.length}`,values);
         if (DBG) console.groupEnd();
         return values;
       }).
@@ -123,10 +128,10 @@ const PATH     = require('system/util/path');
         if (DBG) console.log(`[${phase} EXECUTE ERROR ${err}`);
         throw Error(`[${phase} EXECUTE ERROR ${err}`);
       });
+
       // phase housekeeping
       PHASE = phase;
     };
-
 
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
