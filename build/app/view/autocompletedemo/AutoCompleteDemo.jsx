@@ -50,7 +50,7 @@ const ACD_LOGIC    = require('./autocomplete-logic');
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
-/*/ class AutoCompleteDemo extends React.Component {
+/*/ class AutoCompleteDemo extends UNISYS.Component {
       constructor () {
         super();
         UNISYS.ForceReloadOnNavigation();

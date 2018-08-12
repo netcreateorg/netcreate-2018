@@ -1,6 +1,9 @@
 if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+    DevDBLogic is the companion module that implements the console CLI for
+    manipulating the database on the server
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
@@ -25,7 +28,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Provide Compatibility with DevUnisys instances
 /*/ MOD.Hook('INITIALIZE', function () {
-      console.log('*** UNISYS-DEV COMPATIBILITY INIT ***');
+      console.log('*** INITIALIZE ***');
       // without NET_SEND_TEST:
       // fail netCallHandlr, netData, netDataAdd, netDataMulti, netDataReturn
       // fail netSendHndlr
@@ -50,10 +53,13 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
         return data;
       });
     });
+
+/// APP_READY MESSAGE REGISTRATION ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ EXPERIMENTAL: UNISYS_READY is required to ensure that all registered
-    messages are logged before START happens
-/*/ MOD.Hook('UNISYS_READY', function () {
+/*/ The APP_READY hook is fired after all initialization phases have finished
+    and may also fire at other times with a valid info packet
+/*/ MOD.Hook('APP_READY', function( info ) {
+      console.log('*** APP_READY ***');
       return new Promise((resolve,reject) => {
         let timeout = setTimeout(()=>{
           reject(Error('UNISYS REGISTER TIMEOUT'));
@@ -70,20 +76,20 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ MOD.Hook('START', function () {
-      console.log('*** UNISYS-DEV COMPATIBILITY START ***');
+      console.log('*** START ***');
       console.log('firing compatibility NET_SEND_TEST');
       UDATA.NetSend('NET_SEND_TEST',{});
       console.log('firing compatibility NET_CALL_TEST');
       UDATA.NetCall('NET_CALL_TEST',{})
       .then((d)=>{
-        console.log('net call test succeeded',d);
+        // console.log('net call test succeeded',d);
       });
     });
 
 /// COMMAND LINE UTILITIES ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     let CMD = [];
-    MOD.Hook('CONFIGURE', m_InitCLI);
+    MOD.Hook('RESET', m_InitCLI);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Command: RESET THE DATABASE from default data
 /*/ CMD.push(function ncPushDatabase( jsonFile ) {

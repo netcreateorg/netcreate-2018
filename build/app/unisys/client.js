@@ -1,11 +1,18 @@
 if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    UNISYS is the top level system module for implementing:
+    This is the main browser client UNISYS module, which implements:
 
-    * LIFECYCLE Hooks
-    * Synchronized State
-    * Messaging
+      LIFECYCLE - a promise-based hooked run order system
+      MESSAGING - a networked remote procedure call/event system
+      STATE     - a networked global application state system
+
+    UNISYS is designed to work with React or our own module system:
+    for modules:
+      UMOD = UNISYS.NewModule()
+      UDATA = UNISYS.NewDataLink(UMOD)
+    for React:
+      COMPONENT = class MyComponent extends UNISYS.Component
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -39,12 +46,14 @@ var   UDATA        = new UniData(UNISYS);
 /*/ UNISYS.NewModule = ( uniqueName ) => {
       return new UniModule(uniqueName);
     };
+
 /// UNISYS CONNECTOR //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Make new module with UNISYS convenience methods
 /*/ UNISYS.NewDataLink = ( module, optName ) => {
       return new UniData(module,optName);
     };
+
 /// UNISYS MESSAGE REGISTRATION ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     UNISYS.RegisterMessagesPromise = ( messages=[] ) => {
@@ -64,6 +73,7 @@ var   UDATA        = new UniData(UNISYS);
         });
       });
     };
+
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: LIFECYCLE Hook() functions
@@ -103,15 +113,15 @@ var   UDATA        = new UniData(UNISYS);
      let currentScope = LIFECYCLE.Scope();
      return (module_id.includes(currentScope))
    }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: application startup
 /*/ UNISYS.EnterApp = () => {
       return new Promise( async ( resolve, reject ) => {
         try {
+          await LIFECYCLE.Execute('TEST_CONF');   // TESTCONFIG hook
           await LIFECYCLE.Execute('INITIALIZE');  // INITIALIZE hook
-          await LIFECYCLE.Execute('UNISYS_INIT'); // UNISYS handlers hook (if needed)
           await LIFECYCLE.Execute('LOADASSETS');  // LOADASSETS hook
+          await LIFECYCLE.Execute('CONFIGURE');   // CONFIGURE support modules
           resolve();
         } catch (e) {
           console.error('EnterApp() Lifecycle Error. Check phase execution order effect on data validity.\n',e);
@@ -120,8 +130,22 @@ var   UDATA        = new UniData(UNISYS);
       });
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: call this when the view system's DOM has stabilized and is ready
+    for manipulation by other code
+/*/ UNISYS.SetupDOM = () => {
+      return new Promise( async ( resolve, reject ) => {
+        try {
+          await LIFECYCLE.Execute('DOM_READY');  // GUI layout has finished composing
+          resolve();
+        } catch (e) {
+          console.error('SetupDOM() Lifecycle Error. Check phase execution order effect on data validity.\n',e);
+          debugger;
+        }
+      });
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: network startup
-/*/ UNISYS.EnterNet = () => {
+/*/ UNISYS.JoinNet = () => {
       return new Promise(( resolve, reject ) => {
         try {
           NETWORK.Connect(UDATA,{success: resolve});
@@ -136,10 +160,9 @@ var   UDATA        = new UniData(UNISYS);
 /*/ UNISYS.SetupRun = () => {
       return new Promise( async ( resolve, reject ) => {
         try {
-          await LIFECYCLE.Execute('RESET');
-          await LIFECYCLE.Execute('CONFIGURE');
-          await LIFECYCLE.Execute('UNISYS_READY'); // UNISYS network connection
-          await LIFECYCLE.Execute('START');
+          await LIFECYCLE.Execute('RESET');     // RESET runtime datastructures
+          await LIFECYCLE.Execute('START');     // START running
+          await LIFECYCLE.Execute('APP_READY'); // tell network APP_READY
           resolve();
         } catch (e) {
           console.error('SetupRun() Lifecycle Error. Check phase execution order effect on data validity.\n',e);
@@ -208,13 +231,13 @@ var   UDATA        = new UniData(UNISYS);
 
 /// NETWORK INFORMATION ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
+/*/ return the current connected Socket Address (e.g. UADDR_12)
 /*/ UNISYS.SocketUADDR = () => {
       return NETWORK.SocketUADDR();
     };
 
 /// REACT INTEGRATION /////////////////////////////////////////////////////////
-/*/
+/*/ return the referene to the UNISYS extension of React.Component
 /*/ UNISYS.Component = UniComponent;
 
 

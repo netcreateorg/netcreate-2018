@@ -5,7 +5,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG      = false;
+const DBG      = window.NC_DBG && window.NC_DBG.lifecycle;
 const BAD_PATH = "module_path must be a string derived from the module's module.id";
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
@@ -17,13 +17,14 @@ const PATH     = require('system/util/path');
     var PHASE_HOOKS = new Map();  // functions that might right a Promise
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const PHASES = [
-      'INITIALIZE',               // very early initialization
-      'UNISYS_INIT',              // configure early UNISYS-related hooks
+      'TEST_CONF',                // setup tests
+      'INITIALIZE',               // module data structure init
       'LOADASSETS',               // load any external data, make connections
-      'RESET',                    // reset runtime data structures
+      'DOM_READY',                // when viewsystem has completely composed
       'CONFIGURE',                // configure runtime data structures
-      'UNISYS_READY',             // synchronize to UNISYS network server
+      'RESET',                    // reset runtime data structures
       'START',                    // start normal execution run
+      'APP_READY',                // synchronize to UNISYS network server
       'UPDATE',                   // system is running (periodic call w/ time)
       'PREPAUSE',                 // system wants to pause run
       'PAUSE',                    // system has paused (periodic call w/ time)
@@ -102,8 +103,10 @@ const PATH     = require('system/util/path');
       // o contains f, scope pushed in Hook() above
       let promises = hooks.map((o) => {
         let retval = m_ExecuteScopedPhase(phase,o);
-        if (retval instanceof Promise) return retval;
-        icount++;
+        if (retval instanceof Promise) {
+          icount++;
+          return retval;
+        }
         // return undefined to signal no special handling
         return undefined;
       });

@@ -54,7 +54,7 @@ let UnisysComponent = class extends React.Component {
   OnNetStateChange( ns, lis ) { f_unimplemented() }
   NetStateChangeOff( ns, lis ) { f_unimplemented() }
   /// LIFECYCLE API
-  Hook( p, f ) { this.UMODULE.Hook(p,f) }
+  Hook( p, f ) { f_unsupported('is not available in React components') }
 
 } // UnisysComponent
 
@@ -66,6 +66,10 @@ function f_deprecated(repl) {
 
 function f_unimplemented() {
   console.warn(`${REFLECT.FunctionName(2)}() is not yet implemented.`);
+}
+
+function f_unsupported(reason) {
+  console.warn(`${REFLECT.FunctionName(2)}() ${reason}`);
 }
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////

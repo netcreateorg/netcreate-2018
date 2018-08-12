@@ -23,18 +23,15 @@ const PR          = PROMPTS.Pad('DevUnisys');
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ This is the root component for the view
-/*/ class DevUnisys extends React.Component {
+/*/ class DevUnisys extends UNISYS.Component {
       constructor(props) {
         super(props);
         UNISYS.ForceReloadOnNavigation();
 
-        /* UNISYS DATA LINK CONNECTION */
-        this.udata = UNISYS.NewDataLink(this);
-
         /* INITIALIZE COMPONENT STATE from UNISYS */
         // get any state from 'VIEW' namespace; empty object if nothing
         // UDATA.State() returns a copy of state obj; mutate/assign freely
-        let state = this.udata.State('VIEW');
+        let state = this.AppState('VIEW');
         // initialize some state variables
         state.description = state.description || 'uninitialized description';
         // REACT TIP: setting state directly works ONLY in React.Component constructor!
@@ -48,51 +45,25 @@ const PR          = PROMPTS.Pad('DevUnisys');
         // then use for handling UNISYS state changes
         this.UnisysStateChange = this.UnisysStateChange.bind(this);
         // NOW set up handlers...
-        this.udata.OnStateChange('VIEW', this.UnisysStateChange);
-        this.udata.OnStateChange('LOGIC', this.UnisysStateChange);
+        this.OnAppStateChange('VIEW', this.UnisysStateChange);
+        this.OnAppStateChange('LOGIC', this.UnisysStateChange);
 
-        /* CONFIGURE UNISYS TESTS */
-        // enable debug output and tests
-        // true = enabled, false = skip
-        TEST('state'  , true);  // state events and changes
-        TEST('hook'   , true);  // lifecycle hooks
-        TEST('call'   , true);  // internal instance calls
-        TEST('remote' , true);  // instance-to-instance calls
-        TEST('server' , true);  // server calls
-        TEST('net'    , true);  // network initialization
-
-        /* UNISYS TESTS */
-        // these run during a hook, but are defined in constructor
-        UNISYS.Hook('INITIALIZE',() => {
-          /* UNISYS TEST MESSAGE HANDLER REGISTRATION */
-          if (TEST('remote')) {
-            this.udata.HandleMessage('REMOTE_CALL_TEST',(data, msgcon) => {
-              // msgcon is message control
-              data.cat = 'calico';
-              data.melon += '_ack';
-              return data;
-            });
-          }
-          if (TEST('call')) {
-            this.udata.HandleMessage('TEST_CALL',(data)=>{
-              if (!data.stack) data.stack=[]; data.stack.push('TRI-JSX');
-              return data;
-            });
-          }
-        });
-        UNISYS.Hook('START',() => {
-          /* UNISYS TEST MESSAGE HANDLER INVOCATION */
-          if (TEST('call')) {
-            // INVOKE remove call
-            this.udata.LocalCall('TEST_CALL',{ source : 'DevUnisysJSX' })
-            // test data return
-            .then((data)=>{
-              if (data && data.source && data.source==='DevUnisysLogic-Return') TEST.Pass('callDataReturn');
-              if (data && data.extra && data.extra==='AddedData') TEST.Pass('callDataAdd');
-              if (data && data.multi && data.stack && data.stack.length===3 && data.multi==='MultiData') TEST.Pass('callDataMulti');
-            });
-          }
-        }); // START hook
+        /* UNISYS TEST HANDLERS */
+        // note: in a UNISYS.Component, register your handlers in
+        // the constructor
+        if (TEST('remote')) {
+          this.HandleMessage('REMOTE_CALL_TEST',(data) => {
+            data.cat = 'calico';
+            data.melon += '_ack';
+            return data;
+          });
+        }
+        if (TEST('call')) {
+          this.HandleMessage('TEST_CALL',(data)=>{
+            if (!data.stack) data.stack=[]; data.stack.push('TRI-JSX');
+            return data;
+          });
+        }
 
       } // constructor
 
@@ -114,7 +85,7 @@ const PR          = PROMPTS.Pad('DevUnisys');
           description : target.value
         }
         if (DBG) console.log(`REACT -> state`,state,`to ${this.udata.UID()}`);
-        this.udata.SetState('VIEW',state,this.uni_id);
+        this.SetAppState('VIEW',state,this.uni_id);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// COMPONENT this interface has composed
@@ -122,15 +93,26 @@ const PR          = PROMPTS.Pad('DevUnisys');
         // start the application phase
         let className = REFLECT.ExtractClassName(this);
         if (DBG) console.log(`${className} componentDidMount`);
-        // initialize network
+
+        /* UNISYS TEST MESSAGE HANDLER INVOCATION */
+        if (TEST('call')) {
+          // INVOKE remove call
+          this.AppCall('TEST_CALL',{ source : 'DevUnisysJSX' })
+          // test data return
+          .then((data)=>{
+            if (data && data.source && data.source==='DevUnisysLogic-Return') TEST.Pass('callDataReturn');
+            if (data && data.extra && data.extra==='AddedData') TEST.Pass('callDataAdd');
+            if (data && data.multi && data.stack && data.stack.length===3 && data.multi==='MultiData') TEST.Pass('callDataMulti');
+          });
+        }
       } // componentDidMount
 
-    StudentRender ({ match }) {
-      console.log('-- STUDENT RENDER --');
-      return (
-        <p style={{color:'red'}}><small>matching subroute: {match.params.unit} {match.params.user}!</small></p>
-      );
-    }
+      StudentRender ({ match }) {
+        console.log('-- STUDENT RENDER --');
+        return (
+          <p style={{color:'red'}}><small>matching subroute: {match.params.unit} {match.params.user}!</small></p>
+        );
+      }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Try to route the following

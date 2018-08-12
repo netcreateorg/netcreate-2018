@@ -25,18 +25,15 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Provide Compatibility with DevUnisys instances
 /*/ MOD.Hook('INITIALIZE', function () {
-      console.log('*** UNISYS-REACT COMPATIBILITY INIT ***');
+      console.log('*** INITIALIZE ***');
     });
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ EXPERIMENTAL: UNISYS_INIT is required to ensure that all registered
-    messages are logged before START happens
-/*/ MOD.Hook('UNISYS_INIT', function () {
-      console.log('*** UNISYS-REACT UNISYS_INIT ***');
-    });
+
+
+/// APP START HOOK
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ MOD.Hook('START', function () {
-      console.log('*** UNISYS-REACT STARAT ***');
+      console.log('*** START ***');
   /*/ call counter function 3 times 500ms apart, then check that all tests passed
       set a periodic timer update
   /*/ var TESTCOUNTER = 3;
@@ -56,13 +53,21 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
         let state = { random: u_random_string() };
         UDATA.SetState('VIEW',state,UDATA.UID());
       },500);
+    });
 
+/// APP_READY HOOK REGISTRATION ///////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ The APP_READY hook is fired after all initialization phases have finished
+    and may also fire at other times with a valid info packet
+/*/ MOD.Hook('APP_READY', function( info ) {
+      info = info || {};
+      console.log('*** APP_READY ***');
     });
 
 /// COMMAND LINE UTILITIES ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     let CMD = [];
-    MOD.Hook('CONFIGURE', m_InitCLI);
+    MOD.Hook('RESET', m_InitCLI);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Command: RESET THE DATABASE from default data
 /*/ CMD.push(function ncTest( jsonFile ) {
@@ -72,6 +77,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*/ Initialize the CLI interface by loading functions in CMD array into
     window space, then print out instructions
 /*/ function m_InitCLI() {
+      console.log('*** CONFIGURE ***');
       var E_SHELL = document.getElementById('fdshell');
       var E_OUT = document.createElement('pre');
       var E_HEADER = document.createElement('h4');

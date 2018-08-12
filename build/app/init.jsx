@@ -28,13 +28,14 @@ const AppShell      = require('init-appshell');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ When the DOM is loaded, initialize UNISYS
 /*/ document.addEventListener('DOMContentLoaded', () => {
+      console.log('%cINIT %cDOMContentLoaded. Starting UNISYS Lifecycle!','color:blue','color:auto');
       m_SetLifecycleScope();
-      // lifecycle
       (async () => {
-        await UNISYS.EnterNet();  // UNISYS socket connection (that is all)
-        await UNISYS.EnterApp();  // INITIALIZE, UNISYS_INIT, LOADASSETS
-        await m_RenderApp();      // REACT initial view rendering
-        await UNISYS.SetupRun();  // RESET, CONFIGURE, UNISYS_READY, START
+        await UNISYS.JoinNet();   // UNISYS socket connection (that is all)
+        await UNISYS.EnterApp();  // INITIALIZE, LOADASSETS
+        await m_RenderApp();      // compose React view
+        await UNISYS.SetupDOM();  // DOM_READY
+        await UNISYS.SetupRun();  // RESET, CONFIGURE, APP_READY, START
       })();
     });
 
@@ -55,13 +56,17 @@ const AppShell      = require('init-appshell');
 /*/ Wraps ReactDOM.render() in a Promise. Execution continues in <AppShell>
     and the routed view in AppShell.Routes
 /*/ function m_RenderApp() {
+      console.log('%cINIT %cReactDOM.render() begin','color:blue','color:auto');
       return new Promise(( resolve, reject ) => {
         try {
           ReactDOM.render((
             <HashRouter hashType="noslash">
               <AppShell />
             </HashRouter>
-            ), document.querySelector( '#app-container' ), resolve)
+            ), document.querySelector( '#app-container' ), ()=>{
+              console.log('%cINIT %cReactDOM.render() complete','color:blue','color:auto');
+              resolve();
+            })
         } catch (e) {
           console.error('m_RenderApp() Lifecycle Error. Check phase execution order effect on data validity.\n',e);
           debugger;

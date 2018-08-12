@@ -30,14 +30,30 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // module 1
-    const PR            = PROMPTS.Pad('TEST');
+    const PR            = PROMPTS.Pad('DUL');
     var   MOD           = UNISYS.NewModule(module.id);
     var   UDATA         = UNISYS.NewDataLink( MOD );
     // module 2
     var   MOD2          = UNISYS.NewModule(module.id);
     var   UDATA2        = UNISYS.NewDataLink(MOD2,'SimRemote');
-    const PR2           = PROMPTS.Pad('REMTEST');
+    const PR2           = PROMPTS.Pad('DUL-REM');
 
+/// CONFIGURE TESTS ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ TEST_CONF lifecycle hook runs before anything else except for unscoped
+    code in a module
+/*/ MOD.Hook('TEST_CONF', function () {
+      /* CONFIGURE UNISYS TESTS */
+      // enable debug output and tests
+      // true = enabled, false = skip
+      TEST('state'  , true);  // state events and changes
+      TEST('hook'   , true);  // lifecycle hooks
+      TEST('call'   , true);  // internal instance calls
+      TEST('remote' , true);  // instance-to-instance calls
+      TEST('server' , true);  // server calls
+      TEST('net'    , true);  // network initialization
+      TEST();
+    });
 
 /// LIFECYCLE TESTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -108,14 +124,16 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
     }); // end INITIALIZE 3
 
 
-/// TEST MESSAGE REGISTRATION /////////////////////////////////////////////////
+/// APP_READY MESSAGE REGISTRATION ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ This is a placeholder that will eventually be moved into UNISYS proper
-/*/ MOD.Hook('START', function () {
+/*/ The APP_READY hook is fired after all initialization phases have finished
+    and may also fire at other times with a valid info packet
+/*/ MOD.Hook('APP_READY', function( info ) {
+      info = info || {};
       if (TEST('hook')) TEST.Pass('hookStart');
       UNISYS.RegisterMessagesPromise()
       .then((data)=>{
-        console.log('RegisterMessagesPromise() registered handlers with server',data);
+        // console.log('RegisterMessagesPromise() registered handlers with server',data);
         if (TEST('net')) TEST.Pass('netMessageReg');
       });
     });
@@ -188,7 +206,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*/ MOD2.Hook('INITIALIZE', function() {
       if (TEST('net')) {
         UDATA2.HandleMessage('NET_CALL_TEST',(data) => {
-          console.log(`*** NET_CALL_TEST (1) got data called by ${JSON.stringify(data.stack)} from socket ${UNISYS.SocketUADDR()}`);
+          // console.log(`*** NET_CALL_TEST (1) got data called by ${JSON.stringify(data.stack)} from socket ${UNISYS.SocketUADDR()}`);
           data.reply=`hi from ${UNISYS.SocketUADDR()}`;
           if (data.stack===undefined) data.stack = [];
           data.stack.push(`${UNISYS.SocketUADDR()}_01`);
@@ -196,7 +214,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
           return data;
         });
         UDATA2.HandleMessage('NET_CALL_TEST',(data) => {
-          console.log(`*** NET_CALL_TEST (2) got data called by ${JSON.stringify(data.stack)} from socket ${UNISYS.SocketUADDR()}`);
+          // console.log(`*** NET_CALL_TEST (2) got data called by ${JSON.stringify(data.stack)} from socket ${UNISYS.SocketUADDR()}`);
           if (data.stack===undefined) data.stack = [];
           data.stack.push(`${UNISYS.SocketUADDR()}_02`);
           return data;
@@ -210,11 +228,11 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
           // console.log(`*** NET_SEND_TEST got data called by ${data.source} from socket ${UNISYS.SocketUADDR()}`);
           if (data.source===UNISYS.SocketUADDR()) {
             TEST.Fail('netSendNoEcho');
-            console.log(`*** NET_SEND_TEST fail netSendNoEcho`);
+            // console.log(`*** NET_SEND_TEST fail netSendNoEcho`);
           } else {
             // this triggers if the data source DOES NOT MATCH our own data socket
             TEST.Pass('netSendHndlr');
-            console.log(`*** NET_SEND_TEST pass netSend`);
+            // console.log(`*** NET_SEND_TEST pass netSend`);
           }
         });
       }

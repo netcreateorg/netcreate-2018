@@ -67,7 +67,6 @@ var   UDATA      = UNISYS.NewDataLink(MOD);
     * nodes: all nodes (not all may be actually changed)
     * edges: all edges (not all may be actually changed)
 \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -/*/
-var   SELECTION        = {};      // see above for description
 var   D3DATA           = null;    // see above for description
 const DATASTORE        = require('system/datastore');
 const PROMPTS          = require('system/util/prompts');
@@ -95,8 +94,8 @@ const TARGET_COLOR     = '#FF0000'
 
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ UNIPRESYNC fires after CONFIGURE just before START
-/*/ MOD.Hook('UNISYS_INIT', () => {
+/*/ lifecycle INITIALIZE handler
+/*/ MOD.Hook('INITIALIZE', () => {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ Handle D3-related updates based on state changes. Subcomponents are
       responsible for updating themselves.
@@ -267,10 +266,11 @@ const TARGET_COLOR     = '#FF0000'
       });
     }); // end UNISYS_INIT
 
+/// APP_READY MESSAGE REGISTRATION ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ UNISYS APP REGISTRATION TIME
-/*/ MOD.Hook('UNISYS_READY', () => {
-      /// STILL PART OF UNISYS_INIT PHASE
+/*/ The APP_READY hook is fired after all initialization phases have finished
+    and may also fire at other times with a valid info packet
+/*/ MOD.Hook('APP_READY', function( info ) {
       /// RETURN PROMISE to prevent phase from continuing until after registration
       /// of messages is successful
       return new Promise((resolve,reject) => {
@@ -294,7 +294,6 @@ const TARGET_COLOR     = '#FF0000'
         });
       });
     }); // end UNISYS_READY
-
 
 
 /// OBJECT HELPERS ////////////////////////////////////////////////////////////
@@ -347,7 +346,6 @@ const TARGET_COLOR     = '#FF0000'
       });
     }
 
-
 /// NODE HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return array of nodes that match the match_me object keys/values
@@ -395,7 +393,6 @@ const TARGET_COLOR     = '#FF0000'
       return m_SetMatchingObjsByProp( D3DATA.nodes, match_me, yes, no );
     }
 
-
 /// EDGE HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return array of edges that DON'T match del_me object keys/values
@@ -418,7 +415,6 @@ const TARGET_COLOR     = '#FF0000'
       return m_SetMatchingObjsByProp( D3DATA.edges, match_me, yes, no );
     }
 
-
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ REGEX: the chars in brackets are part of matching character set.
@@ -430,7 +426,6 @@ const TARGET_COLOR     = '#FF0000'
 /*/ function u_EscapeRegexChars( string ) {
       return string.replace(REGEX_REGEXCHARS,'\\$&'); // $& means the whole matched string
     }
-
 
 /// NODE MARKING METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -474,7 +469,6 @@ const TARGET_COLOR     = '#FF0000'
       UDATA.SetState('D3DATA',D3DATA);
     }
 
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// TODO: THESE STILL NEED TO BE CONVERTED
 ///
@@ -512,7 +506,6 @@ const TARGET_COLOR     = '#FF0000'
 //     // })
 //     // this.setState( { data: updatedData })
 //   }
-
 
 /// DEBUG CONSOLE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

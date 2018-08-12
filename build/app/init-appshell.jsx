@@ -167,17 +167,17 @@ class AppShell extends React.Component {
             */ }
                 <UncontrolledDropdown direction="right" nav>
                   <DropdownToggle>
-                    Developer
+                    Extras
                   </DropdownToggle>
                   <DropdownMenu>
                     <DropdownItem>
-                      <NavLink to="/dev-react" tag={RRNavLink} replace>LIFECYCLE-REACT tests</NavLink>
+                      <NavLink to="/dev-react" tag={RRNavLink} replace>dev-react</NavLink>
                     </DropdownItem>
                     <DropdownItem>
-                      <NavLink to="/dev-unisys" tag={RRNavLink} replace>MESSAGING tests</NavLink>
+                      <NavLink to="/dev-unisys" tag={RRNavLink} replace>dev-unisys</NavLink>
                     </DropdownItem>
                     <DropdownItem>
-                      <NavLink to="/dev-db" tag={RRNavLink} replace>DATABASE tests</NavLink>
+                      <NavLink to="/dev-db" tag={RRNavLink} replace>dev-db</NavLink>
                     </DropdownItem>
                     <DropdownItem>
                       <NavLink to="/simple" tag={RRNavLink} replace>SimpleHTML Example</NavLink>

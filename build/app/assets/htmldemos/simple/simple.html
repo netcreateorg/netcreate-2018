@@ -20,7 +20,11 @@
 	</body>
 	<script>
 		require("babel-polyfill"); // enables regenerators for async/await
-		// demonstrate that NetCreate system libraries are available
+		console.log('*** SCRIPT IN IFRAME ***');
+		// NOTE: because this simple file runs inside of an IFRAME,
+		// the javascript environment is SEPARATE from the one that loaded
+		// this page. Thus, most UNISYS NET services aren't available because 
+		// they rely on the global 'EJSprops' set in index.ejs
 		const STORE = require('system/datastore');
 		const UNISYS = require('unisys/client');
 		const $ = require('jquery');
