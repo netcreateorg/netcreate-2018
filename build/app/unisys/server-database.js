@@ -9,13 +9,13 @@ const DBG = true;
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const Loki              = require('lokijs');
-const NetMessage        = require('../unisys/common-netmessage-class');
+const PATH              = require('path');
+const FS                = require('fs-extra');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const PROMPTS           = require('../system/util/prompts');
 const PR                = PROMPTS.Pad('SRV-DB');
-const ERR               = PROMPTS.Pad('!!!');
 const DB_FILE           = './runtime/netcreate.json';
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
@@ -32,6 +32,12 @@ var DB = {};
 /*/ API: Initialize the database
 /*/ DB.InitializeDatabase = function( options={} ) {
       console.log(PR,`InitializeDatabase`);
+      FS.ensureDir(PATH.dirname(DB_FILE));
+      if (!FS.existsSync(DB_FILE)) {
+        console.log(PR,`No ${DB_FILE} yet, so filling from sample.data.json...`);
+        FS.copySync('./runtime/sample.data.json',DB_FILE);
+        console.log(PR,`...success!`);
+      }
       let ropt = {
         autoload         : true,
         autoloadCallback : f_DatabaseInitialize,
@@ -81,6 +87,8 @@ var DB = {};
       NODES.clear(); NODES.insert(nodes);
       EDGES.clear(); EDGES.insert(edges);
       console.log(PR,`PKT_SetDatabase complete. Data available on next get.`);
+      m_db.close();
+      DB.InitializeDatabase();
       return { OK:true };
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
