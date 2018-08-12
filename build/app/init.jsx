@@ -32,10 +32,10 @@ const AppShell      = require('init-appshell');
       m_SetLifecycleScope();
       (async () => {
         await UNISYS.JoinNet();   // UNISYS socket connection (that is all)
-        await UNISYS.EnterApp();  // INITIALIZE, LOADASSETS
+        await UNISYS.EnterApp();  // TEST_CONF, INITIALIZE, LOADASSETS, CONFIGURE
         await m_RenderApp();      // compose React view
         await UNISYS.SetupDOM();  // DOM_READY
-        await UNISYS.SetupRun();  // RESET, CONFIGURE, APP_READY, START
+        await UNISYS.SetupRun();  // RESET, START, APP_READY
       })();
     });
 

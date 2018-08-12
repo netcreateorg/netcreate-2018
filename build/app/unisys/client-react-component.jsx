@@ -26,6 +26,13 @@ let UnisysComponent = class extends React.Component {
   HandleMessage( m, lis ) { this.UDATA.HandleMessage(m,lis) }
   UnhandleMessage( m, lis ) { f_deprecated('DropMessage'); this.UDATA.UnhandleMessage(m,lis) }
   DropMessage( m, lis ) { this.UDATA.UnhandleMessage(m,lis) }
+
+  /// SPECIAL EVENTS
+  OnDOMReady( lis ) { this.UMODULE.Hook('DOM_READY',lis) }
+  OnReset( lis ) { this.UMODULE.Hook('RESET',lis) }
+  OnStart( lis ) { this.UMODULE.Hook('START',lis) }
+  OnAppReady( lis ) { this.UMODULE.Hook('APP_READY',lis) }
+
   /// MESSAGE INVOCATION API METHODS
   Call( m, d, o ) { return this.UDATA.Call(m,d,o) }
   Send( m, d, o ) { this.UDATA.Send(m,d,o) }

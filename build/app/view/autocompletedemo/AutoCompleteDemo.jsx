@@ -54,6 +54,18 @@ const ACD_LOGIC    = require('./autocomplete-logic');
       constructor () {
         super();
         UNISYS.ForceReloadOnNavigation();
+        this.OnDOMReady(()=>{
+          console.log(PR,'OnDOMReady');
+        });
+        this.OnReset(()=>{
+          console.log(PR,'OnReset');
+        });
+        this.OnStart(()=>{
+          console.log(PR,'OnStart');
+        });
+        this.OnAppReady(()=>{
+          console.log(PR,'OnAppReady');
+        });
       }
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////

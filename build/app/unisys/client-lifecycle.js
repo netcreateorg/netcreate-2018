@@ -20,8 +20,8 @@ const PATH     = require('system/util/path');
       'TEST_CONF',                // setup tests
       'INITIALIZE',               // module data structure init
       'LOADASSETS',               // load any external data, make connections
-      'DOM_READY',                // when viewsystem has completely composed
       'CONFIGURE',                // configure runtime data structures
+      'DOM_READY',                // when viewsystem has completely composed
       'RESET',                    // reset runtime data structures
       'START',                    // start normal execution run
       'APP_READY',                // synchronize to UNISYS network server
