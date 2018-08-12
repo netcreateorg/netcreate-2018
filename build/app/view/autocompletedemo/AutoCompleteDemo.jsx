@@ -66,6 +66,9 @@ const ACD_LOGIC    = require('./autocomplete-logic');
         this.OnAppReady(()=>{
           console.log(PR,'OnAppReady');
         });
+        this.OnRun(()=>{
+          console.log(PR,'OnRun');
+        });
       }
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////

@@ -163,6 +163,7 @@ var   UDATA        = new UniData(UNISYS);
           await LIFECYCLE.Execute('RESET');     // RESET runtime datastructures
           await LIFECYCLE.Execute('START');     // START running
           await LIFECYCLE.Execute('APP_READY'); // tell network APP_READY
+          await LIFECYCLE.Execute('RUN');       // tell network APP_READY
           resolve();
         } catch (e) {
           console.error('SetupRun() Lifecycle Error. Check phase execution order effect on data validity.\n',e);

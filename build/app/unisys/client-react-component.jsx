@@ -32,6 +32,7 @@ let UnisysComponent = class extends React.Component {
   OnReset( lis ) { this.UMODULE.Hook('RESET',lis) }
   OnStart( lis ) { this.UMODULE.Hook('START',lis) }
   OnAppReady( lis ) { this.UMODULE.Hook('APP_READY',lis) }
+  OnRun( lis ) { this.UMODULE.Hook('RUN',lis) }
 
   /// MESSAGE INVOCATION API METHODS
   Call( m, d, o ) { return this.UDATA.Call(m,d,o) }

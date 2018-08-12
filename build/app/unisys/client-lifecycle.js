@@ -25,6 +25,7 @@ const PATH     = require('system/util/path');
       'RESET',                    // reset runtime data structures
       'START',                    // start normal execution run
       'APP_READY',                // synchronize to UNISYS network server
+      'RUN',                      // system starts running
       'UPDATE',                   // system is running (periodic call w/ time)
       'PREPAUSE',                 // system wants to pause run
       'PAUSE',                    // system has paused (periodic call w/ time)

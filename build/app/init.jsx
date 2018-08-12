@@ -35,7 +35,7 @@ const AppShell      = require('init-appshell');
         await UNISYS.EnterApp();  // TEST_CONF, INITIALIZE, LOADASSETS, CONFIGURE
         await m_RenderApp();      // compose React view
         await UNISYS.SetupDOM();  // DOM_READY
-        await UNISYS.SetupRun();  // RESET, START, APP_READY
+        await UNISYS.SetupRun();  // RESET, START, APP_READY, RUN
       })();
     });
 
