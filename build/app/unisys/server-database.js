@@ -94,8 +94,27 @@ var DB = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     DB.PKT_Update = function ( pkt ) {
       console.log(PR,`PKT_Update`,JSON.stringify(pkt.Data()));
-      let { op, node, edge, edgeID } = pkt.Data();
+      let { op, node, newNode, edge, newEdge, edgeID } = pkt.Data();
       switch (op) {
+        case 'insert':
+          if (newNode) {
+            if (NODES.find({id:newNode.id}).length===0) {
+              console.log(PR,`insert node ${JSON.stringify(newNode)}`);
+              NODES.insert(newNode);
+            } else {
+              console.log(PR,'ignoring duplicate node id',newNode.id);
+            }
+          }
+          if (newEdge) {
+            console.log(PR,'Checking edge id',newEdge.id,'...');
+            if (EDGES.find({id:newEdge.id}).length===0) {
+              console.log(PR,`insert edge ${JSON.stringify(newEdge)}`);
+              EDGES.insert(newEdge);
+            } else {
+              console.log(PR,'ignoring duplicate edge id',newEdge.id);
+            }
+          }
+          break;
         case 'update':
           if (node) {
             console.log(PR,`node ${JSON.stringify(node)} matching`);

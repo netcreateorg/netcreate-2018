@@ -198,8 +198,13 @@ const TARGET_COLOR     = '#FF0000'
         // if no nodes had matched, then add a new node!
         if (updatedNodes.length===0) {
           if (DBG) console.log('pushing node',newNode);
+          DATASTORE.Update({ op:'insert', newNode });
           D3DATA.nodes.push(newNode);
-        } else if (updatedNodes.length>1) {
+        }
+        if (updatedNodes.length===1) {
+          DATASTORE.Update({ op:'update', newNode });
+        }
+        if (updatedNodes.length>1) {
           throw Error("SourceUpdate found duplicate IDs");
         }
         UDATA.SetState('D3DATA',D3DATA);
@@ -228,8 +233,13 @@ const TARGET_COLOR     = '#FF0000'
           if (DBG) console.log('pushing edge',newEdge);
           // created edges should have a default size
           newEdge.size = 1;
+          DATASTORE.Update({ op:'insert', newEdge });
           D3DATA.edges.push(newEdge);
-        } else if (updatedEdges.length>1) {
+        }
+        if (updatedEdges.length===1) {
+          DATASTORE.Update({ op:'update', newEdge });
+        }
+        if (updatedEdges.length>1) {
           throw Error("EdgeUpdate found duplicate IDs");
         }
         UDATA.SetState('D3DATA',D3DATA);
