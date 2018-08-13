@@ -1,11 +1,11 @@
-if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
+if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     LifeCycle - A system manager for application lifecycle events.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG      = false;
+const DBG      = window.NC_DBG && window.NC_DBG.lifecycle;
 const BAD_PATH = "module_path must be a string derived from the module's module.id";
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
@@ -17,13 +17,15 @@ const PATH     = require('system/util/path');
     var PHASE_HOOKS = new Map();  // functions that might right a Promise
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const PHASES = [
-      'INITIALIZE',               // executes before REACT renders
-      'UNISYS_INIT',              // (opt) configure UNISYS-related hooks
+      'TEST_CONF',                // setup tests
+      'INITIALIZE',               // module data structure init
       'LOADASSETS',               // load any external data, make connections
-      'RESET',                    // reset runtime data structures
       'CONFIGURE',                // configure runtime data structures
-      'UNISYS_SYNC',              // synchronize to UNISYS network server
+      'DOM_READY',                // when viewsystem has completely composed
+      'RESET',                    // reset runtime data structures
       'START',                    // start normal execution run
+      'APP_READY',                // synchronize to UNISYS network server
+      'RUN',                      // system starts running
       'UPDATE',                   // system is running (periodic call w/ time)
       'PREPAUSE',                 // system wants to pause run
       'PAUSE',                    // system has paused (periodic call w/ time)
@@ -39,24 +41,24 @@ const PATH     = require('system/util/path');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     var MOD = {
       name  : 'LifeCycle',
-      scope : false
+      scope : 'system/booting'    // overwritten by UNISYS.SystemInitialize()
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ UTILITY: compare the destination scope with the acceptable scope (the
     module.id of the root JSX component in a view). Any module not in the
     system directory will not get called
-/*/ function m_CheckedHookCall( phase, o ) {
+/*/ function m_ExecuteScopedPhase( phase, o ) {
       // check for special unisys or system directory
       if (o.scope.indexOf('system')===0) return o.f();
       if (o.scope.indexOf('unisys')===0) return o.f();
       // check for subdirectory
       if (o.scope.includes(MOD.scope,0)) return o.f();
       // else do nothing
-        if (DBG) console.info(`LIFECYCLE: skipping [${phase}] ${o.scope} because scope is ${MOD.scope}`);
-        return undefined;
+      if (DBG) console.info(`LIFECYCLE: skipping [${phase}] for ${o.scope} because scope is ${MOD.scope}`);
+      return undefined;
     }
 
-
+/// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: register a Phase Handler which is invoked by MOD.Execute()
     phase is a string constant from PHASES array above
@@ -84,9 +86,9 @@ const PATH     = require('system/util/path');
     function returns control to the calling code.
 /*/ MOD.Execute = async (phase) => {
       // require scope to be set
-      if (MOD.scope===false) throw Error(`Root JSX component must call UNISYS.SystemInitialize(module.id)`);
+      if (MOD.scope===false) throw Error(`UNISYS.SetScope() must be set to RootJSX View's module.id. Aborting.`);
 
-      // contents of PHASE_HOOKs are promise-generating functions
+      // note: contents of PHASE_HOOKs are promise-generating functions
       if (!PHASES.includes(phase)) throw Error(`${phase} is not a recognized lifecycle phase`);
       let hooks = PHASE_HOOKS.get(phase);
       if (hooks===undefined) {
@@ -96,22 +98,29 @@ const PATH     = require('system/util/path');
 
       // phase housekeeping
       PHASE = phase+'_PENDING';
+
       // now execute handlers and promises
       let icount = 0;
       if (DBG) console.group(phase);
+      // get an array of promises
       // o contains f, scope pushed in Hook() above
       let promises = hooks.map((o) => {
-        let retval = m_CheckedHookCall(phase,o);
-        if (retval instanceof Promise) return retval;
-        icount++;
+        let retval = m_ExecuteScopedPhase(phase,o);
+        if (retval instanceof Promise) {
+          icount++;
+          return retval;
+        }
         // return undefined to signal no special handling
         return undefined;
       });
-      if (icount && DBG) console.log(`[${phase}] EXECUTED DONE: ${icount}`);
+      promises = promises.filter((e)=>{return e!==undefined});
+      if (DBG && hooks.length) console.log(`[${phase}] HANDLERS PROCESSED : ${hooks.length}`);
+      if (DBG && icount) console.log(`[${phase}] PROMISES QUEUED    : ${icount}`);
+
       // wait for all promises to execute
       await Promise.all(promises).
       then((values) => {
-        if (DBG) console.log(`[${phase}] PROMISES DONE: ${values.length}`);
+        if (DBG && values.length) console.log(`[${phase}] PROMISES RETURNED  : ${values.length}`,values);
         if (DBG) console.groupEnd();
         return values;
       }).
@@ -119,10 +128,10 @@ const PATH     = require('system/util/path');
         if (DBG) console.log(`[${phase} EXECUTE ERROR ${err}`);
         throw Error(`[${phase} EXECUTE ERROR ${err}`);
       });
+
       // phase housekeeping
       PHASE = phase;
     };
-
 
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

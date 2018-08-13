@@ -1,4 +1,4 @@
-if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
+if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     UNISYS NETWORK implements network controls and synchronization.
@@ -11,7 +11,6 @@ const DBG           = { connect:false, handle:false };
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SETTINGS      = require('settings');
-const TEST          = require('test');
 const NetMessage    = require('unisys/common-netmessage-class');
 const PROMPTS       = require('system/util/prompts');
 const PR            = PROMPTS.Pad('NETWORK');
@@ -98,11 +97,8 @@ var UDATA     = null; // assigned during NETWORK.Connect()
       NETWORK.RemoveListener('message', m_HandleRegistrationMessage);
       m_status = M3_REGISTERED;
       // (2) initialize global settings for netmessage
+      if (DBG.connect) console.log(PR,`connected to ${UADDR}`,NETSOCK);
       NetMessage.GlobalSetup({ uaddr : UADDR, netsocket : NETSOCK.ws});
-      if (TEST('net')) {
-        if (DBG.connect) console.log(PR,'GlobalSetup got network socket');
-        TEST.Pass('netMessageInit');
-      }
       // (3) connect regular message handler
       NETWORK.AddListener('message', m_HandleMessage);
       m_status = M4_READY;

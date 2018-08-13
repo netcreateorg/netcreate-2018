@@ -1,4 +1,4 @@
-if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
+if (window.NC_DBG) console.log(`inc ${module.id}`);
 /// SYSTEM INTEGRATION ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS      = require('unisys/client');
@@ -13,44 +13,32 @@ var   DBG         = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React       = require('react');
 const ReactStrap  = require('reactstrap');
-const { InputGroup, InputGroupAddon, InputGroupText, Input } = ReactStrap;
-const { Alert }   = ReactStrap;
 const PROMPTS     = require('system/util/prompts');
-const PR          = PROMPTS.Pad('DevUnisys');
+const PR          = PROMPTS.Pad('DevDB');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ This is the root component for the view
-/*/ class DevDB extends React.Component {
+/*/ class DevDB extends UNISYS.Component {
       constructor(props) {
         super(props);
-
-        /* UNISYS DATA LINK CONNECTION */
-        this.udata = UNISYS.NewDataLink(this);
+        UNISYS.ForceReloadOnNavigation();
 
         /* INITIALIZE COMPONENT STATE from UNISYS */
         // get any state from 'VIEW' namespace; empty object if nothing
         // UDATA.State() returns a copy of state obj; mutate/assign freely
-        let state = this.udata.State('VIEW');
+        let state = this.AppState('VIEW');
         // initialize some state variables
         state.description = state.description || 'exerciser for database server testing';
         // REACT TIP: setting state directly works ONLY in React.Component constructor!
         this.state = state;
-
-        /* LOCAL INTERFACE HANDLERS */
-        this.handleTextChange  = this.handleTextChange.bind(this);
 
         /* UNISYS STATE CHANGE HANDLERS */
         // bind 'this' context to handler function
         // then use for handling UNISYS state changes
         this.UnisysStateChange = this.UnisysStateChange.bind(this);
         // NOW set up handlers...
-        this.udata.OnStateChange('VIEW', this.UnisysStateChange);
-
-        /* (1) UNISYS LIFECYCLE INITIALIZATION                        */
-        /* must initialize UNISYS before declaring any hook functions */
-        /* then call UNISYS.NetworkInitialize() in componentDidMount  */
-        UNISYS.SystemInitialize(module.id);
+        this.OnAppStateChange('VIEW', this.UnisysStateChange);
 
       } // constructor
 
@@ -72,7 +60,7 @@ const PR          = PROMPTS.Pad('DevUnisys');
           description : target.value
         }
         if (DBG) console.log(`REACT -> state`,state,`to ${this.udata.UID()}`);
-        this.udata.SetState('VIEW',state,this.uni_id);
+        this.SetAppState('VIEW',state,this.uni_id);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// COMPONENT this interface has composed
@@ -80,26 +68,14 @@ const PR          = PROMPTS.Pad('DevUnisys');
         // start the application phase
         let className = REFLECT.ExtractClassName(this);
         if (DBG) console.log(`${className} componentDidMount`);
-        /* (2) UNISYS NETWORK INITIALIZATION                            */
-        /* now that UI is completely rendered, connect to UNISYS net!   */
-        UNISYS.NetworkInitialize(() => {
-          console.log(PR,'unisys network initialized');
-          /* (3) UNISYS LIFECYCLE INITIALIZATION                        */
-          /* all program logic should be located in a UNISYS LIFECYCLE  */
-          (async () => {
-            await UNISYS.EnterApp();  // INITIALIZE, UNISYS_INIT, LOADASSETS
-            await UNISYS.SetupRun();  // RESET, CONFIGURE, UNISYS_SYNC, START
-          })();
-        });
-        // NOTE: see unisys-lifecycle.js for more run modes
       } // componentDidMount
 
-    StudentRender ({ match }) {
-      console.log('-- STUDENT RENDER --');
-      return (
-        <p style={{color:'red'}}><small>matching subroute: {match.params.unit} {match.params.user}!</small></p>
-      );
-    }
+      StudentRender ({ match }) {
+        console.log('-- STUDENT RENDER --');
+        return (
+          <p style={{color:'red'}}><small>matching subroute: {match.params.unit} {match.params.user}!</small></p>
+        );
+      }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Try to route the following
@@ -114,8 +90,12 @@ const PR          = PROMPTS.Pad('DevUnisys');
         );
       } // render
 
-
     } // class DevUnisys
+
+/// EXPORT UNISYS SIGNATURE ///////////////////////////////////////////////////
+/// used in init.jsx to set module scope early
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DevDB.UMOD = module.id;
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

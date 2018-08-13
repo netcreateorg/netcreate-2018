@@ -31,6 +31,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+/// UNISYS INITIALIZE REQUIRES for REACT ROOT /////////////////////////////////
+const UNISYS       = require('unisys/client');
+
 /// DEBUG SWITCHES ////////////////////////////////////////////////////////////
 var   DBG          = false;
 const PROMPTS      = require('system/util/prompts');
@@ -42,25 +45,30 @@ const React        = require('react');
 const NetGraph     = require('./components/NetGraph');
 const NodeSelector = require('./components/NodeSelector');
 const ACD_LOGIC    = require('./autocomplete-logic');
-const ReactStrap   = require('reactstrap');
 
-/// NEW SIGNLING SYSTEM LIBRARIES /////////////////////////////////////////////
-const UNISYS       = require('unisys/client');
-var   UDATA        = null; // set in constructor
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
-/*/ class AutoCompleteDemo extends React.Component {
+/*/ class AutoCompleteDemo extends UNISYS.Component {
       constructor () {
         super();
-        // UDATA is the interface to unisys messaging and state features
-        UDATA = UNISYS.NewDataLink(this);
-        /* (1) UNISYS LIFECYCLE INITIALIZATION                        */
-        /* must initialize UNISYS before declaring any hook functions */
-        /* then call UNISYS.NetworkInitialize() in componentDidMount  */
-        console.log(`${PR}constructor(): UNISYS (1) SYSTEM INITIALIZE`);
-        UNISYS.SystemInitialize(module.id);
+        UNISYS.ForceReloadOnNavigation();
+        this.OnDOMReady(()=>{
+          console.log(PR,'OnDOMReady');
+        });
+        this.OnReset(()=>{
+          console.log(PR,'OnReset');
+        });
+        this.OnStart(()=>{
+          console.log(PR,'OnStart');
+        });
+        this.OnAppReady(()=>{
+          console.log(PR,'OnAppReady');
+        });
+        this.OnRun(()=>{
+          console.log(PR,'OnRun');
+        });
       }
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
@@ -68,20 +76,6 @@ var   UDATA        = null; // set in constructor
   /*/ This is the root component, so this fires after all subcomponents have
       been fully rendered by render().
   /*/ componentDidMount () {
-        /* (2) UNISYS NETWORK INITIALIZATION                            */
-        /* now that UI is completely rendered, connect to UNISYS net!   */
-        /* see also constructor for UNISYS initialization               */
-        UNISYS.NetworkInitialize(() => {
-          console.log(`${PR}componentDidMount(): UNISYS (2) NETWORK CONNECTED`);
-          console.log(`${PR}componentDidMount(): UNISYS (3) LIFECYCLE BEGIN`);
-          /* (3) UNISYS LIFECYCLE INITIALIZATION                        */
-          /* all program logic should be located in a UNISYS LIFECYCLE  */
-          (async () => {
-            await UNISYS.EnterApp();  // INITIALIZE, UNISYS_INIT, LOADASSETS
-            await UNISYS.SetupRun();  // RESET, CONFIGURE, UNISYS_SYNC, START
-          })();
-        });
-        // NOTE: see unisys-lifecycle.js for more run modes
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Define the component structure of the web application
@@ -115,6 +109,11 @@ var   UDATA        = null; // set in constructor
         ); // end return
       } // end render()
     } // end class AutoCompleteDemo
+
+/// EXPORT UNISYS SIGNATURE ///////////////////////////////////////////////////
+/// used in init.jsx to set module scope early
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+AutoCompleteDemo.UMOD = module.id;
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

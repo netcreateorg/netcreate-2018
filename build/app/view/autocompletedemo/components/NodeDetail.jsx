@@ -31,13 +31,12 @@ const ReactStrap = require('reactstrap')
 const { Table, FormText } = ReactStrap
 
 const UNISYS   = require('unisys/client');
-var   UDATA    = null;
 
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
-class NodeDetail extends React.Component {
+class NodeDetail extends UNISYS.Component {
     constructor (props) {
       super(props)
       this.state = {
@@ -48,11 +47,9 @@ class NodeDetail extends React.Component {
       }
       this.handleSelection  = this.handleSelection.bind(this);
 
-      // Initialize UNISYS DATA LINK for REACT
-      UDATA = UNISYS.NewDataLink(this);
       // Always make sure that class methods are bind()'d before
       // assigning them to a handler
-      UDATA.OnStateChange('SELECTION',( stateChange ) => {
+      this.OnAppStateChange('SELECTION',( stateChange ) => {
         this.handleSelection(stateChange.hilitedNode);
       });
     } // constructor

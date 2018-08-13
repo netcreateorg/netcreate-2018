@@ -31,8 +31,11 @@
 					uport     : '<%=uport%>'
 				}
 			};
-			window.NC_DBG = {
-				inc : false
+			window.NC_DBG = null; // {} or null
+			if (window.NC_DBG) {
+				Object.assign(window.NC_DBG, {
+					lifecycle : true
+				});
 			}
 		</script>
 		<script src="/scripts/netc-lib.js"></script>

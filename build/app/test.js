@@ -1,4 +1,4 @@
-if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
+if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     TEST
@@ -20,6 +20,7 @@ let DBG = false;
     };
 /*/ groups of tests to run
 /*/ let PASSED = {};
+    let TEST_GO = false;
 /*/ pairs of arrays to match (array of arrays)
 /*/ let ARR_MATCH = [];
     let PR = 'TEST:';
@@ -34,11 +35,18 @@ let DBG = false;
 /*/ Main TEST ENABLE
     pass the testname (as listed in TESTS) and either true or false)
 /*/ let TM = ( testname, flag ) => {
+      if (testname===undefined) {
+        console.warn(`${PR} %cConfigured and Active`,`color:red;background-color:yellow`);
+        TEST_GO = true;
+        return true;
+      }
       if (typeof testname!=='string') throw "arg1 must be a testname";
       if (!TESTS.hasOwnProperty(testname)) throw `"${testname}" is not a valid testname`;
       if (DBG) console.log(PR,'TM',testname,flag||'');
       if (flag===undefined) {
-        return TESTS[testname];
+        if (!TEST_GO) console.error(`${PR} Test Switch read before testing started`);
+        let setting = TESTS[testname];
+        return setting;
       } else {
         TESTS[testname]=flag;
         m_ConfigureTestFlags(testname,flag);
@@ -206,7 +214,6 @@ let DBG = false;
           break;
         case 'net':
           subtests = {
-            netMessageInit    : flag,
             netMessageReg     : flag,
             netCallHndlr      : flag,
             netSendHndlr      : flag,
@@ -243,6 +250,7 @@ let DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ prints the test output to console
 /*/ function m_TestResults() {
+      m_ShowShell();
       // check all test results
       let pEntries = Object.entries(PASSED);
       let padding  = 0;
@@ -254,7 +262,7 @@ let DBG = false;
       pEntries.forEach(( [key,value ]) => {
         let res = '';
         if (value===null) {
-          res = `${(key).padEnd(padding)} [ ]\n`;
+          // res = `${(key).padEnd(padding)} [ ]\n`;
           m_skipped.push(res);
         } else switch (typeof value) {
           case 'number':
@@ -295,14 +303,13 @@ let DBG = false;
       let testTitle = "UNISYS LOGIC TEST RESULTS";
       console.group(testTitle);
         let out = m_passed.concat(m_failed,m_skipped)
-          .sort()
           .join('');
 
         // additional help
         let tnotes = '';
-        if (!TM.Passed('netCallHndlr')) tnotes+= `NOTE: netCallHndlr passes when REMOTE calls LOCAL NET_CALL_TEST\n`;
-        if (!TM.Passed('netSendHndlr')) tnotes+= `NOTE: netSendHndlr passes when REMOTE sends LOCAL NET_SEND_TEST\n`;
-        if (!TM.Passed('netData')) tnotes+= `NOTE: netData* passes when a REMOTE implementer of NET_CALL_TEST returns data to LOCAL\n`;
+        if (!TM.Passed('netCallHndlr')) tnotes+= `NOTE: 'netCallHndlr' requires a synched remote app to call-in\n`;
+        if (!TM.Passed('netSendHndlr')) tnotes+= `NOTE: 'netSendHndlr' requires a synched remote app to call-in\n`;
+        if (!TM.Passed('netData')) tnotes+= `NOTE: 'netData*' requires a synched remote app to respond to call-out\n`;
         if (tnotes) out+='\n'+tnotes;
 
         // summary
@@ -320,19 +327,24 @@ let DBG = false;
       console.groupEnd();
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ initialize the shell user interface for test results
+/*/ initialize the shell user interface for test results as elements, but
+    don't yet link them because component may not have rendered yet
 /*/ function m_InitShell() {
-      if (!E_SHELL) {
-        E_SHELL = document.getElementById('fdshell');
+      if (!E_OUT) {
         E_OUT = document.createElement('pre');
         E_HEADER = document.createElement('h4');
         E_HEADER.innerText = "RUNNING TESTS ";
         E_OUT.innerText = '.';
-        E_SHELL.appendChild(E_HEADER);
-        E_SHELL.appendChild(E_OUT);
       } else {
         E_OUT.innerText += '.';
       }
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ show the shell elements by finding root div and appending them
+/*/ function m_ShowShell() {
+      E_SHELL = document.getElementById('fdshell');
+      E_SHELL.appendChild(E_HEADER);
+      E_SHELL.appendChild(E_OUT);
     }
 
 

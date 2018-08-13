@@ -1,4 +1,4 @@
-if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
+if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     LOCAL SETTINGS
@@ -15,6 +15,8 @@ var EJSPROPS = window.NC_UNISYS || {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let S        = {};
 let DATE     = new Date();
+let RELOAD_CHECK   = 0;
+let RELOAD_TIMER = null;
 
 /// MAIN GETTER/SETTER FUNCTION  //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,14 +48,15 @@ let DATE     = new Date();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Force Reload if another module was navigated to and we want to ensure the
     entire browser was refreshed so only one set of app modules is loaded
-/*/ MOD.ForceReloadSingleApp = () => {
-      const key = 'APP_LOAD_INIT';
-      if (MOD.Get(key)) {
-        location.reload();
-        return;
+/*/ MOD.ForceReloadOnNavigation = () => {
+      RELOAD_CHECK++;
+      if (RELOAD_CHECK>1) {
+        console.warn(`SETTINGS: ForceReloadOnNavigation active. Reloading!`);
+        if (RELOAD_TIMER) clearTimeout(RELOAD_TIMER);
+        RELOAD_TIMER = setTimeout(()=>{location.reload()},500);
+      } else {
+        console.warn(`SETTINGS: ForceReloadOnNavigation check OK`);
       }
-      // if reload didn't happen, then save info
-      MOD.Set(key,true);
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ test time function

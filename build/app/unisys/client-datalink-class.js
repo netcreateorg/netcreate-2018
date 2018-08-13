@@ -1,4 +1,4 @@
-if (window.NC_DBG.inc) console.log(`inc ${module.id}`);
+if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     UNISYS DATALINK CLASS
@@ -190,7 +190,7 @@ var MESSAGER       = new Messager();
         options = Object.assign(options,{type:'msend'});
         options.toLocal = true;
         options.toNet = false;
-        return this.Send(mesgName,inData,options);
+        this.Send(mesgName,inData,options);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ version of Send that force network-only calls
@@ -198,7 +198,7 @@ var MESSAGER       = new Messager();
         options = Object.assign(options,{type:'msig'});
         options.toLocal = true;
         options.toNet = false;
-        return this.Signal(mesgName,inData,options);
+        this.Signal(mesgName,inData,options);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ version of Call that forces local-only calls
@@ -214,7 +214,7 @@ var MESSAGER       = new Messager();
         options = Object.assign(options,{type:'msend'});
         options.toLocal = false;
         options.toNet = true;
-        return this.Send(mesgName,inData,options);
+        this.Send(mesgName,inData,options);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ version of Signal that forces network-only signal
