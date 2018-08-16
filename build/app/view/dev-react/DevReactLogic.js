@@ -51,7 +51,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
           return text;
         }
         let state = { random: u_random_string() };
-        UDATA.SetState('VIEW',state,UDATA.UID());
+        UDATA.SetAppState('VIEW',state,UDATA.UID());
       },500);
     });
 

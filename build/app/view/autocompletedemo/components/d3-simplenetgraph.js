@@ -133,7 +133,7 @@ class D3NetGraph {
       this._Dragended         = this._Dragended.bind(this);
 
       // watch for updates to the D3DATA data object
-      UDATA.OnStateChange('D3DATA',(data)=>{
+      UDATA.OnAppStateChange('D3DATA',(data)=>{
         // expect { nodes, edges } for this namespace
         if (DBG) console.log('D3SimpleNetgraph got state D3DATA',data);
         this.SetData(data);

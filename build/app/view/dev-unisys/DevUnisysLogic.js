@@ -278,13 +278,13 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
   /// STATE CHANGE TESTING
   /*/ register state change handler for 'VIEW' namespace
   /*/ if (TEST('state')) {
-        UDATA.OnStateChange('VIEW',(state)=>{
+        UDATA.OnAppStateChange('VIEW',(state)=>{
           TEST.Pass('stateChange');
         });
         // Do the state change test!
         setTimeout( function () {
           let state = { description : 'test stateChange succeeded' };
-          UDATA.SetState('VIEW',state,UDATA.UID());
+          UDATA.SetAppState('VIEW',state,UDATA.UID());
         },1000);
       } // if TEST state
 
@@ -322,7 +322,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
           return text;
         }
         let state = { random: u_random_string() };
-        UDATA.SetState('LOGIC',state,UDATA.UID());
+        UDATA.SetAppState('LOGIC',state,UDATA.UID());
       },500);
   }); // end START TEST HOOK
 

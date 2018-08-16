@@ -100,19 +100,19 @@ var MESSAGER       = new Messager();
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// global STATE module calls are wrapped by unisys node so the unique
   /// UnisysID address can be appended
-      State( namespace ) {
+      AppState( namespace ) {
         return STATE.State(namespace);
       }
-      SetState( namespace, newState ) {
+      SetAppState( namespace, newState ) {
         // uid is "source uid" designating who is making the change
         STATE.SetState(namespace,newState,this.UID() );
       }
       // uid is "source uid" of subscribing object, to avoid reflection
       // if the subscribing object is also the originating state changer
-      OnStateChange( namespace, listener ) {
+      OnAppStateChange( namespace, listener ) {
         STATE.OnStateChange(namespace,listener,this.UID() );
       }
-      OffStateChange( namespace, listener ) {
+      AppStateChangeOff( namespace, listener ) {
         STATE.OffStateChange(namespace,listener);
       }
 

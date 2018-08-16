@@ -30,7 +30,7 @@ const PR          = PROMPTS.Pad('DevUnisys');
 
         /* INITIALIZE COMPONENT STATE from UNISYS */
         // get any state from 'VIEW' namespace; empty object if nothing
-        // UDATA.State() returns a copy of state obj; mutate/assign freely
+        // UDATA.AppState() returns a copy of state obj; mutate/assign freely
         let state = this.AppState('VIEW');
         // initialize some state variables
         state.description = state.description || 'uninitialized description';

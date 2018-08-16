@@ -48,15 +48,15 @@ let UnisysComponent = class extends React.Component {
   LocalSend( m, d, o ) { f_deprecated('AppSend'); this.UDATA.LocalSend(m,d,o) }
   LocalSignal( m, d, o ) { f_deprecated('AppSignal'); this.UDATA.LocalSignal(m,d,o) }
   /// STATE API METHODS
-  State( ns ) { f_deprecated('AppState'); return this.UDATA.State(ns) }
-  SetState( ns, so ) { f_deprecated('SetAppState'); this.UDATA.SetState(ns,so) }
-  OnStateChange( ns, lis ) { f_deprecated('OnAppStateChange'); this.UDATA.OnStateChange(ns,lis) }
-  OffStateChange( ns, lis ) { f_deprecated('AppStateChangeOff'); this.UDATA.OffStateChange(ns,lis) }
+  State( ns ) { f_deprecated('AppState'); return this.AppState(ns) }
+  SetState( ns, so ) { f_deprecated('SetAppState'); this.SetAppState(ns,so) }
+  OnStateChange( ns, lis ) { f_deprecated('OnAppStateChange'); this.OnAppStateChange(ns,lis) }
+  OffStateChange( ns, lis ) { f_deprecated('AppStateChangeOff'); this.AppStateChangeOff(ns,lis) }
   /// NEW STATE API METHODS
-  AppState( ns ) { return this.UDATA.State(ns) }
-  SetAppState( ns, so ) { this.UDATA.SetState(ns,so) }
-  OnAppStateChange( ns, lis ) { this.UDATA.OnStateChange(ns,lis) }
-  AppStateChangeOff( ns, lis ) { this.UDATA.OffStateChange(ns,lis) }
+  AppState( ns ) { return this.UDATA.AppState(ns) }
+  SetAppState( ns, so ) { this.UDATA.SetAppState(ns,so) }
+  OnAppStateChange( ns, lis ) { this.UDATA.OnAppStateChange(ns,lis) }
+  AppStateChangeOff( ns, lis ) { this.UDATA.AppStateChangeOff(ns,lis) }
   NetState( ns ) { f_unimplemented() }
   SetNetState( ns, so ) { f_unimplemented() }
   OnNetStateChange( ns, lis ) { f_unimplemented() }

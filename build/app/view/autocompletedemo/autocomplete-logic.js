@@ -88,7 +88,7 @@ const TARGET_COLOR     = '#FF0000'
       .then((data)=>{
         console.log(PR,'DATASTORE returned data',data);
         D3DATA = data;
-        UDATA.SetState('D3DATA',D3DATA);
+        UDATA.SetAppState('D3DATA',D3DATA);
       });
     }); // end INITIALIZE HOOK
 
@@ -99,7 +99,7 @@ const TARGET_COLOR     = '#FF0000'
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ Handle D3-related updates based on state changes. Subcomponents are
       responsible for updating themselves.
-  /*/ UDATA.OnStateChange('SELECTION',( stateChange ) => {
+  /*/ UDATA.OnAppStateChange('SELECTION',( stateChange ) => {
         let { nodes, edges } = stateChange;
         let { searchLabel } = stateChange;
         let { activeAutoCompleteId } = stateChange;
@@ -149,7 +149,7 @@ const TARGET_COLOR     = '#FF0000'
           // m_MarkNodeById( node.id, color );
         }
         // let SELECTION state listeners handle display updates
-        UDATA.SetState('SELECTION',newState);
+        UDATA.SetAppState('SELECTION',newState);
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ SOURCE_SEARCH sets the current matching term as entered in an
@@ -163,7 +163,7 @@ const TARGET_COLOR     = '#FF0000'
           nodes               : []
         };
         // let SELECTION state listeners handle display updates
-        UDATA.SetState('SELECTION',newState);
+        UDATA.SetAppState('SELECTION',newState);
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ SOURCE_HILITE updates the currently rolled-over node name in a list of
@@ -207,8 +207,8 @@ const TARGET_COLOR     = '#FF0000'
         if (updatedNodes.length>1) {
           throw Error("SourceUpdate found duplicate IDs");
         }
-        UDATA.SetState('D3DATA',D3DATA);
-        UDATA.SetState('SELECTION',{ searchLabel : '' });      // let SELECTION state listeners handle display updates
+        UDATA.SetAppState('D3DATA',D3DATA);
+        UDATA.SetAppState('SELECTION',{ searchLabel : '' });      // let SELECTION state listeners handle display updates
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ EDGE_UPDATE is called when the properties of an edge has changed
@@ -242,7 +242,7 @@ const TARGET_COLOR     = '#FF0000'
         if (updatedEdges.length>1) {
           throw Error("EdgeUpdate found duplicate IDs");
         }
-        UDATA.SetState('D3DATA',D3DATA);
+        UDATA.SetAppState('D3DATA',D3DATA);
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ EDGE_DELETE is called when an edge should be removed from...something?
@@ -253,8 +253,8 @@ const TARGET_COLOR     = '#FF0000'
         // Also update selection so edges in EdgeEditor will update
         // This works because of a HACKY SIDE EFFECT of the NodeSelector
         // SELECTION state handler which should be fixed
-        let { searchLabel } = UDATA.State('SELECTION');
-        UDATA.SetState('SELECTION',{
+        let { searchLabel } = UDATA.AppState('SELECTION');
+        UDATA.SetAppState('SELECTION',{
           searchLabel,
           nodes                : D3DATA.nodes,
           edges                : D3DATA.edges,
@@ -269,10 +269,10 @@ const TARGET_COLOR     = '#FF0000'
         let { id, searchString='' } = data;
         // update SELECTION state object
         /*REVIEW* treading the selection shouldn't be necessary*/
-        let selection = UDATA.State('SELECTION');
+        let selection = UDATA.AppState('SELECTION');
         selection.activeAutoCompleteId = id;
         selection.searchLabel          = searchString;
-        UDATA.SetState('SELECTION',selection);
+        UDATA.SetAppState('SELECTION',selection);
       });
     }); // end UNISYS_INIT
 
@@ -443,7 +443,7 @@ const TARGET_COLOR     = '#FF0000'
 /*/ function m_UnMarkAllNodes() {
       let props = { selected : DESELECTED_COLOR };
       m_SetAllObjs(D3DATA.nodes,props);
-      UDATA.SetState('D3DATA',D3DATA);
+      UDATA.SetAppState('D3DATA',D3DATA);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Sets the `node.selected` property to `color` so it is hilited on graph
@@ -454,7 +454,7 @@ const TARGET_COLOR     = '#FF0000'
       // this.getDeselectedNodeColor(node,color) are not yet implemented
       // to override the properties
       m_SetMatchingNodesByProp({id},marked,normal);
-      UDATA.SetState('D3DATA',D3DATA);
+      UDATA.SetAppState('D3DATA',D3DATA);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Sets the `node.selected` property to `color` so it is hilited on graph
@@ -464,7 +464,7 @@ const TARGET_COLOR     = '#FF0000'
       // this.getDeselectedNodeColor(node,color) are not yet implemented
       // to override the properties
       m_SetMatchingNodesByLabel(label,marked);
-      UDATA.SetState('D3DATA',D3DATA);
+      UDATA.SetAppState('D3DATA',D3DATA);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Sets matching node labels to the passed selection color
@@ -476,7 +476,7 @@ const TARGET_COLOR     = '#FF0000'
       let select   = { selected : color };
       let deselect = { selected : DESELECTED_COLOR };
       m_SetMatchingNodesByLabel(searchString, select, deselect);
-      UDATA.SetState('D3DATA',D3DATA);
+      UDATA.SetAppState('D3DATA',D3DATA);
     }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -525,7 +525,7 @@ const TARGET_COLOR     = '#FF0000'
     window.SetMatchingNodesByProp   = m_SetMatchingNodesByProp;
     window.SetAllObjs               = m_SetAllObjs;
     window.UpdateD3Data             = function () {
-      UDATA.SetState('D3DATA',D3DATA);
+      UDATA.SetAppState('D3DATA',D3DATA);
       return "SetState 'D3DATA'";
     };
 
