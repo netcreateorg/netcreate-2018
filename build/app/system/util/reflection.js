@@ -31,8 +31,11 @@ var   REFLECT    = {};
       if (!fn) {
         fn = PATH.Basename(frame.fileName);
         fn += `:${frame.lineNumber}:${frame.columnNumber}`;
+        return fn;
+      } else {
+        let bits = fn.split('.');
+        return `method ${bits[1]}() called by module ${bits[0]}`;
       }
-      return fn;
     };
 
 
