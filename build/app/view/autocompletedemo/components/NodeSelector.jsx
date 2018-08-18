@@ -117,13 +117,15 @@ class NodeSelector extends UNISYS.Component {
             isNewNode: true
         },
         edges: [],
-        isEditable:      false
+        isEditable:      false,
+        isValid:         false
       };
       // Bind functions to this component's object context
       this.clearForm                             = this.clearForm.bind(this);
       this.getNewNodeID                          = this.getNewNodeID.bind(this);
       this.handleSelection                       = this.handleSelection.bind(this);
       this.loadFormFromNode                      = this.loadFormFromNode.bind(this);
+      this.validateForm                          = this.validateForm.bind(this);
       this.onLabelChange                         = this.onLabelChange.bind(this);
       this.onTypeChange                          = this.onTypeChange.bind(this);
       this.onNotesChange                         = this.onNotesChange.bind(this);
@@ -160,7 +162,8 @@ class NodeSelector extends UNISYS.Component {
             isNewNode: true
         },
         edges: [],
-        isEditable:      false
+        isEditable:      false,
+        isValid:         false
       });
     } // clearFform
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -201,9 +204,9 @@ class NodeSelector extends UNISYS.Component {
 
       if (!this.state.isEditable) {
         if (data.nodes && data.nodes.length>0) {
-          if (DBG) console.log('NodeSelector:: updating selection',data.nodes[0]);
           // A node was selected, so load it
           // We're not editing, so it's OK to update the form
+          if (DBG) console.log('NodeSelector: updating selection',data.nodes[0]);
           // grab the first node
           let node = data.nodes[0];
           this.loadFormFromNode( node );
@@ -228,6 +231,8 @@ class NodeSelector extends UNISYS.Component {
       this.setState({
         formData
       });
+
+      this.validateForm();
 
     } // handleSelection
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -257,11 +262,24 @@ class NodeSelector extends UNISYS.Component {
           id:        node.id,
           isNewNode: false
         },
-        isEditable: false,
+        isEditable:  false
       });
+
+      this.validateForm();
     } // loadFormFromNode
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ validateForm () {
+      let isValid = false;
+      let formData = this.state.formData;
 
+      if (formData.label!=='') isValid=true;
+      if (DBG) console.log('NodeSElector.validateForm: Validating',isValid,'because label is',formData.label,'!');
+      this.setState({
+        isValid: isValid
+      })
+    }
 
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -270,9 +288,12 @@ class NodeSelector extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onLabelChange (label) {
+      // REVIEW: Currently this is not being called because AutoComplete
+      // doesn't have a change handler
       let node = this.state.formData;
       node.label = label;
       this.setState({ formData: node });
+      this.validateForm();
     } // onLabelChange
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -304,6 +325,7 @@ class NodeSelector extends UNISYS.Component {
       let formData = this.state.formData;
       if (formData.id==='') formData.id = this.getNewNodeID();
       this.setState({ formData });
+      this.validateForm();
     } // onEditButtonClick
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -348,6 +370,10 @@ class NodeSelector extends UNISYS.Component {
 
 /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ componentWillMount () {
+      this.validateForm();
+    }
 /*/ REACT calls this to receive the component layout and data sources
 /*/ render () {
       return (
@@ -407,6 +433,7 @@ class NodeSelector extends UNISYS.Component {
                 onClick={this.onEditButtonClick}
               >{this.state.formData.id===''?"Add New Node":"Edit Node"}</Button>
               <Button color="primary" size="sm"
+                disabled={!this.state.isValid}
                 hidden={!this.state.isEditable}
               >Save</Button>
             </FormGroup>

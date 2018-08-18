@@ -195,7 +195,7 @@ class AutoComplete extends UNISYS.Component {
 /*/ onInputChange (event, { newValue, method }) {
       // Pass the input value (node label search string) to UDATA
       // which will in turn pass the searchLabel back to the SELECTION
-      // state handler in the constructor, which will in turn set the stae
+      // state handler in the constructor, which will in turn set the state
       // of the input value to be passed on to AutoSuggest
       this.Call('SOURCE_SEARCH', { searchString: newValue });
     };
