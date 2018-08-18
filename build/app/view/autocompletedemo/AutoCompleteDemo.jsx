@@ -88,7 +88,7 @@ const ACD_LOGIC    = require('./autocomplete-logic');
           <p>To Zoom/Pan: Use mousewheel (or two fingers on a trackpad) to zoom in and out.  Drag the background to pan.</p>
             <div style={{display:'flex', flexFlow:'row nowrap',
                 width:'100%', height:'100%'}}>
-              <div id="left" style={{backgroundColor:'#E0ffff',flex:'1 0 auto',maxWidth:'300px',padding:'10px'}}>
+              <div id="left" style={{backgroundColor:'#E0ffff',flex:'1 0 auto',maxWidth:'400px',padding:'10px'}}>
                 <div style={{display:'flex', flexFlow:'column nowrap'}}>
                   <div style={{flexGrow:1}}>
                     <h3>Nodes (RF)</h3>
@@ -100,9 +100,6 @@ const ACD_LOGIC    = require('./autocomplete-logic');
               </div>
               <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 auto', padding:'10px'}}>
                 <NetGraph/>
-              </div>
-              <div id="right" style={{backgroundColor:'#ffffE0', flex:'1 0 auto', padding:'10px'}}>
-                <h3>Edges</h3>
               </div>
             </div>
           </div>
