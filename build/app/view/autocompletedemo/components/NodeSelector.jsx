@@ -384,7 +384,7 @@ class NodeSelector extends UNISYS.Component {
             <hr/>
             <FormGroup row>
               <Col sm={3}>
-                <Label for="nodeLabel" className="small text-muted">LABEL</Label>
+                <Label for="nodeLabel" className="small text-muted">Label</Label>
               </Col>
               <Col sm={9}>
                 <AutoComplete
@@ -399,7 +399,7 @@ class NodeSelector extends UNISYS.Component {
             </div>
             <FormGroup row>
               <Col sm={3}>
-                <Label for="type" className="small text-muted">TYPE</Label>
+                <Label for="type" className="small text-muted">Type</Label>
               </Col>
               <Col sm={9}>
                 <Input type="select" name="type" id="typeSelect"
@@ -417,7 +417,7 @@ class NodeSelector extends UNISYS.Component {
             </FormGroup>
             <FormGroup row>
               <Col sm={3}>
-                <Label for="notes" className="small text-muted">NOTES</Label>
+                <Label for="notes" className="small text-muted">Notes</Label>
               </Col>
               <Col sm={9}>
                 <Input type="textarea" name="note" id="notesText"
@@ -429,7 +429,7 @@ class NodeSelector extends UNISYS.Component {
             </FormGroup>
             <FormGroup row>
               <Col sm={3}>
-                <Label for="info" className="small text-muted">GEOCODE or DATE</Label>
+                <Label for="info" className="small text-muted">Geocode or Date</Label>
               </Col>
               <Col sm={9}>
                 <Input type="text" name="info" id="info"
