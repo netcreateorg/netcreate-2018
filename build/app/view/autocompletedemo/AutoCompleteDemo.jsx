@@ -82,17 +82,11 @@ const ACD_LOGIC    = require('./autocomplete-logic');
   /*/ render() {
         return (
           <div>
-            <h1>Auto Complete Demo</h1>
-            <p>INSTRUCTIONS: Type in the "Nodes" input field to highlight nodes or
-          move a node around to see how it's linked to other nodes.</p>
-          <p>To Zoom/Pan: Use mousewheel (or two fingers on a trackpad) to zoom in and out.  Drag the background to pan.</p>
             <div style={{display:'flex', flexFlow:'row nowrap',
                 width:'100%', height:'100%'}}>
               <div id="left" style={{backgroundColor:'#E0ffff',flex:'1 0 auto',maxWidth:'400px',padding:'10px'}}>
                 <div style={{display:'flex', flexFlow:'column nowrap'}}>
-                  <div style={{flexGrow:1}}>
-                    <h3>Nodes (RF)</h3>
-                  </div>
+                  <div style={{flexGrow:1}}></div>
                   <div>
                     <NodeSelector/>
                   </div>
