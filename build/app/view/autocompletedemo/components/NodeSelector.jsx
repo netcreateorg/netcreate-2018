@@ -380,51 +380,64 @@ class NodeSelector extends UNISYS.Component {
         <div>
           <Form className='nodeEntry' style={{minHeight:'300px',backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px'}}
             onSubmit={this.onSubmit}>
-            <FormText>NODE SELECTOR (RF)</FormText>
+            <FormText>NODE<div style={{float:'right'}}>{this.state.formData.id||''}</div></FormText>
             <hr/>
-            <FormGroup>
-              <Label for="nodeLabel" className="small text-muted">LABEL</Label>
-              <AutoComplete
-                identifier={thisIdentifier}
-                disabledValue={this.state.formData.label}
-                inactiveMode={'disabled'}
-              />
+            <FormGroup row>
+              <Col sm={3}>
+                <Label for="nodeLabel" className="small text-muted">LABEL</Label>
+              </Col>
+              <Col sm={9}>
+                <AutoComplete
+                  identifier={thisIdentifier}
+                  disabledValue={this.state.formData.label}
+                  inactiveMode={'disabled'}
+                />
+              </Col>
             </FormGroup>
             <div style={{position:'absolute',left:'300px',maxWidth:'300px'}}>
               <NodeDetail/>
             </div>
-            <FormGroup>
-              <Label for="type" className="small text-muted">TYPE</Label>
-              <Input type="select" name="type" id="typeSelect"
-                value={this.state.formData.type||''}
-                onChange={this.onTypeChange}
-                disabled={!this.state.isEditable}
-                >
-                <option>Person</option>
-                <option>Group</option>
-                <option>Place</option>
-                <option>Thing</option>
-                <option>Event</option>
-              </Input>
+            <FormGroup row>
+              <Col sm={3}>
+                <Label for="type" className="small text-muted">TYPE</Label>
+              </Col>
+              <Col sm={9}>
+                <Input type="select" name="type" id="typeSelect"
+                  value={this.state.formData.type||''}
+                  onChange={this.onTypeChange}
+                  disabled={!this.state.isEditable}
+                  >
+                  <option>Person</option>
+                  <option>Group</option>
+                  <option>Place</option>
+                  <option>Thing</option>
+                  <option>Event</option>
+                </Input>
+              </Col>
             </FormGroup>
-            <FormGroup>
-              <Label for="notes" className="small text-muted">NOTES</Label>
-              <Input type="textarea" name="note" id="notesText"
-                value={this.state.formData.notes||''}
-                onChange={this.onNotesChange}
-                readOnly={!this.state.isEditable}
-                />
+            <FormGroup row>
+              <Col sm={3}>
+                <Label for="notes" className="small text-muted">NOTES</Label>
+              </Col>
+              <Col sm={9}>
+                <Input type="textarea" name="note" id="notesText"
+                  value={this.state.formData.notes||''}
+                  onChange={this.onNotesChange}
+                  readOnly={!this.state.isEditable}
+                  />
+              </Col>
             </FormGroup>
-            <FormGroup>
-              <Label for="info" className="small text-muted">GEOCODE or DATE</Label>
-              <Input type="text" name="info" id="info"
-                value={this.state.formData.info||''}
-                onChange={this.onInfoChange}
-                readOnly={!this.state.isEditable}
-                />
-            </FormGroup>
-            <FormGroup>
-              <Label className="small text-muted">ID: {this.state.formData.id||''}</Label>
+            <FormGroup row>
+              <Col sm={3}>
+                <Label for="info" className="small text-muted">GEOCODE or DATE</Label>
+              </Col>
+              <Col sm={9}>
+                <Input type="text" name="info" id="info"
+                  value={this.state.formData.info||''}
+                  onChange={this.onInfoChange}
+                  readOnly={!this.state.isEditable}
+                  />
+              </Col>
             </FormGroup>
             <hr/>
             <FormGroup className="text-right" style={{paddingRight:'5px'}}>
