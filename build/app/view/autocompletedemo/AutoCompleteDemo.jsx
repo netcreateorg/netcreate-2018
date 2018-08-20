@@ -83,13 +83,10 @@ const ACD_LOGIC    = require('./autocomplete-logic');
         return (
           <div>
             <div style={{display:'flex', flexFlow:'row nowrap',
-                width:'100%', height:'100%'}}>
-              <div id="left" style={{backgroundColor:'#E0ffff',flex:'1 0 auto',maxWidth:'400px',padding:'10px'}}>
-                <div style={{display:'flex', flexFlow:'column nowrap'}}>
-                  <div style={{flexGrow:1}}></div>
-                  <div>
-                    <NodeSelector/>
-                  </div>
+                width:'100%', height:'100vh',overflow:'hidden'}}>
+              <div id="left" style={{backgroundColor:'#EEE',flex:'1 0 auto',maxWidth:'400px',padding:'10px',overflow:'scroll',marginTop:'56px'}}>
+                <div style={{display:'flex',flexFlow:'column nowrap'}}>
+                  <NodeSelector/>
                 </div>
               </div>
               <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 auto', padding:'10px'}}>

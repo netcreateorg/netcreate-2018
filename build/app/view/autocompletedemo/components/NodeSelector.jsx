@@ -378,10 +378,9 @@ class NodeSelector extends UNISYS.Component {
 /*/ render () {
       return (
         <div>
-          <Form className='nodeEntry' style={{minHeight:'300px',backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px'}}
+          <Form className='nodeEntry' style={{minHeight:'300px',backgroundColor:'#B8EDFF',padding:'5px',marginBottom:'0px'}}
             onSubmit={this.onSubmit}>
-            <FormText>NODE<div style={{float:'right'}}>{this.state.formData.id||''}</div></FormText>
-            <hr/>
+            <FormText>NODE {this.state.formData.id||''}</FormText>
             <FormGroup row>
               <Col sm={3}>
                 <Label for="nodeLabel" className="small text-muted">Label</Label>
@@ -439,7 +438,6 @@ class NodeSelector extends UNISYS.Component {
                   />
               </Col>
             </FormGroup>
-            <hr/>
             <FormGroup className="text-right" style={{paddingRight:'5px'}}>
               <Button outline size="sm"
                 hidden={this.state.isEditable}
@@ -450,9 +448,8 @@ class NodeSelector extends UNISYS.Component {
                 hidden={!this.state.isEditable}
               >Save</Button>
             </FormGroup>
-            <hr/>
           </Form>
-          <div style={{backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px'}}>
+          <div style={{backgroundColor:'#B9DFFF',padding:'5px',marginBottom:'10px'}}>
             <FormText>EDGES</FormText>
             {/* `key` is needed during edge deletion so EdgeEditors are properly
                  removed when an edge is deleted.
