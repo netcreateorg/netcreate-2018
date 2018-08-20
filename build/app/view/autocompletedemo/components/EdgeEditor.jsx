@@ -450,7 +450,7 @@ class EdgeEditor extends UNISYS.Component {
 /*/ render () {
       const { edgeID, parentNodeLabel } = this.props;
       const { formData, sourceNode, targetNode } = this.state;
-      const me = 'this';
+      const me = <span style={{color:"rgba(0,0,0,0.2)",fontStyle:"italic"}}>this</span>;
       return (
         <div>
 
@@ -458,7 +458,7 @@ class EdgeEditor extends UNISYS.Component {
             className={this.state.isExpanded?'d-none':''}
             outline
             size="sm"
-            style={{width:'100%'}}
+            style={{backgroundColor:"#a9d3ff",borderColor:'transparent',width:'100%',marginBottom:'3px',textAlign:"left"}}
             onClick={this.onButtonClick}
           >{parentNodeLabel===sourceNode.label ? me : sourceNode.label}
           &nbsp;&#x2794;&nbsp;
@@ -466,57 +466,74 @@ class EdgeEditor extends UNISYS.Component {
 
           <div className={this.state.isExpanded?'':'d-none'}>
             <Form className="nodeEntry"
-                  style={{minHeight:'300px',backgroundColor:'#caf1c7',padding:'5px',marginBottom:'10px'}}
+                  style={{backgroundColor:"#C9E1FF",minHeight:'300px',padding:'5px',marginBottom:'10px'}}
                   onSubmit={this.onSubmit}>
-              <FormText>EDGE</FormText>
-              <FormGroup>
-                <Label for="source" className="small text-muted">SOURCE</Label>
-                <AutoComplete
-                  identifier={'edge'+edgeID+'source'}
-                  disabledValue={sourceNode.label}
-                  inactiveMode={parentNodeLabel===sourceNode.label ? 'static' : 'disabled'}
-                />
+              <FormText>EDGE {formData.id}</FormText>
+              <FormGroup row>
+                <Col sm={3}>
+                  <Label for="source" className="small text-muted">SOURCE</Label>
+                </Col>
+                <Col sm={9}>
+                  <AutoComplete
+                    identifier={'edge'+edgeID+'source'}
+                    disabledValue={sourceNode.label}
+                    inactiveMode={parentNodeLabel===sourceNode.label ? 'static' : 'disabled'}
+                  />
+                </Col>
               </FormGroup>
-              <FormGroup>
-                <Label for="relationship" className="small text-muted">TYPE</Label>
-                <Input type="select" name="relationship" id="relationship"
-                  value={formData.relationship}
-                  onChange={this.onRelationshipChange}
-                  disabled={!this.state.isEditable}
-                  >
-                  <option>Source provided consulting for target</option>
-                  <option>Source is responsible for leading target project</option>
-                  <option>Source worked on target project or for target person</option>
-                  <option>Source project or person uses target tool</option>
-                  <option>Source person is part of target department or center</option>
-                </Input>
+              <FormGroup row>
+                <Col sm={3}>
+                  <Label for="relationship" className="small text-muted">TYPE</Label>
+                </Col>
+                <Col sm={9}>
+                  <Input type="select" name="relationship" id="relationship"
+                    value={formData.relationship}
+                    onChange={this.onRelationshipChange}
+                    disabled={!this.state.isEditable}
+                    >
+                    <option>Source provided consulting for target</option>
+                    <option>Source is responsible for leading target project</option>
+                    <option>Source worked on target project or for target person</option>
+                    <option>Source project or person uses target tool</option>
+                    <option>Source person is part of target department or center</option>
+                  </Input>
+                </Col>
               </FormGroup>
-              <FormGroup>
-                <Label for="nodeLabel" className="small text-muted">TARGET</Label>
-                <AutoComplete
-                  identifier={'edge'+edgeID+'target'}
-                  disabledValue={targetNode.label}
-                  inactiveMode={parentNodeLabel===targetNode.label ? 'static' : 'disabled'}
-                />
+              <FormGroup row>
+                <Col sm={3}>
+                  <Label for="nodeLabel" className="small text-muted">TARGET</Label>
+                </Col>
+                <Col sm={9}>
+                  <AutoComplete
+                    identifier={'edge'+edgeID+'target'}
+                    disabledValue={targetNode.label}
+                    inactiveMode={parentNodeLabel===targetNode.label ? 'static' : 'disabled'}
+                  />
+                </Col>
               </FormGroup>
-              <FormGroup>
-                <Label for="notes" className="small text-muted">NOTES</Label>
-                <Input type="text" name="notes" id="notes"
-                  value={formData.notes}
-                  onChange={this.onNotesChange}
-                  readOnly={!this.state.isEditable}
-                />
+              <FormGroup row>
+                <Col sm={3}>
+                  <Label for="notes" className="small text-muted">NOTES</Label>
+                </Col>
+                <Col sm={9}>
+                  <Input type="text" name="notes" id="notes"
+                    value={formData.notes}
+                    onChange={this.onNotesChange}
+                    readOnly={!this.state.isEditable}
+                  />
+                </Col>
               </FormGroup>
-              <FormGroup>
-                <Label for="info" className="small text-muted">APPROXIMATE DATE OF INTERACTION</Label>
-                <Input type="text" name="info" id="info"
-                  value={formData.info}
-                  onChange={this.onInfoChange}
-                  readOnly={!this.state.isEditable}
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label className="small text-muted">ID: {formData.id}</Label>
+              <FormGroup row>
+                <Col sm={3}>
+                  <Label for="info" className="small text-muted">APPROXIMATE DATE OF INTERACTION</Label>
+                </Col>
+                <Col sm={9}>
+                  <Input type="text" name="info" id="info"
+                    value={formData.info}
+                    onChange={this.onInfoChange}
+                    readOnly={!this.state.isEditable}
+                  />
+                </Col>
               </FormGroup>
               <FormGroup className="text-right" style={{paddingRight:'5px'}}>
                 <Button className="small text-muted float-left btn btn-outline-light" size="sm"
@@ -529,7 +546,7 @@ class EdgeEditor extends UNISYS.Component {
                 <Button size="sm"
                   onClick={this.onButtonClick}
                   hidden={this.state.isEditable}
-                >Done</Button>&nbsp;
+                >Close</Button>&nbsp;
                 <Button color="primary" size="sm"
                   hidden={!this.state.isEditable}
                   disabled={(!this.state.isEditable) &&
