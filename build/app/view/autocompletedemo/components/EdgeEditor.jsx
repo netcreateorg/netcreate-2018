@@ -155,6 +155,7 @@ class EdgeEditor extends UNISYS.Component {
           relationship: '',
           info:         '',
           notes:        '',
+          citation:     '',
           id:           '',
           isNewEdge:    true
         },
@@ -182,6 +183,7 @@ class EdgeEditor extends UNISYS.Component {
       this.onRelationshipChange = this.onRelationshipChange.bind(this);
       this.onNotesChange        = this.onNotesChange.bind(this);
       this.onInfoChange         = this.onInfoChange.bind(this);
+      this.onCitationChange     = this.onCitationChange.bind(this);
       this.onSubmit             = this.onSubmit.bind(this);
 
       // Always make sure class methods are bind()'d before using them
@@ -203,6 +205,7 @@ class EdgeEditor extends UNISYS.Component {
           relationship: '',
           info:         '',
           notes:        '',
+          citation:     '',
           id:           '',
           isNewEdge:    true
         },
@@ -264,6 +267,7 @@ class EdgeEditor extends UNISYS.Component {
           target: undefined,
           attributes: {
             Relationship: '',
+            Info: '',
             Citations: '',
             Notes: ''
           }
@@ -301,7 +305,8 @@ class EdgeEditor extends UNISYS.Component {
           sourceId:     edge.source,
           targetId:     edge.target,
           relationship: edge.attributes["Relationship"] || '',   // Make sure there's valid data
-          info:         edge.attributes["Citations"] || '',
+          info:         edge.attributes["Info"] || '',
+          citation:     edge.attributes["Citations"] || '',
           notes:        edge.attributes["Notes"] || '',
           isNewEdge:    false
         },
@@ -403,6 +408,13 @@ class EdgeEditor extends UNISYS.Component {
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
+/*/ onCitationChange (event) {
+      let formData = this.state.formData;
+      formData.citation = event.target.value;
+      this.setState({formData: formData});
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
 /*/ onNotesChange (event) {
       let formData = this.state.formData;
       formData.notes = event.target.value;
@@ -423,7 +435,8 @@ class EdgeEditor extends UNISYS.Component {
         target:         this.state.targetNode.id,   // REVIEW: d3data 'target' is id, rename this to 'targetId'?
         attributes: {
           Relationship: formData.relationship,
-          Citations:    formData.info,
+          Info:         formData.info,
+          Citations:    formData.citation,
           Notes:        formData.notes
         }
       }
@@ -471,7 +484,7 @@ class EdgeEditor extends UNISYS.Component {
               <FormText>EDGE {formData.id}</FormText>
               <FormGroup row>
                 <Col sm={3}>
-                  <Label for="source" className="small text-muted">SOURCE</Label>
+                  <Label for="source" className="small text-muted">Source</Label>
                 </Col>
                 <Col sm={9}>
                   <AutoComplete
@@ -483,7 +496,7 @@ class EdgeEditor extends UNISYS.Component {
               </FormGroup>
               <FormGroup row>
                 <Col sm={3}>
-                  <Label for="relationship" className="small text-muted">TYPE</Label>
+                  <Label for="relationship" className="small text-muted">Type</Label>
                 </Col>
                 <Col sm={9}>
                   <Input type="select" name="relationship" id="relationship"
@@ -501,7 +514,7 @@ class EdgeEditor extends UNISYS.Component {
               </FormGroup>
               <FormGroup row>
                 <Col sm={3}>
-                  <Label for="nodeLabel" className="small text-muted">TARGET</Label>
+                  <Label for="nodeLabel" className="small text-muted">Target</Label>
                 </Col>
                 <Col sm={9}>
                   <AutoComplete
@@ -513,7 +526,7 @@ class EdgeEditor extends UNISYS.Component {
               </FormGroup>
               <FormGroup row>
                 <Col sm={3}>
-                  <Label for="notes" className="small text-muted">NOTES</Label>
+                  <Label for="notes" className="small text-muted">Notes</Label>
                 </Col>
                 <Col sm={9}>
                   <Input type="text" name="notes" id="notes"
@@ -525,12 +538,24 @@ class EdgeEditor extends UNISYS.Component {
               </FormGroup>
               <FormGroup row>
                 <Col sm={3}>
-                  <Label for="info" className="small text-muted">APPROXIMATE DATE OF INTERACTION</Label>
+                  <Label for="info" className="small text-muted">Approximate Date of Interaction</Label>
                 </Col>
                 <Col sm={9}>
                   <Input type="text" name="info" id="info"
                     value={formData.info}
                     onChange={this.onInfoChange}
+                    readOnly={!this.state.isEditable}
+                  />
+                </Col>
+              </FormGroup>
+              <FormGroup row>
+                <Col sm={3}>
+                  <Label for="citation" className="small text-muted">Citation</Label>
+                </Col>
+                <Col sm={9}>
+                  <Input type="text" name="citation" id="citation"
+                    value={formData.citation}
+                    onChange={this.onCitationChange}
                     readOnly={!this.state.isEditable}
                   />
                 </Col>
