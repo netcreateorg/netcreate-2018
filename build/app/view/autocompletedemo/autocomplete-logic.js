@@ -202,7 +202,10 @@ const TARGET_COLOR     = '#FF0000'
           D3DATA.nodes.push(newNode);
         }
         if (updatedNodes.length===1) {
-          DATASTORE.Update({ op:'update', newNode });
+          // DATASTORE/server-database.json expects 'node' not 'newNode' with updates
+          let node=newNode
+          if (DBG) console.log('updating existing node',node);
+          DATASTORE.Update({ op:'update', node });
         }
         if (updatedNodes.length>1) {
           throw Error("SourceUpdate found duplicate IDs");
@@ -237,7 +240,9 @@ const TARGET_COLOR     = '#FF0000'
           D3DATA.edges.push(newEdge);
         }
         if (updatedEdges.length===1) {
-          DATASTORE.Update({ op:'update', newEdge });
+          // DATASTORE/server-database.json expects 'edge' not 'newEdge' with updates
+          let edge=newEdge
+          DATASTORE.Update({ op:'update', edge });
         }
         if (updatedEdges.length>1) {
           throw Error("EdgeUpdate found duplicate IDs");
