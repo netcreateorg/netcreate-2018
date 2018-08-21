@@ -240,6 +240,8 @@ class D3NetGraph {
               let count = 1
               this.data.edges.map( (l)=>{ l.source == d.id || l.target == d.id ? count++ : 0 } )
               d.weight = count
+              // save the calculated size
+              d.size = count
               return this.defaultSize * d.weight
           })
   //        .attr("r", (d) => { return this.defaultSize }) // d.size ?  d.size/10 : this.defaultSize; })
