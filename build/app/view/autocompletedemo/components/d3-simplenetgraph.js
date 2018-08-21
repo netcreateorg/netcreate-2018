@@ -205,11 +205,11 @@ class D3NetGraph {
 
       // nodeElements is a d3.selection object
       let nodeElements = this.zoomWrapper.selectAll(".node")
-        .data(this.data.nodes, (d) => { return d.id });
+        .data(this.data.nodes, (d) => { return d.id }); // fn returns the calculated key for the data object
 
       // edges is a d3.selection object
       let linkElements = this.zoomWrapper.selectAll(".edge")
-        .data(this.data.edges, (d) => { return d.source.id+"-"+d.target.id });
+        .data(this.data.edges, (d) => { return d.id }); // fn returns the calculated key for the data object
 
       // TELL D3 HOW TO HANDLE NEW NODE DATA
       // the d3.selection.enter() method sets the operational scope for

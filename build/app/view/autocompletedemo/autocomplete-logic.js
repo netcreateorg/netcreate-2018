@@ -219,6 +219,7 @@ const TARGET_COLOR     = '#FF0000'
         let { edge } = data;
         let attribs = {
           'Relationship' : edge.attributes['Relationship'],
+          'Info'         : edge.attributes['Info'],
           'Citations'    : edge.attributes['Citations'],
           'Notes'        : edge.attributes['Notes']
         };
@@ -236,10 +237,38 @@ const TARGET_COLOR     = '#FF0000'
           if (DBG) console.log('pushing edge',newEdge);
           // created edges should have a default size
           newEdge.size = 1;
-          DATASTORE.Update({ op:'insert', newEdge });
           D3DATA.edges.push(newEdge);
+
+          // Edge source and target links should be stored as
+          // ids rather than references to the actual source and
+          // target node objects.
+          //
+          // d3 will map the source and target ids to the
+          // node objects themsleves during the _UpdateGraph method.
+          //
+          // So we explicitly set and store ids rather than objects here.
+          //
+          // (If we don't do this, the edges become disconnected from nodes)
+          newEdge.source = newEdge.source.id;
+          newEdge.target = newEdge.target.id;
+
+          DATASTORE.Update({ op:'insert', newEdge });
         }
         if (updatedEdges.length===1) {
+
+          // Edge source and target links should be stored as
+          // ids rather than references to the actual source and
+          // target node objects.
+          //
+          // d3 will map the source and target ids to the
+          // node objects themsleves during the _UpdateGraph method.
+          //
+          // So we explicitly set and store ids rather than objects here.
+          //
+          // (If we don't do this, the edges become disconnected from nodes)
+          newEdge.source = newEdge.source.id;
+          newEdge.target = newEdge.target.id;
+
           // DATASTORE/server-database.json expects 'edge' not 'newEdge' with updates
           let edge=newEdge
           DATASTORE.Update({ op:'update', edge });
