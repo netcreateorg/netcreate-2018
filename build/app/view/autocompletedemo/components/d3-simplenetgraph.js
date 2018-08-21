@@ -167,12 +167,12 @@ class D3NetGraph {
       // method will be called repeatedly until the layout "gels" in a stable
       // configuration.
       this.simulation
-        .force("link", d3.forceLink())
-        .force("charge", d3.forceManyBody())
+        .force("link",    d3.forceLink())
+        .force("charge",  d3.forceManyBody())
         .force("collide", d3.forceCollide())
-        .force("center", d3.forceCenter())
-        .force("forceX", d3.forceX())
-        .force("forceY", d3.forceY())
+        .force("center",  d3.forceCenter())
+        .force("forceX",  d3.forceX())
+        .force("forceY",  d3.forceY())
 
         .on("tick", this._Tick)
     }
@@ -323,7 +323,7 @@ class D3NetGraph {
       nodeElements.exit().remove()
 
       // NOW TELL D3 HOW TO HANDLE NEW EDGE DATA
-
+      // .insert will add an svg `line` before the objects classed `.node`
       linkElements.enter()
         .insert("line",".node")
           .classed('edge', true)
