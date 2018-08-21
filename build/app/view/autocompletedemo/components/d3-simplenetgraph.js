@@ -52,8 +52,8 @@ let m_forceProperties = {   // values for all forces
       },
       charge: {
         enabled: true,
-        strength: -20,
-        distanceMin: 1,
+        strength: -1000, // -20,
+        distanceMin: 50, // 1,
         distanceMax: 2000
       },
       collide: {
@@ -74,7 +74,7 @@ let m_forceProperties = {   // values for all forces
       },
       link: {
         enabled: true,
-        distance: 30,
+        distance: 30, // 30,
         iterations: 1
       }
     }; // m_forceProperties
@@ -96,7 +96,7 @@ class D3NetGraph {
       this.clickFn      = {};
 
       this.defaultSize  = 5;
-      this.defaultColor = '#000';
+      this.defaultColor = '#DEF';
 
       /// Initialize UNISYS DATA LINK for REACT
       UDATA = UNISYS.NewDataLink(this);
