@@ -171,7 +171,7 @@ class NodeSelector extends UNISYS.Component {
     REVIEW: Should this be in autocomplete-logic?
 /*/ getNewNodeID () {
       let highestID = 0;
-      let ids  = this.AppState('D3DATA').nodes.map( node => { return node.id } );
+      let ids  = this.AppState('D3DATA').nodes.map( node => { return Number(node.id) } );
       if (ids.length>0) {
         highestID = ids.reduce( (a,b) => { return Math.max(a,b) } );
       }
@@ -183,7 +183,7 @@ class NodeSelector extends UNISYS.Component {
 /*/ Return a new unique ID
 /*/ getNewEdgeID () {
       let highestID = 0;
-      let ids  = this.AppState('D3DATA').edges.map( edge => { return edge.id } )
+      let ids  = this.AppState('D3DATA').edges.map( edge => { return Number(edge.id) } )
       if (ids.length>0) {
         highestID = ids.reduce( (a,b) => { return Math.max(a,b) } );
       }
