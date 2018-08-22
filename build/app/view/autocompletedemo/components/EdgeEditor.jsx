@@ -330,7 +330,7 @@ class EdgeEditor extends UNISYS.Component {
     For EdgeEditors, the active AutoComplete field is always
     the target, since the source is set by the initial selection
 /*/ handleSelection ( data ) {
-      if (DBG) console.log('EdgeEditor: got state SELECTION',data);
+      if (DBG) console.log('EdgeEditor',this.state.formData.id,': got state SELECTION',data);
 
       // FIX bad state dependency assuming id was in stateChange
       let { activeAutoCompleteId } = this.AppState('SELECTION');
@@ -364,7 +364,7 @@ class EdgeEditor extends UNISYS.Component {
 /*/ Someone externally has selected an edge.
     Usually someone has clicked a button in the EdgeList to view/edit an edge
 /*/ handleEdgeSelection ( data ) {
-      if (DBG) console.error('EdgeEditor: got state EDGE_SELECT',data);
+      if (DBG) console.error('EdgeEditor',this.state.formData.id,': got state EDGE_SELECT',data);
 
       if (this.state.formData.id === data.edgeID) {
         // pass currentAutoComplete back to nodeselector

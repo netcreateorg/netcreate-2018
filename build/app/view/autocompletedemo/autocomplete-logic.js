@@ -100,6 +100,7 @@ const TARGET_COLOR     = '#FF0000'
   /*/ Handle D3-related updates based on state changes. Subcomponents are
       responsible for updating themselves.
   /*/ UDATA.OnAppStateChange('SELECTION',( stateChange ) => {
+        if (DBG) console.log('autocomplete-logic: Got SELECTION', stateChange);
         let { nodes, edges } = stateChange;
         let { searchLabel } = stateChange;
         let { activeAutoCompleteId } = stateChange;
