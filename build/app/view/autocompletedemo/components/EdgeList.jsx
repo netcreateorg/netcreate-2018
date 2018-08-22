@@ -41,7 +41,8 @@ class EdgeList extends UNISYS.Component {
 
       this.state = {
         edges:      [],
-        isExapnded: false
+        isExapnded: false,
+        sortkey:    'Citations'
       };
 
       this.onButtonClick            = this.onButtonClick.bind(this);
@@ -49,6 +50,7 @@ class EdgeList extends UNISYS.Component {
       this.m_FindMatchingObjsByProp = this.m_FindMatchingObjsByProp.bind(this);
       this.m_FindMatchingEdgeByProp = this.m_FindMatchingEdgeByProp.bind(this);
       this.m_FindEdgeById           = this.m_FindEdgeById.bind(this);
+      this.setSortKey               = this.setSortKey.bind(this);
 
 
       /// Initialize UNISYS DATA LINK for REACT
@@ -67,9 +69,76 @@ class EdgeList extends UNISYS.Component {
 /*/ Handle updated SELECTION
 /*/ handleDataUpdate ( data ) {
       this.setState({edges: data.edges});
-      if (DBG) console.error('EdgeList.handleDataUpdate',data);
+      this.sortTable();
     }
 
+
+/// UTILITIES /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ sortBySourceLabel (edges) {
+      if (edges) {
+        return edges.sort( (a,b) => {
+          let akey = a.source.label,
+              bkey = b.source.label;
+          if (akey<bkey) return -1;
+          if (akey>bkey) return 1;
+          return 0;
+        });
+      }
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ sortByTargetLabel (edges) {
+      if (edges) {
+        return edges.sort( (a,b) => {
+          let akey = a.target.label,
+              bkey = b.target.label;
+          if (akey<bkey) return -1;
+          if (akey>bkey) return 1;
+          return 0;
+        });
+      }
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ sortByAttribute (edges, key) {
+      if (edges) {
+        return edges.sort( (a,b) => {
+          let akey = a.attributes[key],
+              bkey = b.attributes[key];
+          if (akey<bkey) return -1;
+          if (akey>bkey) return 1;
+          return 0;
+        });
+      }
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ If no `sortkey` is passed, the sort will use the existing state.sortkey
+/*/ sortTable ( sortkey=this.state.sortkey) {
+      let edges = this.state.edges;
+      switch (sortkey) {
+        case 'source':
+          this.sortBySourceLabel(edges);
+          break;
+        case 'target':
+          this.sortByTargetLabel(edges);
+          break;
+        case 'Relationship':
+          this.sortByAttribute(edges, 'Relationship');
+          break;
+        case 'Info':
+          this.sortByAttribute(edges, 'Info');
+          break;
+        case 'Citations':
+          this.sortByAttribute(edges, 'Citations');
+          break;
+        case 'Notes':
+          this.sortByAttribute(edges, 'Notes');
+          break;
+      }
+      this.setState({edges: edges});
+    }
 
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -103,6 +172,13 @@ class EdgeList extends UNISYS.Component {
         isExpanded: !this.state.isExpanded
       })
     }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ setSortKey (key) {
+      this.setState({sortkey: key});
+      this.sortTable(key);
+    }
+
 
 /// OBJECT HELPERS ////////////////////////////////////////////////////////////
 /// these probably should go into a utility class
@@ -158,12 +234,30 @@ class EdgeList extends UNISYS.Component {
               <tr>
                 <th>ID</th>
                 <th></th>
-                <th>Source</th>
-                <th>Target</th>
-                <th>Type</th>
-                <th>Citation</th>
-                <th>Notes</th>
-                <th>Info</th>
+                <th><Button size="sm"
+                      disabled={this.state.sortkey==="source"}
+                      onClick={()=>this.setSortKey("source")}
+                    >Source</Button></th>
+                <th><Button size="sm"
+                      disabled={this.state.sortkey==="target"}
+                      onClick={()=>this.setSortKey("target")}
+                    >Target</Button></th>
+                <th><Button size="sm"
+                      disabled={this.state.sortkey==="Relationship"}
+                      onClick={()=>this.setSortKey("Relationship")}
+                    >Type</Button></th>
+                <th><Button size="sm"
+                      disabled={this.state.sortkey==="Citations"}
+                      onClick={()=>this.setSortKey("Citations")}
+                    >Citations</Button></th>
+                <th><Button size="sm"
+                      disabled={this.state.sortkey==="Notes"}
+                      onClick={()=>this.setSortKey("Notes")}
+                    >Notes</Button></th>
+                <th><Button size="sm"
+                      disabled={this.state.sortkey==="Info"}
+                      onClick={()=>this.setSortKey("Info")}
+                    >Info</Button></th>
               </tr>
             </thead>
             <tbody>
