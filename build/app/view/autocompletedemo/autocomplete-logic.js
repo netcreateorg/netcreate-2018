@@ -300,12 +300,15 @@ const TARGET_COLOR     = '#FF0000'
       module which one has the current focus. The searchString is also passed
       so a display update can be triggered immediately.
   /*/ UDATA.HandleMessage('AUTOCOMPLETE_SELECT', function( data ) {
-        let { id, searchString='' } = data;
+        let { id, searchString } = data;
         // update SELECTION state object
         /*REVIEW* treading the selection shouldn't be necessary*/
         let selection = UDATA.AppState('SELECTION');
         selection.activeAutoCompleteId = id;
-        selection.searchLabel          = searchString;
+        // Don't replace selection.searchLabel if searchString is undefined
+        // searchString can be undefined when an edge reassigns the
+        // activeAutoCompleteId to nodeSelector
+        selection.searchLabel          = searchString || selection.searchLabel;
         UDATA.SetAppState('SELECTION',selection);
       });
     }); // end UNISYS_INIT
