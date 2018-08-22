@@ -44,6 +44,7 @@ const PR           = PROMPTS.Pad('ACD');
 const React        = require('react');
 const NetGraph     = require('./components/NetGraph');
 const NodeSelector = require('./components/NodeSelector');
+const Help         = require('./components/Help');
 const EdgeList     = require('./components/EdgeList');
 const ACD_LOGIC    = require('./autocomplete-logic');
 
@@ -91,6 +92,7 @@ const ACD_LOGIC    = require('./autocomplete-logic');
                 </div>
               </div>
               <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 auto', padding:'10px',marginTop:'56px'}}>
+                <Help/>
                 <EdgeList/>
                 <NetGraph/>
               </div>
