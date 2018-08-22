@@ -141,6 +141,7 @@ const AutoComplete = require('./AutoComplete');
 const NodeDetail   = require('./NodeDetail');
 
 const UNISYS   = require('unisys/client');
+var   UDATA    = null;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -177,6 +178,9 @@ class EdgeEditor extends UNISYS.Component {
         isExpanded:      false,     // Show EdgeEditor Component in Summary view vs Expanded view
       };
 
+      /// Initialize UNISYS DATA LINK for REACT
+      UDATA = UNISYS.NewDataLink(this);
+
       this.onButtonClick        = this.onButtonClick.bind(this);
       this.onDeleteButtonClick  = this.onDeleteButtonClick.bind(this);
       this.onEditButtonClick    = this.onEditButtonClick.bind(this);
@@ -190,6 +194,9 @@ class EdgeEditor extends UNISYS.Component {
       // as a handler, otherwise object context is lost
       this.OnAppStateChange('SELECTION',(data) => {
         this.handleSelection(data);
+      });
+      UDATA.HandleMessage('EDGE_SELECT',(data) => {
+        this.handleEdgeSelection(data);
       });
     } // constructor
 
@@ -353,6 +360,19 @@ class EdgeEditor extends UNISYS.Component {
         // Edge is not being edited, so ignore the selection
       }
     } // handleSelection
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Someone externally has selected an edge.
+    Usually someone has clicked a button in the EdgeList to view/edit an edge
+/*/ handleEdgeSelection ( data ) {
+      if (DBG) console.error('EdgeEditor: got state EDGE_SELECT',data);
+
+      if (this.state.formData.id === data.edgeID) {
+        // pass currentAutoComplete back to nodeselector
+        this.Call('AUTOCOMPLETE_SELECT',{id:'nodeSelector'});
+        this.setState({ isExpanded: true });
+      }
+
+    } // handleEdgeSelection
 
 
 
