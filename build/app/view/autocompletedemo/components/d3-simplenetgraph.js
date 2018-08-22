@@ -108,7 +108,7 @@ class D3NetGraph {
       Add default click handler so when clicking empty space, deselect all.
       NOTE: the svg element is actualy d3.selection object, not an svg obj.
   /*/ this.d3svg = d3.select(rootElement).append('svg')
-        .attr('width', m_width)
+        .attr('width', "100%")            // overrride m_width so SVG is wide
         .attr('height',m_height)
         .on("click", ( e, event ) => {
             // Deselect
