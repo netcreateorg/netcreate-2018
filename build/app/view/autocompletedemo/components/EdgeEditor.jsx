@@ -386,6 +386,12 @@ class EdgeEditor extends UNISYS.Component {
 
         // pass currentAutoComplete back to nodeselector
         this.Call('AUTOCOMPLETE_SELECT',{id:'nodeSelector'});
+
+        // If we were editing, then revert and exit
+        if (this.state.isEditable) {
+          this.loadSourceAndTarget();
+          this.setState({ isEditable: false });
+        }
       } else {
         // expand, but don't set the autocomplete field, since we're not editing
         this.setState({ isExpanded: true });
@@ -589,9 +595,9 @@ class EdgeEditor extends UNISYS.Component {
                   onClick={this.onEditButtonClick}
                 >{this.state.isEditable?"Add New Edge":"Edit Edge"}</Button>&nbsp;
                 <Button size="sm"
+                  outline={this.state.isEditable}
                   onClick={this.onButtonClick}
-                  hidden={this.state.isEditable}
-                >Close</Button>&nbsp;
+                >{this.state.isEditable?'Cancel':'Close'}</Button>&nbsp;
                 <Button color="primary" size="sm"
                   hidden={!this.state.isEditable}
                   disabled={(!this.state.isEditable) &&
