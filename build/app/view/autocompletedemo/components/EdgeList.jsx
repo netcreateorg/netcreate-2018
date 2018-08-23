@@ -171,6 +171,12 @@ class EdgeList extends UNISYS.Component {
       this.setState({sortkey: key});
       this.sortTable(key);
     }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ selectNode (label) {
+      // Load Source
+      UDATA.Call('SOURCE_SELECT',{ nodeLabels: [label] });
+    }
 
 
 /// OBJECT HELPERS ////////////////////////////////////////////////////////////
@@ -264,8 +270,10 @@ class EdgeList extends UNISYS.Component {
                       onClick={this.onButtonClick}
                     >Edit</Button>
                 </td>
-                <td>{edge.source.label || edge.source}</td>
-                <td>{edge.target.label || edge.target}</td>
+                <td><a href="#" onClick={()=>this.selectNode(edge.source.label)}
+                    >{edge.source.label || edge.source}</a></td>
+                <td><a href="#" onClick={()=>this.selectNode(edge.target.label)}
+                    >{edge.target.label || edge.target}</a></td>
                 <td>{edge.attributes["Relationship"]}</td>
                 <td>{edge.attributes["Citations"]}</td>
                 <td>{edge.attributes["Notes"]}</td>
