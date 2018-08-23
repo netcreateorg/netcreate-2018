@@ -151,18 +151,11 @@ class EdgeList extends UNISYS.Component {
 
       console.log('EdgeList: Edge id',edge.id,'selected for editing');
 
-      // Load Source
-      UDATA.Call('SOURCE_SELECT',{ nodeLabels: [edge.source.label] });
-
-      // HACK
-      // We need to wait for the source node to get selected and activated
-      // first before we try to open the edge
-      // This should probably be a callback?
-      setTimeout( () => {
-        // Load Target as Edge
+      // Load Source then Edge
+      UDATA.LocalCall('SOURCE_SELECT',{ nodeLabels: [edge.source.label] })
+      .then(()=>{
         UDATA.Call('EDGE_EDIT',{ edgeID: edge.id });
-      }, 500)
-
+      });
 
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
