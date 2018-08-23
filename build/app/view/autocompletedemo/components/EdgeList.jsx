@@ -160,7 +160,7 @@ class EdgeList extends UNISYS.Component {
       // This should probably be a callback?
       setTimeout( () => {
         // Load Target as Edge
-        UDATA.Call('EDGE_SELECT',{ edgeID: edge.id });
+        UDATA.Call('EDGE_EDIT',{ edgeID: edge.id });
       }, 500)
 
 

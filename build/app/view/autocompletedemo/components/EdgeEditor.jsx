@@ -198,6 +198,9 @@ class EdgeEditor extends UNISYS.Component {
       UDATA.HandleMessage('EDGE_SELECT',(data) => {
         this.handleEdgeSelection(data);
       });
+      UDATA.HandleMessage('EDGE_EDIT',(data) => {
+        this.handleEdgeEdit(data);
+      });
     } // constructor
 
 
@@ -374,6 +377,22 @@ class EdgeEditor extends UNISYS.Component {
 
     } // handleEdgeSelection
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Someone externally has selected an edge for editing.
+    Usually someone has clicked a button in the EdgeList to edit an edge
+/*/ handleEdgeEdit ( data ) {
+      if (DBG) console.error('EdgeEditor',this.state.formData.id,': got state EDGE_EDIT',data);
+
+      if (this.state.formData.id === data.edgeID) {
+        // pass currentAutoComplete back to nodeselector
+        this.Call('AUTOCOMPLETE_SELECT',{id:'nodeSelector'});
+        this.setState({
+          isExpanded: true,
+          isEditable: true
+        });
+      }
+
+    } // handleEdgeEdit
 
 
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
