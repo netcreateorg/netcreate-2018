@@ -309,7 +309,10 @@ const TARGET_COLOR     = '#FF0000'
         // Don't replace selection.searchLabel if searchString is undefined
         // searchString can be undefined when an edge reassigns the
         // activeAutoCompleteId to nodeSelector
-        selection.searchLabel          = searchString || selection.searchLabel;
+        // If it's undefined, just use existing selection.searchLabel
+        if (searchString!==undefined) {
+          selection.searchLabel = searchString;
+        }
         UDATA.SetAppState('SELECTION',selection);
       });
     }); // end UNISYS_INIT
