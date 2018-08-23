@@ -229,7 +229,9 @@ class EdgeList extends UNISYS.Component {
           <Button size="sm" outline
             onClick={this.onToggleExpanded}
           >{this.state.isExpanded ? "Hide Edge Table" : "Show Edge Table"}</Button>
-          <Table hidden={!this.state.isExpanded} hover size="sm">
+          <Table hidden={!this.state.isExpanded} hover size="sm"
+                 responsive striped
+          >
             <thead>
               <tr>
                 <th>ID</th>

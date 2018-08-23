@@ -86,12 +86,12 @@ const ACD_LOGIC    = require('./autocomplete-logic');
           <div>
             <div style={{display:'flex', flexFlow:'row nowrap',
                 width:'100%', height:'100vh',overflow:'hidden'}}>
-              <div id="left" style={{backgroundColor:'#EEE',flex:'1 0 auto',maxWidth:'400px',padding:'10px',overflow:'scroll',marginTop:'56px'}}>
+              <div id="left" style={{backgroundColor:'#EEE',flex:'1 1 25%',maxWidth:'400px',padding:'10px',overflow:'scroll',marginTop:'56px'}}>
                 <div style={{display:'flex',flexFlow:'column nowrap'}}>
                   <NodeSelector/>
                 </div>
               </div>
-              <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 auto', padding:'10px',marginTop:'56px'}}>
+              <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 60%', padding:'10px',marginTop:'56px'}}>
                 <Help/>
                 <EdgeList/>
                 <NetGraph/>
