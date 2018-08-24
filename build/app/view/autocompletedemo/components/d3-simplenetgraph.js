@@ -301,8 +301,13 @@ class D3NetGraph {
       // UPDATE circles in each node for all nodes
       nodeElements.merge(nodeElements)
         .selectAll("circle")
-          .attr("stroke",       (d) => { if (d.selected) return d.selected; })
-          .attr("stroke-width", (d) => { if (d.selected) return '5px'; })
+          .attr("stroke",       (d) => {
+            if (d.selected)    return d.selected;
+            if (d.strokeColor) return d.strokeColor;
+          })
+          .attr("stroke-width", (d) => {
+            if (d.selected || d.strokeColor) return '5px';
+          })
           .attr("r",
             (d) => {
               let count = 1

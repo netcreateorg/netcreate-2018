@@ -75,8 +75,9 @@ const PR               = PROMPTS.Pad('ACDLogic');
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DESELECTED_COLOR = '';
-const SOURCE_COLOR     = '#0000DD'
-const TARGET_COLOR     = '#FF0000'
+const SEARCH_COLOR     = '#FFAA00';
+const SOURCE_COLOR     = '#0000DD';
+const TARGET_COLOR     = '#FF0000';
 
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
@@ -178,28 +179,33 @@ const TARGET_COLOR     = '#FF0000'
         let { searchString } = data;
         let matches = m_FindMatchingNodesByLabel(searchString);
         let newState = {
-          suggestedNodeLabels : matches.map(n=>n.label),
+          suggestedNodes      : matches.map(n=>{return {id: n.id, label: n.label}}),
           searchLabel         : searchString,
           nodes               : []
         };
         // let SELECTION state listeners handle display updates
-        UDATA.SetAppState('SELECTION',newState);
+        UDATA.SetAppState('SEARCH',newState);
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ SOURCE_HILITE updates the currently rolled-over node name in a list of
-      selections.
+      selections.  The hilite can be selected via either the label or
+      the node id.
   /*/ UDATA.HandleMessage('SOURCE_HILITE', function( data ) {
-        let { nodeLabel, color } = data;
+        let { nodeLabel, nodeID, color } = data;
         if (nodeLabel) {
           // Only mark nodes if something is selected
           m_UnMarkAllNodes();
           m_MarkNodeByLabel(nodeLabel,SOURCE_COLOR);
         }
-        let hilitedNode = m_FindMatchingNodesByLabel(nodeLabel).shift();
-        // let HIGHLIGHT state listeners handle display updates
+        if (nodeID) {
+          // Only mark nodes if something is selected
+          m_UnMarkAllNodes();
+          m_MarkNodeById(nodeID,SOURCE_COLOR);
+        }
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ SOURCE_UPDATE is called when the properties of a node has changed
+      Globally updates DATASTORE and working D3DATA objects with the new node data.
   /*/ UDATA.HandleMessage('SOURCE_UPDATE', function( data ) {
         let { node } = data;
         let attribs = {
@@ -231,7 +237,6 @@ const TARGET_COLOR     = '#FF0000'
           throw Error("SourceUpdate found duplicate IDs");
         }
         UDATA.SetAppState('D3DATA',D3DATA);
-        UDATA.SetAppState('SELECTION',{ searchLabel : '' });      // let SELECTION state listeners handle display updates
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ EDGE_UPDATE is called when the properties of an edge has changed
@@ -538,6 +543,15 @@ const TARGET_COLOR     = '#FF0000'
       m_SetMatchingNodesByLabel(searchString, select, deselect);
       UDATA.SetAppState('D3DATA',D3DATA);
     }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Sets matching node labels to the passed selection color
+/*/ function m_HiliteNodesThatMatch( searchString, color ) {
+      let matched    = { strokeColor : color };
+      let notmatched = { strokeColor : undefined };
+      m_SetMatchingNodesByLabel(searchString, matched, notmatched);
+      UDATA.SetAppState('D3DATA',D3DATA);
+    }
+
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// TODO: THESE STILL NEED TO BE CONVERTED
