@@ -138,12 +138,6 @@ class NodeSelector extends UNISYS.Component {
       this.OnAppStateChange('SELECTION',(change) => {
         this.handleSelection(change);
       });
-      this.OnStart(()=>{
-        // always wrap UNISYS calls in a lifescycle hook otherwise you may try to execute a call
-        // before it has been declared in another module
-        if (DBG) console.log('NodeSElector.OnStart: Setting active autocomplete id to',thisIdentifier);
-        this.Call('AUTOCOMPLETE_SELECT',{id:thisIdentifier, searchString:this.state.formData.label});
-      });
     } // constructor
 
 
