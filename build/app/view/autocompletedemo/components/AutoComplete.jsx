@@ -9,6 +9,8 @@
       * view the current selection/setting when searching for a node
       * view the current selection/setting for an edge source or target
 
+
+
       ## MAIN FEATURES
 
       * It interactively provides a list of suggestions that match the current
@@ -23,9 +25,6 @@
         Since there can be multiple AutoComplete components on a single page
         (e.g. multiple edges along with the source), we disable the component
         when it isn't active.
-
-      * When the AutoComplete component is disabled, it will ignore SELECTION
-        updates.
 
       * When the AutoComplete component is disabled, it will display a
         generic INPUT component instead of the Autosuggest component.
@@ -44,6 +43,8 @@
       This relies on the react-autosuggest component.
       See documentation: https://github.com/moroshko/react-autosuggest
 
+
+
       ## TO USE
 
           <AutoComplete
@@ -51,6 +52,8 @@
             disabledValue={this.state.formData.label}
             inactiveMode={'disabled'}
           />
+
+
 
       ## TECHNICAL DESCRIPTION
 
@@ -79,6 +82,16 @@
          suggestedNodeLabels that is used by Autosuggest whenever it
          requests a list of suggestions.
 
+
+
+      ## HIGHLIGHTING vs MARKING
+
+      "Highlighting" refers to the temporary rollover highlight of a suggested node
+      in the suggestion list.  "Marking" refers to the stroked color of a node
+      circle on the D3 graph.
+
+
+
       ## PROPS
 
       identifier
@@ -94,7 +107,10 @@
 
       inactiveMode
 
-            When the AutoComplete component is not active, it can be either:
+            When the AutoComplete component is not active, it can be either
+            'static' or 'disabled' depending on the parent field.  This prop
+            sets which of these modes the field should default to:
+
             'static'   -- an unchangeable field, e.g. the Source node for an
                           edge is always going to be the Source label.  It
                           cannot be changed.
@@ -203,29 +219,12 @@ class AutoComplete extends UNISYS.Component {
 /*/ Handle Autosuggest's request to set the value of the input field when
     a selection is clicked.
 /*/ getSuggestionValue (suggestion) {
-      if (suggestion.isAddNew) {
-        return this.state.value;
-      }
-      return suggestion;
+      return suggestion.label;
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle Autosuggest's request for HTML rendering of suggestions
 /*/ renderSuggestion (suggestion) {
-      if (suggestion.isAddNew) {
-        // Don't show "Add New" because when you're adding a new item that partially
-        // matches an existing item, you'll have a list of suggestions.  Better to
-        // have the user always click "Add New Node" button.
-        //
-        // return (
-        //   <span>
-        //     [+] Add new: <strong>{this.state.value}</strong>
-        //   </span>
-        // );
-        //
-        // Instead, just show a blank
-        return (<span></span>);
-      }
-      return suggestion;
+      return suggestion.label;
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle Autosuggest's request for list of suggestions
@@ -238,10 +237,10 @@ class AutoComplete extends UNISYS.Component {
     We construct the list on the fly based on the D3DATA data.  If the data model
     changes, we'll need to update this lexicon constructor.
 /*/ onSuggestionsFetchRequested () {
-      let data = this.AppState('SELECTION');
-      if (data.suggestedNodeLabels) {
+      let data = this.AppState('SEARCH');
+      if (data.suggestedNodes) {
         this.setState({
-          suggestions: (data.suggestedNodeLabels)
+          suggestions: (data.suggestedNodes)
         });
       } else {
         if (DBG) console.log('AutoComplete.onSuggestionsFetchRequested: No suggestions.');
@@ -259,19 +258,14 @@ class AutoComplete extends UNISYS.Component {
     If a new value is suggested, we call SOURCE_SELECT.
     Autocomplete-logic should handle the creation of a new data object.
 /*/ onSuggestionSelected (event, { suggestion }) {
-      if (suggestion.isAddNew) {
-        // User selected the "Add New Node" item in the suggestion list
-        // console.log('Add new:', this.state.value, 'suggestion',suggestion);
-        this.Call('SOURCE_SELECT',{ nodeLabels: [this.state.value] });
-      } else {
-        // User selected an existing node in the suggestion list
-        this.Call('SOURCE_SELECT',{ nodeLabels: [suggestion] });
-      }
+      // User selected an existing node in the suggestion list
+      this.Call('SOURCE_SELECT',{ nodeIDs: [suggestion.id] });
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Autosuggest calls this whenever the user has highlighted a different suggestion
+    from the suggestion list.
 /*/ onSuggestionHighlighted ({ suggestion }) {
-      this.Call('SOURCE_HILITE',{ nodeLabel: suggestion });
+      this.Call('SOURCE_HILITE',{ nodeID: suggestion.id });
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Autosuggest checks this before rendering suggestions

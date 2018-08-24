@@ -142,34 +142,48 @@ const TARGET_COLOR     = '#FF0000';
       SEE ALSO: AutoComplete.onSuggestionSelected() and
                 D3SimpleNetGraph._UpdateGraph click handler
   /*/ UDATA.HandleMessage('SOURCE_SELECT', function( data ) {
-        let { nodeLabels=[] } = data;
+        let { nodeLabels=[], nodeIDs=[] } = data;
         let nodeLabel = nodeLabels.shift();
-        let node = m_FindMatchingNodesByLabel(nodeLabel).shift();
-        let newState;
+        let nodeID    = nodeIDs.shift();
+        let node, newState;
+
+        if (nodeID) {
+          node = m_FindNodeById(nodeID);
+        } else if (nodeLabel) {
+          node = m_FindMatchingNodesByLabel(nodeLabel).shift();
+        } else {
+          // REVIEW: This needs to handle the case where a node is deselected.
+          throw Error('autocomplete-logic handle SOURCE_SELECT called with bad nodeLabels',nodeLabels,'or nodeIDs',nodeIDs);
+        }
+
+        // A node has been selected so make nodeSelector the active autocomplete field
+        m_HandleAutoCompleteSelect({id:'nodeSelector'});
+
 
         if (node===undefined) {
+          // Node not found, create a new node
           newState = {
             nodes                 : [],
             edges                 : [],
             searchLabel           : '',
-            activeAutoCompleteId  : 'nodeSelector'
           };
-          // update visuals
-          // m_UnMarkAllNodes();
         } else {
+          // Load existing node and edges
           let edges = [];
-          edges = edges.concat( D3DATA.edges.filter( edge => edge.source.label===nodeLabel || edge.target.label===nodeLabel) );
+          if (nodeID) {
+            edges = edges.concat( D3DATA.edges.filter( edge => edge.source.id===nodeID || edge.target.id===nodeID) );
+          } else {
+            edges = edges.concat( D3DATA.edges.filter( edge => edge.source.label===nodeLabel || edge.target.label===nodeLabel) );
+          }
           // create state change object
           newState = {
             nodes                 : [ node ],
-            edges,
-            searchLabel           : node.label
+            edges                 : [ edges ],
+            searchLabel           : node.label,
           };
-          // update visuals
-          // let color = '#0000DD';
-          // m_MarkNodeById( node.id, color );
         }
-        // let SELECTION state listeners handle display updates
+
+        // Set the SELECTION state so that listeners such as NodeSelectors update themselves
         UDATA.SetAppState('SELECTION',newState);
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
