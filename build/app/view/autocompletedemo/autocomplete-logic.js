@@ -117,6 +117,25 @@ const TARGET_COLOR     = '#FF0000'
         if (searchLabel) m_MarkNodesThatMatch(searchLabel,SOURCE_COLOR);
       }); // StateChange SELECTION
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ Search field has been updated
+  /*/ UDATA.OnAppStateChange('SEARCH',( stateChange ) => {
+        if (DBG) console.log('autocomplete-logic: Got SEARCH', stateChange);
+        let { nodes, edges }         = stateChange;
+        let { searchLabel }          = stateChange;
+        let { activeAutoCompleteId } = stateChange;
+        // NODE LIST UPDATE
+        if (nodes!==undefined) {
+          if (nodes.length>0) {
+            let color = SEARCH_COLOR;
+            nodes.forEach( node => m_MarkNodeById(node.id,color));
+          } else {
+            m_UnMarkAllNodes();
+          }
+        }
+        // SEARCH LABEL UPDATE
+        if (searchLabel) m_HiliteNodesThatMatch(searchLabel,SEARCH_COLOR);
+      }); // StateChange SELECTION
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ SOURCE_SELECT set the selected node by LABEL. There is one selected node
       in the app at any one time, though nodeLabels is passed as an array.
       SEE ALSO: AutoComplete.onSuggestionSelected() and

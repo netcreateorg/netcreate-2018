@@ -43,6 +43,7 @@ const PR           = PROMPTS.Pad('ACD');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React        = require('react');
 const NetGraph     = require('./components/NetGraph');
+const Search       = require('./components/Search');
 const NodeSelector = require('./components/NodeSelector');
 const Help         = require('./components/Help');
 const EdgeList     = require('./components/EdgeList');
@@ -88,6 +89,7 @@ const ACD_LOGIC    = require('./autocomplete-logic');
                 width:'100%', height:'100vh',overflow:'hidden'}}>
               <div id="left" style={{backgroundColor:'#EEE',flex:'1 1 25%',maxWidth:'400px',padding:'10px',overflow:'scroll',marginTop:'56px'}}>
                 <div style={{display:'flex',flexFlow:'column nowrap'}}>
+                  <Search/>
                   <NodeSelector/>
                 </div>
               </div>
