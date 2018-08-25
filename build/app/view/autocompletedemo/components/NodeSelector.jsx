@@ -116,14 +116,15 @@ class NodeSelector extends UNISYS.Component {
             id:        '',
             isNewNode: true
         },
-        edges: [],
-        isEditable:      false,
-        isValid:         false
+        edges:         [],
+        isEditable:    false,
+        isValid:       false
       };
       // Bind functions to this component's object context
       this.clearForm                             = this.clearForm.bind(this);
       this.getNewNodeID                          = this.getNewNodeID.bind(this);
       this.handleSelection                       = this.handleSelection.bind(this);
+      this.onStateChange_SEARCH                  = this.onStateChange_SEARCH.bind(this);
       this.loadFormFromNode                      = this.loadFormFromNode.bind(this);
       this.validateForm                          = this.validateForm.bind(this);
       this.onLabelChange                         = this.onLabelChange.bind(this);
@@ -133,11 +134,13 @@ class NodeSelector extends UNISYS.Component {
       this.onEditButtonClick                     = this.onEditButtonClick.bind(this);
       this.onAddNewEdgeButtonClick               = this.onAddNewEdgeButtonClick.bind(this);
       this.onSubmit                              = this.onSubmit.bind(this);
+
       // NOTE: assign UDATA handlers AFTER functions have been bind()'ed
       // otherwise they will lose context
       this.OnAppStateChange('SELECTION',(change) => {
         this.handleSelection(change);
       });
+      this.OnAppStateChange('SEARCH',             this.onStateChange_SEARCH);
     } // constructor
 
 
@@ -189,12 +192,12 @@ class NodeSelector extends UNISYS.Component {
 /*/ Handle updated SELECTION
 /*/ handleSelection ( data ) {
       if (DBG) console.log('NodeSelector: got state SELECTION',data);
-      // OLD
-      // Ignore the update if we're not the active AutoComplete component
-      // if (data.activeAutoCompleteId!==thisIdentifier) return;
-      // FIX bad state dependency
-      let { activeAutoCompleteId } = this.AppState('SELECTION');
-      if (activeAutoCompleteId!==thisIdentifier) return;
+
+      // Only update if we are the currently active field
+      // otherwise an Edge might be active
+      let { activeAutoCompleteId } = this.AppState('ACTIVEAUTOCOMPLETE');
+      if ( (activeAutoCompleteId!==thisIdentifier) &&
+           (activeAutoCompleteId!=='search')          ) return;
 
       if (!this.state.isEditable) {
         if (data.nodes && data.nodes.length>0) {
@@ -216,10 +219,32 @@ class NodeSelector extends UNISYS.Component {
           if (DBG) console.log('NodeSelector: No data.nodes, so clearing form');
           this.clearForm();
         }
+      } else {
+        // We're already editing, and another selection has come in.
+        // What should we do?
+        // * force exit?
+        // * prevent load?
+        // * prevent selection?
+        if (DBG) console.log('NodeSelector: Already editing, ignoring SELECTION');
       }
-      // Always update the search label
-      // Update the form's node label because that data is only passed via SELECTION
-      // AutoComplete calls SELECTION whenever the input field changes
+
+      this.validateForm();
+
+    } // handleSelection
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Handle updated SEARCH
+    AutoComplete handles its internal updates, but we do need to validate the form
+    When AutoComplete's input field is updated, it sends a SOURCE_SEARCH to ACL
+    which returns the updated value in SEARCH state.  AutoComplete updates
+    the input field using SEARCH.  We need to update the form data here
+    and validate it for NodeSelector.
+/*/ onStateChange_SEARCH ( data ) {
+      // Only update if we are the currently active field
+      // otherwise an Edge might be active
+      let { activeAutoCompleteId } = this.AppState('ACTIVEAUTOCOMPLETE');
+      if ( (activeAutoCompleteId!==thisIdentifier) &&
+           (activeAutoCompleteId!=='search')          ) return;
+
       let formData = this.state.formData;
       formData.label = data.searchLabel;
       this.setState({
@@ -227,8 +252,7 @@ class NodeSelector extends UNISYS.Component {
       });
 
       this.validateForm();
-
-    } // handleSelection
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Copy the node data passed via SELECTION in the form
 /*/ loadFormFromNode ( newNode ) {
@@ -320,6 +344,7 @@ class NodeSelector extends UNISYS.Component {
       if (formData.id==='') formData.id = this.getNewNodeID();
       this.setState({ formData });
       this.validateForm();
+      this.AppCall('AUTOCOMPLETE_SELECT',{id:thisIdentifier});
     } // onEditButtonClick
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -355,10 +380,11 @@ class NodeSelector extends UNISYS.Component {
           info:  newNodeData.info,
           notes: newNodeData.notes
       };
+      this.setState({ isEditable: false });
+      // Hand AutoComplete control back to search
+      this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
       // tell other unisys subscribers interested in this state
       this.Call('SOURCE_UPDATE', { node });
-      // Clear form data
-      this.clearForm();
     } // onSubmit
 
 
@@ -374,7 +400,7 @@ class NodeSelector extends UNISYS.Component {
         <div>
           <Form className='nodeEntry' style={{minHeight:'300px',backgroundColor:'#B8EDFF',padding:'5px',marginBottom:'0px'}}
             onSubmit={this.onSubmit}>
-            <FormText>NODE {this.state.formData.id||''}</FormText>
+            <FormText><b>NODE {this.state.formData.id||''}</b></FormText>
             <FormGroup row>
               <Col sm={3}>
                 <Label for="nodeLabel" className="small text-muted">Label</Label>
@@ -449,7 +475,7 @@ class NodeSelector extends UNISYS.Component {
                  removed when an edge is deleted.
                  REVIEW: Can we replace edgeID with key?  */}
             {this.state.edges.map( (edge,i) =>
-              <EdgeEditor key={i}
+              <EdgeEditor
                 edgeID={edge.id}
                 key={edge.id}
                 parentNodeLabel={this.state.formData.label}

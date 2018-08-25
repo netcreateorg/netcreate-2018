@@ -45,27 +45,74 @@ var   UDATA      = UNISYS.NewDataLink(MOD);
 
 /// APP STATE/DATA STRUCTURES /////////////////////////////////////////////////
 /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
+
+
     SELECTION
-    * activeAutoCompleteId: id of active <AutoComplete> field
-        of form: 'node-xx' or 'edge-source-xx' or 'edge-target-xx'
-        where xx = the id of the <AutoComplete> field that has input focus.
-        This is used to keep track of the currently active
-        AutoComplete field. Inactive fields and updates are determined by
-        the value of this property.
-    * nodes: an array of current selected nodes for editing.
-        This is the node the user clicked on in the graph or selected from
-        the suggestions list
-    * edges: an array of edge objects for editing
-        *REVIEW*: Should this be renamed "selectedEdges" to distinguish from
-        *D3DATA.edge
-    * searchLabel: a string representing what the user has typed
-    * suggestedNodeLabels: an array of suggested nodes
-        node labels suggestions match the current search string
-    * hilitedNode: node object that user has rolled-over in suggestion list
-        user has not clicked yet, but is browsing through the list
+
+    The SELECTION state maintains the list of nodes and edges that are
+    currently selected and loaded in the forms.
+
+    Set by      AutoComplete's call to SOURCE_SELECT
+                D3SimpleNetGraph's call to SOURCE_SELECT
+                EdgeEditor's call to EDGE_UPDATE
+    Handled by  NodeSelector to load the currently selected node
+                NodeSelector also sets the edges in EdgeEditor
+                EdgeEditor to select the target node when creating new edge
+
+    * nodes     An array of current selected nodes for editing.
+                This is the node the user clicked on in the graph or selected from
+                the suggestions list
+    * edges     An array of edge objects for editing
+                *REVIEW*: Should this be renamed "selectedEdges" to distinguish from
+                *D3DATA.edge
+
+
+
+    SEARCH
+
+    Set by      AutoComplete's call to SOURCE_SEARCH when its input changes.
+    Handled by  AutoComplete for its controlled input field
+                NodeSelector for validating when editing the form.
+
+    * suggestedNodes  An array of nodes that match the searchLabel
+    * searchLabel     A string that the user has typed into AutoComplete
+
+
+
+    ACTIVEAUTOCOMPLETE
+
+    The ACTIVEAUTOCOMPLETE state points to the id of the AutoComplete
+    field (either search, or NodeSElector, or EdgeEditor) that has the
+    current focus.  Search results and d3 clicks are routed to the
+    active AutComplete component.
+
+    Set by      Search's call to AUTOCOMPLETE_SELECT on startup
+                NodeSelector's call to AUTOCOMPLETE_SELECT when Edit Node is clicked
+                " when changes are submitted
+                EdgeEditor's call to AUTOCOMPLETE_SELECT when a new Edge is created
+                " an edge is selected externally for editing
+                " an edge being editted is closed (hand back to search)
+                " changes are submitted
+
+    Handled by  AutoComplete to enable/disable its mode active state,
+                know when and when not to handle SEARCH and SELECTION state updates.
+
+    Looked up   NodeSelector to check if it's the current activeAutoCompleteId
+
+    * activeAutoCompleteId
+                id of active <AutoComplete> field
+                of form: 'node-xx' or 'edge-source-xx' or 'edge-target-xx'
+                where xx = the id of the <AutoComplete> field that has input focus.
+                This is used to keep track of the currently active
+                AutoComplete field. Inactive fields and updates are determined by
+                the value of this property.
+
+
     D3DATA
+
     * nodes: all nodes (not all may be actually changed)
     * edges: all edges (not all may be actually changed)
+
 \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -/*/
 var   D3DATA           = null;    // see above for description
 const DATASTORE        = require('system/datastore');
@@ -87,7 +134,7 @@ const TARGET_COLOR     = '#FF0000';
       // load data into D3DATA
       DATASTORE.LoadDataPromise()
       .then((data)=>{
-        console.log(PR,'DATASTORE returned data',data);
+        if (DBG) console.log(PR,'DATASTORE returned data',data);
         D3DATA = data;
         UDATA.SetAppState('D3DATA',D3DATA);
       });
@@ -103,8 +150,6 @@ const TARGET_COLOR     = '#FF0000';
   /*/ UDATA.OnAppStateChange('SELECTION',( stateChange ) => {
         if (DBG) console.log('autocomplete-logic: Got SELECTION', stateChange);
         let { nodes, edges } = stateChange;
-        let { searchLabel } = stateChange;
-        let { activeAutoCompleteId } = stateChange;
         // NODE LIST UPDATE
         if (nodes!==undefined) {
           if (nodes.length>0) {
@@ -114,8 +159,6 @@ const TARGET_COLOR     = '#FF0000';
             m_UnMarkAllNodes();
           }
         }
-        // SEARCH LABEL UPDATE
-        if (searchLabel) m_MarkNodesThatMatch(searchLabel,SOURCE_COLOR);
       }); // StateChange SELECTION
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ Search field has been updated
@@ -137,7 +180,12 @@ const TARGET_COLOR     = '#FF0000';
         if (searchLabel) m_HiliteNodesThatMatch(searchLabel,SEARCH_COLOR);
       }); // StateChange SELECTION
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ SOURCE_SELECT set the selected node by LABEL. There is one selected node
+  /*/ User has clicked on a suggestion from the AutoCopmlete suggestion list.
+      The source node should be loaded in NodeSelector.
+
+      OR, user has clicked on a node in the D3 graph.
+
+      SOURCE_SELECT select node by LABEL. There is only one selected node
       in the app at any one time, though nodeLabels is passed as an array.
       SEE ALSO: AutoComplete.onSuggestionSelected() and
                 D3SimpleNetGraph._UpdateGraph click handler
@@ -152,20 +200,16 @@ const TARGET_COLOR     = '#FF0000';
         } else if (nodeLabel) {
           node = m_FindMatchingNodesByLabel(nodeLabel).shift();
         } else {
-          // REVIEW: This needs to handle the case where a node is deselected.
-          throw Error('autocomplete-logic handle SOURCE_SELECT called with bad nodeLabels',nodeLabels,'or nodeIDs',nodeIDs);
+          // No node selected, so deselect
         }
 
-        // A node has been selected so make nodeSelector the active autocomplete field
-        m_HandleAutoCompleteSelect({id:'nodeSelector'});
-
+        if (DBG) console.log('ACL: SOURCE_SELECT got',node);
 
         if (node===undefined) {
           // Node not found, create a new node
           newState = {
             nodes                 : [],
             edges                 : [],
-            searchLabel           : '',
           };
         } else {
           // Load existing node and edges
@@ -178,8 +222,7 @@ const TARGET_COLOR     = '#FF0000';
           // create state change object
           newState = {
             nodes                 : [ node ],
-            edges                 : [ edges ],
-            searchLabel           : node.label,
+            edges                 : edges,
           };
         }
 
@@ -194,8 +237,7 @@ const TARGET_COLOR     = '#FF0000';
         let matches = m_FindMatchingNodesByLabel(searchString);
         let newState = {
           suggestedNodes      : matches.map(n=>{return {id: n.id, label: n.label}}),
-          searchLabel         : searchString,
-          nodes               : []
+          searchLabel         : searchString
         };
         // let SELECTION state listeners handle display updates
         UDATA.SetAppState('SEARCH',newState);
@@ -242,7 +284,7 @@ const TARGET_COLOR     = '#FF0000';
           D3DATA.nodes.push(newNode);
         }
         if (updatedNodes.length===1) {
-          // DATASTORE/server-database.json expects 'node' not 'newNode' with updates
+          // DATASTORE/server-database.json expects a 'node' key not 'newNode' with updates
           let node=newNode
           if (DBG) console.log('updating existing node',node);
           DATASTORE.Update({ op:'update', node });
@@ -331,7 +373,6 @@ const TARGET_COLOR     = '#FF0000';
           searchLabel,
           nodes                : D3DATA.nodes,
           edges                : D3DATA.edges,
-          activeAutoCompleteId : 'nodeSelector'
         });
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
@@ -339,21 +380,15 @@ const TARGET_COLOR     = '#FF0000';
       module which one has the current focus. The searchString is also passed
       so a display update can be triggered immediately.
   /*/ UDATA.HandleMessage('AUTOCOMPLETE_SELECT', function( data ) {
-        let { id, searchString } = data;
-        // update SELECTION state object
-        /*REVIEW* treading the selection shouldn't be necessary*/
-        let selection = UDATA.AppState('SELECTION');
-        selection.activeAutoCompleteId = id;
-        // Don't replace selection.searchLabel if searchString is undefined
-        // searchString can be undefined when an edge reassigns the
-        // activeAutoCompleteId to nodeSelector
-        // If it's undefined, just use existing selection.searchLabel
-        if (searchString!==undefined) {
-          selection.searchLabel = searchString;
-        }
-        UDATA.SetAppState('SELECTION',selection);
+        m_HandleAutoCompleteSelect( data );
       });
     }); // end UNISYS_INIT
+    function m_HandleAutoCompleteSelect ( data ) {
+      if (DBG) console.log('ACL: Setting activeAutoCompleteId to',data.id);
+      UDATA.SetAppState('ACTIVEAUTOCOMPLETE',{
+        activeAutoCompleteId: data.id,
+      });
+    }
 
 /// APP_READY MESSAGE REGISTRATION ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -363,7 +398,7 @@ const TARGET_COLOR     = '#FF0000';
       /// RETURN PROMISE to prevent phase from continuing until after registration
       /// of messages is successful
       return new Promise((resolve,reject) => {
-        console.log(`${PR}HOOK 'UNISYS_INIT' Registering Message Handlers...`);
+        if (DBG) console.log(`${PR}HOOK 'UNISYS_INIT' Registering Message Handlers...`);
         // timeout for broken network registration
         let timeout = setTimeout(()=>{
           reject(new Error('UNISYS REGISTER TIMEOUT'));
@@ -377,8 +412,8 @@ const TARGET_COLOR     = '#FF0000';
         ])
         .then((d)=>{
           clearTimeout(timeout);
-          console.log(`${PR}HOOK 'UNISYS_INIT' Registered Message Handlers ${JSON.stringify(d.registered)}`);
-          console.log(`INFO: %cMy socket address is ${UNISYS.SocketUADDR()}`,'color:blue;font-weight:bold' );
+          if (DBG) console.log(`${PR}HOOK 'UNISYS_INIT' Registered Message Handlers ${JSON.stringify(d.registered)}`);
+          if (DBG) console.log(`INFO: %cMy socket address is ${UNISYS.SocketUADDR()}`,'color:blue;font-weight:bold' );
           resolve();
         });
       });

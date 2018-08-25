@@ -48,19 +48,11 @@ class Search extends UNISYS.Component {
       this.state = {
         searchString:  '',
       };
-
-      this.handleSearch = this.handleSearch.bind(this);
-
-      // NOTE: assign UDATA handlers AFTER functions have been bind()'ed
-      // otherwise they will lose context
-      this.OnAppStateChange('SEARCH',(change) => {
-        this.handleSearch(change);
-      });
       this.OnStart(()=>{
         // always wrap UNISYS calls in a lifescycle hook otherwise you may try to execute a call
         // before it has been declared in another module
         if (DBG) console.log('Search.OnStart: Setting active autocomplete id to',thisIdentifier);
-        this.Call('AUTOCOMPLETE_SELECT',{id:thisIdentifier, searchString:this.state.searchString});
+        this.AppCall('AUTOCOMPLETE_SELECT',{id:thisIdentifier, value:this.state.searchString});
       });
     } // constructor
 
@@ -68,22 +60,6 @@ class Search extends UNISYS.Component {
 
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Handle updated SEARCH
-/*/ handleSearch ( data ) {
-      if (DBG) console.log('Search: got state SEARCH',data);
-
-      let { activeAutoCompleteId } = this.AppState('SELECTION');
-      if (activeAutoCompleteId!==thisIdentifier) return;
-
-      // Always update the search label
-      // Update the form's node label because that data is only passed via SELECTION
-      // AutoComplete calls SELECTION whenever the input field changes
-      this.setState({
-        searchString: data.searchLabel
-      });
-
-    } // handleSelection
-
 
 /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

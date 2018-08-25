@@ -149,10 +149,12 @@ class AutoComplete extends UNISYS.Component {
         value       : '',
         suggestions : [],
         id          : '',
-        mode        : MODE_ACTIVE
+        mode        : MODE_DISABLED
       };
 
+      this.onStateChange_SEARCH        = this.onStateChange_SEARCH.bind(this);
       this.onStateChange_SELECTION     = this.onStateChange_SELECTION.bind(this);
+      this.onStateChange_AUTOCOMPLETE  = this.onStateChange_AUTOCOMPLETE.bind(this);
       this.onInputChange               = this.onInputChange.bind(this);
       this.getSuggestionValue          = this.getSuggestionValue.bind(this);
       this.renderSuggestion            = this.renderSuggestion.bind(this);
@@ -164,20 +166,22 @@ class AutoComplete extends UNISYS.Component {
 
       // NOTE: do this AFTER you have used bind() on the class method
       // otherwise the call will fail due to missing 'this' context
-      this.OnAppStateChange('SELECTION', this.onStateChange_SELECTION);
+      this.OnAppStateChange('SEARCH',             this.onStateChange_SEARCH);
+      this.OnAppStateChange('SELECTION',          this.onStateChange_SELECTION);
+      this.OnAppStateChange('ACTIVEAUTOCOMPLETE', this.onStateChange_AUTOCOMPLETE);
 
     } // constructor
 
 /// UNISYS STATE CHANGE HANDLERS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ 'SELECTION' handler
-/*/ onStateChange_SELECTION( data ) {
+
+/*/ 'SEARCH' handler
+/*/ onStateChange_SEARCH ( data ) {
       // grab entire global state for 'SELECTION
       // REVIEW // autocompleteid probab;y should be stored elsewhere or use a
       // different mechanism
-      let { activeAutoCompleteId } = this.AppState('SELECTION');
 
-      // setState() only if the currentID matches this one
+      let { activeAutoCompleteId } = this.AppState('ACTIVEAUTOCOMPLETE');
       if (activeAutoCompleteId===this.props.identifier) {
         // This is the currently active AutoComplete field
         // Update the autosuggest input field's value with the current search data
@@ -202,7 +206,36 @@ class AutoComplete extends UNISYS.Component {
           if (DBG) console.log('...AutoComplete',this.props.identifier,': NOT ACTIVE, but skipping update because component is unmounted');
         }
       }
-    } // onStateChange_SELECTION
+    } // onStateChange_SEARCH
+
+/*/ 'SELECTION' handler
+    Update this AutoComplete input value when the currently selected SELECTION has changed
+    AND we are active and have the current activeAutoCompleteId.
+    This is especially important for when adding a target field to a new EdgeEditor.
+/*/ onStateChange_SELECTION ( data ) {
+      if ( (this.props.identifier===this.AppState('ACTIVEAUTOCOMPLETE').activeAutoCompleteId) ) {
+        let nodes = data.nodes;
+        if (nodes!==undefined &&
+            nodes.length>0 &&
+            nodes[0]!==undefined &&
+            nodes[0].label!==undefined) {
+          let searchLabel = nodes[0].label;
+          this.setState({value: searchLabel});
+        }
+      }
+    }
+
+/*/ 'AUTOCOMPLETE' handler
+    Update this AutoComplete state when the currently selected AUTOCOMPLETE field has changed
+/*/ onStateChange_AUTOCOMPLETE ( data ) {
+      let mode = this.state.mode;
+      if (data.activeAutoCompleteId === this.props.identifier) {
+        mode = MODE_ACTIVE;
+      } else {
+        mode = this.props.inactiveMode;
+      }
+      this.setState({mode: mode});
+    }
 
 /// AUTOSUGGEST HANDLERS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -210,7 +243,7 @@ class AutoComplete extends UNISYS.Component {
     User has typed something new into the field
 /*/ onInputChange (event, { newValue, method }) {
       // Pass the input value (node label search string) to UDATA
-      // which will in turn pass the searchLabel back to the SELECTION
+      // which will in turn pass the searchLabel back to the SEARCH
       // state handler in the constructor, which will in turn set the state
       // of the input value to be passed on to AutoSuggest
       this.Call('SOURCE_SEARCH', { searchString: newValue });
@@ -265,7 +298,8 @@ class AutoComplete extends UNISYS.Component {
 /*/ Autosuggest calls this whenever the user has highlighted a different suggestion
     from the suggestion list.
 /*/ onSuggestionHighlighted ({ suggestion }) {
-      this.Call('SOURCE_HILITE',{ nodeID: suggestion.id });
+      if (suggestion && suggestion.id)
+        this.Call('SOURCE_HILITE',{ nodeID: suggestion.id });
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Autosuggest checks this before rendering suggestions
@@ -283,6 +317,7 @@ class AutoComplete extends UNISYS.Component {
     https://reactjs.org/blog/2015/12/16/ismounted-antipattern.html
 /*/ componentDidMount () {
       _IsMounted = true;
+      this.setState({ mode: this.props.inactiveMode })
     }
 /*/
 /*/ componentWillUnmount () {
@@ -298,11 +333,10 @@ class AutoComplete extends UNISYS.Component {
         value       : value,
         onChange    : this.onInputChange
       };
-
       let jsx;
       switch (this.state.mode) {
         case MODE_STATIC:
-          jsx = ( <p>{this.state.value}</p> );
+          jsx = ( <p>{this.props.disabledValue}</p> );
           break;
         case MODE_DISABLED:
           jsx = ( <Input type="text" value={this.props.disabledValue} readOnly={true}/> );

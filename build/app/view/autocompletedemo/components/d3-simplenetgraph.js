@@ -226,9 +226,7 @@ class D3NetGraph {
           .on("end",   (d) => { this._Dragended(d, this) }))
         .on("click",   (d) => {
             if (DBG) console.log('clicked on',d.label,d.id)
-            // We pass nodeLabels here because it's the lowest common denominator --
-            // not all components have acccess to complete node objects.
-            UDATA.Call('SOURCE_SELECT',{ nodeLabels: [d.label] });
+            UDATA.Call('SOURCE_SELECT',{ nodeIDs: [d.id] });
             d3.event.stopPropagation();
           });
 
