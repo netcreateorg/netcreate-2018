@@ -21,7 +21,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-var DBG = true;
+var DBG = false;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -76,6 +76,19 @@ class EdgeList extends UNISYS.Component {
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
+/*/ sortByID (edges) {
+      if (edges) {
+        return edges.sort( (a,b) => {
+          let akey = a.id,
+              bkey = b.id;
+          if (akey<bkey) return -1;
+          if (akey>bkey) return 1;
+          return 0;
+        });
+      }
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
 /*/ sortBySourceLabel (edges) {
       if (edges) {
         return edges.sort( (a,b) => {
@@ -118,6 +131,9 @@ class EdgeList extends UNISYS.Component {
 /*/ sortTable ( sortkey=this.state.sortkey) {
       let edges = this.state.edges;
       switch (sortkey) {
+        case 'id':
+          this.sortByID(edges);
+          break;
         case 'source':
           this.sortBySourceLabel(edges);
           break;
@@ -154,7 +170,7 @@ class EdgeList extends UNISYS.Component {
       // Load Source then Edge
       UDATA.LocalCall('SOURCE_SELECT',{ nodeLabels: [edge.source.label] })
       .then(()=>{
-        UDATA.Call('EDGE_EDIT',{ edgeID: edge.id });
+        UDATA.LocalCall('EDGE_EDIT',{ edgeID: edge.id });
       });
 
     }
@@ -233,7 +249,10 @@ class EdgeList extends UNISYS.Component {
           >
             <thead>
               <tr>
-                <th>ID</th>
+                <th><Button size="sm"
+                      disabled={this.state.sortkey==="id"}
+                      onClick={()=>this.setSortKey("id")}
+                    >ID</Button></th>
                 <th></th>
                 <th><Button size="sm"
                       disabled={this.state.sortkey==="source"}
