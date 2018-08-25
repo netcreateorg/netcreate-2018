@@ -373,14 +373,21 @@ const TARGET_COLOR     = '#FF0000';
         let { edgeID } = data;
         // remove specified edge from edge list
         D3DATA.edges = m_DeleteMatchingEdgeByProp({id:edgeID});
+        UDATA.SetAppState('D3DATA',D3DATA);
         // Also update selection so edges in EdgeEditor will update
-        // This works because of a HACKY SIDE EFFECT of the NodeSelector
-        // SELECTION state handler which should be fixed
-        let { searchLabel } = UDATA.AppState('SELECTION');
+        let selection = UDATA.AppState('SELECTION');
+        if ((selection.nodes===undefined) || (selection.nodes.length<1) || (selection.nodes[0].id===undefined)) {
+          throw Error('autocomplete-logic.EDGE_DELETE can\'t find source node!  This shoudln\'t happen!');
+        }
+        let nodeID = selection.nodes[0].id;
+        let edges = [];
+        // Remove the deleted edge from the selection
+        if ((selection.edges!==undefined) && (selection.edges.length>0)) {
+          edges = edges.concat( selection.edges.filter( edge => edge.id!==edgeID ));
+        }
         UDATA.SetAppState('SELECTION',{
-          searchLabel,
-          nodes                : D3DATA.nodes,
-          edges                : D3DATA.edges,
+          nodes: selection.nodes,
+          edges: edges,
         });
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook

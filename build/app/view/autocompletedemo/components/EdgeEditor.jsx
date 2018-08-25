@@ -605,7 +605,7 @@ class EdgeEditor extends UNISYS.Component {
               <FormGroup className="text-right" style={{paddingRight:'5px'}}>
                 <Button className="small text-muted float-left btn btn-outline-light" size="sm"
                  onClick={this.onDeleteButtonClick}
-                >DELETE</Button>&nbsp;
+                >Delete</Button>&nbsp;
                 <Button outline size="sm"
                   hidden={this.state.isEditable}
                   onClick={this.onEditButtonClick}
