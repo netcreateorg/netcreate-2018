@@ -74,7 +74,9 @@ var   UDATA      = UNISYS.NewDataLink(MOD);
     main AutoComplete field.  It also provides a list of the nodes that match
     the search string so that AutoComplete and D3 can display them.  (D3
     doesn't actually process the SEARCH state change.  Instead it's processed
-    by autocomplete-logic, here in )
+    by autocomplete-logic in response to SOURCE_SEARCH calls -- autocomplete-logic
+    will set the node's `selected` or `stroke-color` state if a node
+    is currently selected or matches a search parameter, respectively.)
 
     Set by      AutoComplete's call to SOURCE_SEARCH when its input changes.
     Handled by  AutoComplete for its controlled input field
