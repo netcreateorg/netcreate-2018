@@ -70,12 +70,18 @@ var   UDATA      = UNISYS.NewDataLink(MOD);
 
     SEARCH
 
+    The SEARCH state keeps track of the text being searched for in the
+    main AutoComplete field.  It also provides a list of the nodes that match
+    the search string so that AutoComplete and D3 can display them.  (D3
+    doesn't actually process the SEARCH state change.  Instead it's processed
+    by autocomplete-logic, here in )
+
     Set by      AutoComplete's call to SOURCE_SEARCH when its input changes.
     Handled by  AutoComplete for its controlled input field
                 NodeSelector for validating when editing the form.
 
-    * suggestedNodes  An array of nodes that match the searchLabel
     * searchLabel     A string that the user has typed into AutoComplete
+    * suggestedNodes  An array of nodes that match the searchLabel
 
 
 
@@ -122,7 +128,7 @@ const PR               = PROMPTS.Pad('ACDLogic');
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DESELECTED_COLOR = '';
-const SEARCH_COLOR     = '#FFAA00';
+const SEARCH_COLOR     = '#008800';
 const SOURCE_COLOR     = '#0000DD';
 const TARGET_COLOR     = '#FF0000';
 
@@ -177,7 +183,7 @@ const TARGET_COLOR     = '#FF0000';
           }
         }
         // SEARCH LABEL UPDATE
-        if (searchLabel) m_HiliteNodesThatMatch(searchLabel,SEARCH_COLOR);
+        if (searchLabel) m_SetStrokeColorThatMatch(searchLabel,SEARCH_COLOR);
       }); // StateChange SELECTION
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ User has clicked on a suggestion from the AutoCopmlete suggestion list.
@@ -594,7 +600,10 @@ const TARGET_COLOR     = '#FF0000';
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Sets matching node labels to the passed selection color
-/*/ function m_HiliteNodesThatMatch( searchString, color ) {
+    This sets the stroke color, which is used to display
+    the matching nodes during a search.  If the node is
+    also selected, the selected color will override this color.
+/*/ function m_SetStrokeColorThatMatch( searchString, color ) {
       let matched    = { strokeColor : color };
       let notmatched = { strokeColor : undefined };
       m_SetMatchingNodesByLabel(searchString, matched, notmatched);
