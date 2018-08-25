@@ -342,9 +342,9 @@ class NodeSelector extends UNISYS.Component {
       // Add ID if one isn't already defined
       let formData = this.state.formData;
       if (formData.id==='') formData.id = this.getNewNodeID();
+      this.AppCall('AUTOCOMPLETE_SELECT',{id:thisIdentifier});
       this.setState({ formData });
       this.validateForm();
-      this.AppCall('AUTOCOMPLETE_SELECT',{id:thisIdentifier});
     } // onEditButtonClick
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/

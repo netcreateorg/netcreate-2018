@@ -180,7 +180,7 @@ class AutoComplete extends UNISYS.Component {
       // grab entire global state for 'SELECTION
       // REVIEW // autocompleteid probab;y should be stored elsewhere or use a
       // different mechanism
-
+      if (DBG) console.log('AutoComplete',this.props.identifier,': Got SEARCH',data);
       let { activeAutoCompleteId } = this.AppState('ACTIVEAUTOCOMPLETE');
       if (activeAutoCompleteId===this.props.identifier) {
         // This is the currently active AutoComplete field
@@ -213,13 +213,24 @@ class AutoComplete extends UNISYS.Component {
     AND we are active and have the current activeAutoCompleteId.
     This is especially important for when adding a target field to a new EdgeEditor.
 /*/ onStateChange_SELECTION ( data ) {
-      if ( (this.props.identifier===this.AppState('ACTIVEAUTOCOMPLETE').activeAutoCompleteId) ) {
+      if (DBG) console.log('...AutoComplete',this.props.identifier,': Got SELECTION',data);
+      let activeAutoCompleteId = this.AppState('ACTIVEAUTOCOMPLETE').activeAutoCompleteId;
+      if ( (this.props.identifier===activeAutoCompleteId) ||
+           (activeAutoCompleteId==='search') ) {
+        // Update the searchLabel if either this nodeSelector or the 'search' field is
+        // is the current active AutoComplete field.
+        // We only ignore SELECTION updates if an edge target field has the current focus.
+        // This is necessary for the case when the user clicks on a node in the D3 graph
+        // and the search field has the current AutoComplete focus.  Otherwise the state.value
+        // is never updated.
+        if (DBG) console.log('...AutoComplete',this.props.identifier,': ACTIVE got SELECTION');
         let nodes = data.nodes;
         if (nodes!==undefined &&
             nodes.length>0 &&
             nodes[0]!==undefined &&
             nodes[0].label!==undefined) {
           let searchLabel = nodes[0].label;
+          if (DBG) console.log('...AutoComplete',this.props.identifier,': ACTIVE got SELECTION, searchLabel',searchLabel);
           this.setState({value: searchLabel});
         }
       }
@@ -228,6 +239,7 @@ class AutoComplete extends UNISYS.Component {
 /*/ 'AUTOCOMPLETE' handler
     Update this AutoComplete state when the currently selected AUTOCOMPLETE field has changed
 /*/ onStateChange_AUTOCOMPLETE ( data ) {
+      if (DBG) console.log('...AutoComplete',this.props.identifier,': Got AUTOCOMPLETE',data);
       let mode = this.state.mode;
       if (data.activeAutoCompleteId === this.props.identifier) {
         mode = MODE_ACTIVE;
