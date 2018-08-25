@@ -58,19 +58,19 @@ const ACD_LOGIC    = require('./autocomplete-logic');
         super();
         UNISYS.ForceReloadOnNavigation();
         this.OnDOMReady(()=>{
-          console.log(PR,'OnDOMReady');
+          if (DBG) console.log(PR,'OnDOMReady');
         });
         this.OnReset(()=>{
-          console.log(PR,'OnReset');
+          if (DBG) console.log(PR,'OnReset');
         });
         this.OnStart(()=>{
-          console.log(PR,'OnStart');
+          if (DBG) console.log(PR,'OnStart');
         });
         this.OnAppReady(()=>{
-          console.log(PR,'OnAppReady');
+          if (DBG) console.log(PR,'OnAppReady');
         });
         this.OnRun(()=>{
-          console.log(PR,'OnRun');
+          if (DBG) console.log(PR,'OnRun');
         });
       }
 
