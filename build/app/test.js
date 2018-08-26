@@ -173,7 +173,8 @@ let DBG = false;
         case 'state':
           subtests = {
             stateChange       : flag,
-            stateMerge        : flag
+            stateMerge        : flag,
+            stateConcat       : flag
           };
           break;
         case 'hook':

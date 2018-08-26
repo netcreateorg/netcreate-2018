@@ -134,7 +134,11 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
         arr : [ 1, 3, 2 ],
         a : 1
       };
-      UDATA.MergeAppState('test', state);
+      UDATA.MergeAppState('testmerge', state);
+      state = {
+        arr : [ 1, 2, 3 ]
+      }
+      UDATA.ConcatAppState('testconcat', state);
     });
 /*/ Initialize in module 2
 /*/ MOD2.Hook('INITIALIZE', function () {
@@ -143,13 +147,21 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
         arr : [ 10, 11, 12 ],
         b : 2
       };
-      UDATA2.MergeAppState('test', state);
+      UDATA2.MergeAppState('testmerge', state);
+      state = {
+        arr : [ 1, 2, 3 ]
+      }
+      UDATA.ConcatAppState('testconcat', state);
     });
 /*/ test merging in module 2
 /*/ MOD2.Hook('START', function () {
       let expected = '{"deep":{"deep_a":1,"deep_b":2},"arr":[1,3,2,10,11,12],"a":1,"b":2}';
-      let serialized = JSON.stringify(UDATA2.AppState('test'));
+      let serialized = JSON.stringify(UDATA2.AppState('testmerge'));
       if (expected===serialized) TEST.Pass('stateMerge');
+      expected = '{"arr":[1,2,3,1,2,3]}';
+      serialized = JSON.stringify(UDATA.AppState('testconcat'));
+      if (expected===serialized) TEST.Pass('stateConcat');
+      console.log(serialized);
     });
 
 

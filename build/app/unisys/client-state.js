@@ -27,57 +27,25 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ UNISYS namespaces are transformed to uppercase.
     A namespace must be a string that does not contain reserved char '_'
-/*/ function m_ConformNamespace (nspace) {
+/*/ function m_ConformNamespace( namespace ) {
       // must be a string
-      if (typeof nspace!=='string') return undefined;
+      if (typeof namespace!=='string') return undefined;
       // disallow empty string
-      if (!nspace) return undefined;
+      if (!namespace) return undefined;
       // always uppercase
-      nspace = nspace.toUpperCase();
+      namespace = namespace.toUpperCase();
       // expand * shortcut to _ROOT
-      if (nspace==='*') return '_ROOT';
+      if (namespace==='*') return '_ROOT';
       // disallow _ reserved names
-      if (nspace.indexOf('_')>(-1)) return undefined;
+      if (namespace.indexOf('_')>(-1)) return undefined;
       // ok we're good
-      return nspace;
+      return namespace;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Retrieve the emitter associated with a namespace, which contains handles
-    all the listeners associated with a namespace. Always returns a valid
-    emitter, creating it if the passed namespace is valid.
-/*/ function m_GetStateMessager (nspace) {
-      nspace = m_ConformNamespace(nspace);
-      if (!nspace) throw Error(BAD_NSPACE);
-      let msgr = STATES_LISTEN.get(nspace);
-      if (!msgr) {
-        msgr = new Messager();
-        STATES_LISTEN.set(nspace,msgr);
-      }
-      return msgr;
-    }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: update the selected namespace state with new state
-/*/ USTATE.SetState = (namespace, newState, src_uid) => {
-      namespace = m_ConformNamespace(namespace);
-      if (!namespace) throw Error(BAD_NSPACE);
-      // update old state by partially overwrite of state
-      if (!STATES.has(namespace)) STATES.set(namespace,{});
-      Object.assign(STATES.get(namespace),newState);
-      // forward new state to namespace listeners
-      let msgr = m_GetStateMessager(namespace);
-      // don't pass with source_id because state should go everywhere
-      // a register exists, even if it's the originating module
-      msgr.Send(namespace,newState,{type:'state'});
-      // future: forward also to network
-    };
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: update the selected namespace state with new state
-/*/ USTATE.MergeState = (namespace, newState, src_uid) => {
-      namespace = m_ConformNamespace(namespace);
-      if (!namespace) throw Error(BAD_NSPACE);
-      // update old state by partially overwrite of state
-      if (!STATES.has(namespace)) STATES.set(namespace,{});
-
+/*/ Used for merging and concatenating state, when a simple copy-overwrite
+    simply will not do.
+/*/ function m_ConformState( namespace, newState, opt ) {
+      opt = opt || { merge : true };
       // make a copy of the old state
       let state = Object.assign({},STATES.get(namespace));
       if (DBG) console.log(`merging state namespace '${namespace}' with`,newState);
@@ -114,7 +82,8 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
               if (DBG) console.log(`merge arrays`);
               // merge arrays no dupes (https://stackoverflow.com/a/36469404)
               // ES6 fanciness using destructuring (...) and Sets
-              prop = [...new Set([...prop ,...nprop])];
+              if (opt.merge) prop = [...new Set([...prop ,...nprop])];
+              else if (opt.concat) prop = prop.concat(nprop);
               break;
             default:
               if (DBG) console.log(`copy values`);
@@ -129,6 +98,69 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
         // update state place
         state[k] = prop;
       }); // end Object.entries
+
+      return state;
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Retrieve the emitter associated with a namespace, which contains handles
+    all the listeners associated with a namespace. Always returns a valid
+    emitter, creating it if the passed namespace is valid.
+/*/ function m_GetStateMessager (nspace) {
+      nspace = m_ConformNamespace(nspace);
+      if (!nspace) throw Error(BAD_NSPACE);
+      let msgr = STATES_LISTEN.get(nspace);
+      if (!msgr) {
+        msgr = new Messager();
+        STATES_LISTEN.set(nspace,msgr);
+      }
+      return msgr;
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: update the selected namespace state with new state
+/*/ USTATE.SetState = (namespace, newState, src_uid) => {
+      namespace = m_ConformNamespace(namespace);
+      if (!namespace) throw Error(BAD_NSPACE);
+      // update old state by partially overwrite of state
+      if (!STATES.has(namespace)) STATES.set(namespace,{});
+      Object.assign(STATES.get(namespace),newState);
+      // forward new state to namespace listeners
+      let msgr = m_GetStateMessager(namespace);
+      // don't pass with source_id because state should go everywhere
+      // a register exists, even if it's the originating module
+      msgr.Send(namespace,newState,{type:'state'});
+      // future: forward also to network
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: merge objects and arrays in state
+/*/ USTATE.MergeState = (namespace, newState, src_uid) => {
+      namespace = m_ConformNamespace(namespace);
+      if (!namespace) throw Error(BAD_NSPACE);
+      // update old state by partially overwrite of state
+      if (!STATES.has(namespace)) STATES.set(namespace,{});
+
+      // merge the states with no duplicates in arrays
+      let state = m_ConformState(namespace, newState, { merge : true });
+
+      // update the namespace
+      STATES.set(namespace,state);
+
+      // forward new state to namespace listeners
+      let msgr = m_GetStateMessager(namespace);
+      // don't pass with source_id because state should go everywhere
+      // a register exists, even if it's the originating module
+      msgr.Send(namespace,newState,{type:'state'});
+      // future: forward also to network
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: merge objects and concat arrays in state
+/*/ USTATE.ConcatState = (namespace, newState, src_uid) => {
+      namespace = m_ConformNamespace(namespace);
+      if (!namespace) throw Error(BAD_NSPACE);
+      // update old state by partially overwrite of state
+      if (!STATES.has(namespace)) STATES.set(namespace,{});
+
+      // merge the states with no duplicates in arrays
+      let state = m_ConformState(namespace, newState, { concat : true });
 
       // update the namespace
       STATES.set(namespace,state);
