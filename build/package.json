@@ -50,6 +50,7 @@
     "react-router-dom": "^4.3.1",
     "react-transition-group": "^2.4.0",
     "reactstrap": "^5.0.0",
-    "stacktrace-js": "^2.0.0"
+    "stacktrace-js": "^2.0.0",
+    "type-detect": "^4.0.8"
   }
 }

@@ -172,7 +172,8 @@ let DBG = false;
       switch (testname) {
         case 'state':
           subtests = {
-            stateChange       : flag
+            stateChange       : flag,
+            stateMerge        : flag
           };
           break;
         case 'hook':
