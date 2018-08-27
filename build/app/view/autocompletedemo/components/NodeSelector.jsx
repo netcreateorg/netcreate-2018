@@ -549,7 +549,7 @@ class NodeSelector extends UNISYS.Component {
             )}
             <FormGroup className="text-right">
               <Button outline size="sm"
-                hidden={this.state.formData.id===''}
+                hidden={this.state.formData.id===''||this.state.isEditable}
                 onClick={this.onAddNewEdgeButtonClick}
               >Add New Edge</Button>
             </FormGroup>
