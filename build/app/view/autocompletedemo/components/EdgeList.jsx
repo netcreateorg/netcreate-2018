@@ -189,9 +189,9 @@ class EdgeList extends UNISYS.Component {
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
-/*/ selectNode (label) {
+/*/ selectNode (id) {
       // Load Source
-      UDATA.Call('SOURCE_SELECT',{ nodeLabels: [label] });
+      UDATA.Call('SOURCE_SELECT',{ nodeIDs: [id] });
     }
 
 
@@ -289,9 +289,9 @@ class EdgeList extends UNISYS.Component {
                       onClick={this.onButtonClick}
                     >Edit</Button>
                 </td>
-                <td><a href="#" onClick={()=>this.selectNode(edge.source.label)}
+                <td><a href="#" onClick={()=>this.selectNode(edge.source.id)}
                     >{edge.source.label || edge.source}</a></td>
-                <td><a href="#" onClick={()=>this.selectNode(edge.target.label)}
+                <td><a href="#" onClick={()=>this.selectNode(edge.target.id)}
                     >{edge.target.label || edge.target}</a></td>
                 <td>{edge.attributes["Relationship"]}</td>
                 <td>{edge.attributes["Citations"]}</td>
