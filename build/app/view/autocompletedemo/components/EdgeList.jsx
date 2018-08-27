@@ -240,7 +240,7 @@ class EdgeList extends UNISYS.Component {
 /*/
 /*/ render () {
       return (
-        <div style={{maxHeight:'50vh',overflow:'scroll'}}>
+        <div style={{maxHeight:'50vh',overflow:'scroll',backgroundColor:'#f3f3ff'}}>
           <Button size="sm" outline
             onClick={this.onToggleExpanded}
           >{this.state.isExpanded ? "Hide Edge Table" : "Show Edge Table"}</Button>
