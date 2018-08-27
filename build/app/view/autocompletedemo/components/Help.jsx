@@ -86,6 +86,9 @@ class Help extends UNISYS.Component {
               <li>Select -- To select an edge, select either of the nodes it is attached to.</li>
               <li>Editing -- To change the source or target of an existing edge,
               delete it and create a new one.</li>
+              <li>View Full List -- Click on "Show Edge Table" to view a table
+              of all the edges.  Click on a column header to sort the table by
+              that parameter.</li>
             </ul>
           </div>
         </div>
