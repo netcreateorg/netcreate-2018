@@ -392,8 +392,7 @@ const TARGET_COLOR     = '#FF0000';
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ AUTOCOMPLETE_SELECT is called by <AutoComplete> components to tell the
-      module which one has the current focus. The searchString is also passed
-      so a display update can be triggered immediately.
+      module which one has the current focus.
   /*/ UDATA.HandleMessage('AUTOCOMPLETE_SELECT', function( data ) {
         m_HandleAutoCompleteSelect( data );
       });

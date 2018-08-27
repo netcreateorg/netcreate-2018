@@ -382,7 +382,7 @@ class NodeSelector extends UNISYS.Component {
           this.loadFormFromNode( originalNode );
           this.setState({ isEditable: false });
         }
-        this.Call('AUTOCOMPLETE_SELECT',{id:'search',value:''});
+        this.Call('AUTOCOMPLETE_SELECT', {id:'search'});
       }
     } // onCancelButtonClick
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

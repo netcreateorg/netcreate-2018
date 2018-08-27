@@ -268,7 +268,7 @@ class EdgeEditor extends UNISYS.Component {
         // placeholder for now, otherwise, the render will choke on an invalid targetNode.
         targetNodes = [{label:'pick one...'}];
         // set this autoComplete field as current
-        this.Call('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'target', searchString:''});
+        this.Call('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'target'});
         // Define `edge` so it can be loaded later during setState.
         edge = {
           id: edgeID,
@@ -393,9 +393,10 @@ class EdgeEditor extends UNISYS.Component {
 
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
+/*/ Expand if the edge is collapsed.
+    Cancel editing if the edge is expanded.
 /*/ onButtonClick () {
-      // REVIEW: Rename onCancelButtonClick
+      // REVIEW: Rename Cancel or Expand?
       // Cancel/Close
       if (this.state.isExpanded) {
         // collapse
@@ -405,7 +406,7 @@ class EdgeEditor extends UNISYS.Component {
         if (this.state.isEditable) {
           this.loadSourceAndTarget();
           this.setState({ isEditable: false });
-          this.Call('AUTOCOMPLETE_SELECT',{id:'search',value:'edge cancelled'});
+          this.Call('AUTOCOMPLETE_SELECT',{id:'search'});
         }
       } else {
         // expand, but don't set the autocomplete field, since we're not editing
@@ -486,7 +487,7 @@ class EdgeEditor extends UNISYS.Component {
       this.Call('EDGE_UPDATE',{edge:edge});
 
       // pass currentAutoComplete back to nodeselector
-      this.Call('AUTOCOMPLETE_SELECT',{id:'search', value:'edge saved'});
+      this.Call('AUTOCOMPLETE_SELECT',{id:'search'});
 
       this.setState({ isEditable: false });
     } // onSubmit

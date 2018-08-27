@@ -312,18 +312,6 @@ class EdgeList extends UNISYS.Component {
 } // class EdgeList
 
 
-
-          // {this.state.edges.map( (edge,i) => {
-          //   console.log('working on ',edge);
-          //   let td=[];
-          //   td.push(<td key={'id'+i}>{edge.id}</td>);
-          //   td.push(<td key={'target'+i}>{edge.attributes.Citations}</td>);
-          //   return <tr key={i}>{td}</tr>
-          //   }
-          // )}
-
-
-
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = EdgeList;
