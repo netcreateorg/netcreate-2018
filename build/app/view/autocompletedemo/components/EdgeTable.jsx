@@ -2,20 +2,14 @@
 
   ## OVERVIEW
 
-    EdgeList is used to to display a table of edges for review.
+    EdgeTable is used to to display a table of edges for review.
 
 
   ## TO USE
 
-    EdgeList are usually included as a repeating element, e.g.
+    EdgeTable is self contained and relies on global D3DATA to load.
 
-      <FormText>EDGES</FormText>
-      {this.state.edges.map( (edge,i) =>
-        <EdgeEditor key={i}
-          edgeID={edge.id}
-          parentNodeLabel={this.state.formData.label}
-        />
-      )}
+      <EdgeTable/>
 
 
 
@@ -35,13 +29,13 @@ var   UDATA    = null;
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
-class EdgeList extends UNISYS.Component {
+class EdgeTable extends UNISYS.Component {
     constructor (props) {
       super(props);
 
       this.state = {
         edges:      [],
-        isExapnded: false,
+        isExpanded: false,
         sortkey:    'Citations'
       };
 
@@ -165,10 +159,10 @@ class EdgeList extends UNISYS.Component {
       let edgeID = event.target.value;
       let edge = this.m_FindEdgeById( edgeID );
 
-      console.log('EdgeList: Edge id',edge.id,'selected for editing');
+      if (DBG) console.log('EdgeTable: Edge id',edge.id,'selected for editing');
 
       // Load Source then Edge
-      UDATA.LocalCall('SOURCE_SELECT',{ nodeLabels: [edge.source.label] })
+      UDATA.LocalCall('SOURCE_SELECT',{ nodeIDs: [edge.source.id] })
       .then(()=>{
         UDATA.LocalCall('EDGE_EDIT',{ edgeID: edge.id });
       });
@@ -307,11 +301,11 @@ class EdgeList extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ componentDidMount () {
-      if (DBG) console.log('EdgeList.componentDidMount!');
+      if (DBG) console.log('EdgeTable.componentDidMount!');
     }
-} // class EdgeList
+} // class EdgeTable
 
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = EdgeList;
+module.exports = EdgeTable;
