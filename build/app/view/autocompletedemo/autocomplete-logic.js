@@ -266,6 +266,8 @@ const TARGET_COLOR     = '#FF0000';
           m_UnMarkAllNodes();
           m_MarkNodeById(nodeID,SOURCE_COLOR);
         }
+
+        // NOTE: State is updated in the "MaryNodeBy*" functions above.
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ SOURCE_UPDATE is called when the properties of a node has changed
