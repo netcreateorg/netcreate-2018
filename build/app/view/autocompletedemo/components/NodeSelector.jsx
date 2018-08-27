@@ -131,6 +131,7 @@ class NodeSelector extends UNISYS.Component {
       this.onTypeChange                          = this.onTypeChange.bind(this);
       this.onNotesChange                         = this.onNotesChange.bind(this);
       this.onInfoChange                          = this.onInfoChange.bind(this);
+      this.onNewNodeButtonClick                  = this.onNewNodeButtonClick.bind(this);
       this.onEditButtonClick                     = this.onEditButtonClick.bind(this);
       this.onAddNewEdgeButtonClick               = this.onAddNewEdgeButtonClick.bind(this);
       this.onCancelButtonClick                   = this.onCancelButtonClick.bind(this);
@@ -337,13 +338,46 @@ class NodeSelector extends UNISYS.Component {
     } // onInfoChange
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
+/*/ onNewNodeButtonClick (event) {
+      event.preventDefault();
+
+      // clear AutoComplete form
+      this.AppCall('AUTOCOMPLETE_SELECT',{id:thisIdentifier})
+      .then(()=>{
+        this.AppCall('SOURCE_SEARCH', { searchString: '' });
+      });
+
+      this.setState({
+        formData: {
+            label:     '',
+            type:      '',
+            info:      '',
+            notes:     '',
+            id:        this.getNewNodeID(),
+            isNewNode: true
+        },
+        edges: [],
+        isEditable:      true,
+        isValid:         false
+      });
+
+      this.validateForm();
+    } // onNewNodeButtonClick
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
 /*/ onEditButtonClick (event) {
       event.preventDefault();
       this.setState({ isEditable: true });
       // Add ID if one isn't already defined
       let formData = this.state.formData;
-      if (formData.id==='') formData.id = this.getNewNodeID();
-      this.AppCall('AUTOCOMPLETE_SELECT',{id:thisIdentifier});
+      if (formData.id==='') {
+        throw Error('NodeSelector.onEditButtonClick trying to edit a node with no id!  This shouldn\'t happen!');
+      }
+      this.AppCall('AUTOCOMPLETE_SELECT',{id:thisIdentifier}).then(()=>{
+        // Set AutoComplete field to current data, otherwise, previously canceled label
+        // might be displayed
+        this.AppCall('SOURCE_SEARCH', { searchString: formData.label });
+      });
       this.setState({ formData });
       this.validateForm();
     } // onEditButtonClick
@@ -399,8 +433,12 @@ class NodeSelector extends UNISYS.Component {
           notes: newNodeData.notes
       };
       this.setState({ isEditable: false });
-      // Hand AutoComplete control back to search
-      this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
+      // clear AutoComplete form
+      this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'})
+      .then(()=>{
+        // Reselect the saved node
+        this.AppCall('SOURCE_SEARCH', { searchString: node.label });
+      });
       // tell other unisys subscribers interested in this state
       this.Call('SOURCE_UPDATE', { node });
     } // onSubmit
@@ -416,6 +454,12 @@ class NodeSelector extends UNISYS.Component {
 /*/ render () {
       return (
         <div>
+          <FormGroup className="text-right" style={{paddingRight:'5px'}}>
+            <Button outline size="sm"
+              hidden={this.state.isEditable}
+              onClick={this.onNewNodeButtonClick}
+            >{"Add New Node"}</Button>
+          </FormGroup>
           <Form className='nodeEntry' style={{minHeight:'300px',backgroundColor:'#B8EDFF',padding:'5px',marginBottom:'0px'}}
             onSubmit={this.onSubmit}>
             <FormText><b>NODE {this.state.formData.id||''}</b></FormText>
@@ -478,9 +522,9 @@ class NodeSelector extends UNISYS.Component {
             </FormGroup>
             <FormGroup className="text-right" style={{paddingRight:'5px'}}>
               <Button outline size="sm"
-                hidden={this.state.isEditable}
+                hidden={this.state.isEditable || (this.state.formData.id==='') }
                 onClick={this.onEditButtonClick}
-              >{this.state.formData.id===''?"Add New Node":"Edit Node"}</Button>
+              >{"Edit Node"}</Button>
               <Button outline size="sm"
                 hidden={!this.state.isEditable}
                 onClick={this.onCancelButtonClick}
