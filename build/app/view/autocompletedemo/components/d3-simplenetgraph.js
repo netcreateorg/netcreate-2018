@@ -226,9 +226,7 @@ class D3NetGraph {
           .on("end",   (d) => { this._Dragended(d, this) }))
         .on("click",   (d) => {
             if (DBG) console.log('clicked on',d.label,d.id)
-            // We pass nodeLabels here because it's the lowest common denominator --
-            // not all components have acccess to complete node objects.
-            UDATA.Call('SOURCE_SELECT',{ nodeLabels: [d.label] });
+            UDATA.Call('SOURCE_SELECT',{ nodeIDs: [d.id] });
             d3.event.stopPropagation();
           });
 
@@ -301,8 +299,13 @@ class D3NetGraph {
       // UPDATE circles in each node for all nodes
       nodeElements.merge(nodeElements)
         .selectAll("circle")
-          .attr("stroke",       (d) => { if (d.selected) return d.selected; })
-          .attr("stroke-width", (d) => { if (d.selected) return '5px'; })
+          .attr("stroke",       (d) => {
+            if (d.selected)    return d.selected;
+            if (d.strokeColor) return d.strokeColor;
+          })
+          .attr("stroke-width", (d) => {
+            if (d.selected || d.strokeColor) return '5px';
+          })
           .attr("r",
             (d) => {
               let count = 1

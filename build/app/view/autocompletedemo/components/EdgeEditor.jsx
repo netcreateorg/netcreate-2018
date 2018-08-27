@@ -308,7 +308,7 @@ class EdgeEditor extends UNISYS.Component {
       }
       targetNode = targetNodes[0];
 
-      if (DBG) console.log('...EdgeEditor.loadSourceAndTarget: Setting formData sourceID to',edge.source,'and sourceNode to',sourceNode);
+      if (DBG) console.log('...EdgeEditor.loadSourceAndTarget: Setting formData sourceID to',edge.source,'and sourceNode to',sourceNode,'and targetNode to',targetNode);
       this.setState({
         formData: {
           id:           edge.id || '',
@@ -329,49 +329,47 @@ class EdgeEditor extends UNISYS.Component {
 
 /// UDATA STATE HANDLERS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Updates to the AutoComplete field happen via SELECTION
-    For EdgeEditors, the active AutoComplete field is always
-    the target, since the source is set by the initial selection
+/*/ When the user is creating a new node, they need to set a target node.
+    The target node is set via an AutoComplete field.
+    When a node is selected via the AutoComplete field, the SELECTION state is updated.
+    So EdgeEditor needs to listen to the SELECTION state in order to
+    know the target node has been selected.
 /*/ handleSelection ( data ) {
-      if (DBG) console.log('EdgeEditor',this.state.formData.id,': got state SELECTION',data);
+      if (DBG) console.log('EdgeEditor',this.props.edgeID,'got SELECTION data',data);
+      // If edge is not being edited, ignore the selection
+      if (!this.state.isEditable) return;
 
-      // FIX bad state dependency assuming id was in stateChange
-      let { activeAutoCompleteId } = this.AppState('SELECTION');
-
-      // Ignore the update if we're not the active AutoComplete component
-      if (activeAutoCompleteId!=='edge'+this.props.edgeID+'target') return;
-
-      if (this.state.isEditable) {
-        if (data.nodes && data.nodes.length>0) {
-          // A node was selected, so load it
-          // We're not editing, so it's OK to update the form
-          // grab the first node
-          let node = data.nodes[0];
-          this.setState({
-            targetNode: node
-          });
-        } else {
-          // Nothing selected yet, update the search label
-          if (DBG) 'EdgeEditor: SELECTION sent with no nodes for'+'edge'+this.props.edgeID+'target';
-          let formData = this.state.formData;
-          formData.label = data.searchLabel;
-          this.setState({
-            formData: formData
-          });
-        }
+      // Technically we probably ought to also check to make sure we're the current
+      // activeAutoCompleteId, but we wouldn't be edtiable if we weren't.
+      if (data.nodes && data.nodes.length>0) {
+        // A node was selected, so load it
+        // grab the first node
+        let node = data.nodes[0];
+        if (DBG) console.log('EdgeEditor',this.props.edgeID,'setting target node to',node);
+        this.setState({
+          targetNode: node
+        });
+        // Also update the formdata
+        let formData = this.state.formData;
+        formData.targetId = node.id;
+        this.setState({
+          formData: formData
+        });
       } else {
-        // Edge is not being edited, so ignore the selection
+        // No node selected, so we don't need to do anything
+        // AutoComplete will take care of its own search label updates
       }
+
     } // handleSelection
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Someone externally has selected an edge.
     Usually someone has clicked a button in the EdgeList to view/edit an edge
 /*/ handleEdgeSelection ( data ) {
-      if (DBG) console.error('EdgeEditor',this.state.formData.id,': got state EDGE_SELECT',data);
+      if (DBG) console.log('EdgeEditor',this.props.edgeID,': got state EDGE_SELECT',data);
 
       if (this.state.formData.id === data.edgeID) {
-        // pass currentAutoComplete back to nodeselector
-        this.Call('AUTOCOMPLETE_SELECT',{id:'nodeSelector'});
+        // pass currentAutoComplete back to search
+        this.Call('AUTOCOMPLETE_SELECT',{id:'search'});
         this.setState({ isExpanded: true });
       }
 
@@ -381,11 +379,9 @@ class EdgeEditor extends UNISYS.Component {
 /*/ Someone externally has selected an edge for editing.
     Usually someone has clicked a button in the EdgeList to edit an edge
 /*/ handleEdgeEdit ( data ) {
-      if (DBG) console.error('EdgeEditor',this.state.formData.id,': got state EDGE_EDIT',data);
+      if (DBG) console.log('EdgeEditor',this.state.formData.id,': got state EDGE_EDIT',data,'formData is',this.state.formData);
 
       if (this.state.formData.id === data.edgeID) {
-        // pass currentAutoComplete back to nodeselector
-        this.Call('AUTOCOMPLETE_SELECT',{id:'nodeSelector'});
         this.setState({
           isExpanded: true,
           isEditable: true
@@ -399,17 +395,17 @@ class EdgeEditor extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onButtonClick () {
+      // REVIEW: Rename onCancelButtonClick
+      // Cancel/Close
       if (this.state.isExpanded) {
         // collapse
         this.setState({ isExpanded: false });
-
-        // pass currentAutoComplete back to nodeselector
-        this.Call('AUTOCOMPLETE_SELECT',{id:'nodeSelector'});
 
         // If we were editing, then revert and exit
         if (this.state.isEditable) {
           this.loadSourceAndTarget();
           this.setState({ isEditable: false });
+          this.Call('AUTOCOMPLETE_SELECT',{id:'search',value:'edge cancelled'});
         }
       } else {
         // expand, but don't set the autocomplete field, since we're not editing
@@ -488,10 +484,11 @@ class EdgeEditor extends UNISYS.Component {
       if (DBG) console.group('EdgeEntry.onSubmit submitting',edge)
       // Notify parent of new edge data
       this.Call('EDGE_UPDATE',{edge:edge});
-      // Notify parent to deselect selectedNode
-      this.Call('SOURCE_SELECT',{nodeLabels:[]});
-      // Clear the any selections
-      this.clearForm()
+
+      // pass currentAutoComplete back to nodeselector
+      this.Call('AUTOCOMPLETE_SELECT',{id:'search', value:'edge saved'});
+
+      this.setState({ isEditable: false });
     } // onSubmit
 
 
@@ -526,7 +523,7 @@ class EdgeEditor extends UNISYS.Component {
             <Form className="nodeEntry"
                   style={{backgroundColor:"#C9E1FF",minHeight:'300px',padding:'5px',marginBottom:'10px'}}
                   onSubmit={this.onSubmit}>
-              <FormText>EDGE {formData.id}</FormText>
+              <FormText><b>EDGE {formData.id}</b></FormText>
               <FormGroup row>
                 <Col sm={3}>
                   <Label for="source" className="small text-muted">Source</Label>
@@ -535,7 +532,7 @@ class EdgeEditor extends UNISYS.Component {
                   <AutoComplete
                     identifier={'edge'+edgeID+'source'}
                     disabledValue={sourceNode.label}
-                    inactiveMode={parentNodeLabel===sourceNode.label ? 'static' : 'disabled'}
+                    inactiveMode={'static'}
                   />
                 </Col>
               </FormGroup>
@@ -608,7 +605,7 @@ class EdgeEditor extends UNISYS.Component {
               <FormGroup className="text-right" style={{paddingRight:'5px'}}>
                 <Button className="small text-muted float-left btn btn-outline-light" size="sm"
                  onClick={this.onDeleteButtonClick}
-                >DELETE</Button>&nbsp;
+                >Delete</Button>&nbsp;
                 <Button outline size="sm"
                   hidden={this.state.isEditable}
                   onClick={this.onEditButtonClick}

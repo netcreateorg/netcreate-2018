@@ -9,6 +9,8 @@
       * view the current selection/setting when searching for a node
       * view the current selection/setting for an edge source or target
 
+
+
       ## MAIN FEATURES
 
       * It interactively provides a list of suggestions that match the current
@@ -23,9 +25,6 @@
         Since there can be multiple AutoComplete components on a single page
         (e.g. multiple edges along with the source), we disable the component
         when it isn't active.
-
-      * When the AutoComplete component is disabled, it will ignore SELECTION
-        updates.
 
       * When the AutoComplete component is disabled, it will display a
         generic INPUT component instead of the Autosuggest component.
@@ -44,6 +43,8 @@
       This relies on the react-autosuggest component.
       See documentation: https://github.com/moroshko/react-autosuggest
 
+
+
       ## TO USE
 
           <AutoComplete
@@ -51,6 +52,8 @@
             disabledValue={this.state.formData.label}
             inactiveMode={'disabled'}
           />
+
+
 
       ## TECHNICAL DESCRIPTION
 
@@ -79,6 +82,16 @@
          suggestedNodeLabels that is used by Autosuggest whenever it
          requests a list of suggestions.
 
+
+
+      ## HIGHLIGHTING vs MARKING
+
+      "Highlighting" refers to the temporary rollover highlight of a suggested node
+      in the suggestion list.  "Marking" refers to the stroked color of a node
+      circle on the D3 graph.
+
+
+
       ## PROPS
 
       identifier
@@ -94,7 +107,10 @@
 
       inactiveMode
 
-            When the AutoComplete component is not active, it can be either:
+            When the AutoComplete component is not active, it can be either
+            'static' or 'disabled' depending on the parent field.  This prop
+            sets which of these modes the field should default to:
+
             'static'   -- an unchangeable field, e.g. the Source node for an
                           edge is always going to be the Source label.  It
                           cannot be changed.
@@ -133,10 +149,12 @@ class AutoComplete extends UNISYS.Component {
         value       : '',
         suggestions : [],
         id          : '',
-        mode        : MODE_ACTIVE
+        mode        : MODE_DISABLED
       };
 
+      this.onStateChange_SEARCH        = this.onStateChange_SEARCH.bind(this);
       this.onStateChange_SELECTION     = this.onStateChange_SELECTION.bind(this);
+      this.onStateChange_AUTOCOMPLETE  = this.onStateChange_AUTOCOMPLETE.bind(this);
       this.onInputChange               = this.onInputChange.bind(this);
       this.getSuggestionValue          = this.getSuggestionValue.bind(this);
       this.renderSuggestion            = this.renderSuggestion.bind(this);
@@ -148,20 +166,22 @@ class AutoComplete extends UNISYS.Component {
 
       // NOTE: do this AFTER you have used bind() on the class method
       // otherwise the call will fail due to missing 'this' context
-      this.OnAppStateChange('SELECTION', this.onStateChange_SELECTION);
+      this.OnAppStateChange('SEARCH',             this.onStateChange_SEARCH);
+      this.OnAppStateChange('SELECTION',          this.onStateChange_SELECTION);
+      this.OnAppStateChange('ACTIVEAUTOCOMPLETE', this.onStateChange_AUTOCOMPLETE);
 
     } // constructor
 
 /// UNISYS STATE CHANGE HANDLERS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ 'SELECTION' handler
-/*/ onStateChange_SELECTION( data ) {
+
+/*/ 'SEARCH' handler
+/*/ onStateChange_SEARCH ( data ) {
       // grab entire global state for 'SELECTION
       // REVIEW // autocompleteid probab;y should be stored elsewhere or use a
       // different mechanism
-      let { activeAutoCompleteId } = this.AppState('SELECTION');
-
-      // setState() only if the currentID matches this one
+      if (DBG) console.log('AutoComplete',this.props.identifier,': Got SEARCH',data);
+      let { activeAutoCompleteId } = this.AppState('ACTIVEAUTOCOMPLETE');
       if (activeAutoCompleteId===this.props.identifier) {
         // This is the currently active AutoComplete field
         // Update the autosuggest input field's value with the current search data
@@ -186,7 +206,48 @@ class AutoComplete extends UNISYS.Component {
           if (DBG) console.log('...AutoComplete',this.props.identifier,': NOT ACTIVE, but skipping update because component is unmounted');
         }
       }
-    } // onStateChange_SELECTION
+    } // onStateChange_SEARCH
+
+/*/ 'SELECTION' handler
+    Update this AutoComplete input value when the currently selected SELECTION has changed
+    AND we are active and have the current activeAutoCompleteId.
+    This is especially important for when adding a target field to a new EdgeEditor.
+/*/ onStateChange_SELECTION ( data ) {
+      if (DBG) console.log('...AutoComplete',this.props.identifier,': Got SELECTION',data);
+      let activeAutoCompleteId = this.AppState('ACTIVEAUTOCOMPLETE').activeAutoCompleteId;
+      if ( (this.props.identifier===activeAutoCompleteId) ||
+           (activeAutoCompleteId==='search') ) {
+        // Update the searchLabel if either this nodeSelector or the 'search' field is
+        // is the current active AutoComplete field.
+        // We only ignore SELECTION updates if an edge target field has the current focus.
+        // This is necessary for the case when the user clicks on a node in the D3 graph
+        // and the search field has the current AutoComplete focus.  Otherwise the state.value
+        // is never updated.
+        if (DBG) console.log('...AutoComplete',this.props.identifier,': ACTIVE got SELECTION');
+        let nodes = data.nodes;
+        if (nodes!==undefined &&
+            nodes.length>0 &&
+            nodes[0]!==undefined &&
+            nodes[0].label!==undefined) {
+          let searchLabel = nodes[0].label;
+          if (DBG) console.log('...AutoComplete',this.props.identifier,': ACTIVE got SELECTION, searchLabel',searchLabel);
+          this.setState({value: searchLabel});
+        }
+      }
+    }
+
+/*/ 'AUTOCOMPLETE' handler
+    Update this AutoComplete state when the currently selected AUTOCOMPLETE field has changed
+/*/ onStateChange_AUTOCOMPLETE ( data ) {
+      if (DBG) console.log('...AutoComplete',this.props.identifier,': Got AUTOCOMPLETE',data);
+      let mode = this.state.mode;
+      if (data.activeAutoCompleteId === this.props.identifier) {
+        mode = MODE_ACTIVE;
+      } else {
+        mode = this.props.inactiveMode;
+      }
+      this.setState({mode: mode});
+    }
 
 /// AUTOSUGGEST HANDLERS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -194,7 +255,7 @@ class AutoComplete extends UNISYS.Component {
     User has typed something new into the field
 /*/ onInputChange (event, { newValue, method }) {
       // Pass the input value (node label search string) to UDATA
-      // which will in turn pass the searchLabel back to the SELECTION
+      // which will in turn pass the searchLabel back to the SEARCH
       // state handler in the constructor, which will in turn set the state
       // of the input value to be passed on to AutoSuggest
       this.Call('SOURCE_SEARCH', { searchString: newValue });
@@ -203,29 +264,12 @@ class AutoComplete extends UNISYS.Component {
 /*/ Handle Autosuggest's request to set the value of the input field when
     a selection is clicked.
 /*/ getSuggestionValue (suggestion) {
-      if (suggestion.isAddNew) {
-        return this.state.value;
-      }
-      return suggestion;
+      return suggestion.label;
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle Autosuggest's request for HTML rendering of suggestions
 /*/ renderSuggestion (suggestion) {
-      if (suggestion.isAddNew) {
-        // Don't show "Add New" because when you're adding a new item that partially
-        // matches an existing item, you'll have a list of suggestions.  Better to
-        // have the user always click "Add New Node" button.
-        //
-        // return (
-        //   <span>
-        //     [+] Add new: <strong>{this.state.value}</strong>
-        //   </span>
-        // );
-        //
-        // Instead, just show a blank
-        return (<span></span>);
-      }
-      return suggestion;
+      return suggestion.label;
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle Autosuggest's request for list of suggestions
@@ -238,10 +282,10 @@ class AutoComplete extends UNISYS.Component {
     We construct the list on the fly based on the D3DATA data.  If the data model
     changes, we'll need to update this lexicon constructor.
 /*/ onSuggestionsFetchRequested () {
-      let data = this.AppState('SELECTION');
-      if (data.suggestedNodeLabels) {
+      let data = this.AppState('SEARCH');
+      if (data.suggestedNodes) {
         this.setState({
-          suggestions: (data.suggestedNodeLabels)
+          suggestions: (data.suggestedNodes)
         });
       } else {
         if (DBG) console.log('AutoComplete.onSuggestionsFetchRequested: No suggestions.');
@@ -259,19 +303,15 @@ class AutoComplete extends UNISYS.Component {
     If a new value is suggested, we call SOURCE_SELECT.
     Autocomplete-logic should handle the creation of a new data object.
 /*/ onSuggestionSelected (event, { suggestion }) {
-      if (suggestion.isAddNew) {
-        // User selected the "Add New Node" item in the suggestion list
-        // console.log('Add new:', this.state.value, 'suggestion',suggestion);
-        this.Call('SOURCE_SELECT',{ nodeLabels: [this.state.value] });
-      } else {
-        // User selected an existing node in the suggestion list
-        this.Call('SOURCE_SELECT',{ nodeLabels: [suggestion] });
-      }
+      // User selected an existing node in the suggestion list
+      this.Call('SOURCE_SELECT',{ nodeIDs: [suggestion.id] });
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Autosuggest calls this whenever the user has highlighted a different suggestion
+    from the suggestion list.
 /*/ onSuggestionHighlighted ({ suggestion }) {
-      this.Call('SOURCE_HILITE',{ nodeLabel: suggestion });
+      if (suggestion && suggestion.id)
+        this.Call('SOURCE_HILITE',{ nodeID: suggestion.id });
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Autosuggest checks this before rendering suggestions
@@ -289,6 +329,7 @@ class AutoComplete extends UNISYS.Component {
     https://reactjs.org/blog/2015/12/16/ismounted-antipattern.html
 /*/ componentDidMount () {
       _IsMounted = true;
+      this.setState({ mode: this.props.inactiveMode })
     }
 /*/
 /*/ componentWillUnmount () {
@@ -304,11 +345,10 @@ class AutoComplete extends UNISYS.Component {
         value       : value,
         onChange    : this.onInputChange
       };
-
       let jsx;
       switch (this.state.mode) {
         case MODE_STATIC:
-          jsx = ( <p>{this.state.value}</p> );
+          jsx = ( <p>{this.props.disabledValue}</p> );
           break;
         case MODE_DISABLED:
           jsx = ( <Input type="text" value={this.props.disabledValue} readOnly={true}/> );
