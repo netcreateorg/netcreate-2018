@@ -46,6 +46,7 @@ const NetGraph     = require('./components/NetGraph');
 const Search       = require('./components/Search');
 const NodeSelector = require('./components/NodeSelector');
 const Help         = require('./components/Help');
+const NodeTable    = require('./components/NodeTable');
 const EdgeList     = require('./components/EdgeList');
 const ACD_LOGIC    = require('./autocomplete-logic');
 
@@ -95,6 +96,7 @@ const ACD_LOGIC    = require('./autocomplete-logic');
               </div>
               <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 60%', padding:'10px',marginTop:'56px'}}>
                 <Help/>
+                <NodeTable/>
                 <EdgeList/>
                 <NetGraph/>
               </div>
