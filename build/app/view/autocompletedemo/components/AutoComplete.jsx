@@ -117,6 +117,12 @@
             'disabled' -- a changeable field that is not currently activated,
                           e.g. the Target node for an edge.
 
+      shouldIgnoreSelection
+
+            Used by NodeSelector and EdgeEditor's target node field
+            to prevent user from selecting another node
+            while editing a node.
+
       Based on example code from https://codepen.io/moroshko/pen/vpBzMr
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
@@ -214,6 +220,10 @@ class AutoComplete extends UNISYS.Component {
     This is especially important for when adding a target field to a new EdgeEditor.
 /*/ onStateChange_SELECTION ( data ) {
       if (DBG) console.log('...AutoComplete',this.props.identifier,': Got SELECTION',data);
+      if (this.props.shouldIgnoreSelection) {
+        if (DBG) console.error('...AutComplete',this.props.identifier,': Ignoring SELECTION (probably because NodeSelector is in edit mode).');
+        return;
+      }
       let activeAutoCompleteId = this.AppState('ACTIVEAUTOCOMPLETE').activeAutoCompleteId;
       if ( (this.props.identifier===activeAutoCompleteId) ||
            (activeAutoCompleteId==='search') ) {

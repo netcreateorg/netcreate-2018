@@ -472,6 +472,7 @@ class NodeSelector extends UNISYS.Component {
                   identifier={thisIdentifier}
                   disabledValue={this.state.formData.label}
                   inactiveMode={'disabled'}
+                  shouldIgnoreSelection={this.state.isEditable}
                 />
               </Col>
             </FormGroup>

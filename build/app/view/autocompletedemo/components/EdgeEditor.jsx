@@ -175,6 +175,7 @@ class EdgeEditor extends UNISYS.Component {
             id:        ''
         },
         isEditable:      false,     // Form is in an edtiable state
+        targetIsEditable:false,     // Target ndoe field is only editable when creating a new edge
         isExpanded:      false,     // Show EdgeEditor Component in Summary view vs Expanded view
       };
 
@@ -285,6 +286,7 @@ class EdgeEditor extends UNISYS.Component {
         // Expand this EdgeEditor and set it to Edit mode.
         this.setState({
           isExpanded:           true,
+          targetIsEditable:     true,
           isEditable:           true,
         });
 
@@ -337,7 +339,7 @@ class EdgeEditor extends UNISYS.Component {
 /*/ handleSelection ( data ) {
       if (DBG) console.log('EdgeEditor',this.props.edgeID,'got SELECTION data',data);
       // If edge is not being edited, ignore the selection
-      if (!this.state.isEditable) return;
+      if (!this.state.isEditable || !this.state.targetIsEditable) return;
 
       // Technically we probably ought to also check to make sure we're the current
       // activeAutoCompleteId, but we wouldn't be edtiable if we weren't.
@@ -405,7 +407,7 @@ class EdgeEditor extends UNISYS.Component {
         // If we were editing, then revert and exit
         if (this.state.isEditable) {
           this.loadSourceAndTarget();
-          this.setState({ isEditable: false });
+          this.setState({ isEditable: false, targetIsEditable: false });
           this.Call('AUTOCOMPLETE_SELECT',{id:'search'});
         }
       } else {
@@ -489,7 +491,7 @@ class EdgeEditor extends UNISYS.Component {
       // pass currentAutoComplete back to nodeselector
       this.Call('AUTOCOMPLETE_SELECT',{id:'search'});
 
-      this.setState({ isEditable: false });
+      this.setState({ isEditable: false, targetIsEditable: false });
     } // onSubmit
 
 
@@ -564,6 +566,7 @@ class EdgeEditor extends UNISYS.Component {
                     identifier={'edge'+edgeID+'target'}
                     disabledValue={targetNode.label}
                     inactiveMode={parentNodeLabel===targetNode.label ? 'static' : 'disabled'}
+                    shouldIgnoreSelection={!this.state.targetIsEditable}
                   />
                 </Col>
               </FormGroup>
