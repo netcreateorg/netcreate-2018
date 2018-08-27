@@ -133,6 +133,7 @@ class NodeSelector extends UNISYS.Component {
       this.onInfoChange                          = this.onInfoChange.bind(this);
       this.onEditButtonClick                     = this.onEditButtonClick.bind(this);
       this.onAddNewEdgeButtonClick               = this.onAddNewEdgeButtonClick.bind(this);
+      this.onCancelButtonClick                   = this.onCancelButtonClick.bind(this);
       this.onSubmit                              = this.onSubmit.bind(this);
 
       // NOTE: assign UDATA handlers AFTER functions have been bind()'ed
@@ -369,6 +370,18 @@ class NodeSelector extends UNISYS.Component {
     } // onAddNewEdgeButtonClick
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
+/*/ onCancelButtonClick () {
+      // If we were editing, then revert and exit
+      if (this.state.isEditable) {
+        let originalNode = this.AppState('D3DATA').nodes.filter( node => { return node.id === this.state.formData.id; } )[0];
+        if (originalNode===undefined) { throw Error('NodeSelector.onCancelButtonClick unable to restore original node because original node was not found!'); }
+        this.loadFormFromNode( originalNode );
+        this.setState({ isEditable: false });
+        this.Call('AUTOCOMPLETE_SELECT',{id:'search',value:''});
+      }
+    } // onCancelButtonClick
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
 /*/ onSubmit ( event ) {
       event.preventDefault();
       // Update the data with the selectedNode
@@ -463,6 +476,10 @@ class NodeSelector extends UNISYS.Component {
                 hidden={this.state.isEditable}
                 onClick={this.onEditButtonClick}
               >{this.state.formData.id===''?"Add New Node":"Edit Node"}</Button>
+              <Button outline size="sm"
+                hidden={!this.state.isEditable}
+                onClick={this.onCancelButtonClick}
+              >{this.state.isEditable?'Cancel':'Close'}</Button>&nbsp;
               <Button color="primary" size="sm"
                 disabled={!this.state.isValid}
                 hidden={!this.state.isEditable}
