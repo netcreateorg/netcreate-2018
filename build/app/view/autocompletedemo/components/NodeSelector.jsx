@@ -374,9 +374,14 @@ class NodeSelector extends UNISYS.Component {
       // If we were editing, then revert and exit
       if (this.state.isEditable) {
         let originalNode = this.AppState('D3DATA').nodes.filter( node => { return node.id === this.state.formData.id; } )[0];
-        if (originalNode===undefined) { throw Error('NodeSelector.onCancelButtonClick unable to restore original node because original node was not found!'); }
-        this.loadFormFromNode( originalNode );
-        this.setState({ isEditable: false });
+        if (originalNode===undefined) {
+          // user abandoned editing a new node that was never saved
+          this.clearForm();
+        } else {
+          // restore original node
+          this.loadFormFromNode( originalNode );
+          this.setState({ isEditable: false });
+        }
         this.Call('AUTOCOMPLETE_SELECT',{id:'search',value:''});
       }
     } // onCancelButtonClick
