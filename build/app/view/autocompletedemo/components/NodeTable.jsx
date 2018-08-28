@@ -227,8 +227,8 @@ class NodeTable extends UNISYS.Component {
                     >ID</Button></th>
                 <th></th>
                 <th><Button size="sm"
-                      disabled={this.state.sortkey==="source"}
-                      onClick={()=>this.setSortKey("source")}
+                      disabled={this.state.sortkey==="label"}
+                      onClick={()=>this.setSortKey("label")}
                     >Label</Button></th>
                 <th><Button size="sm"
                       disabled={this.state.sortkey==="type"}
