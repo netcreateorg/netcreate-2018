@@ -2,24 +2,28 @@
 
   * EVENTS: D3 Graph Updates
 
-    Mark Node/Edge          When a node or edge is higlighted via an AutoComplete
-                            highlight or is selected via AutoComplete selection
-                            or clicked on in NetGraph, it is shown bold (or
-                            outlined) in the D3 graph.  This is done by updating
-                            the node or edge in `this.state.data` object, setting
-                            the object's `selected` key to a particular color
-                            corresponding to the node/edge UI control.  When
-                            the data is updated, it is passed to `NetGraph.jsx`,
-                            which in turn updates the data in
-                            `D3SimpleNetGraph.js`.  `D3SimpleNetGraph` will add
-                            the highlight during its update cycle.
+    Mark Node/Edge          Nodes in the graph are marked via a stroke around
+                            the circle.  There are two types of marks:
 
-                            The colors allow us to highlight different fields
-                            simultaneously with each component.  For example,
-                            you can highlight both the source and target nodes
-                            with different colors so you know which is which.
-                            This is especially useful when the highlight matches
-                            many objects, e.g. "Ah" matches 7 different nodes.
+                            1. SEARCH -- when a node matches a search, its
+                            strokeColor is set to green.
+
+                            2. SELECTION -- when a node is selected by the
+                            user and shown in the NodeSelector either by
+                            directly clicking on it or by clicking on a
+                            item in the search suggestion list, the node
+                            data is marked `selected` and a blue strokeColor
+                            is applied.
+
+                            The two marks are orthogonal to each other: a
+                            node can be both searched and selected, though
+                            the selection mark will override the search
+                            mark.
+
+                            The rendering is handled by modifying the
+                            node data in D3DATA.  d3-simplenetgraph will
+                            then read any D3DATA updates and redraw
+                            the graph based on the updated data.
 
     Add New Node/Edge       When the user adds a new edge or node, handlers in
                             AutoCompleteDemo will update its `this.state.data`
@@ -185,7 +189,11 @@ const TARGET_COLOR     = '#FF0000';
           }
         }
         // SEARCH LABEL UPDATE
-        if (searchLabel) m_SetStrokeColorThatMatch(searchLabel,SEARCH_COLOR);
+        if (searchLabel==='') {
+          m_UnStrokeAllNodes();
+        } else if (searchLabel!==undefined) {
+          m_SetStrokeColorThatMatch(searchLabel,SEARCH_COLOR);
+        }
       }); // StateChange SELECTION
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ User has clicked on a suggestion from the AutoCopmlete suggestion list.
@@ -576,6 +584,13 @@ const TARGET_COLOR     = '#FF0000';
       UDATA.SetAppState('D3DATA',D3DATA);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Remove the stroke color.  Used to unmark search matches.
+/*/ function m_UnStrokeAllNodes() {
+      let props = { strokeColor : undefined };
+      m_SetAllObjs(D3DATA.nodes,props);
+      UDATA.SetAppState('D3DATA',D3DATA);
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Sets the `node.selected` property to `color` so it is hilited on graph
 /*/ function m_MarkNodeById( id, color ) {
       let marked = { selected : SOURCE_COLOR };
@@ -590,10 +605,11 @@ const TARGET_COLOR     = '#FF0000';
 /*/ Sets the `node.selected` property to `color` so it is hilited on graph
 /*/ function m_MarkNodeByLabel( label, color ) {
       let marked = { selected : color };
+      let normal = { selected : DESELECTED_COLOR };
       // NOTE: this.getSelectedNodeColor(node,color) and
       // this.getDeselectedNodeColor(node,color) are not yet implemented
       // to override the properties
-      m_SetMatchingNodesByLabel(label,marked);
+      m_SetMatchingNodesByLabel(label,marked,normal);
       UDATA.SetAppState('D3DATA',D3DATA);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
