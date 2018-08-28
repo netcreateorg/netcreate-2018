@@ -32,7 +32,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-var DBG = false;
+var DBG        = false;
 
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -52,9 +52,9 @@ let m_forceProperties = {   // values for all forces
       },
       charge: {
         enabled: true,
-        strength: -1000, // -20,
-        distanceMin: 50, // 1,
-        distanceMax: 2000
+        strength: -1500,//-1000, // -20,
+        distanceMin: 20, //50, // 1,
+        distanceMax: 1000//2000
       },
       collide: {
         enabled: true,
@@ -74,8 +74,8 @@ let m_forceProperties = {   // values for all forces
       },
       link: {
         enabled: true,
-        distance: 30, // 30,
-        iterations: 1
+        distance: 60, // 30,
+        iterations: 2 // 1
       }
     }; // m_forceProperties
 
@@ -233,14 +233,13 @@ class D3NetGraph {
       // enter node: also append 'circle' element of a calculated size
       elementG
         .append("circle")
-          .attr("r",
-            (d) => {
+          // "r" has to be set here or circles don't draw.
+          .attr("r", (d) => {
               let count = 1
               this.data.edges.map( (l)=>{ l.source == d.id || l.target == d.id ? count++ : 0 } )
               d.weight = count
-              // save the calculated size
-              d.size = count
-              return this.defaultSize * d.weight
+              d.size = count // save the calculated size
+              return this.defaultSize + this.defaultSize * d.weight/2
           })
   //        .attr("r", (d) => { return this.defaultSize }) // d.size ?  d.size/10 : this.defaultSize; })
           .attr("fill", (d) => { return d.color ? d.color : this.defaultColor; });
@@ -250,8 +249,8 @@ class D3NetGraph {
         .append("text")
           .classed('noselect', true)
           .attr("font-size", 10)
-          .attr("dx", 8)
-          .attr("dy", ".15em")
+          .attr("dx", (d=>{return this.defaultSize + 5})) // 8)
+          .attr("dy", "0.35em") // ".15em")
           .text((d) => { return d.label });
 
       // enter node: also append a 'title' tag
@@ -306,12 +305,13 @@ class D3NetGraph {
           .attr("stroke-width", (d) => {
             if (d.selected || d.strokeColor) return '5px';
           })
-          .attr("r",
-            (d) => {
+// this "r" is necessary to resize aftger a link is added
+          .attr("r", (d) => {
               let count = 1
               this.data.edges.map( (l)=>{ l.source.id == d.id || l.target.id == d.id ? count++ : 0 } )
               d.weight = count
-              return this.defaultSize * d.weight
+              d.size = count // save the calculated size
+              return this.defaultSize + this.defaultSize * d.weight/2
           });
 
       // UPDATE text in each node for all nodes
@@ -347,19 +347,24 @@ class D3NetGraph {
       this.simulation.force("link").links(this.data.edges)
 
     }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Apply new force properties
     Call this on construct and if forceProperties have changed.
-/*/_UpdateForces ( data ) {
+/*/ _UpdateForces ( data ) {
       this.simulation
         .force("link", d3.forceLink()
             .id((d) => {return d.id})
-            .distance( (d)=>{return m_forceProperties.link.distance * (1/d.size) } )
-  //          .distance(m_forceProperties.link.distance)
+            .distance( (d)=>{return m_forceProperties.link.distance} )
+// this doesn't seem to change anything?!?  The m_forceProperties.link.distance is the only value that seems to matter?
+//            .distance( (d)=>{return m_forceProperties.link.distance+d.size*10 } )
+//            .distance( (d)=>{return m_forceProperties.link.distance * (1/d.size) } )
+//            .distance( m_forceProperties.link.distance )
             .iterations(m_forceProperties.link.iterations))
         .force("charge", d3.forceManyBody()
-  //          .strength(m_forceProperties.charge.strength * m_forceProperties.charge.enabled)
-            .strength( (d)=>{return d.size/6 * m_forceProperties.charge.strength * m_forceProperties.charge.enabled} )
+//            .strength(m_forceProperties.charge.strength * m_forceProperties.charge.enabled)
+//            .strength( (d)=>{return d.size/6 * m_forceProperties.charge.strength * m_forceProperties.charge.enabled} )
+            .strength( (d)=>{return d.size/4 * m_forceProperties.charge.strength * m_forceProperties.charge.enabled} )
             .distanceMin(m_forceProperties.charge.distanceMin)
             .distanceMax(m_forceProperties.charge.distanceMax))
         .force("collide", d3.forceCollide()
