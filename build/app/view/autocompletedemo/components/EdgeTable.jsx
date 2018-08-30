@@ -258,13 +258,13 @@ class EdgeTable extends UNISYS.Component {
                       onClick={()=>this.setSortKey("source")}
                     >Source</Button></th>
                 <th><Button size="sm"
-                      disabled={this.state.sortkey==="target"}
-                      onClick={()=>this.setSortKey("target")}
-                    >Target</Button></th>
-                <th><Button size="sm"
                       disabled={this.state.sortkey==="Relationship"}
                       onClick={()=>this.setSortKey("Relationship")}
                     >Type</Button></th>
+                <th><Button size="sm"
+                      disabled={this.state.sortkey==="target"}
+                      onClick={()=>this.setSortKey("target")}
+                    >Target</Button></th>
                 <th><Button size="sm"
                       disabled={this.state.sortkey==="Citations"}
                       onClick={()=>this.setSortKey("Citations")}
