@@ -26,7 +26,7 @@
                             the graph based on the updated data.
 
     Add New Node/Edge       When the user adds a new edge or node, handlers in
-                            AutoCompleteDemo will update its `this.state.data`
+                            NetCreate will update its `this.state.data`
                             with the new nodes/edges.  This is passed on to
                             `NetGraph.jsx` and in turn to `D3SimpleNetGraph.js`
                             which will display the new data during its update
@@ -141,7 +141,7 @@ const TARGET_COLOR     = '#FF0000';
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ LOADASSETS fires during <AutoCompleteDemo>.componentDidMount
+/*/ LOADASSETS fires during <NetCreate>.componentDidMount
 /*/ MOD.Hook('LOADASSETS',()=>{
       // load data into D3DATA
       DATASTORE.LoadDataPromise()
