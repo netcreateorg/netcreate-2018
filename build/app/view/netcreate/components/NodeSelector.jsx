@@ -6,7 +6,7 @@
     Node information.
 
     NodeSelector does not modify any data.  It passes all events (text updates,
-    highlights, and suggestion selections) up to autocomplete-logic.  ac-l
+    highlights, and suggestion selections) up to nc-logic. it
     should process the events and update the data accordingly.  The
     updated data is then rendered by NodeSelect.
 
@@ -167,7 +167,7 @@ class NodeSelector extends UNISYS.Component {
     } // clearFform
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return a new unique ID
-    REVIEW: Should this be in autocomplete-logic?
+    REVIEW: Should this be in nc-logic?
 /*/ getNewNodeID () {
       let highestID = 0;
       let ids  = this.AppState('D3DATA').nodes.map( node => { return Number(node.id) } );
@@ -244,8 +244,10 @@ class NodeSelector extends UNISYS.Component {
       // Only update if we are the currently active field
       // otherwise an Edge might be active
       let { activeAutoCompleteId } = this.AppState('ACTIVEAUTOCOMPLETE');
-      if ( (activeAutoCompleteId!==thisIdentifier) &&
-           (activeAutoCompleteId!=='search')          ) return;
+      if (
+        (activeAutoCompleteId!==thisIdentifier) &&
+        (activeAutoCompleteId!=='search')
+      ) return;
 
       let formData = this.state.formData;
       formData.label = data.searchLabel;
