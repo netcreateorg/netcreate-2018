@@ -152,6 +152,7 @@ const TARGET_COLOR     = '#FF0000';
       });
     }); // end INITIALIZE HOOK
 
+
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ lifecycle INITIALIZE handler
@@ -224,8 +225,8 @@ const TARGET_COLOR     = '#FF0000';
         if (node===undefined) {
           // Node not found, create a new node
           newState = {
-            nodes                 : [],
-            edges                 : []
+            nodes : [],
+            edges : []
           };
         } else {
           // Load existing node and edges
@@ -237,8 +238,8 @@ const TARGET_COLOR     = '#FF0000';
           }
           // create state change object
           newState = {
-            nodes                 : [ node ],
-            edges                 : edges
+            nodes : [ node ],
+            edges : edges
           };
         }
 
@@ -302,8 +303,9 @@ const TARGET_COLOR     = '#FF0000';
           D3DATA.nodes.push(newNode);
         }
         if (updatedNodes.length===1) {
+          // DATASTORE/server-database.json expects a 'node' key not 'newNode' with updates
           if (DBG) console.log('updating existing node',newNode);
-          DATASTORE.Update({ op:'update', node: newNode });
+          DATASTORE.Update({ op:'update', node:newNode });
         }
         if (updatedNodes.length>1) {
           throw Error("SourceUpdate found duplicate IDs");
@@ -366,6 +368,7 @@ const TARGET_COLOR     = '#FF0000';
           newEdge.source = newEdge.source.id;
           newEdge.target = newEdge.target.id;
 
+          // DATASTORE/server-database.json expects 'edge' not 'newEdge' with updates
           DATASTORE.Update({ op:'update', edge:newEdge });
         }
         if (updatedEdges.length>1) {
