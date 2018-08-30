@@ -90,6 +90,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
     during START
 /*/ MOD.Hook('INITIALIZE', function() {
       if (TEST('call')) {
+
         // 'TEST_CALL' is invoked from DevUnisys.jsx
         UDATA.HandleMessage('TEST_CALL',(data)=>{
           if (data && data.source) TEST.Pass('callHndlrReg');
@@ -106,6 +107,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
           return Object.assign(data,{ multi : 'MultiData' });
         });
       }
+
       // 'REMOTE_CALL_TEST' is invoked from MOD2
       // note that there are multiple handlers for 'REMOTE_CALL_TEST'
       // to test collecting data from all of them
@@ -122,6 +124,45 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
         });
       }
     }); // end INITIALIZE 3
+
+/// TEST STATE ////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Initialize in module 1
+/*/ MOD.Hook('INITIALIZE', function () {
+      let state = {
+        deep : { deep_a : 1 },
+        arr : [ 1, 3, 2 ],
+        a : 1
+      };
+      UDATA.MergeAppState('testmerge', state);
+      state = {
+        arr : [ 1, 2, 3 ]
+      }
+      UDATA.ConcatAppState('testconcat', state);
+    });
+/*/ Initialize in module 2
+/*/ MOD2.Hook('INITIALIZE', function () {
+      let state = {
+        deep : { deep_b : 2 },
+        arr : [ 10, 11, 12 ],
+        b : 2
+      };
+      UDATA2.MergeAppState('testmerge', state);
+      state = {
+        arr : [ 1, 2, 3 ]
+      }
+      UDATA.ConcatAppState('testconcat', state);
+    });
+/*/ test merging in module 2
+/*/ MOD2.Hook('START', function () {
+      let expected = '{"deep":{"deep_a":1,"deep_b":2},"arr":[1,3,2,10,11,12],"a":1,"b":2}';
+      let serialized = JSON.stringify(UDATA2.AppState('testmerge'));
+      if (expected===serialized) TEST.Pass('stateMerge');
+      expected = '{"arr":[1,2,3,1,2,3]}';
+      serialized = JSON.stringify(UDATA.AppState('testconcat'));
+      if (expected===serialized) TEST.Pass('stateConcat');
+      console.log(serialized);
+    });
 
 
 /// APP_READY MESSAGE REGISTRATION ////////////////////////////////////////////
@@ -165,6 +206,21 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
         });
       }
     });
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Test State is set during start
+    'test' a,b were set by separate INITIALIZE methods
+    in different modules
+/*/ MOD2.Hook('START', function() {
+      if (TEST('remote')) {
+        // test remote data call (local, not network)
+        UDATA2.LocalCall('REMOTE_CALL_TEST',{ mycat:'kitty',results:[] })
+        .then((data)=>{
+          if (data.mycat==='kitty') TEST.Pass('remoteDataReturn');
+        });
+      }
+    });
+
 
 /// SERVER CALL TESTS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
