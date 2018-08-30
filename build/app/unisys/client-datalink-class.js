@@ -107,6 +107,14 @@ var MESSAGER       = new Messager();
         // uid is "source uid" designating who is making the change
         STATE.SetState(namespace,newState,this.UID() );
       }
+      MergeAppState( namespace, newState ) {
+        // uid is "source uid" designating who is making the change
+        STATE.MergeState(namespace,newState,this.UID() );
+      }
+      ConcatAppState( namespace, newState ) {
+        // uid is "source uid" designating who is making the change
+        STATE.ConcatState(namespace,newState,this.UID() );
+      }
       // uid is "source uid" of subscribing object, to avoid reflection
       // if the subscribing object is also the originating state changer
       OnAppStateChange( namespace, listener ) {
