@@ -47,7 +47,7 @@ const Search       = require('./components/Search');
 const NodeSelector = require('./components/NodeSelector');
 const Help         = require('./components/Help');
 const NodeTable    = require('./components/NodeTable');
-const EdgeTable     = require('./components/EdgeTable');
+const EdgeTable    = require('./components/EdgeTable');
 const ACD_LOGIC    = require('./autocomplete-logic');
 
 
