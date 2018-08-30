@@ -115,9 +115,6 @@ class NodeTable extends UNISYS.Component {
         case 'id':
           this.sortByID(nodes);
           break;
-        case 'label':
-          this.sortByLabel(nodes);
-          break;
         case 'type':
           this.sortByAttribute(nodes, 'Node_Type');
           break;
@@ -126,6 +123,10 @@ class NodeTable extends UNISYS.Component {
           break;
         case 'info':
           this.sortByAttribute(nodes, 'Extra Info');
+          break;
+        case 'label':
+        default:
+          this.sortByLabel(nodes);
           break;
       }
       this.setState({nodes: nodes});

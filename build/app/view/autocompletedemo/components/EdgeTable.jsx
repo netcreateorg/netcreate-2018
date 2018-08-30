@@ -80,6 +80,7 @@ class EdgeTable extends UNISYS.Component {
           return 0;
         });
       }
+      return undefined;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -93,6 +94,7 @@ class EdgeTable extends UNISYS.Component {
           return 0;
         });
       }
+      return undefined;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -106,6 +108,7 @@ class EdgeTable extends UNISYS.Component {
           return 0;
         });
       }
+      return undefined;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -119,6 +122,7 @@ class EdgeTable extends UNISYS.Component {
           return 0;
         });
       }
+      return undefined;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ If no `sortkey` is passed, the sort will use the existing state.sortkey
@@ -140,14 +144,15 @@ class EdgeTable extends UNISYS.Component {
         case 'Info':
           this.sortByAttribute(edges, 'Info');
           break;
-        case 'Citations':
-          this.sortByAttribute(edges, 'Citations');
-          break;
         case 'Notes':
           this.sortByAttribute(edges, 'Notes');
           break;
+        case 'Citations':
+        default:
+          this.sortByAttribute(edges, 'Citations');
+          break;
       }
-      this.setState({edges: edges});
+      this.setState({edges});
     }
 
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
@@ -275,7 +280,7 @@ class EdgeTable extends UNISYS.Component {
               </tr>
             </thead>
             <tbody>
-            {this.state.edges.map( (edge,i) =>
+            {this.state.edges.map( (edge,i) => (
               <tr key={i}>
                 <td>{edge.id}</td>
                 <td><Button size="sm" outline
@@ -292,7 +297,7 @@ class EdgeTable extends UNISYS.Component {
                 <td>{edge.attributes["Notes"]}</td>
                 <td>{edge.attributes["Info"]}</td>
               </tr>
-            )}
+            ))}
             </tbody>
           </Table>
         </div>

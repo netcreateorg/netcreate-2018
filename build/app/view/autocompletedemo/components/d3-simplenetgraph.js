@@ -58,19 +58,19 @@ let m_forceProperties = {   // values for all forces
       },
       collide: {
         enabled: true,
-        strength: .7,
+        strength: 0.7,
         iterations: 1,
         radius: 4
       },
       forceX: {
         enabled: true,
-        strength: .2, //.03,
-        x: .5
+        strength: 0.2, //.03,
+        x: 0.5
       },
       forceY: {
         enabled: true,
-        strength: .2, //.03,
-        y: .5
+        strength: 0.2, //.03,
+        y: 0.5
       },
       link: {
         enabled: true,
@@ -112,8 +112,8 @@ class D3NetGraph {
         .attr('height',m_height)
         .on("click", ( e, event ) => {
             // Deselect
-            UDATA.Call('SOURCE_SELECT',{ nodeLabels: [] }); }
-        )
+            UDATA.Call('SOURCE_SELECT',{ nodeLabels: [] });
+        })
         .call(d3.zoom().on("zoom", function () {
           d3.select('.zoomer').attr("transform", d3.event.transform);
         }));
@@ -236,10 +236,10 @@ class D3NetGraph {
           // "r" has to be set here or circles don't draw.
           .attr("r", (d) => {
               let count = 1
-              this.data.edges.map( (l)=>{ l.source == d.id || l.target == d.id ? count++ : 0 } )
+              this.data.edges.map( (l) =>{ return ( (l.source === d.id) || (l.target === d.id) ) ? count++ : 0 } )
               d.weight = count
               d.size = count // save the calculated size
-              return this.defaultSize + this.defaultSize * d.weight/2
+              return this.defaultSize + (this.defaultSize * (d.weight/2))
           })
   //        .attr("r", (d) => { return this.defaultSize }) // d.size ?  d.size/10 : this.defaultSize; })
           .attr("fill", (d) => { return d.color ? d.color : this.defaultColor; });
@@ -308,7 +308,7 @@ class D3NetGraph {
 // this "r" is necessary to resize aftger a link is added
           .attr("r", (d) => {
               let count = 1
-              this.data.edges.map( (l)=>{ l.source.id == d.id || l.target.id == d.id ? count++ : 0 } )
+              this.data.edges.map( (l) =>{ return ( (l.source === d.id) || (l.target === d.id) ) ? count++ : 0 } )
               d.weight = count
               d.size = count // save the calculated size
               return this.defaultSize + this.defaultSize * d.weight/2

@@ -46,7 +46,7 @@ class Search extends UNISYS.Component {
     constructor (props) {
       super(props);
       this.state = {
-        searchString:  '',
+        searchString:  ''
       };
       this.OnStart(()=>{
         // always wrap UNISYS calls in a lifescycle hook otherwise you may try to execute a call

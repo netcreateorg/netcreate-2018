@@ -176,7 +176,7 @@ class EdgeEditor extends UNISYS.Component {
         },
         isEditable:      false,     // Form is in an edtiable state
         targetIsEditable:false,     // Target ndoe field is only editable when creating a new edge
-        isExpanded:      false,     // Show EdgeEditor Component in Summary view vs Expanded view
+        isExpanded:      false      // Show EdgeEditor Component in Summary view vs Expanded view
       };
 
       /// Initialize UNISYS DATA LINK for REACT
@@ -235,7 +235,7 @@ class EdgeEditor extends UNISYS.Component {
             id:        ''
         },
         isEditable:           false,
-        isExpanded:           false,     // Summary view vs Expanded view
+        isExpanded:           false      // Summary view vs Expanded view
       });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -248,8 +248,7 @@ class EdgeEditor extends UNISYS.Component {
 
       let edges = D3DATA.edges.filter( edge=>edge.id===edgeID );
       if (!edges) {
-        throw 'EdgeEditor: Passed edgeID',edgeID,'not found!';
-        return;
+        throw 'EdgeEditor: Passed edgeID'+edgeID+'not found!';
       }
       let edge = edges[0];
 
@@ -287,7 +286,7 @@ class EdgeEditor extends UNISYS.Component {
         this.setState({
           isExpanded:           true,
           targetIsEditable:     true,
-          isEditable:           true,
+          isEditable:           true
         });
 
       } else {
@@ -300,13 +299,11 @@ class EdgeEditor extends UNISYS.Component {
       }
 
       if (!sourceNodes) {
-        throw 'EdgeEditor: Source ID',edge.source,'not found!';
-        return;
+        throw 'EdgeEditor: Source ID'+edge.source+'not found!';
       }
       sourceNode = sourceNodes[0];
       if (!targetNodes) {
-        throw 'EdgeEditor: Target ID',edge.target,'not found!';
-        return;
+        throw 'EdgeEditor: Target ID'+edge.target+'not found!';
       }
       targetNode = targetNodes[0];
 
@@ -323,7 +320,7 @@ class EdgeEditor extends UNISYS.Component {
           isNewEdge:    false
         },
         sourceNode: sourceNode,
-        targetNode: targetNode,
+        targetNode: targetNode
       })
     }
 

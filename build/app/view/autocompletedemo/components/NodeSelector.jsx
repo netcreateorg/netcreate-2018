@@ -541,7 +541,7 @@ class NodeSelector extends UNISYS.Component {
             {/* `key` is needed during edge deletion so EdgeEditors are properly
                  removed when an edge is deleted.
                  REVIEW: Can we replace edgeID with key?  */}
-            {this.state.edges.map( (edge,i) =>
+            {this.state.edges.map( (edge,i) => 
               <EdgeEditor
                 edgeID={edge.id}
                 key={edge.id}

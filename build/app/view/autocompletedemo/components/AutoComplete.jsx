@@ -269,18 +269,18 @@ class AutoComplete extends UNISYS.Component {
       // state handler in the constructor, which will in turn set the state
       // of the input value to be passed on to AutoSuggest
       this.Call('SOURCE_SEARCH', { searchString: newValue });
-    };
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle Autosuggest's request to set the value of the input field when
     a selection is clicked.
 /*/ getSuggestionValue (suggestion) {
       return suggestion.label;
-    };
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle Autosuggest's request for HTML rendering of suggestions
 /*/ renderSuggestion (suggestion) {
       return suggestion.label;
-    };
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle Autosuggest's request for list of suggestions
     lexicon =  string array of node labels
@@ -300,14 +300,14 @@ class AutoComplete extends UNISYS.Component {
       } else {
         if (DBG) console.log('AutoComplete.onSuggestionsFetchRequested: No suggestions.');
       }
-    };
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle Autosuggest's request to clear list of suggestions
 /*/ onSuggestionsClearRequested () {
       this.setState({
         suggestions: []
       });
-    };
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Autosuggest's callback when a selection is made
     If a new value is suggested, we call SOURCE_SELECT.
@@ -315,14 +315,13 @@ class AutoComplete extends UNISYS.Component {
 /*/ onSuggestionSelected (event, { suggestion }) {
       // User selected an existing node in the suggestion list
       this.Call('SOURCE_SELECT',{ nodeIDs: [suggestion.id] });
-    };
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Autosuggest calls this whenever the user has highlighted a different suggestion
     from the suggestion list.
 /*/ onSuggestionHighlighted ({ suggestion }) {
-      if (suggestion && suggestion.id)
-        this.Call('SOURCE_HILITE',{ nodeID: suggestion.id });
-    };
+      if (suggestion && suggestion.id) this.Call('SOURCE_HILITE',{ nodeID: suggestion.id });
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Autosuggest checks this before rendering suggestions
     Set the prop to turn off suggestions

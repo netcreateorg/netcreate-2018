@@ -225,7 +225,7 @@ const TARGET_COLOR     = '#FF0000';
           // Node not found, create a new node
           newState = {
             nodes                 : [],
-            edges                 : [],
+            edges                 : []
           };
         } else {
           // Load existing node and edges
@@ -238,7 +238,7 @@ const TARGET_COLOR     = '#FF0000';
           // create state change object
           newState = {
             nodes                 : [ node ],
-            edges                 : edges,
+            edges                 : edges
           };
         }
 
@@ -302,10 +302,8 @@ const TARGET_COLOR     = '#FF0000';
           D3DATA.nodes.push(newNode);
         }
         if (updatedNodes.length===1) {
-          // DATASTORE/server-database.json expects a 'node' key not 'newNode' with updates
-          let node=newNode
-          if (DBG) console.log('updating existing node',node);
-          DATASTORE.Update({ op:'update', node });
+          if (DBG) console.log('updating existing node',newNode);
+          DATASTORE.Update({ op:'update', node: newNode });
         }
         if (updatedNodes.length>1) {
           throw Error("SourceUpdate found duplicate IDs");
@@ -368,9 +366,7 @@ const TARGET_COLOR     = '#FF0000';
           newEdge.source = newEdge.source.id;
           newEdge.target = newEdge.target.id;
 
-          // DATASTORE/server-database.json expects 'edge' not 'newEdge' with updates
-          let edge=newEdge
-          DATASTORE.Update({ op:'update', edge });
+          DATASTORE.Update({ op:'update', edge:newEdge });
         }
         if (updatedEdges.length>1) {
           throw Error("EdgeUpdate found duplicate IDs");
@@ -397,7 +393,7 @@ const TARGET_COLOR     = '#FF0000';
         }
         UDATA.SetAppState('SELECTION',{
           nodes: selection.nodes,
-          edges: edges,
+          edges: edges
         });
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
@@ -410,7 +406,7 @@ const TARGET_COLOR     = '#FF0000';
     function m_HandleAutoCompleteSelect ( data ) {
       if (DBG) console.log('ACL: Setting activeAutoCompleteId to',data.id);
       UDATA.SetAppState('ACTIVEAUTOCOMPLETE',{
-        activeAutoCompleteId: data.id,
+        activeAutoCompleteId: data.id
       });
     }
 
