@@ -78,7 +78,7 @@ var   UDATA      = UNISYS.NewDataLink(MOD);
     main AutoComplete field.  It also provides a list of the nodes that match
     the search string so that AutoComplete and D3 can display them.  (D3
     doesn't actually process the SEARCH state change.  Instead it's processed
-    by autocomplete-logic in response to SOURCE_SEARCH calls -- autocomplete-logic
+    by nc-logic in response to SOURCE_SEARCH calls -- nc-logic
     will set the node's `selected` or `stroke-color` state if a node
     is currently selected or matches a search parameter, respectively.)
 
@@ -161,7 +161,7 @@ const TARGET_COLOR     = '#FF0000';
   /*/ Handle D3-related updates based on state changes. Subcomponents are
       responsible for updating themselves.
   /*/ UDATA.OnAppStateChange('SELECTION',( stateChange ) => {
-        if (DBG) console.log('autocomplete-logic: Got SELECTION', stateChange);
+        if (DBG) console.log('nc-logic: Got SELECTION', stateChange);
         let { nodes, edges } = stateChange;
         // NODE LIST UPDATE
         if (nodes!==undefined) {
@@ -176,7 +176,7 @@ const TARGET_COLOR     = '#FF0000';
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ Search field has been updated
   /*/ UDATA.OnAppStateChange('SEARCH',( stateChange ) => {
-        if (DBG) console.log('autocomplete-logic: Got SEARCH', stateChange);
+        if (DBG) console.log('nc-logic: Got SEARCH', stateChange);
         let { nodes, edges }         = stateChange;
         let { searchLabel }          = stateChange;
         let { activeAutoCompleteId } = stateChange;
@@ -386,7 +386,7 @@ const TARGET_COLOR     = '#FF0000';
         // Also update selection so edges in EdgeEditor will update
         let selection = UDATA.AppState('SELECTION');
         if ((selection.nodes===undefined) || (selection.nodes.length<1) || (selection.nodes[0].id===undefined)) {
-          throw Error('autocomplete-logic.EDGE_DELETE can\'t find source node!  This shoudln\'t happen!');
+          throw Error('nc-logic.EDGE_DELETE can\'t find source node!  This shoudln\'t happen!');
         }
         let nodeID = selection.nodes[0].id;
         let edges = [];
