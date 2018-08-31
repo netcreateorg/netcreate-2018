@@ -75,7 +75,7 @@
 
       1. When the user types in the Autosuggest input field,
       2. AutoComplete makes a UDATA SOURCE_SEARCH call
-      3. autocomplete-logic handles the call and returns a SELECTION state update
+      3. nc-logic handles the call and returns a SELECTION state update
       4. AutoComplete then sets the Autosuggest input field value via
          this.state.value.
       5. The updated SELECTION state also contains a list of
