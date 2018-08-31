@@ -21,7 +21,7 @@
     It does not do any data or event handling.  Those are handled individually
     by the respective Components.
 
-  * All state is maintained in `autocomplete-logic.js`
+  * All state is maintained in `nc-logic.js`
   * It handles events from NodeSelector, EdgeEntry, and NetGraph components
       and passes data and upates across them.
 
