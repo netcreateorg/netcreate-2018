@@ -546,11 +546,12 @@ class EdgeEditor extends UNISYS.Component {
                     onChange={this.onRelationshipChange}
                     disabled={!this.state.isEditable}
                     >
-                    <option>Source provided consulting for target</option>
-                    <option>Source is responsible for leading target project</option>
-                    <option>Source worked on target project or for target person</option>
-                    <option>Source project or person uses target tool</option>
-                    <option>Source person is part of target department or center</option>
+                    <option>has peaceful, familial or conversational interaction with</option>
+                    <option>has martial or adversarial interaction with</option>
+                    <option>sends written communication to</option>
+                    <option>is a group member of</option>
+                    <option>participates in</option>
+                    <option>makes visit to</option>
                   </Input>
                 </Col>
               </FormGroup>
