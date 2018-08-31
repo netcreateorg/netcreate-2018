@@ -115,7 +115,7 @@
         ],
         "max-depth": "error",
         "max-len": "off",
-        "max-lines": "warn",
+        "max-lines": "off",
         "max-nested-callbacks": "error",
         "max-params": "off",
         "max-statements": [2,50],
