@@ -34,6 +34,9 @@
 
 var DBG        = false;
 
+/* eslint-disable prefer-reflect */
+/* d3.call() is false-triggering the above rule */
+
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const d3       = require('d3')
@@ -52,9 +55,9 @@ let m_forceProperties = {   // values for all forces
       },
       charge: {
         enabled: true,
-        strength: -1500,//-1000, // -20,
-        distanceMin: 20, //50, // 1,
-        distanceMax: 1000//2000
+        strength: -1500,  //-1000, // -20,
+        distanceMin: 20,  //50, // 1,
+        distanceMax: 1000 //2000
       },
       collide: {
         enabled: true,
@@ -64,12 +67,12 @@ let m_forceProperties = {   // values for all forces
       },
       forceX: {
         enabled: true,
-        strength: 0.2, //.03,
+        strength: 0.2,    // 0.03,
         x: 0.5
       },
       forceY: {
         enabled: true,
-        strength: 0.2, //.03,
+        strength: 0.2,    // 0.03,
         y: 0.5
       },
       link: {
@@ -113,7 +116,8 @@ class D3NetGraph {
         .on("click", ( e, event ) => {
             // Deselect
             UDATA.Call('SOURCE_SELECT',{ nodeLabels: [] });
-        })
+            }
+        )
         .call(d3.zoom().on("zoom", function () {
           d3.select('.zoomer').attr("transform", d3.event.transform);
         }));
@@ -235,11 +239,12 @@ class D3NetGraph {
         .append("circle")
           // "r" has to be set here or circles don't draw.
           .attr("r", (d) => {
-              let count = 1
-              this.data.edges.map( (l) =>{ return ( (l.source === d.id) || (l.target === d.id) ) ? count++ : 0 } )
-              d.weight = count
-              d.size = count // save the calculated size
-              return this.defaultSize + (this.defaultSize * (d.weight/2))
+              let radius = this.data.edges.reduce((acc,ed)=>{
+                return (ed.source===d.id || ed.target===d.id) ? acc+1 : acc;
+              },1);
+              d.weight = radius
+              d.size   = radius // save the calculated size
+              return this.defaultSize + (this.defaultSize * d.weight / 2)
           })
   //        .attr("r", (d) => { return this.defaultSize }) // d.size ?  d.size/10 : this.defaultSize; })
           .attr("fill", (d) => { return d.color ? d.color : this.defaultColor; });
@@ -301,17 +306,20 @@ class D3NetGraph {
           .attr("stroke",       (d) => {
             if (d.selected)    return d.selected;
             if (d.strokeColor) return d.strokeColor;
+            return undefined; // don't set stroke color
           })
           .attr("stroke-width", (d) => {
             if (d.selected || d.strokeColor) return '5px';
+            return undefined // don't set stroke width
           })
 // this "r" is necessary to resize aftger a link is added
           .attr("r", (d) => {
-              let count = 1
-              this.data.edges.map( (l) =>{ return ( (l.source === d.id) || (l.target === d.id) ) ? count++ : 0 } )
-              d.weight = count
-              d.size = count // save the calculated size
-              return this.defaultSize + this.defaultSize * d.weight/2
+              let radius = this.data.edges.reduce((acc,ed)=>{
+                return (ed.source.id===d.id || ed.target.id===d.id) ? acc+1 : acc
+              },1);
+              d.weight = radius
+              d.size = radius // save the calculated size
+              return this.defaultSize + (this.defaultSize * d.weight / 2)
           });
 
       // UPDATE text in each node for all nodes
@@ -320,8 +328,14 @@ class D3NetGraph {
       // a block
       nodeElements.merge(nodeElements)
         .selectAll("text")
-          .attr("color",        (d) => { if (d.selected) return d.selected; })
-          .attr("font-weight",  (d) => { if (d.selected) return 'bold'; })
+          .attr("color", (d) => {
+            if (d.selected) return d.selected;
+            return undefined; // don't set color
+          })
+          .attr("font-weight", (d) => {
+            if (d.selected) return 'bold';
+            return undefined; // don't set font weight
+          })
           .text((d) => { return d.label });  // in case text is updated
 
       // TELL D3 what to do when a data node goes away
@@ -333,8 +347,9 @@ class D3NetGraph {
         .insert("line",".node")
           .classed('edge', true)
         .on("click",   (d) => {
-            if (DBG) console.log('clicked on',d.label,d.id)
-            this.edgeClickFn( d ) })
+          if (DBG) console.log('clicked on',d.label,d.id)
+          this.edgeClickFn( d )
+        })
 
       linkElements.merge(linkElements)
         .classed("selected",  (d) => { return d.selected })

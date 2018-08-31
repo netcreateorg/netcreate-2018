@@ -26,7 +26,7 @@
                             the graph based on the updated data.
 
     Add New Node/Edge       When the user adds a new edge or node, handlers in
-                            AutoCompleteDemo will update its `this.state.data`
+                            NetCreate will update its `this.state.data`
                             with the new nodes/edges.  This is passed on to
                             `NetGraph.jsx` and in turn to `D3SimpleNetGraph.js`
                             which will display the new data during its update
@@ -141,7 +141,7 @@ const TARGET_COLOR     = '#FF0000';
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ LOADASSETS fires during <AutoCompleteDemo>.componentDidMount
+/*/ LOADASSETS fires during <NetCreate>.componentDidMount
 /*/ MOD.Hook('LOADASSETS',()=>{
       // load data into D3DATA
       DATASTORE.LoadDataPromise()
@@ -151,6 +151,7 @@ const TARGET_COLOR     = '#FF0000';
         UDATA.SetAppState('D3DATA',D3DATA);
       });
     }); // end INITIALIZE HOOK
+
 
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -224,8 +225,8 @@ const TARGET_COLOR     = '#FF0000';
         if (node===undefined) {
           // Node not found, create a new node
           newState = {
-            nodes                 : [],
-            edges                 : []
+            nodes : [],
+            edges : []
           };
         } else {
           // Load existing node and edges
@@ -237,8 +238,8 @@ const TARGET_COLOR     = '#FF0000';
           }
           // create state change object
           newState = {
-            nodes                 : [ node ],
-            edges                 : edges
+            nodes : [ node ],
+            edges : edges
           };
         }
 
@@ -302,8 +303,9 @@ const TARGET_COLOR     = '#FF0000';
           D3DATA.nodes.push(newNode);
         }
         if (updatedNodes.length===1) {
+          // DATASTORE/server-database.json expects a 'node' key not 'newNode' with updates
           if (DBG) console.log('updating existing node',newNode);
-          DATASTORE.Update({ op:'update', node: newNode });
+          DATASTORE.Update({ op:'update', node:newNode });
         }
         if (updatedNodes.length>1) {
           throw Error("SourceUpdate found duplicate IDs");
@@ -366,6 +368,7 @@ const TARGET_COLOR     = '#FF0000';
           newEdge.source = newEdge.source.id;
           newEdge.target = newEdge.target.id;
 
+          // DATASTORE/server-database.json expects 'edge' not 'newEdge' with updates
           DATASTORE.Update({ op:'update', edge:newEdge });
         }
         if (updatedEdges.length>1) {

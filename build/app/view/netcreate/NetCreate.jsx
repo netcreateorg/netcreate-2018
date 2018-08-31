@@ -1,10 +1,10 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    AUTO COMPLETE DEMO
+    NetCreate
 
     The basic React Component structure of the app looks like this:
 
-        AutoCompleteDemo
+        NetCreate
         +- NodeSelector
         |  +- NodeDetail
         |  +- AutoComplete
@@ -15,7 +15,7 @@
            +- D3SimpleNetGraph
               +- D3
 
-    `AutoCompleteDemo` is the root element. It is a wrapper for the key app
+    `NetCreate` is the root element. It is a wrapper for the key app
     elements `NodeSelector` and `NetGraph`.
 
     It does not do any data or event handling.  Those are handled individually
@@ -48,13 +48,13 @@ const NodeSelector = require('./components/NodeSelector');
 const Help         = require('./components/Help');
 const NodeTable    = require('./components/NodeTable');
 const EdgeTable    = require('./components/EdgeTable');
-const ACD_LOGIC    = require('./autocomplete-logic');
+const ACD_LOGIC    = require('./nc-logic');
 
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
-/*/ class AutoCompleteDemo extends UNISYS.Component {
+/*/ class NetCreate extends UNISYS.Component {
       constructor () {
         super();
         UNISYS.ForceReloadOnNavigation();
@@ -104,13 +104,13 @@ const ACD_LOGIC    = require('./autocomplete-logic');
           </div>
         ); // end return
       } // end render()
-    } // end class AutoCompleteDemo
+    } // end class NetCreate
 
 /// EXPORT UNISYS SIGNATURE ///////////////////////////////////////////////////
 /// used in init.jsx to set module scope early
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-AutoCompleteDemo.UMOD = module.id;
+NetCreate.UMOD = module.id;
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = AutoCompleteDemo
+module.exports = NetCreate

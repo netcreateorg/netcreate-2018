@@ -45,7 +45,7 @@
 \*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
     const SETTINGS          = require('settings');
     const AppDefault        = require('view/AppDefault');
-    const AutoCompleteDemo  = require('view/autocompletedemo/AutoCompleteDemo');
+    const NetCreate         = require('view/netcreate/NetCreate');
     const DevUnisys         = require('view/dev-unisys/DevUnisys');
     const DevDB             = require('view/dev-db/DevDB');
     const DevReact          = require('view/dev-react/DevReact');
@@ -56,7 +56,7 @@
       {
         path: '/',
         exact: true,
-        component: AutoCompleteDemo
+        component: NetCreate
       },
       {
         path: '/dev-unisys',
