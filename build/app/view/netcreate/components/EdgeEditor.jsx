@@ -182,15 +182,16 @@ class EdgeEditor extends UNISYS.Component {
       /// Initialize UNISYS DATA LINK for REACT
       UDATA = UNISYS.NewDataLink(this);
 
-      this.onButtonClick        = this.onButtonClick.bind(this);
-      this.onDeleteButtonClick  = this.onDeleteButtonClick.bind(this);
-      this.onEditButtonClick    = this.onEditButtonClick.bind(this);
-      this.onRelationshipChange = this.onRelationshipChange.bind(this);
-      this.onNotesChange        = this.onNotesChange.bind(this);
-      this.onInfoChange         = this.onInfoChange.bind(this);
-      this.onCitationChange     = this.onCitationChange.bind(this);
-      this.onSubmit             = this.onSubmit.bind(this);
+      this.onButtonClick          = this.onButtonClick.bind(this);
+      this.onDeleteButtonClick    = this.onDeleteButtonClick.bind(this);
+      this.onEditButtonClick      = this.onEditButtonClick.bind(this);
       this.onSwapSourceAndTarget  = this.onSwapSourceAndTarget.bind(this);
+      this.onChangeTarget         = this.onChangeTarget.bind(this);
+      this.onRelationshipChange   = this.onRelationshipChange.bind(this);
+      this.onNotesChange          = this.onNotesChange.bind(this);
+      this.onInfoChange           = this.onInfoChange.bind(this);
+      this.onCitationChange       = this.onCitationChange.bind(this);
+      this.onSubmit               = this.onSubmit.bind(this);
 
       // Always make sure class methods are bind()'d before using them
       // as a handler, otherwise object context is lost
@@ -483,6 +484,17 @@ class EdgeEditor extends UNISYS.Component {
         targetNode: target
       });
     }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ onChangeTarget () {
+      this.setState({
+        targetIsEditable: true,
+        hasValidTarget: false
+      });
+      this.Call('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'target'});
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
 /*/ onRelationshipChange (event) {
       let formData = this.state.formData;
       formData.relationship = event.target.value;
@@ -614,6 +626,11 @@ class EdgeEditor extends UNISYS.Component {
                     inactiveMode={parentNodeLabel===targetNode.label ? 'static' : 'disabled'}
                     shouldIgnoreSelection={!this.state.targetIsEditable}
                   />
+                  <Button outline size="sm" className="float-right"
+                    hidden={!(this.state.isEditable && this.state.hasValidTarget)}
+                    onClick={this.onChangeTarget}
+                    title="Select a different target node"
+                  >Change Target</Button>
                   <Button outline size="sm" className="float-right" style={{marginRight:'5px'}}
                     hidden={!(this.state.isEditable && this.state.hasValidTarget)}
                     onClick={this.onSwapSourceAndTarget}
