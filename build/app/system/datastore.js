@@ -18,30 +18,30 @@ const PR          = PROMPTS.Pad('Datastore');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let MOD           = UNISYS.NewModule(module.id);
-let UDATA         = UNISYS.NewDataLink(MOD);
+let DSTOR        = UNISYS.NewModule(module.id);
+let UDATA         = UNISYS.NewDataLink(DSTOR);
 let D3DATA        = {};
 
 /// LIFECYCLE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ establish message handlers during INITIALIZE phase
-/*/ MOD.Hook('INITIALIZE',()=>{
+/*/ DSTOR.Hook('INITIALIZE',()=>{
       UDATA.HandleMessage('EDGE_DELETE',( data ) => {
         let { edgeID } = data;
         console.log(PR,'EDGE_DELETE edgeID',edgeID);
-        MOD.Update({ op:'delete', edgeID });
+        DSTOR.Update({ op:'delete', edgeID });
       });
     });
 
 /// DB INTERFACE //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Placeholder DATA access function
-/*/ MOD.Data = function () {
+/*/ DSTOR.Data = function () {
       return D3DATA;
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Write update to database
-/*/ MOD.Update = function( data ) {
+/*/ DSTOR.Update = function( data ) {
       UDATA.Call('SRV_DBUPDATE',data)
       .then((res)=>{
         if (res.OK) {
@@ -51,12 +51,43 @@ let D3DATA        = {};
         }
       });
     };
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: Write update to database
+/*/ DSTOR.UpdateOrCreateNode = function ( node ) {
+      let attribs = {
+        'Node_Type'  : node.type,
+        'Extra Info' : node.info,
+        'Notes'      : node.notes
+      };
+      let newNode = {
+        label        : node.label,
+        attributes   : attribs,
+        id           : node.id
+      };
+      // set matching nodes
+      let updatedNodes = DSTOR.SetMatchingNodesByProp({id:node.id},newNode);
+      if (DBG) console.log('HandleSourceUpdate: updated',updatedNodes);
+      // if no nodes had matched, then add a new node!
+      if (updatedNodes.length===0) {
+        if (DBG) console.log('pushing node',newNode);
+        DSTOR.Update({ op:'insert', newNode });
+        D3DATA.nodes.push(newNode);
+      }
+      if (updatedNodes.length===1) {
+        // DATASTORE/server-database.json expects a 'node' key not 'newNode' with updates
+        if (DBG) console.log('updating existing node',newNode);
+        DSTOR.Update({ op:'update', node:newNode });
+      }
+      if (updatedNodes.length>1) {
+        throw Error("SourceUpdate found duplicate IDs");
+      }
+      UDATA.SetAppState('D3DATA',D3DATA);
+  };
 
 /// DATABASE LOADER ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Load default data set from a JSON file in /assets/data
-/*/ MOD.LoadDataFilePromise = function ( jsonFile ) {
+/*/ DSTOR.PromiseJSONFile = function ( jsonFile ) {
       if (typeof jsonFile!=='string') throw new Error('pass arg <filename_in_assets/data>');
       if (DBG.load) console.log(PR,`loading app/assets/data/${jsonFile} via Promise...`);
       let promise = new Promise((resolve,reject)=>{
@@ -77,14 +108,14 @@ let D3DATA        = {};
       return promise;
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: (WIP) load database
-/*/ MOD.LoadDataPromise = function () {
+/*/ API: Load D3 Database
+/*/ DSTOR.PromiseD3Data = function () {
       // UDATA.Call() returns a promise
       return UDATA.Call('SRV_DBGET',{});
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: (WIP) write database from d3data-formatted object
-/*/ MOD.OverwriteDataPromise = function ( d3data ) {
+/*/ DSTOR.OverwriteDataPromise = function ( d3data ) {
       return new Promise((resolve,reject)=>{
         UDATA.Call('SRV_DBSET',d3data)
         .then((res)=>{
@@ -98,6 +129,8 @@ let D3DATA        = {};
       });
     };
 
+
+
 /// EXPORT MODULE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = MOD;
+module.exports = DSTOR;

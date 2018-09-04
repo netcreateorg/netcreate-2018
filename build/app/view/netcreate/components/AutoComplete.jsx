@@ -241,6 +241,8 @@ class AutoComplete extends UNISYS.Component {
             nodes[0].label!==undefined) {
           let searchLabel = nodes[0].label;
           if (DBG) console.log('...AutoComplete',this.props.identifier,': ACTIVE got SELECTION, searchLabel',searchLabel);
+          // FIX: This line causes the "Can't call setState (or forceUpdate) on an unmounted component" error
+          // is it because it's not actually visible (unmounted)?
           this.setState({value: searchLabel});
         }
       }

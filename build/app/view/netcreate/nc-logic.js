@@ -144,7 +144,7 @@ const TARGET_COLOR     = '#FF0000';
 /*/ LOADASSETS fires during <NetCreate>.componentDidMount
 /*/ MOD.Hook('LOADASSETS',()=>{
       // load data into D3DATA
-      DATASTORE.LoadDataPromise()
+      DATASTORE.PromiseD3Data()
       .then((data)=>{
         if (DBG) console.log(PR,'DATASTORE returned data',data);
         D3DATA = data;
@@ -242,6 +242,7 @@ const TARGET_COLOR     = '#FF0000';
             edges : edges
           };
         }
+        // TODO: CONVERT this to use a DATASTORE method
 
         // Set the SELECTION state so that listeners such as NodeSelectors update themselves
         UDATA.SetAppState('SELECTION',newState);
@@ -634,57 +635,6 @@ const TARGET_COLOR     = '#FF0000';
       m_SetMatchingNodesByLabel(searchString, matched, notmatched);
       UDATA.SetAppState('D3DATA',D3DATA);
     }
-
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// TODO: THESE STILL NEED TO BE CONVERTED
-///
-/// These are methods for marking edges and nodes with multiple colors.
-/// Multiple color marking is not currently implemented.
-//
-//   /// Only select nodes that have not already been selected
-//   getSelectedNodeColor ( node, color ) {
-//     if (node.selected===undefined || node.selected===DESELECTED_COLOR) {
-//       return color
-//     } else {
-//       return node.selected    // default to existing color
-//     }
-//   }
-//   /// Only deselect nodes that were selected by this instance, ignore selections
-//   /// from other NodeSelectors
-//   /*STYLE*/// this is called from deselectAllNodes without specifying 'color'. what is intent?
-//   /*STYLE*/// what is an 'NodeSelector instance'? a set of matching nodes? premature optimization?
-//   getDeselectedNodeColor ( node, color ) {
-//     if (node.selected!==color ) { // this.props.selectedColor) {
-//       return node.selected /*STYLE*/// node.selected is a color AND a truthy value???
-//     } else {
-//       return DESELECTED_COLOR
-//     }
-//   }
-//   ///
-//   /// EDGES
-//   ///
-//   markSelectedEdgeById( id ) {
-// // REMOVE because marking is now handled by acl?
-//     // let updatedData = this.state.data
-//     // updatedData.edges = this.state.data.edges.map( edge => {
-//     //   edge.selected = (edge.id===id)  /*STYLE*/// edge.selected doesn't mirror node.selected in value type (node.selected is a color)
-//     //   return edge
-//     // })
-//     // this.setState( { data: updatedData })
-//   }
-
-/// DEBUG CONSOLE /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    window.FindMatchingNodesByProp  = m_FindMatchingNodeByProp;
-    window.FindMatchingNodesByLabel = m_FindMatchingNodesByLabel;
-    window.SetMatchingNodesByLabel  = m_SetMatchingNodesByLabel;
-    window.SetMatchingNodesByProp   = m_SetMatchingNodesByProp;
-    window.SetAllObjs               = m_SetAllObjs;
-    window.UpdateD3Data             = function () {
-      UDATA.SetAppState('D3DATA',D3DATA);
-      return "SetState 'D3DATA'";
-    };
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
