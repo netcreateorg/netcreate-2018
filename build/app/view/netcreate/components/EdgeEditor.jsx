@@ -190,6 +190,7 @@ class EdgeEditor extends UNISYS.Component {
       this.onInfoChange         = this.onInfoChange.bind(this);
       this.onCitationChange     = this.onCitationChange.bind(this);
       this.onSubmit             = this.onSubmit.bind(this);
+      this.onSwapSourceAndTarget  = this.onSwapSourceAndTarget.bind(this);
 
       // Always make sure class methods are bind()'d before using them
       // as a handler, otherwise object context is lost
@@ -235,7 +236,8 @@ class EdgeEditor extends UNISYS.Component {
             id:        ''
         },
         isEditable:           false,
-        isExpanded:           false      // Summary view vs Expanded view
+        isExpanded:           false,      // Summary view vs Expanded view
+        hasValidTarget:       false       // Used by SwapSourceAndTarget
       });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -296,6 +298,11 @@ class EdgeEditor extends UNISYS.Component {
         sourceNodes = D3DATA.nodes.filter( node => node.id===edge.source.id );
         targetNodes = D3DATA.nodes.filter( node => node.id===edge.target.id );
 
+        // Assume we have a valid target node
+        this.setState({
+          hasValidTarget:       true
+        });
+
       }
 
       if (!sourceNodes) {
@@ -354,6 +361,15 @@ class EdgeEditor extends UNISYS.Component {
         this.setState({
           formData: formData
         });
+        // And let the switch button know we have a valid target
+        // And exit edit mode
+        this.setState({
+          hasValidTarget: true,
+          targetIsEditable: false
+        });
+        // pass currentAutoComplete back to search
+        this.Call('AUTOCOMPLETE_SELECT',{id:'search'});
+        this.setState({ isExpanded: true });
       } else {
         // No node selected, so we don't need to do anything
         // AutoComplete will take care of its own search label updates
@@ -435,6 +451,38 @@ class EdgeEditor extends UNISYS.Component {
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
+/*/ onSwapSourceAndTarget () {
+      let formData = this.state.formData;
+      console.log('source is',formData.sourceId.label);
+
+      // swap formadata
+      let targetId = formData.targetId;
+      formData.targetId = formData.sourceId;
+      formData.sourceId = targetId;
+
+      // swap this.state.source and target
+      let swap   = this.state.sourceNode;
+      let source = this.state.targetNode;
+      let target = swap;
+
+      // REVIEW
+      // Get rid of separate this.state.source and this.state.target
+      // and just use formData?!?
+      console.log('asftert swap source is',formData.sourceId.label);
+
+      // If the user was editing this field when they hit swap,
+      // we need to exit out of editing, and THEN do the swap.
+      // The problem is we have to assume the target node is valid first?
+      // So if you're in the middle of selecting, you might end up with a
+      // an invalid node?
+      // The alternative is to only show the swap button once a valid
+      // target node has been selected?
+      this.setState({
+        formData: formData,
+        sourceNode: source,
+        targetNode: target
+      });
+    }
 /*/ onRelationshipChange (event) {
       let formData = this.state.formData;
       formData.relationship = event.target.value;
@@ -566,6 +614,11 @@ class EdgeEditor extends UNISYS.Component {
                     inactiveMode={parentNodeLabel===targetNode.label ? 'static' : 'disabled'}
                     shouldIgnoreSelection={!this.state.targetIsEditable}
                   />
+                  <Button outline size="sm" className="float-right" style={{marginRight:'5px'}}
+                    hidden={!(this.state.isEditable && this.state.hasValidTarget)}
+                    onClick={this.onSwapSourceAndTarget}
+                    title="Swap 'Source' and 'Target' nodes"
+                  >&uarr;&darr;</Button>
                 </Col>
               </FormGroup>
               <FormGroup row>
@@ -618,9 +671,7 @@ class EdgeEditor extends UNISYS.Component {
                 >{this.state.isEditable?'Cancel':'Close'}</Button>&nbsp;
                 <Button color="primary" size="sm"
                   hidden={!this.state.isEditable}
-                  disabled={(!this.state.isEditable) &&
-                            ( !this.state.formData.source ||
-                              !this.state.formData.target )}
+                  disabled={ !(this.state.isEditable && this.state.hasValidTarget) }
                 >Save</Button>
               </FormGroup>
             </Form>
