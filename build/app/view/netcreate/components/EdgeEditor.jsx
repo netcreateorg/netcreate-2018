@@ -174,9 +174,12 @@ class EdgeEditor extends UNISYS.Component {
             notes:     '',
             id:        ''
         },
-        isEditable:      false,     // Form is in an edtiable state
-        targetIsEditable:false,     // Target ndoe field is only editable when creating a new edge
-        isExpanded:      false      // Show EdgeEditor Component in Summary view vs Expanded view
+        isEditable:      false,      // Form is in an edtiable state
+        isExpanded:      false,      // Show EdgeEditor Component in Summary view vs Expanded view
+        sourceIsEditable:false,      // Source ndoe field is only editable when source is not parent
+        hasValidSource:  false,      // Used by SwapSourceAndTarget and the Change Source button
+        targetIsEditable:false,      // Target ndoe field is only editable when target is not parent
+        hasValidTarget:  false       // Used by SwapSourceAndTarget and the Change Target button
       };
 
       /// Initialize UNISYS DATA LINK for REACT
@@ -186,6 +189,7 @@ class EdgeEditor extends UNISYS.Component {
       this.onDeleteButtonClick    = this.onDeleteButtonClick.bind(this);
       this.onEditButtonClick      = this.onEditButtonClick.bind(this);
       this.onSwapSourceAndTarget  = this.onSwapSourceAndTarget.bind(this);
+      this.onChangeSource         = this.onChangeSource.bind(this);
       this.onChangeTarget         = this.onChangeTarget.bind(this);
       this.onRelationshipChange   = this.onRelationshipChange.bind(this);
       this.onNotesChange          = this.onNotesChange.bind(this);
@@ -238,7 +242,10 @@ class EdgeEditor extends UNISYS.Component {
         },
         isEditable:           false,
         isExpanded:           false,      // Summary view vs Expanded view
-        hasValidTarget:       false       // Used by SwapSourceAndTarget
+        sourceIsEditable:     false,      // Source ndoe field is only editable when source is not parent
+        hasValidSource:       false,      // Used by SwapSourceAndTarget and the Change Source button
+        targetIsEditable:     false,      // Target ndoe field is only editable when target is not parent
+        hasValidTarget:       false       // Used by SwapSourceAndTarget and the Change Target button
       });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -301,6 +308,7 @@ class EdgeEditor extends UNISYS.Component {
 
         // Assume we have a valid target node
         this.setState({
+          hasValidSource:       true,
           hasValidTarget:       true
         });
 
@@ -343,31 +351,62 @@ class EdgeEditor extends UNISYS.Component {
     know the target node has been selected.
 /*/ handleSelection ( data ) {
       if (DBG) console.log('EdgeEditor',this.props.edgeID,'got SELECTION data',data);
+
       // If edge is not being edited, ignore the selection
-      if (!this.state.isEditable || !this.state.targetIsEditable) return;
+      if (!this.state.isEditable &&
+          !(this.state.sourceIsEditable || this.state.targetIsEditable) ) return;
 
       // Technically we probably ought to also check to make sure we're the current
       // activeAutoCompleteId, but we wouldn't be edtiable if we weren't.
       if (data.nodes && data.nodes.length>0) {
         // A node was selected, so load it
-        // grab the first node
-        let node = data.nodes[0];
-        if (DBG) console.log('EdgeEditor',this.props.edgeID,'setting target node to',node);
-        this.setState({
-          targetNode: node
-        });
-        // Also update the formdata
-        let formData = this.state.formData;
-        formData.targetId = node.id;
-        this.setState({
-          formData: formData
-        });
-        // And let the switch button know we have a valid target
-        // And exit edit mode
-        this.setState({
-          hasValidTarget: true,
-          targetIsEditable: false
-        });
+
+          let node = data.nodes[0];
+
+        // Are we editing the source or the target?
+        if (this.state.sourceIsEditable) {
+          // SOURCE
+          if (DBG) console.log('EdgeEditor.handleSelection:',this.props.edgeID,'setting source node to',node);
+
+          // Set sourceNpde state
+          this.setState({
+            sourceNode: node
+          });
+          // Also update the formdata
+          let formData = this.state.formData;
+          formData.sourceId = node.id;
+          this.setState({
+            formData: formData
+          });
+          // And let the switch button know we have a valid target
+          // And exit edit mode
+          this.setState({
+            hasValidSource:   true,
+            sourceIsEditable: false
+          });
+
+        } else {
+          // TARGET
+          if (DBG) console.log('EdgeEditor.handleSelection:',this.props.edgeID,'setting target node to',node);
+
+          // Set targetNpde state
+          this.setState({
+            targetNode: node
+          });
+          // Also update the formdata
+          let formData = this.state.formData;
+          formData.targetId = node.id;
+          this.setState({
+            formData: formData
+          });
+          // And let the switch button know we have a valid target
+          // And exit edit mode
+          this.setState({
+            hasValidTarget:   true,
+            targetIsEditable: false
+          });
+
+        }
         // pass currentAutoComplete back to search
         this.Call('AUTOCOMPLETE_SELECT',{id:'search'});
         this.setState({ isExpanded: true });
@@ -486,12 +525,25 @@ class EdgeEditor extends UNISYS.Component {
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
+/*/ onChangeSource () {
+      this.setState({
+        sourceIsEditable: true,
+        hasValidSource: false
+      });
+      this.AppCall('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'source'});
+      // Whenever we set the autocomplete to source, we have to update the label
+      this.AppCall('SOURCE_SEARCH', { searchString: this.state.sourceNode.label });
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
 /*/ onChangeTarget () {
       this.setState({
         targetIsEditable: true,
         hasValidTarget: false
       });
-      this.Call('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'target'});
+      this.AppCall('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'target'});
+      // Whenever we set the autocomplete to target, we have to update the label
+      this.AppCall('SOURCE_SEARCH', { searchString: this.state.targetNode.label });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -592,8 +644,16 @@ class EdgeEditor extends UNISYS.Component {
                   <AutoComplete
                     identifier={'edge'+edgeID+'source'}
                     disabledValue={sourceNode.label}
-                    inactiveMode={'static'}
+                    inactiveMode={parentNodeLabel===sourceNode.label ? 'static' : 'disabled'}
+                    shouldIgnoreSelection={!this.state.sourceIsEditable}
                   />
+                  <Button outline size="sm" className="float-right"
+                    hidden={ !(this.state.isEditable &&
+                               this.state.hasValidSource &&
+                               (sourceNode.label!==this.props.parentNodeLabel)) }
+                    onClick={this.onChangeSource}
+                    title="Select a different source node"
+                  >Change Source</Button>
                 </Col>
               </FormGroup>
               <FormGroup row>
