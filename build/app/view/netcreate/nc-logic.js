@@ -644,22 +644,25 @@ const TARGET_COLOR     = '#FF0000';
 /*/ Command: RESET THE DATABASE from default data
 /*/ CMD.push(function ncPushDatabase( jsonFile ) {
       jsonFile = jsonFile || 'data.reducedlinks.json';
-      DATASTORE.PromiseJSONFile(jsonFile)
-      .then((data)=>{
-        // data is { nodes, edges }
-        console.log(PR,`Sending data from ${jsonFile} to Server`,data);
-        // UDATA.Call() returns a promise, so return it to
-        // continue the asynchronous chain
-        return UDATA.Call('SRV_DBSET', data);
-      })
-      .then((d)=>{
-        if (d.OK) {
-          console.log(`${PR} %cServer Database has been overwritten with ${jsonFile}`,'color:blue');
-          console.log(`${PR} Reload apps to see new data`);
-        } else {
-          console.error(PR,'Server Error',d);
-        }
-      });
+        DATASTORE.PromiseJSONFile(jsonFile)
+        .then((data)=>{
+          // data is { nodes, edges }
+          console.log(PR,`Sending data from ${jsonFile} to Server`,data);
+          // UDATA.Call() returns a promise, so return it to
+          // continue the asynchronous chain
+          return UDATA.Call('SRV_DBSET', data);
+        })
+        .then((d)=>{
+          if (d.OK) {
+            window.alert(`assets/data/${jsonFile} was pushed to Server.\nPress OK to refresh this page and MANUALLY REFRESH other clients.\n\n(note: if data hasn't changed, try command again)`);
+            console.log(`${PR} %cServer Database has been overwritten with ${jsonFile}`,'color:blue');
+            console.log(`${PR} Reload apps to see new data`);
+            setTimeout(UNISYS.ForceReloadOnNavigation,1000);
+          } else {
+            console.error(PR,'Server Error',d);
+            window.alert(`Error ${JSON.stringify(d)}`);
+          }
+        });
       // return syntax help
       return "FYI: ncPushDatabase(jsonFile) can load file in assets/data";
     });
@@ -667,9 +670,6 @@ const TARGET_COLOR     = '#FF0000';
 /*/ Command: EMPTY THE DATABASE from default data
 /*/ CMD.push(function ncEmptyDatabase() {
       window.ncPushDatabase('nada.json');
-      setTimeout(function() {
-        UNISYS.ForceReloadOnNavigation();
-        },3000);
       return "FYI: pushing empty database from assets/data/nada.json...reloading";
     });
 
