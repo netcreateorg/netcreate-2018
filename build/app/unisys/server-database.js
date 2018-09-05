@@ -16,7 +16,8 @@ const FS                = require('fs-extra');
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const PROMPTS           = require('../system/util/prompts');
 const PR                = PROMPTS.Pad('SRV-DB');
-const DB_FILE           = './runtime/netcreate.json';
+const DB_FILE           = './runtime/netcreate.loki';
+const DB_CLONEMASTER    = 'alexander.loki';
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -36,8 +37,8 @@ let DB = {};
       console.log(PR,`InitializeDatabase`);
       FS.ensureDir(PATH.dirname(DB_FILE));
       if (!FS.existsSync(DB_FILE)) {
-        console.log(PR,`No ${DB_FILE} yet, so filling from sample.data.json...`);
-        FS.copySync('./runtime/sample.data.json',DB_FILE);
+        console.log(PR,`No ${DB_FILE} yet, so filling from ${DB_CLONEMASTER}...`);
+        FS.copySync(`./runtime/${DB_CLONEMASTER}`,DB_FILE);
         console.log(PR,`...success!`);
       }
       let ropt = {
