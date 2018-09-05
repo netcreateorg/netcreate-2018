@@ -115,14 +115,14 @@ let DB = {};
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     DB.PKT_GetNewNodeID = function ( pkt ) {
-      console.log(PR,`PKT_GetNewNodeID`,JSON.stringify(pkt.Data()));
       m_max_nodeID += 1;
+      console.log(PR,`PKT_GetNewNodeID allocating nodeID ${m_max_nodeID} to ${pkt.SourceAddress()}`);
       return { nodeID : m_max_nodeID };
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     DB.PKT_GetNewEdgeID = function ( pkt ) {
-      console.log(PR,`PKT_GetNewEdgeID`,JSON.stringify(pkt.Data()));
       m_max_edgeID += 1;
+      console.log(PR,`PKT_GetNewEdgeID allocating edgeID ${m_max_edgeID} to ${pkt.SourceAddress()}`);
       return { edgeID : m_max_edgeID };
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

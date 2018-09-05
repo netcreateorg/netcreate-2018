@@ -164,7 +164,7 @@ class NodeTable extends UNISYS.Component {
 /*/
 /*/ selectNode (id) {
       // Load Source
-      UDATA.Call('SOURCE_SELECT',{ nodeIDs: [id] });
+      UDATA.LocalCall('SOURCE_SELECT',{ nodeIDs: [id] });
     }
 
 

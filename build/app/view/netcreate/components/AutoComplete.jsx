@@ -270,7 +270,7 @@ class AutoComplete extends UNISYS.Component {
       // which will in turn pass the searchLabel back to the SEARCH
       // state handler in the constructor, which will in turn set the state
       // of the input value to be passed on to AutoSuggest
-      this.Call('SOURCE_SEARCH', { searchString: newValue });
+      this.AppCall('SOURCE_SEARCH', { searchString: newValue });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle Autosuggest's request to set the value of the input field when
@@ -316,13 +316,13 @@ class AutoComplete extends UNISYS.Component {
     Autocomplete-logic should handle the creation of a new data object.
 /*/ onSuggestionSelected (event, { suggestion }) {
       // User selected an existing node in the suggestion list
-      this.Call('SOURCE_SELECT',{ nodeIDs: [suggestion.id] });
+      this.AppCall('SOURCE_SELECT',{ nodeIDs: [suggestion.id] });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Autosuggest calls this whenever the user has highlighted a different suggestion
     from the suggestion list.
 /*/ onSuggestionHighlighted ({ suggestion }) {
-      if (suggestion && suggestion.id) this.Call('SOURCE_HILITE',{ nodeID: suggestion.id });
+      if (suggestion && suggestion.id) this.AppCall('SOURCE_HILITE',{ nodeID: suggestion.id });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Autosuggest checks this before rendering suggestions

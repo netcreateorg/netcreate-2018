@@ -58,6 +58,7 @@ let D3DATA        = {};
         UDATA.NetCall('SRV_DBGETNODEID')
         .then(( data )=>{
           if (data.nodeID) {
+            if (DBG) console.log(PR,'server allocated node_id',data.nodeID);
             resolve(data.nodeID);
           } else {
             reject(new Error('unknown error'+JSON.stringify(data)));
@@ -71,8 +72,12 @@ let D3DATA        = {};
       return new Promise((resolve,reject)=>{
         UDATA.NetCall('SRV_DBGETEDGEID')
         .then(( data )=>{
-          if (data.edgeID) resolve(data.edgeID);
-          else reject(new Error('unknown error'+JSON.stringify(data)));
+          if (data.edgeID) {
+            if (DBG) console.log(PR,'server allocated edge_id:',data.edgeID);
+            resolve(data.edgeID);
+          } else {
+            reject(new Error('unknown error'+JSON.stringify(data)));
+          }
         })
       });
     };
