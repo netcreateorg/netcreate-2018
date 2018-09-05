@@ -55,6 +55,7 @@
 
     ## TESTING
 
+
     Displaying Current Edge(s)
         0. When the app starts, no edges should be displayed in the Node Selector.
         1. Click on "Board of Health"
@@ -127,6 +128,46 @@
               * The EdgeEditor for the deleted edge shoudl close.
               * The source node should remain selected.
               * The non-deleted edges should still be listed.
+
+    Swap
+        1. Select an edge where the node is the source (the edge should read "this -> OtherNode".
+        2. Click "Edit Edge"
+              * You should see a swap button with up/down arrows and a "Change Target" button.
+        3. Click on the swap button
+              * The selected node should now be the target.
+        4. Click "Save" to save the change.
+        5. Review the node to make sure the change took place.
+        6. Reload the graph to make sure the change was saved.
+
+    Change Target
+        1. Select an edge where the node is the source (the edge should read "this -> OtherNode".
+        2. Click "Edit Edge"
+              * You should see a swap button with up/down arrows and a "Change Target" button.
+        3. Click on the "Change Target" button
+              * You should be able to search for another target node, or click on the graph to select a target node.
+        4. When you've selected a target node, the Target Node field should become disabled (light blue, can't type in it).
+        5. Click on "Change Target" again to pick a different target.
+        6. Click "Save" to save the change.
+        7. Review the node to make sure the change took place.
+        8. Reload the graph to make sure the change was saved.
+
+    Change Source
+        1. Select an edge where the node is the source (the edge should read "this -> OtherNode".
+        2. Click "Edit Edge"
+              * You should see a "Change Source" button next to the source, and just the swap button next to the target.
+        3. Click on the "Change Source" button
+        4. You should be able to search for another source node, or click on the graph to select a source node.
+        5. When you've selected a source node, the Source Node field should become disabled (light blue, can't type in it).
+        6. Click on "Change Source" again to pick a different source.
+        7. Click "Save" to save the change.
+        8. Review the node to make sure the change took place.
+        9. Reload the graph to make sure the change was saved.
+
+    Save
+        * The "Save" button should only be visible when the edge is being edited
+        * The "Save" button should only be enabled if both the Source and Target
+          fields point to valid nodes.
+        * Otherwise, the "Save" button should be disabled.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
