@@ -20,14 +20,16 @@ const DB_FILE           = './runtime/netcreate.json';
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-var   m_options;    // saved initialization options
-var   m_db;         // loki database
-var   NODES;        // loki "nodes" collection
-var   EDGES;        // loki "edges" collection
+let   m_options;    // saved initialization options
+let   m_db;         // loki database
+let   m_max_edgeID;
+let   m_max_nodeID;
+let   NODES;        // loki "nodes" collection
+let   EDGES;        // loki "edges" collection
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-var DB = {};
+let DB = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Initialize the database
 /*/ DB.InitializeDatabase = function( options={} ) {
@@ -49,7 +51,8 @@ var DB = {};
       m_db = new Loki(DB_FILE,ropt);
       m_options = ropt;
       console.log(PR,`Initialized LokiJS Database '${DB_FILE}'`);
-      //
+
+      // callback on load
       function f_DatabaseInitialize() {
         // on the first load of (non-existent database), we will have no
         // collections so we can detect the absence of our collections and
@@ -58,8 +61,25 @@ var DB = {};
         if (NODES===null) NODES = m_db.addCollection("nodes");
         EDGES = m_db.getCollection("edges");
         if (EDGES===null) EDGES = m_db.addCollection("edges");
-      }
-      //
+        // find highest NODE ID
+        m_max_nodeID = NODES.mapReduce(
+          (obj) => { return parseInt(obj.id,10) },
+          (arr) => {
+            return Math.max(...arr);
+          }
+        ); // end mapReduce NODES.id
+        // find highest EDGE ID
+        m_max_edgeID = EDGES.mapReduce(
+          (obj) => { return parseInt(obj.id,10) },
+          (arr) => {
+            return Math.max(...arr);
+          }
+        ) // end mapReduce EDGES.id
+        console.log(PR,`highest ids: NODE.id='${m_max_nodeID}', EDGE.id='${m_max_edgeID}'`);
+      } // end f_DatabaseInitialize
+
+
+      // UTILITY FUNCTION
       function f_AutosaveStatus( ) {
         let nodeCount = NODES.count();
         let edgeCount = EDGES.count();
@@ -68,6 +88,8 @@ var DB = {};
     }; // InitializeDatabase()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: load database
+    note: InitializeDatabase() was already called on system initialization
+    to populate the NODES and EDGES structures.
 /*/ DB.PKT_GetDatabase = function ( pkt ) {
       console.log(PR,`PKT_GetDatabase`);
       let nodes = NODES.chain().data({removeMeta:true});
@@ -91,6 +113,18 @@ var DB = {};
       DB.InitializeDatabase();
       return { OK:true };
     }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    DB.PKT_GetNewNodeID = function ( pkt ) {
+      console.log(PR,`PKT_GetNewNodeID`,JSON.stringify(pkt.Data()));
+      m_max_nodeID += 1;
+      return { nodeID : m_max_nodeID };
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    DB.PKT_GetNewEdgeID = function ( pkt ) {
+      console.log(PR,`PKT_GetNewEdgeID`,JSON.stringify(pkt.Data()));
+      m_max_edgeID += 1;
+      return { edgeID : m_max_edgeID };
+    };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     DB.PKT_Update = function ( pkt ) {
       console.log(PR,`PKT_Update`,JSON.stringify(pkt.Data()));

@@ -82,7 +82,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
       console.log('firing compatibility NET_CALL_TEST');
       UDATA.NetCall('NET_CALL_TEST',{})
       .then((d)=>{
-        // console.log('net call test succeeded',d);
+        console.log('net call test succeeded',d);
       });
     });
 

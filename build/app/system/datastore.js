@@ -52,6 +52,31 @@ let D3DATA        = {};
       });
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ get a unique NodeID
+/*/ DSTOR.PromiseNewNodeID = function() {
+      return new Promise((resolve,reject)=>{
+        UDATA.NetCall('SRV_DBGETNODEID')
+        .then(( data )=>{
+          if (data.nodeID) {
+            resolve(data.nodeID);
+          } else {
+            reject(new Error('unknown error'+JSON.stringify(data)));
+          }
+        })
+      });
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ get a unique Edge
+/*/ DSTOR.PromiseNewEdgeID = function() {
+      return new Promise((resolve,reject)=>{
+        UDATA.NetCall('SRV_DBGETEDGEID')
+        .then(( data )=>{
+          if (data.edgeID) resolve(data.edgeID);
+          else reject(new Error('unknown error'+JSON.stringify(data)));
+        })
+      });
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Write update to database
 /*/ DSTOR.UpdateOrCreateNode = function ( node ) {
       let attribs = {
