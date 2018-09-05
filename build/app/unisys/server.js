@@ -67,6 +67,16 @@ var UNISYS = {};
         return UDB.PKT_Update(pkt);
       });
 
+      UNET.HandleMessage('SRV_DBGETNODEID',function(pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_GetNewNodeID(pkt);
+      });
+
+      UNET.HandleMessage('SRV_DBGETEDGEID',function(pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_GetNewEdgeID(pkt);
+      });
+
       // utility function //
       function sprint_message(pkt) {
         return `got '${pkt.Message()}' data=${JSON.stringify(pkt.Data())}`;

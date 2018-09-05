@@ -16,26 +16,29 @@ const FS                = require('fs-extra');
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const PROMPTS           = require('../system/util/prompts');
 const PR                = PROMPTS.Pad('SRV-DB');
-const DB_FILE           = './runtime/netcreate.json';
+const DB_FILE           = './runtime/netcreate.loki';
+const DB_CLONEMASTER    = 'alexander.loki';
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-var   m_options;    // saved initialization options
-var   m_db;         // loki database
-var   NODES;        // loki "nodes" collection
-var   EDGES;        // loki "edges" collection
+let   m_options;    // saved initialization options
+let   m_db;         // loki database
+let   m_max_edgeID;
+let   m_max_nodeID;
+let   NODES;        // loki "nodes" collection
+let   EDGES;        // loki "edges" collection
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-var DB = {};
+let DB = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Initialize the database
 /*/ DB.InitializeDatabase = function( options={} ) {
       console.log(PR,`InitializeDatabase`);
       FS.ensureDir(PATH.dirname(DB_FILE));
       if (!FS.existsSync(DB_FILE)) {
-        console.log(PR,`No ${DB_FILE} yet, so filling from sample.data.json...`);
-        FS.copySync('./runtime/sample.data.json',DB_FILE);
+        console.log(PR,`No ${DB_FILE} yet, so filling from ${DB_CLONEMASTER}...`);
+        FS.copySync(`./runtime/${DB_CLONEMASTER}`,DB_FILE);
         console.log(PR,`...success!`);
       }
       let ropt = {
@@ -49,7 +52,8 @@ var DB = {};
       m_db = new Loki(DB_FILE,ropt);
       m_options = ropt;
       console.log(PR,`Initialized LokiJS Database '${DB_FILE}'`);
-      //
+
+      // callback on load
       function f_DatabaseInitialize() {
         // on the first load of (non-existent database), we will have no
         // collections so we can detect the absence of our collections and
@@ -58,8 +62,33 @@ var DB = {};
         if (NODES===null) NODES = m_db.addCollection("nodes");
         EDGES = m_db.getCollection("edges");
         if (EDGES===null) EDGES = m_db.addCollection("edges");
-      }
-      //
+        // find highest NODE ID
+        if (NODES.count()>0) {
+          m_max_nodeID = NODES.mapReduce(
+            (obj) => { return parseInt(obj.id,10) },
+            (arr) => {
+              return Math.max(...arr);
+            }
+          ) // end mapReduce node ids
+        } else {
+          m_max_nodeID = 0;
+        }
+        // find highest EDGE ID
+        if (EDGES.count()>0) {
+          m_max_edgeID = EDGES.mapReduce(
+            (obj) => { return parseInt(obj.id,10) },
+            (arr) => {
+              return Math.max(...arr);
+            }
+          ); // end mapReduce edge ids
+        } else {
+          m_max_edgeID = 0;
+        }
+        console.log(PR,`highest ids: NODE.id='${m_max_nodeID}', EDGE.id='${m_max_edgeID}'`);
+      } // end f_DatabaseInitialize
+
+
+      // UTILITY FUNCTION
       function f_AutosaveStatus( ) {
         let nodeCount = NODES.count();
         let edgeCount = EDGES.count();
@@ -68,6 +97,8 @@ var DB = {};
     }; // InitializeDatabase()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: load database
+    note: InitializeDatabase() was already called on system initialization
+    to populate the NODES and EDGES structures.
 /*/ DB.PKT_GetDatabase = function ( pkt ) {
       console.log(PR,`PKT_GetDatabase`);
       let nodes = NODES.chain().data({removeMeta:true});
@@ -91,6 +122,18 @@ var DB = {};
       DB.InitializeDatabase();
       return { OK:true };
     }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    DB.PKT_GetNewNodeID = function ( pkt ) {
+      m_max_nodeID += 1;
+      console.log(PR,`PKT_GetNewNodeID allocating nodeID ${m_max_nodeID} to ${pkt.SourceAddress()}`);
+      return { nodeID : m_max_nodeID };
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    DB.PKT_GetNewEdgeID = function ( pkt ) {
+      m_max_edgeID += 1;
+      console.log(PR,`PKT_GetNewEdgeID allocating edgeID ${m_max_edgeID} to ${pkt.SourceAddress()}`);
+      return { edgeID : m_max_edgeID };
+    };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     DB.PKT_Update = function ( pkt ) {
       console.log(PR,`PKT_Update`,JSON.stringify(pkt.Data()));

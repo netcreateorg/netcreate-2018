@@ -72,7 +72,7 @@ class NetGraph extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ render () {
-      return (<div>SVG</div>)
+      return (<div><span style={{fontSize:'9px'}}>NETGRAPH</span></div>)
     }
 } // class NetGraph
 

@@ -96,7 +96,8 @@ const AutoComplete = require('./AutoComplete');
 const NodeDetail   = require('./NodeDetail');
 const EdgeEditor   = require('./EdgeEditor');
 
-const UNISYS   = require('unisys/client');
+const UNISYS       = require('unisys/client');
+const DATASTORE    = require('system/datastore');
 
 const thisIdentifier = 'nodeSelector';   // SELECTION identifier
 
@@ -168,7 +169,11 @@ class NodeSelector extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return a new unique ID
     REVIEW: Should this be in nc-logic?
+    ANSWER: YES. There shouldn't be ANY data-synthesis code in a component!
+    HACK: Replace this code with a server call
 /*/ getNewNodeID () {
+      throw new Error("Don't use getNewNodeID() because it is not network safe");
+      /*/
       let highestID = 0;
       let ids  = this.AppState('D3DATA').nodes.map( node => { return Number(node.id) } );
       if (ids.length>0) {
@@ -177,10 +182,13 @@ class NodeSelector extends UNISYS.Component {
       // REVIEW: Should ids be strings or numbers?
       // Right now most edge ids are strings
       return (highestID+1).toString();
+      /*/
     } // getNewNodeID
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return a new unique ID
 /*/ getNewEdgeID () {
+      throw new Error("Don't use getNewEdgeID() because it is not network safe");
+      /*/
       let highestID = 0;
       let ids  = this.AppState('D3DATA').edges.map( edge => { return Number(edge.id) } )
       if (ids.length>0) {
@@ -189,6 +197,7 @@ class NodeSelector extends UNISYS.Component {
       // REVIEW: Should ids be strings or numbers?
       // Right now most edge ids are strings
       return (highestID+1).toString();
+      /*/
     } // getNewEdgeID
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle updated SELECTION
@@ -348,22 +357,26 @@ class NodeSelector extends UNISYS.Component {
       .then(()=>{
         this.AppCall('SOURCE_SEARCH', { searchString: '' });
       });
+      // HACK: call server to retrieve an unused node ID
+      // FIXME: this kind of data manipulation should not be in a GUI component
+      DATASTORE.PromiseNewNodeID()
+      .then((newNodeID)=>{
+        this.setState({
+          formData: {
+              label:     '',
+              type:      '',
+              info:      '',
+              notes:     '',
+              id:        newNodeID,
+              isNewNode: true
+          },
+          edges: [],
+          isEditable:      true,
+          isValid:         false
+        });
 
-      this.setState({
-        formData: {
-            label:     '',
-            type:      '',
-            info:      '',
-            notes:     '',
-            id:        this.getNewNodeID(),
-            isNewNode: true
-        },
-        edges: [],
-        isEditable:      true,
-        isValid:         false
+        this.validateForm();
       });
-
-      this.validateForm();
     } // onNewNodeButtonClick
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -393,16 +406,22 @@ class NodeSelector extends UNISYS.Component {
             2. Pass it to render, so that a new EdgeEditor will be created.
             3. In EdgeEditor, we create a dummy edge object
       */
-      // Add it to local state for now
-      let edge = {
-        id          : this.getNewEdgeID(),
-        source      : undefined,
-        target      : undefined,
-        attributes  : {}
-      };
-      let edges = this.state.edges;
-      edges.push(edge);
-      this.setState({ edges: edges });
+
+      // HACK: call server to retrieve an unused edge ID
+      // FIXME: this kind of data manipulation should not be in a GUI component
+      DATASTORE.PromiseNewEdgeID()
+      .then((newEdgeID)=>{
+        // Add it to local state for now
+        let edge = {
+          id          : newEdgeID,
+          source      : undefined,
+          target      : undefined,
+          attributes  : {}
+        };
+        let edges = this.state.edges;
+        edges.push(edge);
+        this.setState({ edges: edges });
+      });
     } // onAddNewEdgeButtonClick
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -418,7 +437,7 @@ class NodeSelector extends UNISYS.Component {
           this.loadFormFromNode( originalNode );
           this.setState({ isEditable: false });
         }
-        this.Call('AUTOCOMPLETE_SELECT', {id:'search'});
+        this.AppCall('AUTOCOMPLETE_SELECT', {id:'search'});
       }
     } // onCancelButtonClick
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
