@@ -449,7 +449,7 @@ class EdgeEditor extends UNISYS.Component {
 
         }
         // pass currentAutoComplete back to search
-        this.Call('AUTOCOMPLETE_SELECT',{id:'search'});
+        this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
         this.setState({ isExpanded: true });
       } else {
         // No node selected, so we don't need to do anything
