@@ -600,7 +600,7 @@ class EdgeEditor extends UNISYS.Component {
       // pass currentAutoComplete back to nodeselector
       this.Call('AUTOCOMPLETE_SELECT',{id:'search'});
 
-      this.setState({ isEditable: false, targetIsEditable: false });
+      this.setState({ isEditable: false, sourceIsEditable: false, targetIsEditable: false });
     } // onSubmit
 
 
@@ -687,7 +687,9 @@ class EdgeEditor extends UNISYS.Component {
                     shouldIgnoreSelection={!this.state.targetIsEditable}
                   />
                   <Button outline size="sm" className="float-right"
-                    hidden={!(this.state.isEditable && this.state.hasValidTarget)}
+                    hidden={ !(this.state.isEditable &&
+                               this.state.hasValidTarget &&
+                               (targetNode.label!==this.props.parentNodeLabel)) }
                     onClick={this.onChangeTarget}
                     title="Select a different target node"
                   >Change Target</Button>
