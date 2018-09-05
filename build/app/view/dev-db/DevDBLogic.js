@@ -82,7 +82,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
       console.log('firing compatibility NET_CALL_TEST');
       UDATA.NetCall('NET_CALL_TEST',{})
       .then((d)=>{
-        // console.log('net call test succeeded',d);
+        console.log('net call test succeeded',d);
       });
     });
 
@@ -94,7 +94,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*/ Command: RESET THE DATABASE from default data
 /*/ CMD.push(function ncPushDatabase( jsonFile ) {
       jsonFile = jsonFile || 'data.reducedlinks.json';
-      DATASTORE.LoadDataFilePromise(jsonFile)
+      DATASTORE.PromiseJSONFile(jsonFile)
       .then((data)=>{
         // data is { nodes, edges }
         console.log(PR,`Sending data from ${jsonFile} to Server`,data);

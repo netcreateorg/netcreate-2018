@@ -144,7 +144,7 @@ const TARGET_COLOR     = '#FF0000';
 /*/ LOADASSETS fires during <NetCreate>.componentDidMount
 /*/ MOD.Hook('LOADASSETS',()=>{
       // load data into D3DATA
-      DATASTORE.LoadDataPromise()
+      DATASTORE.PromiseD3Data()
       .then((data)=>{
         if (DBG) console.log(PR,'DATASTORE returned data',data);
         D3DATA = data;
@@ -242,6 +242,7 @@ const TARGET_COLOR     = '#FF0000';
             edges : edges
           };
         }
+        // TODO: CONVERT this to use a DATASTORE method
 
         // Set the SELECTION state so that listeners such as NodeSelectors update themselves
         UDATA.SetAppState('SELECTION',newState);
@@ -635,56 +636,74 @@ const TARGET_COLOR     = '#FF0000';
       UDATA.SetAppState('D3DATA',D3DATA);
     }
 
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// TODO: THESE STILL NEED TO BE CONVERTED
-///
-/// These are methods for marking edges and nodes with multiple colors.
-/// Multiple color marking is not currently implemented.
-//
-//   /// Only select nodes that have not already been selected
-//   getSelectedNodeColor ( node, color ) {
-//     if (node.selected===undefined || node.selected===DESELECTED_COLOR) {
-//       return color
-//     } else {
-//       return node.selected    // default to existing color
-//     }
-//   }
-//   /// Only deselect nodes that were selected by this instance, ignore selections
-//   /// from other NodeSelectors
-//   /*STYLE*/// this is called from deselectAllNodes without specifying 'color'. what is intent?
-//   /*STYLE*/// what is an 'NodeSelector instance'? a set of matching nodes? premature optimization?
-//   getDeselectedNodeColor ( node, color ) {
-//     if (node.selected!==color ) { // this.props.selectedColor) {
-//       return node.selected /*STYLE*/// node.selected is a color AND a truthy value???
-//     } else {
-//       return DESELECTED_COLOR
-//     }
-//   }
-//   ///
-//   /// EDGES
-//   ///
-//   markSelectedEdgeById( id ) {
-// // REMOVE because marking is now handled by acl?
-//     // let updatedData = this.state.data
-//     // updatedData.edges = this.state.data.edges.map( edge => {
-//     //   edge.selected = (edge.id===id)  /*STYLE*/// edge.selected doesn't mirror node.selected in value type (node.selected is a color)
-//     //   return edge
-//     // })
-//     // this.setState( { data: updatedData })
-//   }
-
-/// DEBUG CONSOLE /////////////////////////////////////////////////////////////
+/// COMMAND LINE UTILITIES ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    window.FindMatchingNodesByProp  = m_FindMatchingNodeByProp;
-    window.FindMatchingNodesByLabel = m_FindMatchingNodesByLabel;
-    window.SetMatchingNodesByLabel  = m_SetMatchingNodesByLabel;
-    window.SetMatchingNodesByProp   = m_SetMatchingNodesByProp;
-    window.SetAllObjs               = m_SetAllObjs;
-    window.UpdateD3Data             = function () {
-      UDATA.SetAppState('D3DATA',D3DATA);
-      return "SetState 'D3DATA'";
-    };
+    let CMD = [];
+    MOD.Hook('RESET', m_InitCLI);
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Command: RESET THE DATABASE from default data
+/*/ CMD.push(function ncPushDatabase( jsonFile ) {
+      jsonFile = jsonFile || 'data.reducedlinks.json';
+        DATASTORE.PromiseJSONFile(jsonFile)
+        .then((data)=>{
+          // data is { nodes, edges }
+          console.log(PR,`Sending data from ${jsonFile} to Server`,data);
+          // UDATA.Call() returns a promise, so return it to
+          // continue the asynchronous chain
+          return UDATA.Call('SRV_DBSET', data);
+        })
+        .then((d)=>{
+          if (d.OK) {
+            window.alert(`assets/data/${jsonFile} was pushed to Server.\nPress OK to refresh this page and MANUALLY REFRESH other clients.\n\n(note: if data hasn't changed, try command again)`);
+            console.log(`${PR} %cServer Database has been overwritten with ${jsonFile}`,'color:blue');
+            console.log(`${PR} Reload apps to see new data`);
+            setTimeout(UNISYS.ForceReloadOnNavigation,1000);
+          } else {
+            console.error(PR,'Server Error',d);
+            window.alert(`Error ${JSON.stringify(d)}`);
+          }
+        });
+      // return syntax help
+      return "FYI: ncPushDatabase(jsonFile) can load file in assets/data";
+    });
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Command: EMPTY THE DATABASE from default data
+/*/ CMD.push(function ncEmptyDatabase() {
+      window.ncPushDatabase('nada.json');
+      return "FYI: pushing empty database from assets/data/nada.json...reloading";
+    });
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Initialize the CLI interface by loading functions in CMD array into
+    window space, then print out instructions
+/*/ function m_InitCLI() {
+      let silent = true;
+
+      let E_SHELL = document.getElementById('fdshell');
+      let E_OUT = document.createElement('pre');
+      let E_HEADER = document.createElement('h4');
+
+      if (!silent) {
+        E_SHELL.appendChild(E_HEADER);
+        E_SHELL.appendChild(E_OUT);
+        E_HEADER.innerHTML='Command Information';
+        E_OUT.innerHTML = 'The following CLI commands are available:\n\n';
+      }
+
+      CMD.forEach((f)=>{
+        window[f.name] = f;
+        if (!silent) E_OUT.innerHTML+=`  ${f.name}()\n`;
+      });
+
+      if (!silent) {
+        E_OUT.innerText += "\n";
+        E_OUT.innerText += "Mac shortcuts to open console\n";
+        E_OUT.innerText += "  Chrome  : cmd-option-j\n";
+        E_OUT.innerText += "  Firefox : cmd-option-k\n";
+        E_OUT.innerText += "PC use ctrl-shift instead\n";
+      }
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

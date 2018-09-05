@@ -241,6 +241,8 @@ class AutoComplete extends UNISYS.Component {
             nodes[0].label!==undefined) {
           let searchLabel = nodes[0].label;
           if (DBG) console.log('...AutoComplete',this.props.identifier,': ACTIVE got SELECTION, searchLabel',searchLabel);
+          // FIX: This line causes the "Can't call setState (or forceUpdate) on an unmounted component" error
+          // is it because it's not actually visible (unmounted)?
           this.setState({value: searchLabel});
         }
       }
@@ -268,7 +270,7 @@ class AutoComplete extends UNISYS.Component {
       // which will in turn pass the searchLabel back to the SEARCH
       // state handler in the constructor, which will in turn set the state
       // of the input value to be passed on to AutoSuggest
-      this.Call('SOURCE_SEARCH', { searchString: newValue });
+      this.AppCall('SOURCE_SEARCH', { searchString: newValue });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle Autosuggest's request to set the value of the input field when
@@ -314,13 +316,13 @@ class AutoComplete extends UNISYS.Component {
     Autocomplete-logic should handle the creation of a new data object.
 /*/ onSuggestionSelected (event, { suggestion }) {
       // User selected an existing node in the suggestion list
-      this.Call('SOURCE_SELECT',{ nodeIDs: [suggestion.id] });
+      this.AppCall('SOURCE_SELECT',{ nodeIDs: [suggestion.id] });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Autosuggest calls this whenever the user has highlighted a different suggestion
     from the suggestion list.
 /*/ onSuggestionHighlighted ({ suggestion }) {
-      if (suggestion && suggestion.id) this.Call('SOURCE_HILITE',{ nodeID: suggestion.id });
+      if (suggestion && suggestion.id) this.AppCall('SOURCE_HILITE',{ nodeID: suggestion.id });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Autosuggest checks this before rendering suggestions

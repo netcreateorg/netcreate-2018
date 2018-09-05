@@ -115,7 +115,7 @@ class D3NetGraph {
         .attr('height',m_height)
         .on("click", ( e, event ) => {
             // Deselect
-            UDATA.Call('SOURCE_SELECT',{ nodeLabels: [] });
+            UDATA.LocalCall('SOURCE_SELECT',{ nodeLabels: [] });
             }
         )
         .call(d3.zoom().on("zoom", function () {
@@ -230,7 +230,7 @@ class D3NetGraph {
           .on("end",   (d) => { this._Dragended(d, this) }))
         .on("click",   (d) => {
             if (DBG) console.log('clicked on',d.label,d.id)
-            UDATA.Call('SOURCE_SELECT',{ nodeIDs: [d.id] });
+            UDATA.LocalCall('SOURCE_SELECT',{ nodeIDs: [d.id] });
             d3.event.stopPropagation();
           });
 
