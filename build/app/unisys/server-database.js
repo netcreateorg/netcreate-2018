@@ -62,19 +62,27 @@ let DB = {};
         EDGES = m_db.getCollection("edges");
         if (EDGES===null) EDGES = m_db.addCollection("edges");
         // find highest NODE ID
-        m_max_nodeID = NODES.mapReduce(
-          (obj) => { return parseInt(obj.id,10) },
-          (arr) => {
-            return Math.max(...arr);
-          }
-        ); // end mapReduce NODES.id
+        if (NODES.count()>0) {
+          m_max_nodeID = NODES.mapReduce(
+            (obj) => { return parseInt(obj.id,10) },
+            (arr) => {
+              return Math.max(...arr);
+            }
+          ) // end mapReduce node ids
+        } else {
+          m_max_nodeID = 0;
+        }
         // find highest EDGE ID
-        m_max_edgeID = EDGES.mapReduce(
-          (obj) => { return parseInt(obj.id,10) },
-          (arr) => {
-            return Math.max(...arr);
-          }
-        ) // end mapReduce EDGES.id
+        if (EDGES.count()>0) {
+          m_max_edgeID = EDGES.mapReduce(
+            (obj) => { return parseInt(obj.id,10) },
+            (arr) => {
+              return Math.max(...arr);
+            }
+          ); // end mapReduce edge ids
+        } else {
+          m_max_edgeID = 0;
+        }
         console.log(PR,`highest ids: NODE.id='${m_max_nodeID}', EDGE.id='${m_max_edgeID}'`);
       } // end f_DatabaseInitialize
 

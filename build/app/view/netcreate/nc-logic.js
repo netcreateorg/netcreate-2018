@@ -636,6 +636,75 @@ const TARGET_COLOR     = '#FF0000';
       UDATA.SetAppState('D3DATA',D3DATA);
     }
 
+/// COMMAND LINE UTILITIES ////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    let CMD = [];
+    MOD.Hook('RESET', m_InitCLI);
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Command: RESET THE DATABASE from default data
+/*/ CMD.push(function ncPushDatabase( jsonFile ) {
+      jsonFile = jsonFile || 'data.reducedlinks.json';
+      DATASTORE.PromiseJSONFile(jsonFile)
+      .then((data)=>{
+        // data is { nodes, edges }
+        console.log(PR,`Sending data from ${jsonFile} to Server`,data);
+        // UDATA.Call() returns a promise, so return it to
+        // continue the asynchronous chain
+        return UDATA.Call('SRV_DBSET', data);
+      })
+      .then((d)=>{
+        if (d.OK) {
+          console.log(`${PR} %cServer Database has been overwritten with ${jsonFile}`,'color:blue');
+          console.log(`${PR} Reload apps to see new data`);
+        } else {
+          console.error(PR,'Server Error',d);
+        }
+      });
+      // return syntax help
+      return "FYI: ncPushDatabase(jsonFile) can load file in assets/data";
+    });
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Command: EMPTY THE DATABASE from default data
+/*/ CMD.push(function ncEmptyDatabase() {
+      window.ncPushDatabase('nada.json');
+      setTimeout(function() {
+        UNISYS.ForceReloadOnNavigation();
+        },3000);
+      return "FYI: pushing empty database from assets/data/nada.json...reloading";
+    });
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Initialize the CLI interface by loading functions in CMD array into
+    window space, then print out instructions
+/*/ function m_InitCLI() {
+      let silent = true;
+
+      let E_SHELL = document.getElementById('fdshell');
+      let E_OUT = document.createElement('pre');
+      let E_HEADER = document.createElement('h4');
+
+      if (!silent) {
+        E_SHELL.appendChild(E_HEADER);
+        E_SHELL.appendChild(E_OUT);
+        E_HEADER.innerHTML='Command Information';
+        E_OUT.innerHTML = 'The following CLI commands are available:\n\n';
+      }
+
+      CMD.forEach((f)=>{
+        window[f.name] = f;
+        if (!silent) E_OUT.innerHTML+=`  ${f.name}()\n`;
+      });
+
+      if (!silent) {
+        E_OUT.innerText += "\n";
+        E_OUT.innerText += "Mac shortcuts to open console\n";
+        E_OUT.innerText += "  Chrome  : cmd-option-j\n";
+        E_OUT.innerText += "  Firefox : cmd-option-k\n";
+        E_OUT.innerText += "PC use ctrl-shift instead\n";
+      }
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = MOD;
