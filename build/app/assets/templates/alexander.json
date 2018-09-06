@@ -29,12 +29,12 @@
                   {
                     "id":    "person",
                     "label": "Person",
-                    "color": "#3399FF"
+                    "color": "#66CCFF"
                   },
                   {
                     "id":    "group",
                     "label": "Group",
-                    "color": "#0000FF"
+                    "color": "#3399FF"
                   },
                   {
                     "id":    "place",
