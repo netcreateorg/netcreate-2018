@@ -1,5 +1,5 @@
 # NetCreate ignored directories
-/runtime/netcreate.json
+/runtime/netcreate.loki
 
 # Also ignore build system directories
 .npmignore

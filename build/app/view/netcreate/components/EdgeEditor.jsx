@@ -268,7 +268,7 @@ class EdgeEditor extends UNISYS.Component {
         // placeholder for now, otherwise, the render will choke on an invalid targetNode.
         targetNodes = [{label:'pick one...'}];
         // set this autoComplete field as current
-        this.Call('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'target'});
+        this.AppCall('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'target'});
         // Define `edge` so it can be loaded later during setState.
         edge = {
           id: edgeID,
@@ -368,7 +368,7 @@ class EdgeEditor extends UNISYS.Component {
 
       if (this.state.formData.id === data.edgeID) {
         // pass currentAutoComplete back to search
-        this.Call('AUTOCOMPLETE_SELECT',{id:'search'});
+        this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
         this.setState({ isExpanded: true });
       }
 
@@ -405,7 +405,7 @@ class EdgeEditor extends UNISYS.Component {
         if (this.state.isEditable) {
           this.loadSourceAndTarget();
           this.setState({ isEditable: false, targetIsEditable: false });
-          this.Call('AUTOCOMPLETE_SELECT',{id:'search'});
+          this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
         }
       } else {
         // expand, but don't set the autocomplete field, since we're not editing
@@ -427,10 +427,10 @@ class EdgeEditor extends UNISYS.Component {
       // If you want to change the edge, delete this one and create a new one.
       // if (this.props.parentNodeLabel===this.state.sourceNode.label) {
       //   // The source node is the currently selected node in NodeSelector.  Edit the target.
-      //   UDATA.Call('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'target', searchString: this.state.targetNode.label});
+      //   UDATA.LocalCall('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'target', searchString: this.state.targetNode.label});
       // } else {
       //   // The NodeSelector node is the target.  Allow editing the source.
-      //   UDATA.Call('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'source', searchString: this.state.sourceNode.label});
+      //   UDATA.LocalCall('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'source', searchString: this.state.sourceNode.label});
       // }
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -486,7 +486,7 @@ class EdgeEditor extends UNISYS.Component {
       this.Call('EDGE_UPDATE',{edge:edge});
 
       // pass currentAutoComplete back to nodeselector
-      this.Call('AUTOCOMPLETE_SELECT',{id:'search'});
+      this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
 
       this.setState({ isEditable: false, targetIsEditable: false });
     } // onSubmit

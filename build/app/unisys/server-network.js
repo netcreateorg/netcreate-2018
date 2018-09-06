@@ -12,7 +12,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = true;
+const DBG = false;
 
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -204,7 +204,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
         // UADDR targets, possibly because the sources are not allowed to call itself
         // except in the case of the SIGNAL type
         if (promises.length===0) {
-          console.log(PR,`'${pkt.Message()}' no eligible UADDR targets`);
+          console.log(PR,`info: '${pkt.Message()}' no eligible UADDR targets`);
           // return transaction to resolve callee
           pkt.SetData({NOP:`no handler found for '${pkt.Message()}'`});
           if (pkt.IsType('mcall')) pkt.ReturnTransaction(socket);
