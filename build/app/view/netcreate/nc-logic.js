@@ -157,6 +157,17 @@ const TARGET_COLOR     = '#FF0000';
         if (DBG) console.log(PR,'DATASTORE returned json',data);
         TEMPLATE = data;
         UDATA.SetAppState('TEMPLATE',TEMPLATE);
+        // Process Node and Edge options
+        try {
+          UDATA.SetAppState('NODETYPES', TEMPLATE.nodePrompts.type);
+        } catch (error) {
+          console.error(PR,'received bad TEMPLATE node options',error,data);
+        }
+        try {
+          UDATA.SetAppState('EDGETYPES', TEMPLATE.edgePrompts.type);
+        } catch (error) {
+          console.error(PR,'received bad TEMPLATE edge options',error,data);
+        }
       });
     }); // end INITIALIZE HOOK
 

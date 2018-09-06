@@ -85,7 +85,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-var DBG = false;
+const DBG = false;
+const PR  = 'NodeSelector';
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -133,7 +134,6 @@ class NodeSelector extends UNISYS.Component {
       this.getNewNodeID                          = this.getNewNodeID.bind(this);
       this.handleSelection                       = this.handleSelection.bind(this);
       this.onStateChange_SEARCH                  = this.onStateChange_SEARCH.bind(this);
-      this.onStateChange_TEMPLATE                = this.onStateChange_TEMPLATE.bind(this);
       this.loadFormFromNode                      = this.loadFormFromNode.bind(this);
       this.validateForm                          = this.validateForm.bind(this);
       this.onLabelChange                         = this.onLabelChange.bind(this);
@@ -152,7 +152,6 @@ class NodeSelector extends UNISYS.Component {
         this.handleSelection(change);
       });
       this.OnAppStateChange('SEARCH', this.onStateChange_SEARCH);
-      this.OnAppStateChange('TEMPLATE', this.onStateChange_TEMPLATE);
     } // constructor
 
 
@@ -274,11 +273,6 @@ class NodeSelector extends UNISYS.Component {
       });
 
       this.validateForm();
-    }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Handle updated TEMPLATE
-/*/ onStateChange_TEMPLATE ( data ) {
-      this.setState({ options: data.nodePrompts.type.options })
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Copy the node data passed via SELECTION in the form
@@ -487,6 +481,13 @@ class NodeSelector extends UNISYS.Component {
     }
 /*/ REACT calls this to receive the component layout and data sources
 /*/ render () {
+      var options = this.AppState('NODETYPES').options;
+      if ( (options===undefined) || !Array.isArray(options) ) {
+        // When intialized, the template may not be loaded yet.
+        // If it's not loaded, define a dummy option for now
+        options = [];
+        console.error(PR,'received bad Options defintion:',options);
+      }
       return (
         <div>
           <FormGroup className="text-right" style={{paddingRight:'5px'}}>
@@ -524,7 +525,7 @@ class NodeSelector extends UNISYS.Component {
                   onChange={this.onTypeChange}
                   disabled={!this.state.isEditable}
                   >
-                  {this.state.options.map( (option,i) => (
+                  {options.map( (option,i) => (
                     <option id={option.id} key={option.id}>{option.label}</option>
                   ))}
                 </Input>
