@@ -99,6 +99,12 @@ const ACD_LOGIC    = require('./nc-logic');
                 <NodeTable/>
                 <EdgeTable/>
                 <NetGraph/>
+                <div style={{fontSize:'10px',position:'absolute',left:'0px',bottom:'0px',zIndex:'1500',color:'#aaa',backgroundColor:'#eee',padding:'5px 10px'}}>Please contact Professor
+                Kalani Craig, Institute for Digital Arts & Humanities at
+                (812) 856-5721 (BH) or
+                craigkl@indiana.edu with questions or concerns and/or to
+                request information contained on this website in an accessible
+                format.</div>
               </div>
             </div>
           </div>
