@@ -32,7 +32,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG             = true;
+const DBG             = false;
 const PR              = 'd3-simplenetgraph'
 
 /* eslint-disable prefer-reflect */
