@@ -1,6 +1,8 @@
 {
 
   "_comment":    "/// NetCreate Template File ///",
+  "_comment2":   "/// IMPORTANT: As of 9/6/2018 only nodePrompts.type and edgePrompts.type are being used ///",
+  "_comment3":   "/// The rest of the definitions are there as placeholders for future functionality      ///",
 
 
   "name":        "Alexander The Great",
@@ -72,6 +74,10 @@
                   "label": "Type",
                   "help":  "",
                   "options": [
+                    {
+                      "id":    "default",
+                      "label": "not working?"
+                    },
                     {
                       "id":    "peaceful",
                       "label": "has peaceful, familial or conversational interaction with"
