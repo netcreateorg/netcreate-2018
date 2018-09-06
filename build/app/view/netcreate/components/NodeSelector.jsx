@@ -118,6 +118,13 @@ class NodeSelector extends UNISYS.Component {
             isNewNode: true
         },
         edges:         [],
+        options: [
+          {
+            id:    "test",
+            label: "Test",
+            color: "#FF0000"
+          }
+        ],
         isEditable:    false,
         isValid:       false
       };
@@ -126,6 +133,7 @@ class NodeSelector extends UNISYS.Component {
       this.getNewNodeID                          = this.getNewNodeID.bind(this);
       this.handleSelection                       = this.handleSelection.bind(this);
       this.onStateChange_SEARCH                  = this.onStateChange_SEARCH.bind(this);
+      this.onStateChange_TEMPLATE                = this.onStateChange_TEMPLATE.bind(this);
       this.loadFormFromNode                      = this.loadFormFromNode.bind(this);
       this.validateForm                          = this.validateForm.bind(this);
       this.onLabelChange                         = this.onLabelChange.bind(this);
@@ -143,7 +151,8 @@ class NodeSelector extends UNISYS.Component {
       this.OnAppStateChange('SELECTION',(change) => {
         this.handleSelection(change);
       });
-      this.OnAppStateChange('SEARCH',             this.onStateChange_SEARCH);
+      this.OnAppStateChange('SEARCH', this.onStateChange_SEARCH);
+      this.OnAppStateChange('TEMPLATE', this.onStateChange_TEMPLATE);
     } // constructor
 
 
@@ -265,6 +274,11 @@ class NodeSelector extends UNISYS.Component {
       });
 
       this.validateForm();
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Handle updated TEMPLATE
+/*/ onStateChange_TEMPLATE ( data ) {
+      this.setState({ options: data.nodePrompts.type.options })
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Copy the node data passed via SELECTION in the form
@@ -510,11 +524,9 @@ class NodeSelector extends UNISYS.Component {
                   onChange={this.onTypeChange}
                   disabled={!this.state.isEditable}
                   >
-                  <option>Person</option>
-                  <option>Group</option>
-                  <option>Place</option>
-                  <option>Thing</option>
-                  <option>Event</option>
+                  {this.state.options.map( (option,i) => (
+                    <option id={option.id} key={option.id}>{option.label}</option>
+                  ))}
                 </Input>
               </Col>
             </FormGroup>

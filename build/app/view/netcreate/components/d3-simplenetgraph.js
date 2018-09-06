@@ -32,17 +32,18 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-var DBG        = false;
+const DBG             = true;
+const PR              = 'd3-simplenetgraph'
 
 /* eslint-disable prefer-reflect */
 /* d3.call() is false-triggering the above rule */
 
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const d3       = require('d3')
-const UNISYS   = require('unisys/client');
-var   UDATA    = null;
-
+const d3              = require('d3')
+const UNISYS          = require('unisys/client');
+var   UDATA           = null;
+var   COLORMAP        = null;
 
 /// PRIVATE VARS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -104,6 +105,10 @@ class D3NetGraph {
       /// Initialize UNISYS DATA LINK for REACT
       UDATA = UNISYS.NewDataLink(this);
 
+      /// COLORMAP saves the TEMPLATE-defined colors in a map for faster lookups
+      COLORMAP = new Map();
+      COLORMAP.set(undefined,"#000000");   // Default color if no matching type is found
+
   /// D3 CODE ///////////////////////////////////////////////////////////////////
   /// note: this is all inside the class constructor function!
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -141,6 +146,17 @@ class D3NetGraph {
         // expect { nodes, edges } for this namespace
         if (DBG) console.log('D3SimpleNetgraph got state D3DATA',data);
         this.SetData(data);
+      });
+
+      UDATA.OnAppStateChange('TEMPLATE',(data)=>{
+        if (DBG) console.log('D3SimpleNetgraph got state TEMPLATE',data);
+        try {
+          data.nodePrompts.type.options.forEach( (o)=>{COLORMAP.set(o.label,o.color)} );
+          // colors updated, so force an update
+          this._UpdateGraph();
+        } catch (error) {
+          console.error(PR,'received bad TEMPLATE state',data);
+        }
       });
 
   }
@@ -247,7 +263,10 @@ class D3NetGraph {
               return this.defaultSize + (this.defaultSize * d.weight / 2)
           })
   //        .attr("r", (d) => { return this.defaultSize }) // d.size ?  d.size/10 : this.defaultSize; })
-          .attr("fill", (d) => { return d.color ? d.color : this.defaultColor; });
+          .attr("fill", (d) => {
+            // REVIEW: Using label match.  Should we use id instead?
+            return COLORMAP.get(d.attributes["Node_Type"]);
+          });
 
       // enter node: also append 'text' element
       elementG
@@ -312,7 +331,14 @@ class D3NetGraph {
             if (d.selected || d.strokeColor) return '5px';
             return undefined // don't set stroke width
           })
-// this "r" is necessary to resize aftger a link is added
+// this "r" is necessary to resize after a link is added
+          .attr("fill", (d) => {
+            // old method that relied on color being defined by the data file
+            // return d.color ? d.color : this.defaultColor;
+
+            // REVIEW: Using label match.  Should we use id instead?
+            return COLORMAP.get(d.attributes["Node_Type"]);
+          })
           .attr("r", (d) => {
               let radius = this.data.edges.reduce((acc,ed)=>{
                 return (ed.source.id===d.id || ed.target.id===d.id) ? acc+1 : acc
@@ -362,7 +388,6 @@ class D3NetGraph {
       this.simulation.force("link").links(this.data.edges)
 
     }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Apply new force properties
     Call this on construct and if forceProperties have changed.

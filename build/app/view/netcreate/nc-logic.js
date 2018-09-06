@@ -127,6 +127,7 @@ var   UDATA      = UNISYS.NewDataLink(MOD);
 
 \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -/*/
 var   D3DATA           = null;    // see above for description
+var   TEMPLATE         = null;    // template definition for prompts
 const DATASTORE        = require('system/datastore');
 const PROMPTS          = require('system/util/prompts');
 const PR               = PROMPTS.Pad('ACDLogic');
@@ -149,6 +150,13 @@ const TARGET_COLOR     = '#FF0000';
         if (DBG) console.log(PR,'DATASTORE returned data',data);
         D3DATA = data;
         UDATA.SetAppState('D3DATA',D3DATA);
+      });
+      // load Template data
+      DATASTORE.PromiseJSONFile( '../templates/alexander.json' )
+      .then((data)=>{
+        if (DBG) console.log(PR,'DATASTORE returned json',data);
+        TEMPLATE = data;
+        UDATA.SetAppState('TEMPLATE',TEMPLATE);
       });
     }); // end INITIALIZE HOOK
 
