@@ -130,7 +130,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-var DBG = false;
+const DBG = false;
+const PR  = "EdgeEditor";
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -182,14 +183,15 @@ class EdgeEditor extends UNISYS.Component {
       /// Initialize UNISYS DATA LINK for REACT
       UDATA = UNISYS.NewDataLink(this);
 
-      this.onButtonClick        = this.onButtonClick.bind(this);
-      this.onDeleteButtonClick  = this.onDeleteButtonClick.bind(this);
-      this.onEditButtonClick    = this.onEditButtonClick.bind(this);
-      this.onRelationshipChange = this.onRelationshipChange.bind(this);
-      this.onNotesChange        = this.onNotesChange.bind(this);
-      this.onInfoChange         = this.onInfoChange.bind(this);
-      this.onCitationChange     = this.onCitationChange.bind(this);
-      this.onSubmit             = this.onSubmit.bind(this);
+      this.handleSelection        = this.handleSelection.bind(this);
+      this.onButtonClick          = this.onButtonClick.bind(this);
+      this.onDeleteButtonClick    = this.onDeleteButtonClick.bind(this);
+      this.onEditButtonClick      = this.onEditButtonClick.bind(this);
+      this.onRelationshipChange   = this.onRelationshipChange.bind(this);
+      this.onNotesChange          = this.onNotesChange.bind(this);
+      this.onInfoChange           = this.onInfoChange.bind(this);
+      this.onCitationChange       = this.onCitationChange.bind(this);
+      this.onSubmit               = this.onSubmit.bind(this);
 
       // Always make sure class methods are bind()'d before using them
       // as a handler, otherwise object context is lost
@@ -506,6 +508,8 @@ class EdgeEditor extends UNISYS.Component {
       const { edgeID, parentNodeLabel } = this.props;
       const { formData, sourceNode, targetNode } = this.state;
       const me = <span style={{color:"rgba(0,0,0,0.2)",fontStyle:"italic"}}>this</span>;
+      const options = this.AppState('EDGETYPES').options;
+      if ( (options===undefined) || !Array.isArray(options) ) console.error(PR,'received bad Options defintion:',options);
       return (
         <div>
 
@@ -546,12 +550,9 @@ class EdgeEditor extends UNISYS.Component {
                     onChange={this.onRelationshipChange}
                     disabled={!this.state.isEditable}
                     >
-                    <option>has peaceful, familial or conversational interaction with</option>
-                    <option>has martial or adversarial interaction with</option>
-                    <option>sends written communication to</option>
-                    <option>is a group member of</option>
-                    <option>participates in</option>
-                    <option>makes visit to</option>
+                    {options.map( (option,i) => (
+                      <option id={option.id} key={option.id}>{option.label}</option>
+                    ))}
                   </Input>
                 </Col>
               </FormGroup>
