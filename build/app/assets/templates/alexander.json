@@ -75,8 +75,8 @@
                   "help":  "",
                   "options": [
                     {
-                      "id":    "default",
-                      "label": "not working?"
+                      "id":    "notSelected",
+                      "label": ""
                     },
                     {
                       "id":    "peaceful",
