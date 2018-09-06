@@ -157,9 +157,16 @@ const TARGET_COLOR     = '#FF0000';
         if (DBG) console.log(PR,'DATASTORE returned json',data);
         TEMPLATE = data;
         UDATA.SetAppState('TEMPLATE',TEMPLATE);
-        // Process Node and Edge options
+        // Process Node, NodeColorMap and Edge options
         try {
           UDATA.SetAppState('NODETYPES', TEMPLATE.nodePrompts.type);
+        } catch (error) {
+          console.error(PR,'received bad TEMPLATE node type',error,data);
+        }
+        try {
+          let nodeColorMap = {};
+          TEMPLATE.nodePrompts.type.options.forEach( (o)=>{nodeColorMap[o.label] = o.color;});
+          UDATA.SetAppState('NODECOLORMAP', nodeColorMap);
         } catch (error) {
           console.error(PR,'received bad TEMPLATE node options',error,data);
         }
