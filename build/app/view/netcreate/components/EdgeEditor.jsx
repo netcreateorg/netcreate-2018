@@ -55,6 +55,7 @@
 
     ## TESTING
 
+
     Displaying Current Edge(s)
         0. When the app starts, no edges should be displayed in the Node Selector.
         1. Click on "Board of Health"
@@ -128,6 +129,46 @@
               * The source node should remain selected.
               * The non-deleted edges should still be listed.
 
+    Swap
+        1. Select an edge where the node is the source (the edge should read "this -> OtherNode".
+        2. Click "Edit Edge"
+              * You should see a swap button with up/down arrows and a "Change Target" button.
+        3. Click on the swap button
+              * The selected node should now be the target.
+        4. Click "Save" to save the change.
+        5. Review the node to make sure the change took place.
+        6. Reload the graph to make sure the change was saved.
+
+    Change Target
+        1. Select an edge where the node is the source (the edge should read "this -> OtherNode".
+        2. Click "Edit Edge"
+              * You should see a swap button with up/down arrows and a "Change Target" button.
+        3. Click on the "Change Target" button
+              * You should be able to search for another target node, or click on the graph to select a target node.
+        4. When you've selected a target node, the Target Node field should become disabled (light blue, can't type in it).
+        5. Click on "Change Target" again to pick a different target.
+        6. Click "Save" to save the change.
+        7. Review the node to make sure the change took place.
+        8. Reload the graph to make sure the change was saved.
+
+    Change Source
+        1. Select an edge where the node is the source (the edge should read "this -> OtherNode".
+        2. Click "Edit Edge"
+              * You should see a "Change Source" button next to the source, and just the swap button next to the target.
+        3. Click on the "Change Source" button
+        4. You should be able to search for another source node, or click on the graph to select a source node.
+        5. When you've selected a source node, the Source Node field should become disabled (light blue, can't type in it).
+        6. Click on "Change Source" again to pick a different source.
+        7. Click "Save" to save the change.
+        8. Review the node to make sure the change took place.
+        9. Reload the graph to make sure the change was saved.
+
+    Save
+        * The "Save" button should only be visible when the edge is being edited
+        * The "Save" button should only be enabled if both the Source and Target
+          fields point to valid nodes.
+        * Otherwise, the "Save" button should be disabled.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 var DBG = false;
@@ -174,22 +215,28 @@ class EdgeEditor extends UNISYS.Component {
             notes:     '',
             id:        ''
         },
-        isEditable:      false,     // Form is in an edtiable state
-        targetIsEditable:false,     // Target ndoe field is only editable when creating a new edge
-        isExpanded:      false      // Show EdgeEditor Component in Summary view vs Expanded view
+        isEditable:      false,      // Form is in an edtiable state
+        isExpanded:      false,      // Show EdgeEditor Component in Summary view vs Expanded view
+        sourceIsEditable:false,      // Source ndoe field is only editable when source is not parent
+        hasValidSource:  false,      // Used by SwapSourceAndTarget and the Change Source button
+        targetIsEditable:false,      // Target ndoe field is only editable when target is not parent
+        hasValidTarget:  false       // Used by SwapSourceAndTarget and the Change Target button
       };
 
       /// Initialize UNISYS DATA LINK for REACT
       UDATA = UNISYS.NewDataLink(this);
 
-      this.onButtonClick        = this.onButtonClick.bind(this);
-      this.onDeleteButtonClick  = this.onDeleteButtonClick.bind(this);
-      this.onEditButtonClick    = this.onEditButtonClick.bind(this);
-      this.onRelationshipChange = this.onRelationshipChange.bind(this);
-      this.onNotesChange        = this.onNotesChange.bind(this);
-      this.onInfoChange         = this.onInfoChange.bind(this);
-      this.onCitationChange     = this.onCitationChange.bind(this);
-      this.onSubmit             = this.onSubmit.bind(this);
+      this.onButtonClick          = this.onButtonClick.bind(this);
+      this.onDeleteButtonClick    = this.onDeleteButtonClick.bind(this);
+      this.onEditButtonClick      = this.onEditButtonClick.bind(this);
+      this.onSwapSourceAndTarget  = this.onSwapSourceAndTarget.bind(this);
+      this.onChangeSource         = this.onChangeSource.bind(this);
+      this.onChangeTarget         = this.onChangeTarget.bind(this);
+      this.onRelationshipChange   = this.onRelationshipChange.bind(this);
+      this.onNotesChange          = this.onNotesChange.bind(this);
+      this.onInfoChange           = this.onInfoChange.bind(this);
+      this.onCitationChange       = this.onCitationChange.bind(this);
+      this.onSubmit               = this.onSubmit.bind(this);
 
       // Always make sure class methods are bind()'d before using them
       // as a handler, otherwise object context is lost
@@ -235,7 +282,11 @@ class EdgeEditor extends UNISYS.Component {
             id:        ''
         },
         isEditable:           false,
-        isExpanded:           false      // Summary view vs Expanded view
+        isExpanded:           false,      // Summary view vs Expanded view
+        sourceIsEditable:     false,      // Source ndoe field is only editable when source is not parent
+        hasValidSource:       false,      // Used by SwapSourceAndTarget and the Change Source button
+        targetIsEditable:     false,      // Target ndoe field is only editable when target is not parent
+        hasValidTarget:       false       // Used by SwapSourceAndTarget and the Change Target button
       });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -296,6 +347,12 @@ class EdgeEditor extends UNISYS.Component {
         sourceNodes = D3DATA.nodes.filter( node => node.id===edge.source.id );
         targetNodes = D3DATA.nodes.filter( node => node.id===edge.target.id );
 
+        // Assume we have a valid target node
+        this.setState({
+          hasValidSource:       true,
+          hasValidTarget:       true
+        });
+
       }
 
       if (!sourceNodes) {
@@ -335,25 +392,65 @@ class EdgeEditor extends UNISYS.Component {
     know the target node has been selected.
 /*/ handleSelection ( data ) {
       if (DBG) console.log('EdgeEditor',this.props.edgeID,'got SELECTION data',data);
+
       // If edge is not being edited, ignore the selection
-      if (!this.state.isEditable || !this.state.targetIsEditable) return;
+      if (!this.state.isEditable &&
+          !(this.state.sourceIsEditable || this.state.targetIsEditable) ) return;
 
       // Technically we probably ought to also check to make sure we're the current
       // activeAutoCompleteId, but we wouldn't be edtiable if we weren't.
       if (data.nodes && data.nodes.length>0) {
         // A node was selected, so load it
-        // grab the first node
-        let node = data.nodes[0];
-        if (DBG) console.log('EdgeEditor',this.props.edgeID,'setting target node to',node);
-        this.setState({
-          targetNode: node
-        });
-        // Also update the formdata
-        let formData = this.state.formData;
-        formData.targetId = node.id;
-        this.setState({
-          formData: formData
-        });
+
+          let node = data.nodes[0];
+
+        // Are we editing the source or the target?
+        if (this.state.sourceIsEditable) {
+          // SOURCE
+          if (DBG) console.log('EdgeEditor.handleSelection:',this.props.edgeID,'setting source node to',node);
+
+          // Set sourceNpde state
+          this.setState({
+            sourceNode: node
+          });
+          // Also update the formdata
+          let formData = this.state.formData;
+          formData.sourceId = node.id;
+          this.setState({
+            formData: formData
+          });
+          // And let the switch button know we have a valid target
+          // And exit edit mode
+          this.setState({
+            hasValidSource:   true,
+            sourceIsEditable: false
+          });
+
+        } else {
+          // TARGET
+          if (DBG) console.log('EdgeEditor.handleSelection:',this.props.edgeID,'setting target node to',node);
+
+          // Set targetNpde state
+          this.setState({
+            targetNode: node
+          });
+          // Also update the formdata
+          let formData = this.state.formData;
+          formData.targetId = node.id;
+          this.setState({
+            formData: formData
+          });
+          // And let the switch button know we have a valid target
+          // And exit edit mode
+          this.setState({
+            hasValidTarget:   true,
+            targetIsEditable: false
+          });
+
+        }
+        // pass currentAutoComplete back to search
+        this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
+        this.setState({ isExpanded: true });
       } else {
         // No node selected, so we don't need to do anything
         // AutoComplete will take care of its own search label updates
@@ -435,6 +532,62 @@ class EdgeEditor extends UNISYS.Component {
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
+/*/ onSwapSourceAndTarget () {
+      let formData = this.state.formData;
+      console.log('source is',formData.sourceId.label);
+
+      // swap formadata
+      let targetId = formData.targetId;
+      formData.targetId = formData.sourceId;
+      formData.sourceId = targetId;
+
+      // swap this.state.source and target
+      let swap   = this.state.sourceNode;
+      let source = this.state.targetNode;
+      let target = swap;
+
+      // REVIEW
+      // Get rid of separate this.state.source and this.state.target
+      // and just use formData?!?
+      console.log('asftert swap source is',formData.sourceId.label);
+
+      // If the user was editing this field when they hit swap,
+      // we need to exit out of editing, and THEN do the swap.
+      // The problem is we have to assume the target node is valid first?
+      // So if you're in the middle of selecting, you might end up with a
+      // an invalid node?
+      // The alternative is to only show the swap button once a valid
+      // target node has been selected?
+      this.setState({
+        formData: formData,
+        sourceNode: source,
+        targetNode: target
+      });
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ onChangeSource () {
+      this.setState({
+        sourceIsEditable: true,
+        hasValidSource: false
+      });
+      this.AppCall('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'source'});
+      // Whenever we set the autocomplete to source, we have to update the label
+      this.AppCall('SOURCE_SEARCH', { searchString: this.state.sourceNode.label });
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ onChangeTarget () {
+      this.setState({
+        targetIsEditable: true,
+        hasValidTarget: false
+      });
+      this.AppCall('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'target'});
+      // Whenever we set the autocomplete to target, we have to update the label
+      this.AppCall('SOURCE_SEARCH', { searchString: this.state.targetNode.label });
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
 /*/ onRelationshipChange (event) {
       let formData = this.state.formData;
       formData.relationship = event.target.value;
@@ -488,7 +641,7 @@ class EdgeEditor extends UNISYS.Component {
       // pass currentAutoComplete back to nodeselector
       this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
 
-      this.setState({ isEditable: false, targetIsEditable: false });
+      this.setState({ isEditable: false, sourceIsEditable: false, targetIsEditable: false });
     } // onSubmit
 
 
@@ -532,8 +685,16 @@ class EdgeEditor extends UNISYS.Component {
                   <AutoComplete
                     identifier={'edge'+edgeID+'source'}
                     disabledValue={sourceNode.label}
-                    inactiveMode={'static'}
+                    inactiveMode={parentNodeLabel===sourceNode.label ? 'static' : 'disabled'}
+                    shouldIgnoreSelection={!this.state.sourceIsEditable}
                   />
+                  <Button outline size="sm" className="float-right"
+                    hidden={ !(this.state.isEditable &&
+                               this.state.hasValidSource &&
+                               (sourceNode.label!==this.props.parentNodeLabel)) }
+                    onClick={this.onChangeSource}
+                    title="Select a different source node"
+                  >Change Source</Button>
                 </Col>
               </FormGroup>
               <FormGroup row>
@@ -566,6 +727,18 @@ class EdgeEditor extends UNISYS.Component {
                     inactiveMode={parentNodeLabel===targetNode.label ? 'static' : 'disabled'}
                     shouldIgnoreSelection={!this.state.targetIsEditable}
                   />
+                  <Button outline size="sm" className="float-right"
+                    hidden={ !(this.state.isEditable &&
+                               this.state.hasValidTarget &&
+                               (targetNode.label!==this.props.parentNodeLabel)) }
+                    onClick={this.onChangeTarget}
+                    title="Select a different target node"
+                  >Change Target</Button>
+                  <Button outline size="sm" className="float-right" style={{marginRight:'5px'}}
+                    hidden={!(this.state.isEditable && this.state.hasValidTarget)}
+                    onClick={this.onSwapSourceAndTarget}
+                    title="Swap 'Source' and 'Target' nodes"
+                  >&uarr;&darr;</Button>
                 </Col>
               </FormGroup>
               <FormGroup row>
@@ -618,9 +791,7 @@ class EdgeEditor extends UNISYS.Component {
                 >{this.state.isEditable?'Cancel':'Close'}</Button>&nbsp;
                 <Button color="primary" size="sm"
                   hidden={!this.state.isEditable}
-                  disabled={(!this.state.isEditable) &&
-                            ( !this.state.formData.source ||
-                              !this.state.formData.target )}
+                  disabled={ !(this.state.isEditable && this.state.hasValidTarget) }
                 >Save</Button>
               </FormGroup>
             </Form>
