@@ -248,11 +248,6 @@ class EdgeTable extends UNISYS.Component {
           >
             <thead>
               <tr>
-<!--                <th><Button size="sm"
-                      disabled={this.state.sortkey==="id"}
-                      onClick={()=>this.setSortKey("id")}
-                    >ID</Button></th>
-                <th></th>-->
                 <th><Button size="sm"
                       disabled={this.state.sortkey==="source"}
                       onClick={()=>this.setSortKey("source")}
@@ -282,7 +277,6 @@ class EdgeTable extends UNISYS.Component {
             <tbody>
             {this.state.edges.map( (edge,i) => (
               <tr key={i}>
-                <!--<td>{edge.id}</td>-->
                 <td><Button size="sm" outline
                       value={edge.id}
                       onClick={this.onButtonClick}
