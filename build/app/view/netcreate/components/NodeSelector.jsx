@@ -85,7 +85,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-var DBG = false;
+const DBG = false;
+const PR  = 'NodeSelector';
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -118,6 +119,13 @@ class NodeSelector extends UNISYS.Component {
             isNewNode: true
         },
         edges:         [],
+        options: [
+          {
+            id:    "test",
+            label: "Test",
+            color: "#FF0000"
+          }
+        ],
         isEditable:    false,
         isValid:       false
       };
@@ -143,7 +151,7 @@ class NodeSelector extends UNISYS.Component {
       this.OnAppStateChange('SELECTION',(change) => {
         this.handleSelection(change);
       });
-      this.OnAppStateChange('SEARCH',             this.onStateChange_SEARCH);
+      this.OnAppStateChange('SEARCH', this.onStateChange_SEARCH);
     } // constructor
 
 
@@ -473,6 +481,10 @@ class NodeSelector extends UNISYS.Component {
     }
 /*/ REACT calls this to receive the component layout and data sources
 /*/ render () {
+      var options = this.AppState('NODETYPES').options;
+      // When we first render, the TEMPLATE may not be loaded yet.
+      // If it's not loaded, define a dummy option for now
+      if ( (options===undefined) || !Array.isArray(options) ) options = [];
       return (
         <div>
           <FormGroup className="text-right" style={{paddingRight:'5px'}}>
@@ -510,11 +522,9 @@ class NodeSelector extends UNISYS.Component {
                   onChange={this.onTypeChange}
                   disabled={!this.state.isEditable}
                   >
-                  <option>Person</option>
-                  <option>Group</option>
-                  <option>Place</option>
-                  <option>Thing</option>
-                  <option>Event</option>
+                  {options.map( (option,i) => (
+                    <option id={option.id} key={option.id}>{option.label}</option>
+                  ))}
                 </Input>
               </Col>
             </FormGroup>

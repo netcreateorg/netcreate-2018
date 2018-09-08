@@ -32,17 +32,17 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-var DBG        = false;
+const DBG             = false;
+const PR              = 'd3-simplenetgraph'
 
 /* eslint-disable prefer-reflect */
 /* d3.call() is false-triggering the above rule */
 
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const d3       = require('d3')
-const UNISYS   = require('unisys/client');
-var   UDATA    = null;
-
+const d3              = require('d3')
+const UNISYS          = require('unisys/client');
+var   UDATA           = null;
 
 /// PRIVATE VARS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -99,10 +99,10 @@ class D3NetGraph {
       this.clickFn      = {};
 
       this.defaultSize  = 5;
-      this.defaultColor = '#DEF';
 
       /// Initialize UNISYS DATA LINK for REACT
       UDATA = UNISYS.NewDataLink(this);
+
 
   /// D3 CODE ///////////////////////////////////////////////////////////////////
   /// note: this is all inside the class constructor function!
@@ -128,6 +128,7 @@ class D3NetGraph {
 
       // bind 'this' to function objects so event handlers can access
       // contents of this class+module instance
+      this._SetData           = this._SetData.bind(this);
       this._Initialize        = this._Initialize.bind(this);
       this._UpdateGraph       = this._UpdateGraph.bind(this);
       this._UpdateForces      = this._UpdateForces.bind(this);
@@ -139,8 +140,16 @@ class D3NetGraph {
       // watch for updates to the D3DATA data object
       UDATA.OnAppStateChange('D3DATA',(data)=>{
         // expect { nodes, edges } for this namespace
-        if (DBG) console.log('D3SimpleNetgraph got state D3DATA',data);
-        this.SetData(data);
+        if (DBG) console.log(PR,'got state D3DATA',data);
+        this._SetData(data);
+      });
+
+      // The template may be loaded or changed after D3DATA is loaded.
+      // So we need to explicitly update the colors if the color
+      // definitions have changed.
+      UDATA.OnAppStateChange('NODECOLORMAP',(data)=>{
+        if (DBG) console.log(PR,'got state NODECOLORMAP',data);
+        this._UpdateGraph();
       });
 
   }
@@ -148,9 +157,13 @@ class D3NetGraph {
 
 /// CLASS PUBLIC METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+/// CLASS PRIVATE METHODS /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ The parent container passes data to the d3 graph via this SetData call
     which then triggers all the internal updates
-/*/ SetData ( newData ) {
+/*/ _SetData ( newData ) {
       this.data = newData
       if (newData && newData.nodes) {
         this._Initialize()
@@ -161,10 +174,6 @@ class D3NetGraph {
         this.simulation.alpha(1).restart()
       }
     }
-
-
-/// CLASS PRIVATE METHODS /////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ This sets up the force properties for the simulation and tick handler.
 /*/ _Initialize () {
       // Create the force layout.  After a call to force.start(), the tick
@@ -201,6 +210,8 @@ class D3NetGraph {
     you can write code that initializes AND updates data.
 
 /*/ _UpdateGraph () {
+
+      let COLORMAP = UDATA.AppState('NODECOLORMAP');
 
       // DATA JOIN
       // select all elemnts with class .node in d3svg
@@ -247,7 +258,16 @@ class D3NetGraph {
               return this.defaultSize + (this.defaultSize * d.weight / 2)
           })
   //        .attr("r", (d) => { return this.defaultSize }) // d.size ?  d.size/10 : this.defaultSize; })
-          .attr("fill", (d) => { return d.color ? d.color : this.defaultColor; });
+          .attr("fill", (d) => {
+            // REVIEW: Using label match.  Should we use id instead?
+            // The advantage of using the label is backward compatibility with
+            // Google Fusion table data as well as exportability.
+            // If we save the type as an id, the data format will be
+            // less human-readable.
+            // The problem with this approach though is that any changes
+            // to the label text will result in a failed color lookup!
+            return COLORMAP[d.attributes["Node_Type"]];
+          });
 
       // enter node: also append 'text' element
       elementG
@@ -312,7 +332,11 @@ class D3NetGraph {
             if (d.selected || d.strokeColor) return '5px';
             return undefined // don't set stroke width
           })
-// this "r" is necessary to resize aftger a link is added
+// this "r" is necessary to resize after a link is added
+          .attr("fill", (d) => {
+            // REVIEW: Using label match.  Should we use id instead?
+            return COLORMAP[d.attributes["Node_Type"]];
+          })
           .attr("r", (d) => {
               let radius = this.data.edges.reduce((acc,ed)=>{
                 return (ed.source.id===d.id || ed.target.id===d.id) ? acc+1 : acc
@@ -362,7 +386,6 @@ class D3NetGraph {
       this.simulation.force("link").links(this.data.edges)
 
     }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Apply new force properties
     Call this on construct and if forceProperties have changed.

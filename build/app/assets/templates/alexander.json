@@ -1,0 +1,125 @@
+{
+
+  "_comment":    "/// NetCreate Template File ///",
+  "_comment2":   "/// IMPORTANT: As of 9/6/2018 only nodePrompts.type and edgePrompts.type are being used ///",
+  "_comment3":   "/// The rest of the definitions are there as placeholders for future functionality      ///",
+
+
+  "name":        "Alexander The Great",
+
+  "description": "From Plutarch's Lives That Made Greek History -- Add something about what might make this template common to other source texts, e.g. we may not want to base this on a text but a text type?  Or perhaps to indicate which class it was for? e.g. Fall 2018 World History 101",
+
+
+
+  "nodePrompts": {
+    "label": {
+                "label":    "Label",
+                "help":     "A short title for the node"
+             },
+    "type":  {
+                "label":    "Type",
+                "help":     "Multiple people are a 'Group'",
+                "options": [
+                  {
+                    "_comment": "Default color when nothing is selected",
+                    "id":       "",
+                    "label":    "",
+                    "color":    "#EEEEEE"
+                  },
+                  {
+                    "id":    "person",
+                    "label": "Person",
+                    "color": "#66CCFF"
+                  },
+                  {
+                    "id":    "group",
+                    "label": "Group",
+                    "color": "#3399FF"
+                  },
+                  {
+                    "id":    "place",
+                    "label": "Place",
+                    "color": "#00FF00"
+                  },
+                  {
+                    "id":    "thing",
+                    "label": "Thing",
+                    "color": "#FF0000"
+                  },
+                  {
+                    "id":    "event",
+                    "label": "Event",
+                    "color": "#009999"
+                  }
+                ]
+             },
+    "notes": {
+                "label": "Notes",
+                "help":  "Add some details."
+              },
+    "info":  {
+                "label": "Geocode or Date",
+                "help":  "Use latitude/longitude or a date mm/dd/yyy"
+              }
+  },
+
+
+
+  "edgePrompts": {
+    "source":   {
+                  "label": "Source",
+                  "help":  ""
+                },
+    "type":     {
+                  "label": "Type",
+                  "help":  "",
+                  "options": [
+                    {
+                      "id":    "notSelected",
+                      "label": ""
+                    },
+                    {
+                      "id":    "peaceful",
+                      "label": "has peaceful, familial or conversational interaction with"
+                    },
+                    {
+                      "id":    "martial",
+                      "label": "has martial or adversarial interaction with"
+                    },
+                    {
+                      "id":    "writes",
+                      "label": "sends written communication to"
+                    },
+                    {
+                      "id":    "member",
+                      "label": "is a group member of"
+                    },
+                    {
+                      "id":    "participate",
+                      "label": "participates in"
+                    },
+                    {
+                      "id":    "visit",
+                      "label": "makes visit to"
+                    }
+                  ]
+                },
+    "target":   {
+                  "label": "Target",
+                  "help":  ""
+                },
+    "notes":    {
+                  "label": "Notes",
+                  "help":  ""
+                },
+    "info":     {
+                  "label": "Approximate Date of Interaction",
+                  "help":  ""
+                },
+    "citation": {
+                  "label": "Citation",
+                  "help":  "Enter Chapter number."
+                }
+  }
+
+}

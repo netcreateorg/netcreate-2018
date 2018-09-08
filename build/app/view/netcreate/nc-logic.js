@@ -127,6 +127,7 @@ var   UDATA      = UNISYS.NewDataLink(MOD);
 
 \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -/*/
 var   D3DATA           = null;    // see above for description
+var   TEMPLATE         = null;    // template definition for prompts
 const DATASTORE        = require('system/datastore');
 const PROMPTS          = require('system/util/prompts');
 const PR               = PROMPTS.Pad('ACDLogic');
@@ -149,6 +150,31 @@ const TARGET_COLOR     = '#FF0000';
         if (DBG) console.log(PR,'DATASTORE returned data',data);
         D3DATA = data;
         UDATA.SetAppState('D3DATA',D3DATA);
+      });
+      // load Template data
+      DATASTORE.PromiseJSONFile( '../templates/alexander.json' )
+      .then((data)=>{
+        if (DBG) console.log(PR,'DATASTORE returned json',data);
+        TEMPLATE = data;
+        UDATA.SetAppState('TEMPLATE',TEMPLATE);
+        // Process Node, NodeColorMap and Edge options
+        try {
+          UDATA.SetAppState('NODETYPES', TEMPLATE.nodePrompts.type);
+        } catch (error) {
+          console.error(PR,'received bad TEMPLATE node type',error,data);
+        }
+        try {
+          let nodeColorMap = {};
+          TEMPLATE.nodePrompts.type.options.forEach( (o)=>{nodeColorMap[o.label] = o.color;});
+          UDATA.SetAppState('NODECOLORMAP', nodeColorMap);
+        } catch (error) {
+          console.error(PR,'received bad TEMPLATE node options',error,data);
+        }
+        try {
+          UDATA.SetAppState('EDGETYPES', TEMPLATE.edgePrompts.type);
+        } catch (error) {
+          console.error(PR,'received bad TEMPLATE edge options',error,data);
+        }
       });
     }); // end INITIALIZE HOOK
 
