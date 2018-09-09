@@ -4,7 +4,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 const UNISYS      = require('unisys/client');
 const REFLECT     = require('system/util/reflection');
 /// MAGIC: DevDBLogic will add UNISYS Lifecycle Hooks on require()
-const LOGIC       = require('./devdb-logic');
+const LOGIC       = require('./devsession-logic');
 const {Switch, Route, Redirect, Link} = require('react-router-dom');
 
 var   DBG         = false;
@@ -14,12 +14,12 @@ var   DBG         = false;
 const React       = require('react');
 const ReactStrap  = require('reactstrap');
 const PROMPTS     = require('system/util/prompts');
-const PR          = PROMPTS.Pad('DevDB');
+const PR          = PROMPTS.Pad('DevSession');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ This is the root component for the view
-/*/ class DevDB extends UNISYS.Component {
+/*/ class DevSession extends UNISYS.Component {
       constructor(props) {
         super(props);
         UNISYS.ForceReloadOnNavigation();
@@ -29,7 +29,7 @@ const PR          = PROMPTS.Pad('DevDB');
         // UDATA.AppState() returns a copy of state obj; mutate/assign freely
         let state = this.AppState('VIEW');
         // initialize some state variables
-        state.description = state.description || 'exerciser for database server testing';
+        state.description = state.description || 'session logic testbed';
         // REACT TIP: setting state directly works ONLY in React.Component constructor!
         this.state = state;
 
@@ -83,7 +83,7 @@ const PR          = PROMPTS.Pad('DevDB');
   /*/ render() {
         return (
             <div id='fdshell' style={{padding:'10px'}}>
-              <h2>DB DEVTEST SHELL</h2>
+              <h2>SESSIONS DEV TESTING</h2>
               <Route path={`${this.props.match.path}/student/:unit/:user`} component={this.StudentRender}/>
               <p>{this.state.description}</p>
             </div>
@@ -95,8 +95,8 @@ const PR          = PROMPTS.Pad('DevDB');
 /// EXPORT UNISYS SIGNATURE ///////////////////////////////////////////////////
 /// used in init.jsx to set module scope early
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DevDB.UMOD = module.id;
+DevSession.UMOD = module.id;
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = DevDB;
+module.exports = DevSession;

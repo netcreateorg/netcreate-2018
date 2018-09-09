@@ -49,6 +49,7 @@
     const DevUnisys         = require('view/dev-unisys/DevUnisys');
     const DevDB             = require('view/dev-db/DevDB');
     const DevReact          = require('view/dev-react/DevReact');
+    const DevSession        = require('view/dev-session/DevSession');
 //  const Prototype         = require('view/prototype/Prototype');
 //  const D3Test            = require('view/d3test/D3Test');
 
@@ -69,6 +70,10 @@
       {
         path: '/dev-react',
         component: DevReact
+      },
+      {
+        path: '/dev-session',
+        component: DevSession
       },
       {
         path: '/simple',
@@ -178,6 +183,9 @@ class AppShell extends React.Component {
                     </DropdownItem>
                     <DropdownItem>
                       <NavLink to="/dev-db" tag={RRNavLink} replace>dev-db</NavLink>
+                    </DropdownItem>
+                    <DropdownItem>
+                      <NavLink to="/dev-session" tag={RRNavLink} replace>dev-session</NavLink>
                     </DropdownItem>
                     <DropdownItem>
                       <NavLink to="/simple" tag={RRNavLink} replace>SimpleHTML Example</NavLink>

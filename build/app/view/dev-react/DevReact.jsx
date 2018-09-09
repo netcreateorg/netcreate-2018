@@ -3,7 +3,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS      = require('unisys/client');
 const REFLECT     = require('system/util/reflection');
-const LOGIC       = require('./DevReactLogic');
+const LOGIC       = require('./devreact-logic');
 const {Route}     = require('react-router-dom');
 
 var   DBG         = true;
