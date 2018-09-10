@@ -248,6 +248,7 @@ class EdgeTable extends UNISYS.Component {
           >
             <thead>
               <tr>
+                <th></th>
                 <th><Button size="sm"
                       disabled={this.state.sortkey==="source"}
                       onClick={()=>this.setSortKey("source")}
