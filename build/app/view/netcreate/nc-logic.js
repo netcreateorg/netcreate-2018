@@ -318,7 +318,7 @@ const TARGET_COLOR     = '#FF0000';
         let newNode = {
           label        : node.label,
           attributes   : attribs,
-          id           : node.id
+          id           : String( node.id )              // Make sure id is a string!
         };
         // set matching nodes
         let updatedNodes = m_SetMatchingNodesByProp({id:node.id},newNode);
@@ -353,7 +353,7 @@ const TARGET_COLOR     = '#FF0000';
           source         : m_FindNodeById(edge.source),
           target         : m_FindNodeById(edge.target),
           attributes     : attribs,
-          id             : edge.id,
+          id             : String( edge.id ),            // Make sure id is a string!
           size           : edge.size
         };
 
