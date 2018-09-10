@@ -12,6 +12,8 @@
       <EdgeTable/>
 
 
+    Set `DBG` to true to show the `ID` column.
+
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -248,6 +250,12 @@ class EdgeTable extends UNISYS.Component {
           >
             <thead>
               <tr>
+                {DBG ?
+                  <th><Button size="sm"
+                      disabled={this.state.sortkey==="id"}
+                      onClick={()=>this.setSortKey("id")}
+                    >ID</Button></th>
+                : ''}
                 <th></th>
                 <th><Button size="sm"
                       disabled={this.state.sortkey==="source"}
@@ -278,6 +286,9 @@ class EdgeTable extends UNISYS.Component {
             <tbody>
             {this.state.edges.map( (edge,i) => (
               <tr key={i}>
+                {DBG ?
+                  <td>{edge.id}</td>
+                : ''}
                 <td><Button size="sm" outline
                       value={edge.id}
                       onClick={this.onButtonClick}
