@@ -353,12 +353,14 @@ const TARGET_COLOR     = '#FF0000';
           source         : m_FindNodeById(edge.source),
           target         : m_FindNodeById(edge.target),
           attributes     : attribs,
-          id             : edge.id
+          id             : edge.id,
+          size           : edge.size
         };
-        // set matching nodes
+
+        // set matching edges
         let updatedEdges = m_SetMatchingEdgesByProp({id:edge.id},newEdge);
         if (DBG) console.log('HandleEdgeUpdate: updated',updatedEdges);
-        // if no nodes had matched, then add a new node!
+        // if no edges had matched, then add a new edge!
         if (updatedEdges.length===0) {
           if (DBG) console.log('pushing edge',newEdge);
           // created edges should have a default size
@@ -378,6 +380,9 @@ const TARGET_COLOR     = '#FF0000';
           newEdge.source = newEdge.source.id;
           newEdge.target = newEdge.target.id;
 
+          // Calculate Edge Size
+          newEdge.size = m_CalculateEdgeWeight( edge, D3DATA.edges );
+
           DATASTORE.Update({ op:'insert', newEdge });
         }
         if (updatedEdges.length===1) {
@@ -394,6 +399,10 @@ const TARGET_COLOR     = '#FF0000';
           // (If we don't do this, the edges become disconnected from nodes)
           newEdge.source = newEdge.source.id;
           newEdge.target = newEdge.target.id;
+
+          // Calculate Edge Size
+          let edges = UDATA.AppState('D3DATA').edges;
+          newEdge.size = m_CalculateEdgeWeight( edge, edges );
 
           // DATASTORE/server-database.json expects 'edge' not 'newEdge' with updates
           DATASTORE.Update({ op:'update', edge:newEdge });
@@ -588,6 +597,23 @@ const TARGET_COLOR     = '#FF0000';
 /*/ function m_SetMatchingEdgesByProp( match_me={}, yes={}, no={} ) {
       return m_SetMatchingObjsByProp( D3DATA.edges, match_me, yes, no );
     }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Count number of edges with the same source/target to determine weight
+/*/ function m_CalculateEdgeWeight( edge, edges ) {
+      // REVIEW: If there's a match, BOTH edge sizes ought to be set!
+
+      let size = edges.reduce( (accumulator,e) => {
+        // source and target might be ids or might be node objects depending
+        // on whether D3 has processed the edge object.
+        let sourceId = e.source.id || e.source;
+        let targetId = e.target.id || e.target;
+        if ( ((sourceId===edge.source) && (targetId===edge.target)) ||
+             ((sourceId===edge.target) && (targetId===edge.source))
+           ) return accumulator + 1;
+        return accumulator;
+      }, 0);
+      return size**2;  // Make size differences more noticeable
+  }
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
