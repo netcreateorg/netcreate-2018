@@ -30,6 +30,7 @@ const AppShell      = require('init-appshell');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ When the DOM is loaded, initialize UNISYS
 /*/ document.addEventListener('DOMContentLoaded', () => {
+      console.group('init.jsx bootstrap');
       console.log('%cINIT %cDOMContentLoaded. Starting UNISYS Lifecycle!','color:blue','color:auto');
       m_SetLifecycleScope();
       (async () => {
@@ -39,6 +40,7 @@ const AppShell      = require('init-appshell');
         await UNISYS.SetupDOM();  // DOM_READY
         await UNISYS.SetupRun();  // RESET, START, APP_READY, RUN
         console.log('%cINIT %cUNISYS Lifecycle Initialization Complete','color:blue','color:auto');
+        console.groupEnd();
       })();
     });
 

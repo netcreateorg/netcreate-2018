@@ -15,6 +15,7 @@ const React       = require('react');
 const ReactStrap  = require('reactstrap');
 const PROMPTS     = require('system/util/prompts');
 const PR          = PROMPTS.Pad('DevSession');
+const SESSUTIL    = require('unisys/common-sessutil');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,6 +48,7 @@ const PR          = PROMPTS.Pad('DevSession');
   /// state is coming from UNISYS
       UnisysStateChange( state ) {
         if (DBG) console.log(`.. REACT <- state`,state,`via ${this.udata.UID()}'`);
+
         // update local react state, which should force an update
         this.setState(state);
       }
@@ -70,11 +72,29 @@ const PR          = PROMPTS.Pad('DevSession');
         if (DBG) console.log(`${className} componentDidMount`);
       } // componentDidMount
 
-      StudentRender ({ match }) {
-        console.log('-- STUDENT RENDER --');
-        return (
-          <p style={{color:'red'}}><small>matching subroute: {match.params.unit} {match.params.user}!</small></p>
-        );
+      SessionEdit ({ match }) {
+        console.log(`SessionEdit edit/${match.params.token}`);
+        let token = match.params.token;
+        let decoded = SESSUTIL.DecodeToken(token);
+        if (decoded) {
+          return (
+            <div>
+              <p>
+                <small>matching subroute: [{token}]</small><br/>
+                <span style={{color:'green'}}><small>valid token: groupID {decoded.groupId}</small></span>
+              </p>
+            </div>
+          );
+        } else {
+          return (
+            <div>
+              <p>
+                <small>matching subroute: [{token}]</small><br/>
+                <span style={{color:'red'}}><small>COULD NOT DECODE TO VALID GROUP ID</small></span>
+              </p>
+            </div>
+          );
+        }
       }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -84,7 +104,7 @@ const PR          = PROMPTS.Pad('DevSession');
         return (
             <div id='fdshell' style={{padding:'10px'}}>
               <h2>SESSIONS DEV TESTING</h2>
-              <Route path={`${this.props.match.path}/student/:unit/:user`} component={this.StudentRender}/>
+              <Route path={`${this.props.match.path}/edit/:token`} component={this.SessionEdit}/>
               <p>{this.state.description}</p>
             </div>
         );

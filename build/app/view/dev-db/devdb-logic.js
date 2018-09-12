@@ -77,13 +77,6 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*/
 /*/ MOD.Hook('START', function () {
       console.log('*** START ***');
-      console.log('firing compatibility NET_SEND_TEST');
-      UDATA.NetSend('NET_SEND_TEST',{});
-      console.log('firing compatibility NET_CALL_TEST');
-      UDATA.NetCall('NET_CALL_TEST',{})
-      .then((d)=>{
-        console.log('net call test succeeded',d);
-      });
     });
 
 /// COMMAND LINE UTILITIES ////////////////////////////////////////////////////

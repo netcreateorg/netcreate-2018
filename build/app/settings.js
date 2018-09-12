@@ -63,12 +63,31 @@ let RELOAD_TIMER = null;
 /*/ MOD.CurrentTime = () => {
       return DATE.toDateString();
     };
+
+/// SERVER-PROVIDED PROPERTIES ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ searches through the window.NC_UNISYS object that is injected by web page
     app/static/index.ejs, which contains interesting values from server
 /*/ MOD.EJSProp = ( propName ) => {
       if (propName===undefined) return EJSPROPS;
       return EJSPROPS[propName];
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    MOD.ServerHostName = () => {
+      return EJSPROPS.server.hostname || 'ERROR';
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    MOD.ServerHostIP = () => {
+      return EJSPROPS.server.ip || 'ERROR';
+    };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    MOD.ServerAppURL = ( suburl ) => {
+     let ubits = new URL(window.location);
+      let hash = ubits.hash.split('/')[0];
+      let serverip = MOD.ServerHostIP();
+      let url = `${ubits.protocol}//${ubits.host}/${hash}`;
+      if (typeof suburl==='string') url += suburl;
+      return url;
     };
 
 

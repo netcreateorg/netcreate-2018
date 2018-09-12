@@ -16,9 +16,14 @@ const UNISYS      = require('unisys/client');
 const PROMPTS     = require('system/util/prompts');
 const PR          = PROMPTS.Pad('Datastore');
 
+/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const HASH_ABET   = 'ABCDEFGHIJKLMNPQRSTVWXYZ23456789';
+const HASH_MINLEN = 3;
+
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let DSTOR        = UNISYS.NewModule(module.id);
+let DSTOR         = UNISYS.NewModule(module.id);
 let UDATA         = UNISYS.NewDataLink(DSTOR);
 let D3DATA        = {};
 
@@ -158,8 +163,6 @@ let D3DATA        = {};
         });
       });
     };
-
-
 
 /// EXPORT MODULE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

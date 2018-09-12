@@ -11,6 +11,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
     const SETTINGS      = require('settings');
     const UNISYS        = require('unisys/client');
     const DATASTORE     = require('system/datastore');
+    const SESSUTIL      = require('unisys/common-sessutil');
 
 /// DEBUG SUPPORT /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,32 +27,9 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 
 /// COMPATIBILITY MODES  //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Provide Compatibility with DevUnisys instances
+/*/
 /*/ MOD.Hook('INITIALIZE', function () {
       console.log('*** INITIALIZE ***');
-      // without NET_SEND_TEST:
-      // fail netCallHandlr, netData, netDataAdd, netDataMulti, netDataReturn
-      // fail netSendHndlr
-
-      // spy on NET_SEND_TEST
-      // does not affect tests
-      UDATA.HandleMessage('NET_SEND_TEST',function(data) {
-        console.log(PR,'snooping NET_SEND_TEST data',JSON.stringify(data));
-      });
-      // add NET_CALL_TEST handler
-      // netData passes, but not specific data tests
-      UDATA.HandleMessage('NET_CALL_TEST',function(data) {
-        console.log(PR,'snooping NET_CALL_TEST data',JSON.stringify(data));
-        // add data.stack to pass netDataMulti, netDataReturn
-        if (data.stack===undefined) data.stack = [];
-        data.stack.push(`DBLOGIC_SNOOP`);
-        data.stack.push(`DBLOGIC_SNOOP`);
-        // add data.reply to pass netDataAdd
-        data.reply = 'DBLOGIC_SNOOP';
-        // must return data for promise to return data to handler
-        // otherwise returns null
-        return data;
-      });
     });
 
 /// APP_READY MESSAGE REGISTRATION ////////////////////////////////////////////
@@ -76,14 +54,9 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ MOD.Hook('START', function () {
-      console.log('*** START ***');
-      console.log('firing compatibility NET_SEND_TEST');
-      UDATA.NetSend('NET_SEND_TEST',{});
-      console.log('firing compatibility NET_CALL_TEST');
-      UDATA.NetCall('NET_CALL_TEST',{})
-      .then((d)=>{
-        console.log('net call test succeeded',d);
-      });
+      console.log('*** INITIALIZE ***');
+      // source
+
     });
 
 /// COMMAND LINE UTILITIES ////////////////////////////////////////////////////
@@ -92,26 +65,26 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
     MOD.Hook('RESET', m_InitCLI);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Command: RESET THE DATABASE from default data
-/*/ CMD.push(function ncPushDatabase( jsonFile ) {
-      jsonFile = jsonFile || 'data.reducedlinks.json';
-      DATASTORE.PromiseJSONFile(jsonFile)
-      .then((data)=>{
-        // data is { nodes, edges }
-        console.log(PR,`Sending data from ${jsonFile} to Server`,data);
-        // UDATA.Call() returns a promise, so return it to
-        // continue the asynchronous chain
-        return UDATA.Call('SRV_DBSET', data);
-      })
-      .then((d)=>{
-        if (d.OK) {
-          console.log(`${PR} %cServer Database has been overwritten with ${jsonFile}`,'color:blue');
-          console.log(`${PR} Reload apps to see new data`);
-        } else {
-          console.error(PR,'Server Error',d);
-        }
-      });
-      // return syntax help
-      return "FYI: ncPushDatabase(jsonFile) can load file in assets/data";
+/*/ CMD.push(function ncMakeTokens( clsId, projId, numGroups ) {
+      // type checking
+      if (!Number.isInteger(numGroups)) return "numGroups arg3 must be integer";
+      if (numGroups<1) return "numGroups arg3 must be positive integeger";
+      if (typeof clsId!=='string') return "classId arg1 must be string (case insensitive)";
+      if (typeof projId!=='string') return "projId arg1 must be string (case insensitive)";
+      if (clsId.length>12) return "classId arg1 should be 12 chars or less";
+      if (projId.length>12) return "classId arg1 should be 12 chars or less";
+      // let's do this!
+      let out = `\nTOKEN LIST for class ${clsId} project ${projId}\n\n`;
+      let pad = String(numGroups).length;
+      for (let i=1; i<=numGroups; i++) {
+        let id = String(i).padStart(pad,' ');
+        out += `group ${id} - ${SESSUTIL.MakeToken(clsId,projId,i)}\n`;
+      }
+      let ubits = new URL(window.location);
+      let hash = ubits.hash.split('/')[0];
+      let url = `${ubits.protocol}//${ubits.host}/${hash}`;
+      out += `\nexample url: ${SETTINGS.ServerAppURL('/edit/')}${SESSUTIL.MakeToken(clsId,projId,1)}\n`;
+      return out;
     });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Initialize the CLI interface by loading functions in CMD array into
