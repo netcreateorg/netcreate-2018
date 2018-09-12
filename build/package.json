@@ -20,7 +20,7 @@
   "homepage": "https://github.com/daveseah/netcreate-2018#readme",
   "devDependencies": {
     "auto-reload-brunch": "^2.7.1",
-    "babel-brunch": "github:babel/babel-brunch",
+    "babel-brunch": "^6.1.1",
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "brunch": "^2.10.16",
