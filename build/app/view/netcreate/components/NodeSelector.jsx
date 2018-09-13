@@ -152,6 +152,20 @@ class NodeSelector extends UNISYS.Component {
         this.handleSelection(change);
       });
       this.OnAppStateChange('SEARCH', this.onStateChange_SEARCH);
+
+      // Load Template
+      let options = this.AppState('NODETYPES').options;
+      // When we first render, the TEMPLATE may not be loaded yet.
+      // If it's not loaded, define a dummy option for now
+      if ( (options===undefined) || !Array.isArray(options) ) options = [];
+      this.state.options = options;
+
+      // Handle Template updates
+      this.OnAppStateChange('NODETYPES',(data) => {
+        this.setState({options: data.options});
+      });
+
+
     } // constructor
 
 
@@ -481,10 +495,6 @@ class NodeSelector extends UNISYS.Component {
     }
 /*/ REACT calls this to receive the component layout and data sources
 /*/ render () {
-      var options = this.AppState('NODETYPES').options;
-      // When we first render, the TEMPLATE may not be loaded yet.
-      // If it's not loaded, define a dummy option for now
-      if ( (options===undefined) || !Array.isArray(options) ) options = [];
       return (
         <div>
           <FormGroup className="text-right" style={{paddingRight:'5px'}}>
@@ -522,7 +532,7 @@ class NodeSelector extends UNISYS.Component {
                   onChange={this.onTypeChange}
                   disabled={!this.state.isEditable}
                   >
-                  {options.map( (option,i) => (
+                  {this.state.options.map( (option,i) => (
                     <option id={option.id} key={option.id}>{option.label}</option>
                   ))}
                 </Input>

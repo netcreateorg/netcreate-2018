@@ -251,6 +251,17 @@ class EdgeEditor extends UNISYS.Component {
       UDATA.HandleMessage('EDGE_EDIT',(data) => {
         this.handleEdgeEdit(data);
       });
+
+      // Load template
+      const options = this.AppState('EDGETYPES').options;
+      if ( (options===undefined) || !Array.isArray(options) ) console.error(PR,'received bad Options definition:',options);
+      this.state.options = options;
+
+      // Template handler
+      this.OnAppStateChange('EDGETYPES',(data) => {
+        this.setState({options: data.options});
+      });
+
     } // constructor
 
 
@@ -650,10 +661,8 @@ class EdgeEditor extends UNISYS.Component {
 /*/
 /*/ render () {
       const { edgeID, parentNodeLabel } = this.props;
-      const { formData, sourceNode, targetNode } = this.state;
+      const { formData, sourceNode, targetNode, options } = this.state;
       const me = <span style={{color:"rgba(0,0,0,0.2)",fontStyle:"italic"}}>this</span>;
-      const options = this.AppState('EDGETYPES').options;
-      if ( (options===undefined) || !Array.isArray(options) ) console.error(PR,'received bad Options defintion:',options);
       return (
         <div>
 
