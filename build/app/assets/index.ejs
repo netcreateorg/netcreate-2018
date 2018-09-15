@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>NetCreate Prototype</title>
+		<title>NetCreate</title>
 		<!-- Required meta tags -->
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -45,6 +45,9 @@
 	</head>
 	<body>
 		<div id="app-container"></div>
-		<script>require("init")</script>
+		<script>
+			document.title += ` AppServer ${window.NC_UNISYS.server.ip}`;
+			require("init");
+		</script>
 	</body>
 </html>
