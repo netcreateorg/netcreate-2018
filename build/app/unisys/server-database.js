@@ -100,10 +100,9 @@ let DB = {};
     note: InitializeDatabase() was already called on system initialization
     to populate the NODES and EDGES structures.
 /*/ DB.PKT_GetDatabase = function ( pkt ) {
-      console.log(PR,`PKT_GetDatabase`);
       let nodes = NODES.chain().data({removeMeta:true});
       let edges = EDGES.chain().data({removeMeta:true});
-      console.log(PR,`nodes ${nodes.length} edges ${edges.length}`);
+      if (DBG) console.log(PR,`${pkt.SourceAddress()} fetched nodes ${nodes.length} edges ${edges.length}`);
       return { nodes, edges };
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -125,65 +124,73 @@ let DB = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     DB.PKT_GetNewNodeID = function ( pkt ) {
       m_max_nodeID += 1;
-      console.log(PR,`PKT_GetNewNodeID allocating nodeID ${m_max_nodeID} to ${pkt.SourceAddress()}`);
+      console.log(PR,`${pkt.SourceAddress()} NEW nodeID ${m_max_nodeID}`);
       return { nodeID : m_max_nodeID };
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     DB.PKT_GetNewEdgeID = function ( pkt ) {
       m_max_edgeID += 1;
-      console.log(PR,`PKT_GetNewEdgeID allocating edgeID ${m_max_edgeID} to ${pkt.SourceAddress()}`);
+      console.log(PR,`${pkt.SourceAddress()} NEW edgeID ${m_max_edgeID}`);
       return { edgeID : m_max_edgeID };
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     DB.PKT_Update = function ( pkt ) {
-      console.log(PR,`PKT_Update`,JSON.stringify(pkt.Data()));
-      let { op, node, newNode, edge, newEdge, edgeID } = pkt.Data();
-      switch (op) {
-        case 'insert':
-          if (newNode) {
-            if (NODES.find({id:newNode.id}).length===0) {
-              console.log(PR,`insert node ${JSON.stringify(newNode)}`);
-              NODES.insert(newNode);
-            } else {
-              console.log(PR,'ignoring duplicate node id',newNode.id);
-            }
-          }
-          if (newEdge) {
-            console.log(PR,'Checking edge id',newEdge.id,'...');
-            if (EDGES.find({id:newEdge.id}).length===0) {
-              console.log(PR,`insert edge ${JSON.stringify(newEdge)}`);
-              EDGES.insert(newEdge);
-            } else {
-              console.log(PR,'ignoring duplicate edge id',newEdge.id);
-            }
-          }
-          break;
-        case 'update':
-          if (node) {
-            console.log(PR,`node ${JSON.stringify(node)} matching`);
-            NODES.findAndUpdate({id:node.id},(n)=>{
-              console.log(PR,`updating node ${node.id} ${JSON.stringify(node)}`);
-              Object.assign(n,node);
-            });
-          }
-          if (edge) {
-            console.log(PR,`edge ${JSON.stringify(edge)} matching`);
-            EDGES.findAndUpdate({id:edge.id},(e)=>{
-              console.log(PR,`updating edge ${edge.id} ${JSON.stringify(edge)}`);
-              Object.assign(e,edge);
-            });
-          }
-          break;
-        case 'delete':
-          if (edgeID!==undefined) {
-            console.log(PR,`removing edge ${edgeID}`);
-            EDGES.findAndRemove({id:edgeID});
-          }
-          break;
-        default:
-          throw new Error(`Unexpected UPDATE op: '${op}'`);
+      let { node, edge, edgeID } = pkt.Data();
+      let retval = {};
+
+      // PROCESS NODE INSERT/UPDATE
+      if (node) {
+        let matches = NODES.find({id:node.id});
+        if (matches.length===0) {
+          // if there was no node, then this is an insert new operation
+          console.log(PR,`${pkt.SourceAddress()} INSERT node ${JSON.stringify(node)}`);
+          NODES.insert(node);
+          retval = { op:'insert', node };
+        } else if (matches.length===1) {
+          // there was one match to update
+          NODES.findAndUpdate({id:node.id},(n)=>{
+            console.log(PR,`${pkt.SourceAddress()} UPDATE node ${node.id} ${JSON.stringify(node)}`);
+            Object.assign(n,node);
+          });
+          retval = { op:'update', node };
+        } else {
+          console.log(PR,`WARNING: multiple node id ${node.id} x${matches.length}`);
+          retval = { op:'error-multinodeid' };
+        }
+        return retval;
+      } // if node
+
+      // PROCESS EDGE INSERT/UPDATE
+      if (edge) {
+        let matches = EDGES.find({id:edge.id});
+        if (matches.length===0) {
+          // this is a new edge
+          EDGES.insert(edge);
+          console.log(PR,`${pkt.SourceAddress()} INSERT edge ${edge.id} ${JSON.stringify(edge)}`);
+          retval = { op:'insert', edge };
+        } else if (matches.length===1) {
+          // update this edge
+          EDGES.findAndUpdate({id:edge.id},(e)=>{
+            console.log(PR,`${pkt.SourceAddress()} UPDATE edge ${edge.id} ${JSON.stringify(edge)}`);
+            Object.assign(e,edge);
+          });
+          retval = { op:'update', edge };
+        } else {
+          console.log(PR,`WARNING: multiple edge id ${edge.id} x${matches.length}`);
+          retval = { op:'error-multiedgeid' };
+        }
+        return retval;
+      } // if edge
+
+      // DELETE EDGES
+      if (edgeID!==undefined) {
+        console.log(PR,`${pkt.SourceAddress()} DELETE edge ${edgeID}`);
+        EDGES.findAndRemove({id:edgeID});
+        return { op:'delete',edgeID };
       }
-      return { OK:true };
+
+      // return update value
+      return { op:'error-noaction' };
     }
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////

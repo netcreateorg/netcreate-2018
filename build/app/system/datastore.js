@@ -31,10 +31,8 @@ let D3DATA        = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ establish message handlers during INITIALIZE phase
 /*/ DSTOR.Hook('INITIALIZE',()=>{
-      UDATA.HandleMessage('EDGE_DELETE',( data ) => {
-        let { edgeID } = data;
-        console.log(PR,'EDGE_DELETE edgeID',edgeID);
-        DSTOR.Update({ op:'delete', edgeID });
+      UDATA.HandleMessage('DB_UPDATE', function( data ) {
+        DSTOR.UpdateServerDB(data);
       });
     });
 
@@ -46,11 +44,11 @@ let D3DATA        = {};
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Write update to database
-/*/ DSTOR.Update = function( data ) {
+/*/ DSTOR.UpdateServerDB = function( data ) {
       UDATA.Call('SRV_DBUPDATE',data)
       .then((res)=>{
         if (res.OK) {
-          console.log(PR,`server db ${data.op}`,data,`success`);
+          console.log(PR,`server db`,data,`success`);
         } else {
           console.log(PR,'error updating server db',res);
         }
@@ -86,45 +84,12 @@ let D3DATA        = {};
         })
       });
     };
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Write update to database
-/*/ DSTOR.UpdateOrCreateNode = function ( node ) {
-      let attribs = {
-        'Node_Type'  : node.type,
-        'Extra Info' : node.info,
-        'Notes'      : node.notes
-      };
-      let newNode = {
-        label        : node.label,
-        attributes   : attribs,
-        id           : node.id
-      };
-      // set matching nodes
-      let updatedNodes = DSTOR.SetMatchingNodesByProp({id:node.id},newNode);
-      if (DBG) console.log('HandleSourceUpdate: updated',updatedNodes);
-      // if no nodes had matched, then add a new node!
-      if (updatedNodes.length===0) {
-        if (DBG) console.log('pushing node',newNode);
-        DSTOR.Update({ op:'insert', newNode });
-        D3DATA.nodes.push(newNode);
-      }
-      if (updatedNodes.length===1) {
-        // DATASTORE/server-database.json expects a 'node' key not 'newNode' with updates
-        if (DBG) console.log('updating existing node',newNode);
-        DSTOR.Update({ op:'update', node:newNode });
-      }
-      if (updatedNodes.length>1) {
-        throw Error("SourceUpdate found duplicate IDs");
-      }
-      UDATA.SetAppState('D3DATA',D3DATA);
-  };
 
 /// DATABASE LOADER ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Load default data set from a JSON file in /assets/data
 /*/ DSTOR.PromiseJSONFile = function ( jsonFile ) {
       if (typeof jsonFile!=='string') throw new Error('pass arg <filename_in_assets/data>');
-      if (DBG.load) console.log(PR,`loading app/assets/data/${jsonFile} via Promise...`);
       let promise = new Promise((resolve,reject)=>{
         let xobj = new XMLHttpRequest();
         xobj.addEventListener('load',(event)=>{
@@ -134,7 +99,6 @@ let D3DATA        = {};
           }
           let data = event.target.responseText;
           D3DATA = Object.assign(D3DATA,JSON.parse(data));
-          if (DBG.load) console.log(PR,'...data loaded!');
           resolve(D3DATA);
         });
         xobj.open('GET',`data/${jsonFile}`, true);

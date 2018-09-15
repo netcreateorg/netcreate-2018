@@ -130,7 +130,7 @@ var   D3DATA           = null;    // see above for description
 var   TEMPLATE         = null;    // template definition for prompts
 const DATASTORE        = require('system/datastore');
 const PROMPTS          = require('system/util/prompts');
-const PR               = PROMPTS.Pad('ACDLogic');
+const PR               = PROMPTS.Pad('NCLOGIC');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -246,7 +246,7 @@ const TARGET_COLOR     = '#FF0000';
           // No node selected, so deselect
         }
 
-        if (DBG) console.log('ACL: SOURCE_SELECT got',node);
+        if (DBG) console.log(PR,'SOURCE_SELECT got',node);
 
         if (node===undefined) {
           // Node not found, create a new node
@@ -268,7 +268,6 @@ const TARGET_COLOR     = '#FF0000';
             edges : edges
           };
         }
-        // TODO: CONVERT this to use a DATASTORE method
 
         // Set the SELECTION state so that listeners such as NodeSelectors update themselves
         UDATA.SetAppState('SELECTION',newState);
@@ -308,63 +307,41 @@ const TARGET_COLOR     = '#FF0000';
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ SOURCE_UPDATE is called when the properties of a node has changed
       Globally updates DATASTORE and working D3DATA objects with the new node data.
+      NOTE: SOURCE_UPDATE can be invoked remotely by the server on a DATABASE
+      update.
   /*/ UDATA.HandleMessage('SOURCE_UPDATE', function( data ) {
         let { node } = data;
-        let attribs = {
-          'Node_Type'  : node.type,
-          'Extra Info' : node.info,
-          'Notes'      : node.notes
-        };
-        let newNode = {
-          label        : node.label,
-          attributes   : attribs,
-          id           : node.id
-        };
-        // set matching nodes
-        let updatedNodes = m_SetMatchingNodesByProp({id:node.id},newNode);
-        if (DBG) console.log('HandleSourceUpdate: updated',updatedNodes);
+        // try updating existing nodes with this id?
+        let updatedNodes = m_SetMatchingNodesByProp({id:node.id},node);
+        if (DBG) console.log('SOURCE_UPDATE: updated',updatedNodes);
         // if no nodes had matched, then add a new node!
-        if (updatedNodes.length===0) {
-          if (DBG) console.log('pushing node',newNode);
-          DATASTORE.Update({ op:'insert', newNode });
-          D3DATA.nodes.push(newNode);
-        }
-        if (updatedNodes.length===1) {
-          // DATASTORE/server-database.json expects a 'node' key not 'newNode' with updates
-          if (DBG) console.log('updating existing node',newNode);
-          DATASTORE.Update({ op:'update', node:newNode });
-        }
         if (updatedNodes.length>1) {
-          throw Error("SourceUpdate found duplicate IDs");
+          console.error('SOURCE_UPDATE: duplicate ids in',updatedNodes);
+          throw Error('SOURCE_UPDATE: found duplicate IDs');
         }
+        if (updatedNodes.length===0) D3DATA.nodes.push(node);
         UDATA.SetAppState('D3DATA',D3DATA);
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ EDGE_UPDATE is called when the properties of an edge has changed
+      NOTE: SOURCE_UPDATE can be invoked remotely by the server on a DATABASE
+      update.
   /*/ UDATA.HandleMessage('EDGE_UPDATE', function( data ) {
         let { edge } = data;
-        let attribs = {
-          'Relationship' : edge.attributes['Relationship'],
-          'Info'         : edge.attributes['Info'],
-          'Citations'    : edge.attributes['Citations'],
-          'Notes'        : edge.attributes['Notes']
-        };
-        let newEdge = {
-          source         : m_FindNodeById(edge.source),
-          target         : m_FindNodeById(edge.target),
-          attributes     : attribs,
-          id             : edge.id
-        };
+        // edge.source and edge.target are initially ids
+        // replace then with node data
+        edge.source = m_FindNodeById(edge.source);
+        edge.target = m_FindNodeById(edge.target);
         // set matching nodes
-        let updatedEdges = m_SetMatchingEdgesByProp({id:edge.id},newEdge);
-        if (DBG) console.log('HandleEdgeUpdate: updated',updatedEdges);
+        let updatedEdges = m_SetMatchingEdgesByProp({id:edge.id},edge);
+        if (DBG) console.log('EDGE_UPDATE: updated',updatedEdges);
+
         // if no nodes had matched, then add a new node!
         if (updatedEdges.length===0) {
-          if (DBG) console.log('pushing edge',newEdge);
+          if (DBG) console.log('EDGE_UPDATE: pushing edge',edge);
           // created edges should have a default size
-          newEdge.size = 1;
-          D3DATA.edges.push(newEdge);
-
+          edge.size = 1;
+          D3DATA.edges.push(edge);
           // Edge source and target links should be stored as
           // ids rather than references to the actual source and
           // target node objects.
@@ -375,13 +352,11 @@ const TARGET_COLOR     = '#FF0000';
           // So we explicitly set and store ids rather than objects here.
           //
           // (If we don't do this, the edges become disconnected from nodes)
-          newEdge.source = newEdge.source.id;
-          newEdge.target = newEdge.target.id;
-
-          DATASTORE.Update({ op:'insert', newEdge });
+          edge.source = edge.source.id;
+          edge.target = edge.target.id;
         }
+        // if there was one node
         if (updatedEdges.length===1) {
-
           // Edge source and target links should be stored as
           // ids rather than references to the actual source and
           // target node objects.
@@ -392,12 +367,10 @@ const TARGET_COLOR     = '#FF0000';
           // So we explicitly set and store ids rather than objects here.
           //
           // (If we don't do this, the edges become disconnected from nodes)
-          newEdge.source = newEdge.source.id;
-          newEdge.target = newEdge.target.id;
-
-          // DATASTORE/server-database.json expects 'edge' not 'newEdge' with updates
-          DATASTORE.Update({ op:'update', edge:newEdge });
+          edge.source = edge.source.id;
+          edge.target = edge.target.id;
         }
+        // if there were more edges than expected
         if (updatedEdges.length>1) {
           throw Error("EdgeUpdate found duplicate IDs");
         }
@@ -433,6 +406,7 @@ const TARGET_COLOR     = '#FF0000';
         m_HandleAutoCompleteSelect( data );
       });
     }); // end UNISYS_INIT
+
     function m_HandleAutoCompleteSelect ( data ) {
       if (DBG) console.log('ACL: Setting activeAutoCompleteId to',data.id);
       UDATA.SetAppState('ACTIVEAUTOCOMPLETE',{

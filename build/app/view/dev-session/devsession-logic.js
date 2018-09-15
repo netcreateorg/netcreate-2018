@@ -11,7 +11,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
     const SETTINGS      = require('settings');
     const UNISYS        = require('unisys/client');
     const DATASTORE     = require('system/datastore');
-    const SESSUTIL      = require('unisys/common-sessutil');
+    const SESSION      = require('unisys/common-session');
 
 /// DEBUG SUPPORT /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -55,8 +55,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*/
 /*/ MOD.Hook('START', function () {
       console.log('*** INITIALIZE ***');
-      // source
-
+      UNISYS.Log({ msg : 'Initialize' });
     });
 
 /// COMMAND LINE UTILITIES ////////////////////////////////////////////////////
@@ -78,12 +77,12 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
       let pad = String(numGroups).length;
       for (let i=1; i<=numGroups; i++) {
         let id = String(i).padStart(pad,' ');
-        out += `group ${id} - ${SESSUTIL.MakeToken(clsId,projId,i)}\n`;
+        out += `group ${id} - ${SESSION.MakeToken(clsId,projId,i)}\n`;
       }
       let ubits = new URL(window.location);
       let hash = ubits.hash.split('/')[0];
       let url = `${ubits.protocol}//${ubits.host}/${hash}`;
-      out += `\nexample url: ${SETTINGS.ServerAppURL('/edit/')}${SESSUTIL.MakeToken(clsId,projId,1)}\n`;
+      out += `\nexample url: ${SETTINGS.ServerAppURL('/edit/')}${SESSION.MakeToken(clsId,projId,1)}\n`;
       return out;
     });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

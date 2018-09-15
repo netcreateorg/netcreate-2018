@@ -15,7 +15,7 @@ const React       = require('react');
 const ReactStrap  = require('reactstrap');
 const PROMPTS     = require('system/util/prompts');
 const PR          = PROMPTS.Pad('DevSession');
-const SESSUTIL    = require('unisys/common-sessutil');
+const SESSION     = require('unisys/common-session');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -75,7 +75,7 @@ const SESSUTIL    = require('unisys/common-sessutil');
       SessionEdit ({ match }) {
         console.log(`SessionEdit edit/${match.params.token}`);
         let token = match.params.token;
-        let decoded = SESSUTIL.DecodeToken(token);
+        let decoded = SESSION.DecodeToken(token);
         if (decoded) {
           return (
             <div>

@@ -25,6 +25,7 @@ const DBG = {
 const UniData      = require('unisys/client-datalink-class');
 const UniModule    = require('unisys/client-module-class');
 const UniComponent = require('unisys/client-react-component');
+const Session      = require('unisys/common-session');
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -235,6 +236,13 @@ var   UDATA        = new UniData(UNISYS);
 /*/ return the current connected Socket Address (e.g. UADDR_12)
 /*/ UNISYS.SocketUADDR = () => {
       return NETWORK.SocketUADDR();
+    };
+
+/// DATA LOGGING //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ send a logging message
+/*/ UNISYS.Log = ( data ) => {
+      UDATA.NetSignal('SRV_LOG_EVENT',data);
     };
 
 /// REACT INTEGRATION /////////////////////////////////////////////////////////

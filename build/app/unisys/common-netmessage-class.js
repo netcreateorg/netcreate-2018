@@ -151,10 +151,11 @@
   /*/ Return the originating address of this netmessage packet. It is valid
       only after the packet has been sent at least once.
   /*/ SourceAddress() {
+        // is this packet originating from server
         if (this.s_uaddr===NetMessage.DefaultServerUADDR() && (!this.msg.startsWith('SVR_'))) {
-          console.error(PR,'SourceAddress Mismatch',JSON.stringify(this));
-          throw Error(`${PR} SourceAddress Mismatch`);
+          return this.s_uaddr;
         }
+        // this is a regular message forward to remote handlers
         return this.s_uaddr || this.seqlog[0];
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
