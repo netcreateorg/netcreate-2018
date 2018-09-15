@@ -31,9 +31,11 @@ let D3DATA        = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ establish message handlers during INITIALIZE phase
 /*/ DSTOR.Hook('INITIALIZE',()=>{
+
       UDATA.HandleMessage('DB_UPDATE', function( data ) {
         DSTOR.UpdateServerDB(data);
       });
+
     });
 
 /// DB INTERFACE //////////////////////////////////////////////////////////////
@@ -48,7 +50,7 @@ let D3DATA        = {};
       UDATA.Call('SRV_DBUPDATE',data)
       .then((res)=>{
         if (res.OK) {
-          console.log(PR,`server db`,data,`success`);
+          console.log(PR,`server db transaction`,data,`success`);
         } else {
           console.log(PR,'error updating server db',res);
         }

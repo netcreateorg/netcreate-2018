@@ -380,19 +380,21 @@ const TARGET_COLOR     = '#FF0000';
   /*/ EDGE_DELETE is called when an edge should be removed from...something?
   /*/ UDATA.HandleMessage('EDGE_DELETE', function( data ) {
         let { edgeID } = data;
+        let edges = [];
         // remove specified edge from edge list
         D3DATA.edges = m_DeleteMatchingEdgeByProp({id:edgeID});
         UDATA.SetAppState('D3DATA',D3DATA);
         // Also update selection so edges in EdgeEditor will update
         let selection = UDATA.AppState('SELECTION');
         if ((selection.nodes===undefined) || (selection.nodes.length<1) || (selection.nodes[0].id===undefined)) {
-          throw Error('nc-logic.EDGE_DELETE can\'t find source node!  This shoudln\'t happen!');
-        }
-        let nodeID = selection.nodes[0].id;
-        let edges = [];
-        // Remove the deleted edge from the selection
-        if ((selection.edges!==undefined) && (selection.edges.length>0)) {
-          edges = edges.concat( selection.edges.filter( edge => edge.id!==edgeID ));
+          if (DBG) console.log(PR,'no selection:',selection);
+        } else {
+          if (DBG) console.log(PR,'updating selection:',selection);
+          let nodeID = selection.nodes[0].id;
+          // Remove the deleted edge from the selection
+          if ((selection.edges!==undefined) && (selection.edges.length>0)) {
+            edges = edges.concat( selection.edges.filter( edge => edge.id!==edgeID ));
+          }
         }
         UDATA.SetAppState('SELECTION',{
           nodes: selection.nodes,

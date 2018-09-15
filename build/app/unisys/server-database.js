@@ -124,13 +124,13 @@ let DB = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     DB.PKT_GetNewNodeID = function ( pkt ) {
       m_max_nodeID += 1;
-      console.log(PR,`${pkt.SourceAddress()} NEW nodeID ${m_max_nodeID}`);
+      console.log(PR,`${pkt.SourceAddress()} REQUEST nodeID ${m_max_nodeID}`);
       return { nodeID : m_max_nodeID };
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     DB.PKT_GetNewEdgeID = function ( pkt ) {
       m_max_edgeID += 1;
-      console.log(PR,`${pkt.SourceAddress()} NEW edgeID ${m_max_edgeID}`);
+      console.log(PR,`${pkt.SourceAddress()} REQUEST edgeID ${m_max_edgeID}`);
       return { edgeID : m_max_edgeID };
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -143,18 +143,18 @@ let DB = {};
         let matches = NODES.find({id:node.id});
         if (matches.length===0) {
           // if there was no node, then this is an insert new operation
-          console.log(PR,`${pkt.SourceAddress()} INSERT node ${JSON.stringify(node)}`);
+          console.log(PR,`${pkt.SourceAddress()} INSERT nodeID ${JSON.stringify(node)}`);
           NODES.insert(node);
           retval = { op:'insert', node };
         } else if (matches.length===1) {
           // there was one match to update
           NODES.findAndUpdate({id:node.id},(n)=>{
-            console.log(PR,`${pkt.SourceAddress()} UPDATE node ${node.id} ${JSON.stringify(node)}`);
+            console.log(PR,`${pkt.SourceAddress()} UPDATE nodeID ${node.id} ${JSON.stringify(node)}`);
             Object.assign(n,node);
           });
           retval = { op:'update', node };
         } else {
-          console.log(PR,`WARNING: multiple node id ${node.id} x${matches.length}`);
+          console.log(PR,`WARNING: multiple nodeID ${node.id} x${matches.length}`);
           retval = { op:'error-multinodeid' };
         }
         return retval;
@@ -165,18 +165,18 @@ let DB = {};
         let matches = EDGES.find({id:edge.id});
         if (matches.length===0) {
           // this is a new edge
+          console.log(PR,`${pkt.SourceAddress()} INSERT edgeID ${edge.id} ${JSON.stringify(edge)}`);
           EDGES.insert(edge);
-          console.log(PR,`${pkt.SourceAddress()} INSERT edge ${edge.id} ${JSON.stringify(edge)}`);
           retval = { op:'insert', edge };
         } else if (matches.length===1) {
           // update this edge
           EDGES.findAndUpdate({id:edge.id},(e)=>{
-            console.log(PR,`${pkt.SourceAddress()} UPDATE edge ${edge.id} ${JSON.stringify(edge)}`);
+            console.log(PR,`${pkt.SourceAddress()} UPDATE edgeID ${edge.id} ${JSON.stringify(edge)}`);
             Object.assign(e,edge);
           });
           retval = { op:'update', edge };
         } else {
-          console.log(PR,`WARNING: multiple edge id ${edge.id} x${matches.length}`);
+          console.log(PR,`WARNING: multiple edgeID ${edge.id} x${matches.length}`);
           retval = { op:'error-multiedgeid' };
         }
         return retval;
@@ -184,7 +184,7 @@ let DB = {};
 
       // DELETE EDGES
       if (edgeID!==undefined) {
-        console.log(PR,`${pkt.SourceAddress()} DELETE edge ${edgeID}`);
+        console.log(PR,`${pkt.SourceAddress()} DELETE edgeID ${edgeID}`);
         EDGES.findAndRemove({id:edgeID});
         return { op:'delete',edgeID };
       }
