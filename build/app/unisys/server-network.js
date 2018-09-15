@@ -114,6 +114,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
 /*/ UNET.NetCall = async function ( mesgName, data ) {
       let pkt = new NetMessage(mesgName,data);
       let promises = m_PromiseRemoteHandlers(pkt);
+      console.log(PR,`${pkt.SourceAddress()} NETCALL ${pkt.Message()} to ${promises.length} remotes`);
       /// MAGICAL ASYNC/AWAIT BLOCK ///////
       let resArray = await Promise.all(promises);
       /// END MAGICAL ASYNC/AWAIT BLOCK ///
@@ -126,6 +127,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       let pkt = new NetMessage(mesgName,data);
       let promises = m_PromiseRemoteHandlers(pkt);
       // we don't care about waiting for the promise to complete
+      console.log(PR,`${pkt.SourceAddress()} NETSEND ${pkt.Message()} to ${promises.length} remotes`);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Send signal to remote handler, no expected return value
@@ -209,17 +211,6 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       //
     }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ send a message packet to all handlers
-/*/ async function m_SendMessage(pkt) {
-      // get the list of queued
-      let promises = m_PromiseRemoteHandlers(pkt);
-      /* MAGICAL ASYNC/AWAIT BLOCK *****************************/
-      console.log(PR,`>> '${pkt.Message()}' queuing ${promises.length} Promises w/ data ${json}'`);
-      let pktArray = await Promise.all(promises);
-      console.log(PR,`<< '${pkt.Message()}' resolved`);
-      /* END MAGICAL ASYNC/AWAIT BLOCK *************************/
-    }
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ handle messages that are a Send(), Signal(), or Call()
 /*/ async function m_HandleMessage( socket, pkt ) {
         // is this a returning packet that was forwarded?
@@ -248,11 +239,12 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
         // got this far? let's skip all server messages for debugging purposes
         let notsrv = !pkt.Message().startsWith('SRV_');
         let json = JSON.stringify(pkt.Data());
-
         /* MAGICAL ASYNC/AWAIT BLOCK *****************************/
+        if (DBG) console.log(PR,`${pkt.SourceAddress()} FORWARD ${pkt.Message()} to ${promises.length} remotes`);
         // if (notsrv) console.log(PR,`>> '${pkt.Message()}' queuing ${promises.length} Promises w/ data ${json}'`);
         let pktArray = await Promise.all(promises);
         // if (notsrv) console.log(PR,`<< '${pkt.Message()}' resolved`);
+        if (DBG) console.log(PR,`${pkt.SourceAddress()} RETURN ${pkt.Message()} from ${promises.length} remotes`);
         /* END MAGICAL ASYNC/AWAIT BLOCK *************************/
 
         // (4) only mcall packets need to receive the data back return
@@ -319,7 +311,6 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
           case 'msend':
           case 'mcall':
             if (s_uaddr!==d_uaddr) {
-              console.log(PR,`${type} '${pkt.Message()}' ${s_uaddr} to ${d_uaddr}`);
               promises.push(f_make_remote_resolver_func(pkt,d_uaddr));
             } else {
               // console.log(PR,`${type} '${pkt.Message()}' -NO ECHO- ${d_uaddr}`);
@@ -349,14 +340,6 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
         }
         return newpkt.QueueTransaction(d_sock);
       }
-    }
-
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ function m_SendMessage( socket, pkt ) {
-      if (DBG) console.log(PR,'send',pkt.Data(),pkt.SeqNum());
-      if (socket) socket.send(pkt.JSON());
-      else throw Error(ERR_NULL_SOCKET);
     }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/

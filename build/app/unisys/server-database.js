@@ -102,7 +102,7 @@ let DB = {};
 /*/ DB.PKT_GetDatabase = function ( pkt ) {
       let nodes = NODES.chain().data({removeMeta:true});
       let edges = EDGES.chain().data({removeMeta:true});
-      if (DBG) console.log(PR,`${pkt.SourceAddress()} fetched nodes ${nodes.length} edges ${edges.length}`);
+      if (DBG) console.log(PR,`${pkt.SourceAddress()} GetDatabase (loaded ${nodes.length} nodes, ${edges.length} edges)`);
       return { nodes, edges };
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
