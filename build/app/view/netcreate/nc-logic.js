@@ -150,6 +150,7 @@ const TARGET_COLOR     = '#FF0000';
         if (DBG) console.log(PR,'DATASTORE returned data',data);
         D3DATA = data;
         UDATA.SetAppState('D3DATA',D3DATA);
+        m_RecalculateAllEdgeWeights();
       });
       // load Template data
       DATASTORE.PromiseJSONFile( '../templates/alexander.json' )
@@ -599,20 +600,35 @@ const TARGET_COLOR     = '#FF0000';
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Count number of edges with the same source/target to determine weight
+/*/ function m_RecalculateAllEdgeWeights() {
+      let D3DATA = UDATA.AppState('D3DATA');
+      let edges = D3DATA.edges;
+      edges.forEach( (edge) => {
+          edge.size = m_CalculateEdgeWeight( edge, edges );
+      });
+      UDATA.SetAppState('D3DATA',D3DATA);
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Count number of edges with the same source/target to determine weight
 /*/ function m_CalculateEdgeWeight( edge, edges ) {
       // REVIEW: If there's a match, BOTH edge sizes ought to be set!
 
       let size = edges.reduce( (accumulator,e) => {
+        // Ignore self
+        if (e.id===edge.id) return accumulator;
         // source and target might be ids or might be node objects depending
         // on whether D3 has processed the edge object.
         let sourceId = e.source.id || e.source;
         let targetId = e.target.id || e.target;
-        if ( ((sourceId===edge.source) && (targetId===edge.target)) ||
-             ((sourceId===edge.target) && (targetId===edge.source))
+        let edgeSourceId = edge.source.id || edge.source;
+        let edgeTargetId = edge.target.id || edge.target;
+        //console.log('comparing sourceId',sourceId,'to',edgeSourceId,' / targetId',targetId,'to',edgeTargetId);
+        if ( ((sourceId===edgeSourceId) && (targetId===edgeTargetId)) ||
+             ((sourceId===edgeTargetId) && (targetId===edgeSourceId))
            ) return accumulator + 1;
         return accumulator;
-      }, 0);
-      return size**2;  // Make size differences more noticeable
+      }, 1);
+      return size;
   }
 
 /// UTILITIES /////////////////////////////////////////////////////////////////

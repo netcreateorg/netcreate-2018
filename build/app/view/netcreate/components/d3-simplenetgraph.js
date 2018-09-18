@@ -370,7 +370,7 @@ class D3NetGraph {
       linkElements.enter()
         .insert("line",".node")
           .classed('edge', true)
-          .style('stroke-width', (d) => { return d.size } )
+          .style('stroke-width', (d) => { return d.size**2 } )    // Use **2 to make size differences more noticeable
         .on("click",   (d) => {
           if (DBG) console.log('clicked on',d.label,d.id)
           this.edgeClickFn( d )
@@ -379,7 +379,7 @@ class D3NetGraph {
       linkElements.merge(linkElements)
         .classed("selected",  (d) => { return d.selected })
         // .style('stroke', 'rgba(0,0,0,0.1)')  // don't use alpha unless we're prepared to handle layering -- reveals unmatching links
-        .style('stroke-width', (d) => { return d.size } )
+        .style('stroke-width', (d) => { return d.size**2 } )
 
       linkElements.exit().remove()
 
