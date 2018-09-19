@@ -54,7 +54,7 @@ let CMD = [];
     JSCLI.DOM_ShowInstructions = () => {
       var E_SHELL = document.getElementById('fdshell');
       if (!E_SHELL) {
-        console.warn(PR,"DOM_ShowInstructions() found no id 'fdshell' to append instructions. Type 'ncHelp() to list available JSCLI functions.'");
+        console.warn(PR,"DOM_ShowInstructions() found no id 'fdshell' to append instructions. Type 'ncHelp()' to list available JSCLI functions.");
         return;
       }
       var E_OUT = document.createElement('pre');
