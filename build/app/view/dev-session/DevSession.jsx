@@ -71,12 +71,13 @@ const SESSION     = require('unisys/common-session');
         let className = REFLECT.ExtractClassName(this);
         if (DBG) console.log(`${className} componentDidMount`);
       } // componentDidMount
-
-      SessionEdit ({ match }) {
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      SessionEdit ({ match, location }) {
         console.log(`SessionEdit edit/${match.params.token}`);
         let token = match.params.token;
         let decoded = SESSION.DecodeToken(token);
         if (decoded) {
+          console.log('DECODED',decoded);
           return (
             <div>
               <p>

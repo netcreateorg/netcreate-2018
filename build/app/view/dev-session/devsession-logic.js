@@ -59,35 +59,6 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
       UNISYS.Log({ msg : 'Initialize' });
     });
 
-/// COMMAND LINE UTILITIES ////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    MOD.Hook('INITIALIZE', ()=>{
-      JSCLI.AddFunction(ncMakeTokens);
-    });
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Command: RESET THE DATABASE from default data
-/*/ function ncMakeTokens( clsId, projId, numGroups ) {
-      // type checking
-      if (!Number.isInteger(numGroups)) return "numGroups arg3 must be integer";
-      if (numGroups<1) return "numGroups arg3 must be positive integeger";
-      if (typeof clsId!=='string') return "classId arg1 must be string (case insensitive)";
-      if (typeof projId!=='string') return "projId arg1 must be string (case insensitive)";
-      if (clsId.length>12) return "classId arg1 should be 12 chars or less";
-      if (projId.length>12) return "classId arg1 should be 12 chars or less";
-      // let's do this!
-      let out = `\nTOKEN LIST for class ${clsId} project ${projId}\n\n`;
-      let pad = String(numGroups).length;
-      for (let i=1; i<=numGroups; i++) {
-        let id = String(i).padStart(pad,' ');
-        out += `group ${id} - ${SESSION.MakeToken(clsId,projId,i)}\n`;
-      }
-      let ubits = new URL(window.location);
-      let hash = ubits.hash.split('/')[0];
-      let url = `${ubits.protocol}//${ubits.host}/${hash}`;
-      out += `\nexample url: ${SETTINGS.ServerAppURL('/edit/')}${SESSION.MakeToken(clsId,projId,1)}\n`;
-      return out;
-    }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// EXPORT MODULE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

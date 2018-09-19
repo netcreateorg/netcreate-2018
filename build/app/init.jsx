@@ -16,15 +16,15 @@ require("babel-polyfill"); // enables regenerators for async/await
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const React         = require('react');
-const ReactDOM      = require('react-dom');
-const HashRouter    = require('react-router-dom').HashRouter;
+const React           = require('react');
+const ReactDOM        = require('react-dom');
+const { HashRouter }  = require('react-router-dom');
 
 /// SYSTEM MODULES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// demo: require system modules; this will likely be removed
-const UNISYS        = require('unisys/client');
-const AppShell      = require('init-appshell');
+const UNISYS          = require('unisys/client');
+const AppShell        = require('init-appshell');
 
 /// UNISYS LIFECYCLE LOADER ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -74,7 +74,7 @@ const AppShell      = require('init-appshell');
       return new Promise(( resolve, reject ) => {
         try {
           ReactDOM.render((
-            <HashRouter hashType="noslash">
+            <HashRouter hashType="slash">
               <AppShell />
             </HashRouter>
             ), document.querySelector( '#app-container' ), ()=>{

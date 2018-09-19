@@ -25,7 +25,6 @@ const DBG = {
 const UniData      = require('unisys/client-datalink-class');
 const UniModule    = require('unisys/client-module-class');
 const UniComponent = require('unisys/client-react-component');
-const Session      = require('unisys/common-session');
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
