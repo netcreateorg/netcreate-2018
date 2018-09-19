@@ -11,7 +11,8 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
     const SETTINGS      = require('settings');
     const UNISYS        = require('unisys/client');
     const DATASTORE     = require('system/datastore');
-    const SESSION      = require('unisys/common-session');
+    const SESSION       = require('unisys/common-session');
+    const JSCLI         = require('system/util/jscli');
 
 /// DEBUG SUPPORT /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,11 +61,12 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 
 /// COMMAND LINE UTILITIES ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    let CMD = [];
-    MOD.Hook('RESET', m_InitCLI);
+    MOD.Hook('INITIALIZE', ()=>{
+      JSCLI.AddFunction(ncMakeTokens);
+    });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Command: RESET THE DATABASE from default data
-/*/ CMD.push(function ncMakeTokens( clsId, projId, numGroups ) {
+/*/ function ncMakeTokens( clsId, projId, numGroups ) {
       // type checking
       if (!Number.isInteger(numGroups)) return "numGroups arg3 must be integer";
       if (numGroups<1) return "numGroups arg3 must be positive integeger";
@@ -84,27 +86,6 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
       let url = `${ubits.protocol}//${ubits.host}/${hash}`;
       out += `\nexample url: ${SETTINGS.ServerAppURL('/edit/')}${SESSION.MakeToken(clsId,projId,1)}\n`;
       return out;
-    });
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Initialize the CLI interface by loading functions in CMD array into
-    window space, then print out instructions
-/*/ function m_InitCLI() {
-      var E_SHELL = document.getElementById('fdshell');
-      var E_OUT = document.createElement('pre');
-      var E_HEADER = document.createElement('h4');
-      E_SHELL.appendChild(E_HEADER);
-      E_SHELL.appendChild(E_OUT);
-      E_HEADER.innerHTML='Command Information';
-      E_OUT.innerHTML = 'The following CLI commands are available:\n\n';
-      CMD.forEach((f)=>{
-        window[f.name] = f;
-        E_OUT.innerHTML+=`  ${f.name}()\n`;
-      });
-      E_OUT.innerText += "\n";
-      E_OUT.innerText += "Mac shortcuts to open console\n";
-      E_OUT.innerText += "  Chrome  : cmd-option-j\n";
-      E_OUT.innerText += "  Firefox : cmd-option-k\n";
-      E_OUT.innerText += "PC use ctrl-shift instead\n";
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
