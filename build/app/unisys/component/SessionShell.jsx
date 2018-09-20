@@ -36,7 +36,14 @@ const INPUT_STYLE = {
   fontSize: '10px',
   textAlign: 'right',
   textTransform: 'uppercase'
-
+};
+const GROUP_STYLE = {
+  backgroundColor: '#777',
+  color: 'white',
+  marginTop: '-10px'
+};
+const LABEL_STYLE = {
+  marginBottom: '0.25rem'
 };
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
@@ -63,12 +70,12 @@ class SessionShell extends UNISYS.Component {
       if (decoded) {
         let classproj = `${decoded.classId}-${decoded.projId}`;
         return (
-          <FormGroup className="text-right" row>
+          <FormGroup row style={GROUP_STYLE}>
             <Col sm={3}>
-              <Label className="small text-muted">Group{decoded.groupId}</Label>
+              <Label style={LABEL_STYLE} className="small">GROUP{decoded.groupId}</Label>
             </Col>
-            <Col sm={9}>
-              <Label className="small">{classproj}-<strong>{decoded.hashedId}</strong></Label>
+            <Col sm={9} className="text-right">
+              <Label style={LABEL_STYLE} className="small">{classproj}-<strong>{decoded.hashedId}</strong></Label>
             </Col>
           </FormGroup>
         )
@@ -88,16 +95,16 @@ class SessionShell extends UNISYS.Component {
           if (!isValid) tip=`Invalid code! Check again.`;
         }
       }
-      formFeedback = tip ? ( <FormFeedback><small>{tip}</small></FormFeedback> ) : undefined;
+      formFeedback = tip ? ( <FormFeedback className='text-right'><small>{tip}</small></FormFeedback> ) : undefined;
       return (
-        <FormGroup className="text-right" row>
+        <FormGroup row>
           <Col sm={3}>
             <Label className="small text-muted">Login</Label>
           </Col>
           <Col sm={9}>
              <Input invalid
               name="sessionToken" id="sessionToken"
-              bsSize="sm" style={INPUT_STYLE}
+              bsSize="sm" style={INPUT_STYLE} className='text-right'
               placeholder="CLASS-PROJECT-XQZ"
               onChange={this.handleChange}
              />
@@ -139,8 +146,10 @@ class SessionShell extends UNISYS.Component {
       if (decoded) {
         let { classId, projId, hashedId, groupId } = decoded;
         this.setState(decoded);
-        let redirect = `/edit/${event.target.value}`;
-        this.props.history.push(redirect);
+        if (decoded.groupId) {
+          let redirect = `/edit/${event.target.value}`;
+          this.props.history.push(redirect);
+        }
       }
     }
 }
