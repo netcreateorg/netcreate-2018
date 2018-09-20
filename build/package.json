@@ -5,7 +5,7 @@
   "scripts": {
     "bare": "node --inspect brunch-server.js",
     "dev": "brunch watch -s",
-    "clean": "rm -rf public/",
+    "clean": "rm -rf ./public ./node_modules; npm ci",
     "debug": "LOGGY_STACKS=true BRUNCH_DEVTOOLS=true ./brunch-debug watch --server"
   },
   "repository": {
