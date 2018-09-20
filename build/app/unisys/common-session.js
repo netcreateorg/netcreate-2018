@@ -107,13 +107,14 @@ JSCLI.AddFunction( function ncMakeTokens (clsId, projId, numGroups ) {
       let out = `\nTOKEN LIST for class '${clsId}' project '${projId}'\n\n`;
       let pad = String(numGroups).length;
       for (let i=1; i<=numGroups; i++) {
-        let id = String(i).padStart(pad,' ');
-        out += `group ${id} - ${SESUTIL.MakeToken(clsId,projId,i)}\n`;
+        let id = String(i);
+        id = id.padStart(pad,'0');
+        out += `group ${id}\t${SESUTIL.MakeToken(clsId,projId,i)}\n`;
       }
       let ubits = new URL(window.location);
       let hash = ubits.hash.split('/')[0];
       let url = `${ubits.protocol}//${ubits.host}/${hash}`;
-      out += `\nexample url: ${SETTINGS.ServerAppURL()}/${SESUTIL.MakeToken(clsId,projId,1)}\n`;
+      out += `\nexample url: ${SETTINGS.ServerAppURL()}/edit/${SESUTIL.MakeToken(clsId,projId,1)}\n`;
       return out;
     }
 
