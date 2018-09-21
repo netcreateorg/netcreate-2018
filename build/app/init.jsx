@@ -57,7 +57,7 @@ const AppShell        = require('init-appshell');
       let loc = '/'+hash.substring(1);
       let matches = routes.filter((route)=>{return route.path===loc});
       if (matches.length) {
-        if (DBG) console.log(`m_SetLifecycleScope() matched scope ${hash}`);
+        if (DBG) console.log(`Lifecycle Module Scope is ${hash}`);
         let component = matches[0].component;
         if (component.UMOD===undefined) console.warn(`WARNING: root view '${loc}' has no UMOD property, so can not set UNISYS scope`);
         let modscope = component.UMOD || '<undefined>/init.jsx';
