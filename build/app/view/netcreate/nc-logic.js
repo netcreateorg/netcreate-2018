@@ -39,7 +39,9 @@ const DBG        = false;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const SETTINGS   = require('settings');
 const UNISYS     = require('unisys/client');
+const JSCLI      = require('system/util/jscli');
 const D3         = require('d3');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
@@ -129,6 +131,7 @@ var   UDATA      = UNISYS.NewDataLink(MOD);
 var   D3DATA           = null;    // see above for description
 var   TEMPLATE         = null;    // template definition for prompts
 const DATASTORE        = require('system/datastore');
+const SESSION          = require('unisys/common-session');
 const PROMPTS          = require('system/util/prompts');
 const PR               = PROMPTS.Pad('NCLOGIC');
 
@@ -138,7 +141,6 @@ const DESELECTED_COLOR = '';
 const SEARCH_COLOR     = '#008800';
 const SOURCE_COLOR     = '#0000DD';
 const TARGET_COLOR     = '#FF0000';
-
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -640,11 +642,8 @@ const TARGET_COLOR     = '#FF0000';
 
 /// COMMAND LINE UTILITIES ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    let CMD = [];
-    MOD.Hook('RESET', m_InitCLI);
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Command: RESET THE DATABASE from default data
-/*/ CMD.push(function ncPushDatabase( jsonFile ) {
+/*/ JSCLI.AddFunction(function ncPushDatabase( jsonFile ) {
       jsonFile = jsonFile || 'data.reducedlinks.json';
         DATASTORE.PromiseJSONFile(jsonFile)
         .then((data)=>{
@@ -670,41 +669,37 @@ const TARGET_COLOR     = '#FF0000';
     });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Command: EMPTY THE DATABASE from default data
-/*/ CMD.push(function ncEmptyDatabase() {
+/*/ JSCLI.AddFunction(function ncEmptyDatabase() {
       window.ncPushDatabase('nada.json');
       return "FYI: pushing empty database from assets/data/nada.json...reloading";
     });
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Initialize the CLI interface by loading functions in CMD array into
-    window space, then print out instructions
-/*/ function m_InitCLI() {
-      let silent = true;
-
-      let E_SHELL = document.getElementById('fdshell');
-      let E_OUT = document.createElement('pre');
-      let E_HEADER = document.createElement('h4');
-
-      if (!silent) {
-        E_SHELL.appendChild(E_HEADER);
-        E_SHELL.appendChild(E_OUT);
-        E_HEADER.innerHTML='Command Information';
-        E_OUT.innerHTML = 'The following CLI commands are available:\n\n';
+/*/ Command: Token Generator
+/*/ JSCLI.AddFunction( function ncMakeTokens (clsId, projId, numGroups ) {
+      // type checking
+      if (typeof clsId!=='string') return "args: str classId, str projId, int numGroups"
+      if (typeof projId!=='string') return "args: str classId, str projId, int numGroups"
+      if (clsId.length>12) return "classId arg1 should be 12 chars or less";
+      if (projId.length>12) return "classId arg1 should be 12 chars or less";
+      if (!Number.isInteger(numGroups)) return "numGroups arg3 must be integer";
+      if (numGroups<1) return "numGroups arg3 must be positive integeger";
+      // let's do this!
+      let out = `\nTOKEN LIST for class '${clsId}' project '${projId}'\n\n`;
+      let pad = String(numGroups).length;
+      for (let i=1; i<=numGroups; i++) {
+        let id = String(i);
+        id = id.padStart(pad,'0');
+        out += `group ${id}\t${SESSION.MakeToken(clsId,projId,i)}\n`;
       }
-
-      CMD.forEach((f)=>{
-        window[f.name] = f;
-        if (!silent) E_OUT.innerHTML+=`  ${f.name}()\n`;
-      });
-
-      if (!silent) {
-        E_OUT.innerText += "\n";
-        E_OUT.innerText += "Mac shortcuts to open console\n";
-        E_OUT.innerText += "  Chrome  : cmd-option-j\n";
-        E_OUT.innerText += "  Firefox : cmd-option-k\n";
-        E_OUT.innerText += "PC use ctrl-shift instead\n";
+      if (window && window.location) {
+        let ubits = new URL(window.location);
+        let hash = ubits.hash.split('/')[0];
+        let url = `${ubits.protocol}//${ubits.host}/${hash}`;
+        out += `\nexample url: ${SETTINGS.ServerAppURL()}/edit/${SESSION.MakeToken(clsId,projId,1)}\n`;
       }
-    }
+      return out;
+    });
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////

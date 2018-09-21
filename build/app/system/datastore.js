@@ -12,9 +12,11 @@ const DBG = { load:true };
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SETTINGS    = require('settings');
+const SESSION     = require('unisys/common-session');
 const UNISYS      = require('unisys/client');
 const PROMPTS     = require('system/util/prompts');
 const PR          = PROMPTS.Pad('Datastore');
+const NetMessage  = require('unisys/common-netmessage-class');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -31,12 +33,28 @@ let D3DATA        = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ establish message handlers during INITIALIZE phase
 /*/ DSTOR.Hook('INITIALIZE',()=>{
-
       UDATA.HandleMessage('DB_UPDATE', function( data ) {
         DSTOR.UpdateServerDB(data);
       });
-
+      UDATA.HandleMessage('GROUPID_CHANGE', function( data ) {
+        DSTOR.SetSessionGroupID(data);
+      });
     });
+
+
+/// SESSION ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ datastore needs to set NetMessage GroupID property on behalf of SESSIONS
+    because SESSION can't include NetMessage (or vice versa)
+/*/ DSTOR.SetSessionGroupID = function ( token ) {
+      let good = SESSION.DecodeToken(token).isValid;
+      if (good) {
+        NetMessage.GlobalSetGroupID(token);
+        console.log('setting NetMessage group id',token);
+      } else {
+        console.warn('will not set bad group id:',token);
+      }
+    }
 
 /// DB INTERFACE //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -55,7 +73,7 @@ let D3DATA        = {};
           console.log(PR,'error updating server db',res);
         }
       });
-    };
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ get a unique NodeID
 /*/ DSTOR.PromiseNewNodeID = function() {

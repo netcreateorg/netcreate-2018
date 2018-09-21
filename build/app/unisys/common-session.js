@@ -9,13 +9,11 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 //
-const PROMPTS     = require('system/util/prompts');
+const PROMPTS     = require('../system/util/prompts');
 const PR          = PROMPTS.Pad('SESSUTIL');
-const JSCLI       = require('system/util/jscli');
 
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const SETTINGS    = require('settings');
 const HashIds     = require('hashids');
 
 /// MODULE DEFS ///////////////////////////////////////////////////////////////
@@ -23,12 +21,7 @@ const HashIds     = require('hashids');
 let   SESUTIL     = {};
 const HASH_ABET   = 'ABCDEFGHIJKLMNPQRSTVWXYZ23456789';
 const HASH_MINLEN = 3;
-
-/// PRE-HOOK DECLARATIONS /////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-JSCLI.AddFunction( function ncMakeTokens (clsId, projId, numGroups ) {
-  return SESUTIL.MakeTokenList(clsId,projId,numGroups);
-});
+var   m_current_groupid = null;
 
 /// SESSION ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,7 +29,7 @@ JSCLI.AddFunction( function ncMakeTokens (clsId, projId, numGroups ) {
     containing as many decoded values as possible. Check isValid for
     complete decode succes. groupId is also set if successful
 /*/ SESUTIL.DecodeToken = function ( token ) {
-      if (token===undefined) return undefined;
+      if (token===undefined) return {};
       let tokenBits = token.split('-');
       let classId, projId, hashedId, groupId, isValid;
       // optimistically set valid flag to be negated on failure
@@ -94,28 +87,16 @@ JSCLI.AddFunction( function ncMakeTokens (clsId, projId, numGroups ) {
     }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Command: RESET THE DATABASE from default data
-/*/ SESUTIL.MakeTokenList = function ( clsId, projId, numGroups ) {
-      // type checking
-      if (typeof clsId!=='string') return "args: str classId, str projId, int numGroups"
-      if (typeof projId!=='string') return "args: str classId, str projId, int numGroups"
-      if (clsId.length>12) return "classId arg1 should be 12 chars or less";
-      if (projId.length>12) return "classId arg1 should be 12 chars or less";
-      if (!Number.isInteger(numGroups)) return "numGroups arg3 must be integer";
-      if (numGroups<1) return "numGroups arg3 must be positive integeger";
-      // let's do this!
-      let out = `\nTOKEN LIST for class '${clsId}' project '${projId}'\n\n`;
-      let pad = String(numGroups).length;
-      for (let i=1; i<=numGroups; i++) {
-        let id = String(i);
-        id = id.padStart(pad,'0');
-        out += `group ${id}\t${SESUTIL.MakeToken(clsId,projId,i)}\n`;
-      }
-      let ubits = new URL(window.location);
-      let hash = ubits.hash.split('/')[0];
-      let url = `${ubits.protocol}//${ubits.host}/${hash}`;
-      out += `\nexample url: ${SETTINGS.ServerAppURL()}/edit/${SESUTIL.MakeToken(clsId,projId,1)}\n`;
-      return out;
+/*/ Set the global GROUPID, which is included in all NetMessage
+    packets that are sent to server.
+/*/ SESUTIL.SetGroupID = function ( token ) {
+      let good = SESUTIL.DecodeToken(token).isValid;
+      if (good) m_current_groupid = token;
+      return good;
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    SESUTIL.GroupID = function () {
+      return m_current_groupid;
     }
 
 /// EXPORT MODULE /////////////////////////////////////////////////////////////

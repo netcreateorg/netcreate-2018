@@ -98,6 +98,7 @@ var UDATA     = null; // assigned during NETWORK.Connect()
       m_status = M3_REGISTERED;
       // (2) initialize global settings for netmessage
       if (DBG.connect) console.log(PR,`connected to ${UADDR}`,NETSOCK);
+      NETSOCK.ws.UADDR = NetMessage.DefaultServerUADDR();
       NetMessage.GlobalSetup({ uaddr : UADDR, netsocket : NETSOCK.ws});
       // (3) connect regular message handler
       NETWORK.AddListener('message', m_HandleMessage);

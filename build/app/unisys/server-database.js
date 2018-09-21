@@ -14,6 +14,7 @@ const FS                = require('fs-extra');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+const SESSION           = require('../unisys/common-session');
 const PROMPTS           = require('../system/util/prompts');
 const PR                = PROMPTS.Pad('SRV-DB');
 const DB_FILE           = './runtime/netcreate.loki';
@@ -102,7 +103,7 @@ let DB = {};
 /*/ DB.PKT_GetDatabase = function ( pkt ) {
       let nodes = NODES.chain().data({removeMeta:true});
       let edges = EDGES.chain().data({removeMeta:true});
-      if (DBG) console.log(PR,`${pkt.SourceAddress()} GetDatabase (loaded ${nodes.length} nodes, ${edges.length} edges)`);
+      if (DBG) console.log(PR,`PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${edges.length} edges)`);
       return { nodes, edges };
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -124,13 +125,13 @@ let DB = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     DB.PKT_GetNewNodeID = function ( pkt ) {
       m_max_nodeID += 1;
-      console.log(PR,`${pkt.SourceAddress()} REQUEST nodeID ${m_max_nodeID}`);
+      if (DBG) console.log(PR,`PKT_GetNewNodeID ${pkt.Info()} nodeID ${m_max_nodeID}`);
       return { nodeID : m_max_nodeID };
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     DB.PKT_GetNewEdgeID = function ( pkt ) {
       m_max_edgeID += 1;
-      console.log(PR,`${pkt.SourceAddress()} REQUEST edgeID ${m_max_edgeID}`);
+      if (DBG) console.log(PR,`PKT_GetNewEdgeID ${pkt.Info()} edgeID ${m_max_edgeID}`);
       return { edgeID : m_max_edgeID };
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -143,13 +144,13 @@ let DB = {};
         let matches = NODES.find({id:node.id});
         if (matches.length===0) {
           // if there was no node, then this is an insert new operation
-          console.log(PR,`${pkt.SourceAddress()} INSERT nodeID ${JSON.stringify(node)}`);
+          console.log(PR,`PKT_Update ${pkt.Info()} INSERT nodeID ${JSON.stringify(node)}`);
           NODES.insert(node);
           retval = { op:'insert', node };
         } else if (matches.length===1) {
           // there was one match to update
           NODES.findAndUpdate({id:node.id},(n)=>{
-            console.log(PR,`${pkt.SourceAddress()} UPDATE nodeID ${node.id} ${JSON.stringify(node)}`);
+            console.log(PR,`PKT_Update ${pkt.Info()} UPDATE nodeID ${node.id} ${JSON.stringify(node)}`);
             Object.assign(n,node);
           });
           retval = { op:'update', node };
@@ -165,13 +166,13 @@ let DB = {};
         let matches = EDGES.find({id:edge.id});
         if (matches.length===0) {
           // this is a new edge
-          console.log(PR,`${pkt.SourceAddress()} INSERT edgeID ${edge.id} ${JSON.stringify(edge)}`);
+          console.log(PR,`PKT_Update ${pkt.Info()} INSERT edgeID ${edge.id} ${JSON.stringify(edge)}`);
           EDGES.insert(edge);
           retval = { op:'insert', edge };
         } else if (matches.length===1) {
           // update this edge
           EDGES.findAndUpdate({id:edge.id},(e)=>{
-            console.log(PR,`${pkt.SourceAddress()} UPDATE edgeID ${edge.id} ${JSON.stringify(edge)}`);
+            console.log(PR,`PKT_Update ${pkt.SourceGroupID()} UPDATE edgeID ${edge.id} ${JSON.stringify(edge)}`);
             Object.assign(e,edge);
           });
           retval = { op:'update', edge };
@@ -184,7 +185,7 @@ let DB = {};
 
       // DELETE EDGES
       if (edgeID!==undefined) {
-        console.log(PR,`${pkt.SourceAddress()} DELETE edgeID ${edgeID}`);
+        console.log(PR,`PKT_Update ${pkt.Info()} DELETE edgeID ${edgeID}`);
         EDGES.findAndRemove({id:edgeID});
         return { op:'delete',edgeID };
       }

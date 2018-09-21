@@ -25,6 +25,7 @@
   var m_id_prefix     = 'PKT';
   var m_transactions  = {};
   var m_netsocket     = null;
+  var m_group_id      = null;
 
   // constants
   const PROMPTS           = require('../system/util/prompts');
@@ -84,6 +85,7 @@
         this.seqlog   = [];   // transaction log
         // addressing support
         this.s_uaddr  = NetMessage.SocketUADDR() || null; // first originating uaddr set by SocketSend()
+        this.s_group  = null; // session groupid is set by external module once validated
         this.s_uid    = null; // first originating UDATA srcUID
         // filtering support
       } // constructor
@@ -139,7 +141,9 @@
   /*/ JSON() {
         return JSON.stringify(this);
       }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ return the session groupid (CLASS-PROJ-HASH) that's been set globally
+  /*/ SourceGroupID() { return this.s_group }
 
   /// TRANSACTION SUPPORT /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -151,17 +155,30 @@
   /*/ Return the originating address of this netmessage packet. It is valid
       only after the packet has been sent at least once.
   /*/ SourceAddress() {
-        // is this packet originating from server
+        // is this packet originating from server to a remote?
         if (this.s_uaddr===NetMessage.DefaultServerUADDR() && (!this.msg.startsWith('SVR_'))) {
           return this.s_uaddr;
         }
         // this is a regular message forward to remote handlers
-        return this.s_uaddr || this.seqlog[0];
+        return this.IsTransaction()
+          ? this.seqlog[0]
+          : this.s_uaddr;
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       CopySourceAddress( pkt ) {
         if (pkt.constructor.name!=='NetMessage') throw Error(ERR_NOT_PACKET);
         this.s_uaddr = pkt.SourceAddress();
+      }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ return an informational string about the packet useful for logging
+  /*/ Info( key ) {
+        switch (key) {
+          case 'src': /* falls-through */
+          default:
+            return this.SourceGroupID()
+              ? `${this.SourceGroupID()}[${this.SourceAddress()}]`
+              : `???[${this.SourceAddress()}]`;
+        }
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       MakeNewID() {
@@ -173,10 +190,15 @@
   /*/ Send packet on either provided socket or default socket. Servers provide
       the socket because it's handling multiple sockets from different clients.
   /*/ SocketSend( socket=m_netsocket ) {
-        // global m_netsocket is not defined on server, since packets arrive on multiple sockets
+        this.s_group = NetMessage.GlobalGroupID();
+        let dst = socket.UADDR || 'unregistered socket';
         if (!socket) throw Error('SocketSend(sock) requires a valid socket');
-        if (DBG.send) console.log(PR,`sending '${this.Message()}' to ${socket.UADDR}`);
+        if (DBG.send) {
+          let status = `sending '${this.Message()}' to ${dst}`;
+          console.log(PR,status);
+        }
         socket.send(this.JSON());
+        // FYI: global m_netsocket is not defined on server, since packets arrive on multiple sockets
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Create a promise to resolve when packet returns
@@ -222,13 +244,11 @@
   /*/ ReturnTransaction( socket=m_netsocket ) {
         // global m_netsocket is not defined on server, since packets arrive on multiple sockets
         if (!socket) throw Error('ReturnTransaction(sock) requires a valid socket');
-        let dbg = (DBG.transact) && (!this.IsServerMessage());
         // note: seqnum is already incremented by the constructor if this was
         // a received packet
         // add this to the sequence log
         this.seqlog.push(NetMessage.UADDR);
         this.rmode = m_CheckRMode('res');
-        if (dbg) console.log(PR,`'${this.msg}' returning to ${this.SourceAddress()}`);
         this.SocketSend(socket);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -278,6 +298,15 @@
 /*/ Return a default server UADDR
 /*/ NetMessage.DefaultServerUADDR = function() {
       return 'SVR_01';
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Return current SessionID string
+/*/ NetMessage.GlobalGroupID = function () {
+      return m_group_id;
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    NetMessage.GlobalSetGroupID = function ( token ) {
+      m_group_id = token;
     }
 
 /// PRIVATE CLASS HELPERS /////////////////////////////////////////////////////

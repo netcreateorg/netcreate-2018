@@ -132,6 +132,7 @@ class SessionShell extends UNISYS.Component {
       if (token) {
         let decoded = SESSION.DecodeToken(token);
         if (decoded.isValid) {
+          this.AppCall('GROUPID_CHANGE',token);
           return this.renderLoggedIn(decoded);
         }
       }
@@ -142,17 +143,18 @@ class SessionShell extends UNISYS.Component {
 /// EVENT HANDLERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     handleChange(event) {
-      let decoded = SESSION.DecodeToken(event.target.value);
-      if (decoded) {
-        let { classId, projId, hashedId, groupId } = decoded;
-        this.setState(decoded);
-        if (decoded.groupId) {
-          let redirect = `/edit/${event.target.value}`;
-          this.props.history.push(redirect);
-        }
+      let token = event.target.value;
+      let decoded = SESSION.DecodeToken(token);
+      let { classId, projId, hashedId, groupId } = decoded;
+      this.setState(decoded);
+      if (decoded.groupId) {
+        // force a page URL change
+        let redirect = `/edit/${event.target.value}`;
+        this.props.history.push(redirect);
       }
     }
-}
+
+} // UNISYS.Component SessionShell
 
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////

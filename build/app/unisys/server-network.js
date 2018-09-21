@@ -114,7 +114,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
 /*/ UNET.NetCall = async function ( mesgName, data ) {
       let pkt = new NetMessage(mesgName,data);
       let promises = m_PromiseRemoteHandlers(pkt);
-      console.log(PR,`${pkt.SourceAddress()} NETCALL ${pkt.Message()} to ${promises.length} remotes`);
+      if (DBG) console.log(PR,`${pkt.Info()} NETCALL ${pkt.Message()} to ${promises.length} remotes`);
       /// MAGICAL ASYNC/AWAIT BLOCK ///////
       let resArray = await Promise.all(promises);
       /// END MAGICAL ASYNC/AWAIT BLOCK ///
@@ -127,7 +127,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       let pkt = new NetMessage(mesgName,data);
       let promises = m_PromiseRemoteHandlers(pkt);
       // we don't care about waiting for the promise to complete
-      console.log(PR,`${pkt.SourceAddress()} NETSEND ${pkt.Message()} to ${promises.length} remotes`);
+      if (DBG) console.log(PR,`${pkt.Info()} NETSEND ${pkt.Message()} to ${promises.length} remotes`);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Send signal to remote handler, no expected return value
@@ -240,11 +240,11 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
         let notsrv = !pkt.Message().startsWith('SRV_');
         let json = JSON.stringify(pkt.Data());
         /* MAGICAL ASYNC/AWAIT BLOCK *****************************/
-        if (DBG) console.log(PR,`${pkt.SourceAddress()} FORWARD ${pkt.Message()} to ${promises.length} remotes`);
+        if (DBG) console.log(PR,`${pkt.Info()} FORWARD ${pkt.Message()} to ${promises.length} remotes`);
         // if (notsrv) console.log(PR,`>> '${pkt.Message()}' queuing ${promises.length} Promises w/ data ${json}'`);
         let pktArray = await Promise.all(promises);
         // if (notsrv) console.log(PR,`<< '${pkt.Message()}' resolved`);
-        if (DBG) console.log(PR,`${pkt.SourceAddress()} RETURN ${pkt.Message()} from ${promises.length} remotes`);
+        if (DBG) console.log(PR,`${pkt.Info()} RETURN ${pkt.Message()} from ${promises.length} remotes`);
         /* END MAGICAL ASYNC/AWAIT BLOCK *************************/
 
         // (4) only mcall packets need to receive the data back return
@@ -336,7 +336,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
         newpkt.MakeNewID();
         newpkt.CopySourceAddress(srcPkt);
         if (verbose) {
-          console.log('make_resolver_func:',`PKT: ${srcPkt.Type()} '${srcPkt.Message()}' from ${srcPkt.SourceAddress()} to d_uaddr:${d_uaddr} dispatch to d_sock.UADDR:${d_sock.UADDR}`);
+          console.log('make_resolver_func:',`PKT: ${srcPkt.Type()} '${srcPkt.Message()}' from ${srcPkt.Info()} to d_uaddr:${d_uaddr} dispatch to d_sock.UADDR:${d_sock.UADDR}`);
         }
         return newpkt.QueueTransaction(d_sock);
       }
@@ -350,10 +350,12 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       socket.UADDR = sid;
       // save socket
       mu_sockets.set(sid,socket);
-      if (DBG) console.log(PR,`saving ${socket.UADDR} to mu_sockets`);
+      console.log(PR,`socket ADD ${socket.UADDR} to network`);
       if (DBG) m_ListSockets(`add ${sid}`);
     }
-    function m_GetNewUADDR( prefix='UADDR' ) {
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ function m_GetNewUADDR( prefix='UADDR' ) {
       ++mu_sid_counter;
       let cstr = mu_sid_counter.toString(10).padStart(2,'0');
       return `${prefix}_${cstr}`;
@@ -363,7 +365,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
 /*/ function m_SocketDelete( socket ) {
       let uaddr = socket.UADDR;
       if (!mu_sockets.has(uaddr)) throw Error(DBG_SOCK_BADCLOSE);
-      if (DBG) console.log(PR,`deleting ${uaddr} from mu_sockets`);
+      console.log(PR,`socket DEL ${uaddr} from network`);
       mu_sockets.delete(uaddr);
       // delete socket reference from previously registered handlers
       let rmesgs = m_socket_msgs_list.get(uaddr);
