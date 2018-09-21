@@ -176,8 +176,8 @@
           case 'src': /* falls-through */
           default:
             return this.SourceGroupID()
-              ? `${this.SourceGroupID()}[${this.SourceAddress()}]`
-              : `???[${this.SourceAddress()}]`;
+              ? `${this.SourceAddress()} [${this.SourceGroupID()}]`
+              : `${this.SourceAddress()}`;
         }
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

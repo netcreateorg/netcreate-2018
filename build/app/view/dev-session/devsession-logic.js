@@ -56,7 +56,6 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*/
 /*/ MOD.Hook('START', function () {
       console.log('*** INITIALIZE ***');
-      UNISYS.Log({ msg : 'Initialize' });
     });
 
 

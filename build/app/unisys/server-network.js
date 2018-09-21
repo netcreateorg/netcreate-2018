@@ -19,6 +19,7 @@ const DBG = false;
 var   WSS               = require('ws').Server;
 var   FSE               = require('fs-extra');
 var   NetMessage        = require('../unisys/common-netmessage-class');
+const LOGGER            = require('../unisys/server-logger');
 var   DB                = require('../unisys/server-database');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
@@ -351,6 +352,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       // save socket
       mu_sockets.set(sid,socket);
       console.log(PR,`socket ADD ${socket.UADDR} to network`);
+      LOGGER.Write(socket.UADDR,'joined network');
       if (DBG) m_ListSockets(`add ${sid}`);
     }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -366,6 +368,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       let uaddr = socket.UADDR;
       if (!mu_sockets.has(uaddr)) throw Error(DBG_SOCK_BADCLOSE);
       console.log(PR,`socket DEL ${uaddr} from network`);
+      LOGGER.Write(socket.UADDR,'left network');
       mu_sockets.delete(uaddr);
       // delete socket reference from previously registered handlers
       let rmesgs = m_socket_msgs_list.get(uaddr);

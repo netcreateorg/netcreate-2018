@@ -240,8 +240,11 @@ var   UDATA        = new UniData(UNISYS);
 /// DATA LOGGING //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ send a logging message
-/*/ UNISYS.Log = ( data ) => {
-      UDATA.NetSignal('SRV_LOG_EVENT',data);
+/*/ UNISYS.Log = ( event, ...items ) => {
+      if (typeof event!=='string') {
+        console.error("UNISYS.Log( 'eventString', value, value, value... )");
+      }
+      UDATA.NetSignal('SRV_LOG_EVENT',{event,items});
     };
 
 /// REACT INTEGRATION /////////////////////////////////////////////////////////

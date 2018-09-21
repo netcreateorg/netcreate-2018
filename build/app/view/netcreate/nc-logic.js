@@ -195,7 +195,10 @@ const TARGET_COLOR     = '#FF0000';
         if (nodes!==undefined) {
           if (nodes.length>0) {
             let color = '#0000DD';
-            nodes.forEach( node => m_MarkNodeById(node.id,color));
+            nodes.forEach( node => {
+              m_MarkNodeById(node.id,color);
+              UNISYS.Log('select node',node.id,node.label);
+            });
           } else {
             m_UnMarkAllNodes();
           }

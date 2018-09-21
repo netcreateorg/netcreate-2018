@@ -28,6 +28,7 @@
     "ejs": "^2.6.1",
     "eslint": "^5.0.1",
     "eslint-plugin-react": "^7.10.0",
+    "tracer": "^0.9.1",
     "uglify-js-brunch": "^2.10.0"
   },
   "dependencies": {
