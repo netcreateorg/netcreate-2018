@@ -178,7 +178,7 @@ const PR  = "EdgeEditor";
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React        = require('react');
 const ReactStrap   = require('reactstrap');
-const { Button, Col, Form, FormGroup, Label, Input, FormText } = ReactStrap;
+const { Button, Col, Form, FormGroup, FormText, Input, Label } = ReactStrap;
 const AutoComplete = require('./AutoComplete');
 const NodeDetail   = require('./NodeDetail');
 
@@ -251,6 +251,17 @@ class EdgeEditor extends UNISYS.Component {
       UDATA.HandleMessage('EDGE_EDIT',(data) => {
         this.handleEdgeEdit(data);
       });
+
+      // Load template
+      const options = this.AppState('EDGETYPES').options;
+      if ( (options===undefined) || !Array.isArray(options) ) console.error(PR,'received bad Options definition:',options);
+      this.state.options = options;
+
+      // Template handler
+      this.OnAppStateChange('EDGETYPES',(data) => {
+        this.setState({options: data.options});
+      });
+
     } // constructor
 
 
@@ -536,7 +547,6 @@ class EdgeEditor extends UNISYS.Component {
 /*/
 /*/ onSwapSourceAndTarget () {
       let formData = this.state.formData;
-      console.log('source is',formData.sourceId.label);
 
       // swap formadata
       let targetId = formData.targetId;
@@ -551,15 +561,7 @@ class EdgeEditor extends UNISYS.Component {
       // REVIEW
       // Get rid of separate this.state.source and this.state.target
       // and just use formData?!?
-      console.log('asftert swap source is',formData.sourceId.label);
 
-      // If the user was editing this field when they hit swap,
-      // we need to exit out of editing, and THEN do the swap.
-      // The problem is we have to assume the target node is valid first?
-      // So if you're in the middle of selecting, you might end up with a
-      // an invalid node?
-      // The alternative is to only show the swap button once a valid
-      // target node has been selected?
       this.setState({
         formData: formData,
         sourceNode: source,
@@ -657,10 +659,8 @@ class EdgeEditor extends UNISYS.Component {
 /*/
 /*/ render () {
       const { edgeID, parentNodeLabel } = this.props;
-      const { formData, sourceNode, targetNode } = this.state;
+      const { formData, sourceNode, targetNode, options } = this.state;
       const me = <span style={{color:"rgba(0,0,0,0.2)",fontStyle:"italic"}}>this</span>;
-      const options = this.AppState('EDGETYPES').options;
-      if ( (options===undefined) || !Array.isArray(options) ) console.error(PR,'received bad Options defintion:',options);
       return (
         <div>
 

@@ -152,6 +152,7 @@ const TARGET_COLOR     = '#FF0000';
         if (DBG) console.log(PR,'DATASTORE returned data',data);
         D3DATA = data;
         UDATA.SetAppState('D3DATA',D3DATA);
+        m_RecalculateAllEdgeWeights();
       });
       // load Template data
       DATASTORE.PromiseJSONFile( '../templates/alexander.json' )
@@ -359,6 +360,8 @@ const TARGET_COLOR     = '#FF0000';
           // (If we don't do this, the edges become disconnected from nodes)
           edge.source = edge.source.id;
           edge.target = edge.target.id;
+          // Calculate Edge Size
+          edge.size   = m_CalculateEdgeWeight( edge, D3DATA.edges );
         }
         // if there was one node
         if (updatedEdges.length===1) {
@@ -374,6 +377,7 @@ const TARGET_COLOR     = '#FF0000';
           // (If we don't do this, the edges become disconnected from nodes)
           edge.source = edge.source.id;
           edge.target = edge.target.id;
+          edge.size   = m_CalculateEdgeWeight( edge, D3DATA.edges );
         }
         // if there were more edges than expected
         if (updatedEdges.length>1) {
@@ -569,6 +573,38 @@ const TARGET_COLOR     = '#FF0000';
 /*/ function m_SetMatchingEdgesByProp( match_me={}, yes={}, no={} ) {
       return m_SetMatchingObjsByProp( D3DATA.edges, match_me, yes, no );
     }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Count number of edges with the same source/target to determine weight
+/*/ function m_RecalculateAllEdgeWeights() {
+      let D3DATA = UDATA.AppState('D3DATA');
+      let edges = D3DATA.edges;
+      edges.forEach( (edge) => {
+          edge.size = m_CalculateEdgeWeight( edge, edges );
+      });
+      UDATA.SetAppState('D3DATA',D3DATA);
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Count number of edges with the same source/target to determine weight
+/*/ function m_CalculateEdgeWeight( edge, edges ) {
+      // REVIEW: If there's a match, BOTH edge sizes ought to be set!
+
+      let size = edges.reduce( (accumulator,e) => {
+        // Ignore self
+        if (e.id===edge.id) return accumulator;
+        // source and target might be ids or might be node objects depending
+        // on whether D3 has processed the edge object.
+        let sourceId = e.source.id || e.source;
+        let targetId = e.target.id || e.target;
+        let edgeSourceId = edge.source.id || edge.source;
+        let edgeTargetId = edge.target.id || edge.target;
+        //console.log('comparing sourceId',sourceId,'to',edgeSourceId,' / targetId',targetId,'to',edgeTargetId);
+        if ( ((sourceId===edgeSourceId) && (targetId===edgeTargetId)) ||
+             ((sourceId===edgeTargetId) && (targetId===edgeSourceId))
+           ) return accumulator + 1;
+        return accumulator;
+      }, 1);
+      return size;
+  }
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
