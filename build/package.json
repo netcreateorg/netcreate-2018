@@ -5,7 +5,7 @@
   "scripts": {
     "bare": "node --inspect brunch-server.js",
     "dev": "brunch watch -s",
-    "clean": "rm -rf public/",
+    "clean": "rm -rf ./public ./node_modules; npm ci",
     "debug": "LOGGY_STACKS=true BRUNCH_DEVTOOLS=true ./brunch-debug watch --server"
   },
   "repository": {
@@ -20,7 +20,7 @@
   "homepage": "https://github.com/daveseah/netcreate-2018#readme",
   "devDependencies": {
     "auto-reload-brunch": "^2.7.1",
-    "babel-brunch": "github:babel/babel-brunch",
+    "babel-brunch": "^6.1.1",
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "brunch": "^2.10.16",
@@ -28,15 +28,17 @@
     "ejs": "^2.6.1",
     "eslint": "^5.0.1",
     "eslint-plugin-react": "^7.10.0",
+    "tracer": "^0.9.1",
     "uglify-js-brunch": "^2.10.0"
   },
   "dependencies": {
     "babel-polyfill": "^6.26.0",
-    "bootstrap": "^4.1.1",
+    "bootstrap": "^4.1.2",
     "classnames": "^2.2.6",
     "cookie-parser": "^1.4.3",
     "d3": "^4.13.0",
     "fs-extra": "^6.0.1",
+    "hashids": "^1.1.4",
     "ip": "^1.1.5",
     "jquery": "^3.3.1",
     "lokijs": "^1.5.5",
@@ -49,7 +51,7 @@
     "react-router-config": "^1.0.0-beta.4",
     "react-router-dom": "^4.3.1",
     "react-transition-group": "^2.4.0",
-    "reactstrap": "^5.0.0",
+    "reactstrap": "^6.4.0",
     "stacktrace-js": "^2.0.0",
     "type-detect": "^4.0.8"
   }

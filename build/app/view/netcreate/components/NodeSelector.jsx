@@ -485,13 +485,15 @@ class NodeSelector extends UNISYS.Component {
 /*/ onSubmit ( event ) {
       event.preventDefault();
       // Update the data with the selectedNode
-      let newNodeData = this.state.formData;
+      let formData = this.state.formData;
       let node = {
-          label: newNodeData.label,
-          id:    newNodeData.id,
-          type:  newNodeData.type,
-          info:  newNodeData.info,
-          notes: newNodeData.notes
+        label : formData.label,
+        id    : formData.id,
+        attributes: {
+          'Node_Type'  : formData.type,
+          'Extra Info' : formData.info,
+          'Notes'      : formData.notes
+        }
       };
       this.setState({ isEditable: false });
       // clear AutoComplete form
@@ -500,8 +502,10 @@ class NodeSelector extends UNISYS.Component {
         // Reselect the saved node
         this.AppCall('SOURCE_SEARCH', { searchString: node.label });
       });
-      // tell other unisys subscribers interested in this state
-      this.Call('SOURCE_UPDATE', { node });
+      // write data to database
+      // setting dbWrite to true will distinguish this update
+      // from a remote one
+      this.AppCall('DB_UPDATE', { node });
     } // onSubmit
 
 

@@ -526,7 +526,7 @@ class EdgeEditor extends UNISYS.Component {
 /*/
 /*/ onDeleteButtonClick () {
       this.clearForm();
-      this.Call('EDGE_DELETE',{edgeID:this.props.edgeID});
+      this.AppCall('DB_UPDATE',{edgeID:this.props.edgeID});
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -639,13 +639,11 @@ class EdgeEditor extends UNISYS.Component {
         }
       }
       if (DBG) console.group('EdgeEntry.onSubmit submitting',edge)
-      // Notify parent of new edge data
-      this.Call('EDGE_UPDATE',{edge:edge});
 
       // pass currentAutoComplete back to nodeselector
       this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
-
       this.setState({ isEditable: false, sourceIsEditable: false, targetIsEditable: false });
+      this.AppCall('DB_UPDATE',{ edge });
     } // onSubmit
 
 

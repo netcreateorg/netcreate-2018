@@ -23,11 +23,13 @@
     const { NavbarBrand, Nav, NavItem, NavLink } = require('reactstrap');
     const { UncontrolledDropdown, DropdownToggle } = require('reactstrap');
     const { DropdownMenu, DropdownItem } = require('reactstrap');
-    const { Switch, Route, Redirect, Link } = require('react-router-dom');
+    const { Switch, withRouter } = require('react-router-dom');
     // workaround name collision in ReactRouterNavLink with ReactStrap
     const RRNavLink = require('react-router-dom').NavLink;
     //
     const { renderRoutes } = require('react-router-config');
+    //
+    const UNISYS = require('unisys/client');
 
 
 /** (1) ROUTED COMPONENTS ****************************************************\
@@ -49,13 +51,18 @@
     const DevUnisys         = require('view/dev-unisys/DevUnisys');
     const DevDB             = require('view/dev-db/DevDB');
     const DevReact          = require('view/dev-react/DevReact');
+    const DevSession        = require('view/dev-session/DevSession');
 //  const Prototype         = require('view/prototype/Prototype');
 //  const D3Test            = require('view/d3test/D3Test');
 
     const Routes = [
       {
         path: '/',
-        exact: true,
+        exact : true,
+        component: NetCreate
+      },
+      {
+        path: '/edit',
         component: NetCreate
       },
       {
@@ -69,6 +76,10 @@
       {
         path: '/dev-react',
         component: DevReact
+      },
+      {
+        path: '/dev-session',
+        component: DevSession
       },
       {
         path: '/simple',
@@ -128,7 +139,7 @@
     require() statements (thanks to brunch magic)
 
 \*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-class AppShell extends React.Component {
+class AppShell extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ constructor
 /*/ constructor(props) {
@@ -137,6 +148,10 @@ class AppShell extends React.Component {
       this.state = {
         isOpen: false
       };
+      // bind handler
+      this.redirect = this.redirect.bind(this);
+      // add UNISYS message for redirects
+      this.HandleMessage('SHELL_REDIRECT',this.redirect);
     }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -145,6 +160,12 @@ class AppShell extends React.Component {
       this.setState({
         isOpen: !this.state.isOpen
       });
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Called by SHELL_REDIRECT unisys message
+/*/ redirect(data) {
+      let { redirect } = data;
+      this.props.history.push(redirect);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Draw top navbar w/ menus. Add route information
@@ -180,6 +201,9 @@ class AppShell extends React.Component {
                       <NavLink to="/dev-db" tag={RRNavLink} replace>dev-db</NavLink>
                     </DropdownItem>
                     <DropdownItem>
+                      <NavLink to="/dev-session" tag={RRNavLink} replace>dev-session</NavLink>
+                    </DropdownItem>
+                    <DropdownItem>
                       <NavLink to="/simple" tag={RRNavLink} replace>SimpleHTML Example</NavLink>
                     </DropdownItem>
                   </DropdownMenu>
@@ -201,4 +225,5 @@ AppShell.Routes = Routes;
 
 /// EXPORT REACT CLASS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = AppShell;
+/// see https://tylermcginnis.com/react-router-programmatically-navigate/
+module.exports = withRouter(AppShell);

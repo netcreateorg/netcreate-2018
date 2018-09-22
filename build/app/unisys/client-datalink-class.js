@@ -193,7 +193,7 @@ var MESSAGER       = new Messager();
         return this.Call(mesgName,inData,options);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ version of Send that force network-only calls
+  /*/ version of Send that force local-only calls
   /*/ LocalSend( mesgName, inData, options={} ) {
         options = Object.assign(options,{type:'msend'});
         options.toLocal = true;
@@ -201,7 +201,7 @@ var MESSAGER       = new Messager();
         this.Send(mesgName,inData,options);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ version of Send that force network-only calls
+  /*/ version of Send that force local-only calls
   /*/ LocalSignal( mesgName, inData, options={} ) {
         options = Object.assign(options,{type:'msig'});
         options.toLocal = true;
@@ -209,7 +209,7 @@ var MESSAGER       = new Messager();
         this.Signal(mesgName,inData,options);
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ version of Call that forces local-only calls
+  /*/ version of Call that forces network-only calls
   /*/ NetCall( mesgName, inData, options={} ) {
         options = Object.assign(options,{type:'mcall'});
         options.toLocal = false;

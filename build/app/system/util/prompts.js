@@ -12,21 +12,21 @@ var   PROMPTS   = {};
 const IS_NODE   = ((typeof process!=='undefined') && (process.release) &&
                   (process.release.name==='node'));
 var   PAD_SIZE  = (IS_NODE)
-                  ? 9   // nodejs
+                  ? 9  // nodejs
                   : 0; // not nodejs
 
 /// PROMPT STRING HELPERS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ return a string padded to work as a prompt for either browser or node
     console output
-/*/ PROMPTS.Pad = function( prompt='') {
+/*/ PROMPTS.Pad = function( prompt='', psize=PAD_SIZE) {
       let len = prompt.length;
-      if (IS_NODE) return prompt.padEnd(PAD_SIZE,' ')+'-';
+      if (IS_NODE) return prompt.padEnd(psize,' ')+'-';
       // must be non-node environment, so do dynamic string adjust
-      if (!PAD_SIZE) return prompt+':';
+      if (!psize) return prompt+':';
       // if this far, then we're truncating
-      if (len>=PAD_SIZE) prompt = prompt.substr(0,PAD_SIZE-1);
-      else prompt.padEnd(PAD_SIZE,' ');
+      if (len>=psize) prompt = prompt.substr(0,psize-1);
+      else prompt.padEnd(psize,' ');
       return prompt+':';
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

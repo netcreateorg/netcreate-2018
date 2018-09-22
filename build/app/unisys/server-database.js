@@ -4,7 +4,7 @@ DATABASE SERVER
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = true;
+const DBG = false;
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -14,6 +14,8 @@ const FS                = require('fs-extra');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+const SESSION           = require('../unisys/common-session');
+const LOGGER            = require('../unisys/server-logger');
 const PROMPTS           = require('../system/util/prompts');
 const PR                = PROMPTS.Pad('SRV-DB');
 const DB_FILE           = './runtime/netcreate.loki';
@@ -92,7 +94,7 @@ let DB = {};
       function f_AutosaveStatus( ) {
         let nodeCount = NODES.count();
         let edgeCount = EDGES.count();
-        console.log(PR,`autosaving ${nodeCount} nodes and ${edgeCount} edges...`);
+        if (DBG) console.log(PR,`autosaving ${nodeCount} nodes and ${edgeCount} edges...`);
       }
     }; // InitializeDatabase()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -100,16 +102,16 @@ let DB = {};
     note: InitializeDatabase() was already called on system initialization
     to populate the NODES and EDGES structures.
 /*/ DB.PKT_GetDatabase = function ( pkt ) {
-      console.log(PR,`PKT_GetDatabase`);
       let nodes = NODES.chain().data({removeMeta:true});
       let edges = EDGES.chain().data({removeMeta:true});
-      console.log(PR,`nodes ${nodes.length} edges ${edges.length}`);
+      if (DBG) console.log(PR,`PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${edges.length} edges)`);
+      LOGGER.Write(pkt.Info(),`getdatabase`);
       return { nodes, edges };
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: reset database from scratch
 /*/ DB.PKT_SetDatabase = function ( pkt ) {
-      console.log(PR,`PKT_SetDatabase`);
+      if (DBG) console.log(PR,`PKT_SetDatabase`);
       let { nodes=[], edges=[] } = pkt.Data();
       if (!nodes.length) console.log(PR,'WARNING: empty nodes array');
       else console.log(PR,`setting ${nodes.length} nodes...`);
@@ -120,70 +122,86 @@ let DB = {};
       console.log(PR,`PKT_SetDatabase complete. Data available on next get.`);
       m_db.close();
       DB.InitializeDatabase();
+      LOGGER.Write(pkt.Info(),`setdatabase`);
       return { OK:true };
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     DB.PKT_GetNewNodeID = function ( pkt ) {
       m_max_nodeID += 1;
-      console.log(PR,`PKT_GetNewNodeID allocating nodeID ${m_max_nodeID} to ${pkt.SourceAddress()}`);
+      if (DBG) console.log(PR,`PKT_GetNewNodeID ${pkt.Info()} nodeID ${m_max_nodeID}`);
       return { nodeID : m_max_nodeID };
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     DB.PKT_GetNewEdgeID = function ( pkt ) {
       m_max_edgeID += 1;
-      console.log(PR,`PKT_GetNewEdgeID allocating edgeID ${m_max_edgeID} to ${pkt.SourceAddress()}`);
+      if (DBG) console.log(PR,`PKT_GetNewEdgeID ${pkt.Info()} edgeID ${m_max_edgeID}`);
       return { edgeID : m_max_edgeID };
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     DB.PKT_Update = function ( pkt ) {
-      console.log(PR,`PKT_Update`,JSON.stringify(pkt.Data()));
-      let { op, node, newNode, edge, newEdge, edgeID } = pkt.Data();
-      switch (op) {
-        case 'insert':
-          if (newNode) {
-            if (NODES.find({id:newNode.id}).length===0) {
-              console.log(PR,`insert node ${JSON.stringify(newNode)}`);
-              NODES.insert(newNode);
-            } else {
-              console.log(PR,'ignoring duplicate node id',newNode.id);
-            }
-          }
-          if (newEdge) {
-            console.log(PR,'Checking edge id',newEdge.id,'...');
-            if (EDGES.find({id:newEdge.id}).length===0) {
-              console.log(PR,`insert edge ${JSON.stringify(newEdge)}`);
-              EDGES.insert(newEdge);
-            } else {
-              console.log(PR,'ignoring duplicate edge id',newEdge.id);
-            }
-          }
-          break;
-        case 'update':
-          if (node) {
-            console.log(PR,`node ${JSON.stringify(node)} matching`);
-            NODES.findAndUpdate({id:node.id},(n)=>{
-              console.log(PR,`updating node ${node.id} ${JSON.stringify(node)}`);
-              Object.assign(n,node);
-            });
-          }
-          if (edge) {
-            console.log(PR,`edge ${JSON.stringify(edge)} matching`);
-            EDGES.findAndUpdate({id:edge.id},(e)=>{
-              console.log(PR,`updating edge ${edge.id} ${JSON.stringify(edge)}`);
-              Object.assign(e,edge);
-            });
-          }
-          break;
-        case 'delete':
-          if (edgeID!==undefined) {
-            console.log(PR,`removing edge ${edgeID}`);
-            EDGES.findAndRemove({id:edgeID});
-          }
-          break;
-        default:
-          throw new Error(`Unexpected UPDATE op: '${op}'`);
+      let { node, edge, edgeID } = pkt.Data();
+      let retval = {};
+
+      // PROCESS NODE INSERT/UPDATE
+      if (node) {
+        let matches = NODES.find({id:node.id});
+        if (matches.length===0) {
+          // if there was no node, then this is an insert new operation
+          if (DBG) console.log(PR,`PKT_Update ${pkt.Info()} INSERT nodeID ${JSON.stringify(node)}`);
+          LOGGER.Write(pkt.Info(),`insert node`,node.id,JSON.stringify(node));
+          NODES.insert(node);
+          retval = { op:'insert', node };
+        } else if (matches.length===1) {
+          // there was one match to update
+          NODES.findAndUpdate({id:node.id},(n)=>{
+            if (DBG) console.log(PR,`PKT_Update ${pkt.Info()} UPDATE nodeID ${node.id} ${JSON.stringify(node)}`);
+            LOGGER.Write(pkt.Info(),`update node`,node.id,JSON.stringify(node));
+            Object.assign(n,node);
+          });
+          retval = { op:'update', node };
+        } else {
+          if (DBG) console.log(PR,`WARNING: multiple nodeID ${node.id} x${matches.length}`);
+          LOGGER.Write(pkt.Info(),`ERROR`,node.id,'duplicate node id');
+          retval = { op:'error-multinodeid' };
+        }
+        return retval;
+      } // if node
+
+      // PROCESS EDGE INSERT/UPDATE
+      if (edge) {
+        let matches = EDGES.find({id:edge.id});
+        if (matches.length===0) {
+          // this is a new edge
+          if (DBG) console.log(PR,`PKT_Update ${pkt.Info()} INSERT edgeID ${edge.id} ${JSON.stringify(edge)}`);
+          LOGGER.Write(pkt.Info(),`insert edge`,edge.id,JSON.stringify(edge));
+          EDGES.insert(edge);
+          retval = { op:'insert', edge };
+        } else if (matches.length===1) {
+          // update this edge
+          EDGES.findAndUpdate({id:edge.id},(e)=>{
+            if (DBG) console.log(PR,`PKT_Update ${pkt.SourceGroupID()} UPDATE edgeID ${edge.id} ${JSON.stringify(edge)}`);
+            LOGGER.Write(pkt.Info(),`update edge`,edge.id,JSON.stringify(edge));
+            Object.assign(e,edge);
+          });
+          retval = { op:'update', edge };
+        } else {
+          console.log(PR,`WARNING: multiple edgeID ${edge.id} x${matches.length}`);
+          LOGGER.Write(pkt.Info(),`ERROR`,node.id,'duplicate edge id');
+          retval = { op:'error-multiedgeid' };
+        }
+        return retval;
+      } // if edge
+
+      // DELETE EDGES
+      if (edgeID!==undefined) {
+        if (DBG) console.log(PR,`PKT_Update ${pkt.Info()} DELETE edgeID ${edgeID}`);
+        LOGGER.Write(pkt.Info(),`delete edge`,edgeID);
+        EDGES.findAndRemove({id:edgeID});
+        return { op:'delete',edgeID };
       }
-      return { OK:true };
+
+      // return update value
+      return { op:'error-noaction' };
     }
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////

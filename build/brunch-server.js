@@ -52,6 +52,7 @@ const USRV_START = new Date(Date.now()).toISOString();
       // gather important information for client so it
       // can establish a socket connection to UNISYS
       let uaddr = IP.address();      // this server LAN ip
+      let hostip = IP.address();     // this gets copied to server properties to
       let uport = unetOptions.port;  // unisys listening port
       let { ip, hostname } = req;    // remote ip, hostname
       // rewrite shortcut localhost into long form
@@ -67,9 +68,9 @@ const USRV_START = new Date(Date.now()).toISOString();
       // render template, passing-in template-accessible vars
       let templateProps = {
         // server information
-        ustart,
+        ustart, hostname, hostip,
         // client information
-        ip, hostname, ukey,
+        ip, ukey,
         // socket address
         uaddr, uport
       };

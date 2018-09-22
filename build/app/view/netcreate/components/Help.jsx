@@ -26,7 +26,7 @@ class Help extends UNISYS.Component {
     constructor (props) {
       super(props);
       this.state = {isExpanded: false};
-      this.onToggleExpanded         = this.onToggleExpanded.bind(this);
+      this.onToggleExpanded = this.onToggleExpanded.bind(this);
     } // constructor
 
 
@@ -94,11 +94,7 @@ class Help extends UNISYS.Component {
         </div>
       );
     }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ componentDidMount () {
-      if (DBG) console.log('Help.componentDidMount!');
-    }
+
 } // class Help
 
 
