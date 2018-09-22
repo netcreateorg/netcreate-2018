@@ -4,7 +4,7 @@ DATABASE SERVER
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = true;
+const DBG = false;
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -94,7 +94,7 @@ let DB = {};
       function f_AutosaveStatus( ) {
         let nodeCount = NODES.count();
         let edgeCount = EDGES.count();
-        console.log(PR,`autosaving ${nodeCount} nodes and ${edgeCount} edges...`);
+        if (DBG) console.log(PR,`autosaving ${nodeCount} nodes and ${edgeCount} edges...`);
       }
     }; // InitializeDatabase()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -111,7 +111,7 @@ let DB = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: reset database from scratch
 /*/ DB.PKT_SetDatabase = function ( pkt ) {
-      console.log(PR,`PKT_SetDatabase`);
+      if (DBG) console.log(PR,`PKT_SetDatabase`);
       let { nodes=[], edges=[] } = pkt.Data();
       if (!nodes.length) console.log(PR,'WARNING: empty nodes array');
       else console.log(PR,`setting ${nodes.length} nodes...`);
@@ -147,20 +147,20 @@ let DB = {};
         let matches = NODES.find({id:node.id});
         if (matches.length===0) {
           // if there was no node, then this is an insert new operation
-          console.log(PR,`PKT_Update ${pkt.Info()} INSERT nodeID ${JSON.stringify(node)}`);
+          if (DBG) console.log(PR,`PKT_Update ${pkt.Info()} INSERT nodeID ${JSON.stringify(node)}`);
           LOGGER.Write(pkt.Info(),`insert node`,node.id,JSON.stringify(node));
           NODES.insert(node);
           retval = { op:'insert', node };
         } else if (matches.length===1) {
           // there was one match to update
           NODES.findAndUpdate({id:node.id},(n)=>{
-            console.log(PR,`PKT_Update ${pkt.Info()} UPDATE nodeID ${node.id} ${JSON.stringify(node)}`);
+            if (DBG) console.log(PR,`PKT_Update ${pkt.Info()} UPDATE nodeID ${node.id} ${JSON.stringify(node)}`);
             LOGGER.Write(pkt.Info(),`update node`,node.id,JSON.stringify(node));
             Object.assign(n,node);
           });
           retval = { op:'update', node };
         } else {
-          console.log(PR,`WARNING: multiple nodeID ${node.id} x${matches.length}`);
+          if (DBG) console.log(PR,`WARNING: multiple nodeID ${node.id} x${matches.length}`);
           LOGGER.Write(pkt.Info(),`ERROR`,node.id,'duplicate node id');
           retval = { op:'error-multinodeid' };
         }
@@ -172,14 +172,14 @@ let DB = {};
         let matches = EDGES.find({id:edge.id});
         if (matches.length===0) {
           // this is a new edge
-          console.log(PR,`PKT_Update ${pkt.Info()} INSERT edgeID ${edge.id} ${JSON.stringify(edge)}`);
+          if (DBG) console.log(PR,`PKT_Update ${pkt.Info()} INSERT edgeID ${edge.id} ${JSON.stringify(edge)}`);
           LOGGER.Write(pkt.Info(),`insert edge`,edge.id,JSON.stringify(edge));
           EDGES.insert(edge);
           retval = { op:'insert', edge };
         } else if (matches.length===1) {
           // update this edge
           EDGES.findAndUpdate({id:edge.id},(e)=>{
-            console.log(PR,`PKT_Update ${pkt.SourceGroupID()} UPDATE edgeID ${edge.id} ${JSON.stringify(edge)}`);
+            if (DBG) console.log(PR,`PKT_Update ${pkt.SourceGroupID()} UPDATE edgeID ${edge.id} ${JSON.stringify(edge)}`);
             LOGGER.Write(pkt.Info(),`update edge`,edge.id,JSON.stringify(edge));
             Object.assign(e,edge);
           });
@@ -194,7 +194,7 @@ let DB = {};
 
       // DELETE EDGES
       if (edgeID!==undefined) {
-        console.log(PR,`PKT_Update ${pkt.Info()} DELETE edgeID ${edgeID}`);
+        if (DBG) console.log(PR,`PKT_Update ${pkt.Info()} DELETE edgeID ${edgeID}`);
         LOGGER.Write(pkt.Info(),`delete edge`,edgeID);
         EDGES.findAndRemove({id:edgeID});
         return { op:'delete',edgeID };

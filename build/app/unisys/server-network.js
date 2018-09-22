@@ -351,7 +351,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       socket.UADDR = sid;
       // save socket
       mu_sockets.set(sid,socket);
-      console.log(PR,`socket ADD ${socket.UADDR} to network`);
+      if (DBG) console.log(PR,`socket ADD ${socket.UADDR} to network`);
       LOGGER.Write(socket.UADDR,'joined network');
       if (DBG) m_ListSockets(`add ${sid}`);
     }
@@ -367,7 +367,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
 /*/ function m_SocketDelete( socket ) {
       let uaddr = socket.UADDR;
       if (!mu_sockets.has(uaddr)) throw Error(DBG_SOCK_BADCLOSE);
-      console.log(PR,`socket DEL ${uaddr} from network`);
+      if (DBG) console.log(PR,`socket DEL ${uaddr} from network`);
       LOGGER.Write(socket.UADDR,'left network');
       mu_sockets.delete(uaddr);
       // delete socket reference from previously registered handlers

@@ -7,7 +7,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = true;
+const DBG = false;
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -112,7 +112,7 @@ let LOG = {};
 /*/ API: Handle incoming log events
 /*/ LOG.PKT_LogEvent = function ( pkt ) {
       let {event,items} = pkt.Data();
-      console.log(PR,pkt.Info(),event,...items);
+      if (DBG) console.log(PR,pkt.Info(),event,...items);
       LogLine(pkt.Info(),event||'-',...items);
       return { OK : true };
     }
