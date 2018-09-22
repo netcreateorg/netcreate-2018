@@ -190,8 +190,11 @@ class EdgeTable extends UNISYS.Component {
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
-/*/ selectNode (id) {
+/*/ selectNode (id, event) {
+      event.preventDefault();
+
       // Load Source
+      if (DBG) console.log('EdgeTable: Edge id',id,'selected for editing');
       UDATA.LocalCall('SOURCE_SELECT',{ nodeIDs: [id] });
     }
 
@@ -300,10 +303,10 @@ class EdgeTable extends UNISYS.Component {
                       onClick={this.onButtonClick}
                     >Edit</Button>
                 </td>
-                <td><a href="#" onClick={()=>this.selectNode(edge.source.id)}
+                <td><a href="#" onClick={(e)=>this.selectNode(edge.source.id,e)}
                     >{edge.source.label || edge.source}</a></td>
                 <td>{edge.attributes["Relationship"]}</td>
-                <td><a href="#" onClick={()=>this.selectNode(edge.target.id)}
+                <td><a href="#" onClick={(e)=>this.selectNode(edge.target.id,e)}
                     >{edge.target.label || edge.target}</a></td>
                 <td>{edge.attributes["Citations"]}</td>
                 <td>{edge.attributes["Notes"]}</td>

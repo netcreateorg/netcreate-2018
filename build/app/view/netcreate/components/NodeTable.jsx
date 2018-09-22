@@ -162,30 +162,8 @@ class NodeTable extends UNISYS.Component {
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
-/*/ selectNode (id) {
-      // Load Source
-      UDATA.LocalCall('SOURCE_SELECT',{ nodeIDs: [id] });
-    }
-
-
-/// OBJECT HELPERS ////////////////////////////////////////////////////////////
-/// these probably should go into a utility class
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Return array of objects that match the match_me object keys/values
-    NOTE: make sure that strings are compared with strings, etc
-/*/ m_FindMatchingObjsByProp( obj_list, match_me={} ) {
-      // operate on arrays only
-      if (!Array.isArray(obj_list)) throw Error("FindMatchingObjectsByProp arg1 must be array");
-      let matches = obj_list.filter( obj => {
-        let pass = true;
-        for (let key in match_me) {
-          if (match_me[key]!==obj[key]) pass=false; break;
-        }
-        return pass;
-      });
-      // return array of matches (can be empty array)
-      return matches;
-    }
+/*/ selectNode (id, event) {
+      event.preventDefault();
 
 /// EDGE HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -254,7 +232,7 @@ class NodeTable extends UNISYS.Component {
                       onClick={this.onButtonClick}
                     >Edit</Button>
                 </td>
-                <td><a href="#" onClick={()=>this.selectNode(node.id)}
+                <td><a href="#" onClick={(e)=>this.selectNode(node.id,e)}
                     >{node.label}</a></td>
                 <td>{node.attributes["Node_Type"]}</td>
                 <td style={{}}>{node.attributes["Extra Info"]}</td>
