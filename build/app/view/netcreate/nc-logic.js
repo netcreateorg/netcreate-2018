@@ -150,7 +150,7 @@ const TARGET_COLOR     = '#FF0000';
       DATASTORE.PromiseD3Data()
       .then((data)=>{
         if (DBG) console.log(PR,'DATASTORE returned data',data);
-        D3DATA = data;
+        D3DATA = m_CleanIDs( data );
         UDATA.SetAppState('D3DATA',D3DATA);
         m_RecalculateAllEdgeWeights();
       });
@@ -239,20 +239,22 @@ const TARGET_COLOR     = '#FF0000';
       SEE ALSO: AutoComplete.onSuggestionSelected() and
                 D3SimpleNetGraph._UpdateGraph click handler
   /*/ UDATA.HandleMessage('SOURCE_SELECT', function( data ) {
+        if (DBG) console.log(PR,'SOURCE_SELECT got data',data);
+
         let { nodeLabels=[], nodeIDs=[] } = data;
         let nodeLabel = nodeLabels.shift();
         let nodeID    = nodeIDs.shift();
         let node, newState;
 
         if (nodeID) {
-          node = m_FindNodeById(nodeID);
+          node = m_FindNodeById(nodeID);   // Node IDs should be integers, not strings
         } else if (nodeLabel) {
           node = m_FindMatchingNodesByLabel(nodeLabel).shift();
         } else {
           // No node selected, so deselect
         }
 
-        if (DBG) console.log(PR,'SOURCE_SELECT got',node);
+        if (DBG) console.log(PR,'SOURCE_SELECT found',node);
 
         if (node===undefined) {
           // Node not found, create a new node
@@ -616,6 +618,23 @@ const TARGET_COLOR     = '#FF0000';
     From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expression
 /*/ function u_EscapeRegexChars( string ) {
       return string.replace(REGEX_REGEXCHARS,'\\$&'); // $& means the whole matched string
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Convert all IDs to integers
+    Node and Edge IDs should be integers.
+    This isn't a problem with newly created datasets as the network-generated IDs
+    are integers.  However, with older data sets, the IDs may have been strings.
+    e.g. exports from Gephi will have string IDs.
+    This mismatch is a problem when looking up nodes by ID.
+/*/ function m_CleanIDs( D3DATA ) {
+      D3DATA.nodes.forEach( (node) => {node.id = parseInt(node.id);} );
+      D3DATA.edges.forEach( (edge) => {
+        edge.id = parseInt(edge.id);
+        // before D3 processing, edge.source and edge.target are ids
+        edge.source = parseInt(edge.source);
+        edge.target = parseInt(edge.target);
+      });
+      return D3DATA;
     }
 
 /// NODE MARKING METHODS //////////////////////////////////////////////////////
