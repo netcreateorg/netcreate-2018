@@ -19,6 +19,7 @@ const DBG = false;
 var   WSS               = require('ws').Server;
 var   FSE               = require('fs-extra');
 var   NetMessage        = require('../unisys/common-netmessage-class');
+const LOGGER            = require('../unisys/server-logger');
 var   DB                = require('../unisys/server-database');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
@@ -110,6 +111,32 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       return this;
     }; // end UnhandleMessage()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Call remote handler, with possible return value
+/*/ UNET.NetCall = async function ( mesgName, data ) {
+      let pkt = new NetMessage(mesgName,data);
+      let promises = m_PromiseRemoteHandlers(pkt);
+      if (DBG) console.log(PR,`${pkt.Info()} NETCALL ${pkt.Message()} to ${promises.length} remotes`);
+      /// MAGICAL ASYNC/AWAIT BLOCK ///////
+      let resArray = await Promise.all(promises);
+      /// END MAGICAL ASYNC/AWAIT BLOCK ///
+      let resObj = Object.assign({},...resArray);
+      return resObj;
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Send data to remote handler, no expected return value
+/*/ UNET.NetSend = function ( mesgName, data ) {
+      let pkt = new NetMessage(mesgName,data);
+      let promises = m_PromiseRemoteHandlers(pkt);
+      // we don't care about waiting for the promise to complete
+      if (DBG) console.log(PR,`${pkt.Info()} NETSEND ${pkt.Message()} to ${promises.length} remotes`);
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Send signal to remote handler, no expected return value
+/*/ UNET.NetSignal = function ( mesgName, data ) {
+      console.warn(PR,'NOTE: Use NetSend(), not NetSignal() since the server doesnt care.');
+      UNET.NetSend(mesgName,data);
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ RegisterRemoteHandlers() accepts a RegistrationPacket with data = { messages }
     and writes to the two main maps for handling incoming messages
 /*/ UNET.RegisterRemoteHandlers = function( pkt ) {
@@ -195,10 +222,10 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
         }
         // console.log(PR,`packet source incoming ${pkt.SourceAddress()}-${pkt.Message()}`);
         // (1) first check if this is a server handler
-        let promises = m_CheckServerHandlers(pkt);
+        let promises = m_PromiseServerHandlers(pkt);
 
         // (2) if it wasn't, then see if we have remote handlers defined
-        if (promises.length===0) promises = m_CheckRemoteHandlers(pkt);
+        if (promises.length===0) promises = m_PromiseRemoteHandlers(pkt);
 
         // (3) FAIL if no promises were returned, because there were no eligible
         // UADDR targets, possibly because the sources are not allowed to call itself
@@ -213,11 +240,12 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
         // got this far? let's skip all server messages for debugging purposes
         let notsrv = !pkt.Message().startsWith('SRV_');
         let json = JSON.stringify(pkt.Data());
-
         /* MAGICAL ASYNC/AWAIT BLOCK *****************************/
+        if (DBG) console.log(PR,`${pkt.Info()} FORWARD ${pkt.Message()} to ${promises.length} remotes`);
         // if (notsrv) console.log(PR,`>> '${pkt.Message()}' queuing ${promises.length} Promises w/ data ${json}'`);
         let pktArray = await Promise.all(promises);
         // if (notsrv) console.log(PR,`<< '${pkt.Message()}' resolved`);
+        if (DBG) console.log(PR,`${pkt.Info()} RETURN ${pkt.Message()} from ${promises.length} remotes`);
         /* END MAGICAL ASYNC/AWAIT BLOCK *************************/
 
         // (4) only mcall packets need to receive the data back return
@@ -236,10 +264,10 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
         pkt.ReturnTransaction(socket);
     } // m_HandleMessage()
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ m_CheckServerHandlers() returns an array of promises, which should be used
+/*/ m_PromiseServerHandlers() returns an array of promises, which should be used
      by Promises.all() inside an async/await function (m_SocketMessage above)
     Logic is similar to client-datalink-class.js Call()
-/*/ function m_CheckServerHandlers( pkt ) {
+/*/ function m_PromiseServerHandlers( pkt ) {
       let mesgName = pkt.Message();
       const handlers = m_server_handlers.get(mesgName);
       /// create promises for all registered handlers
@@ -265,7 +293,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ If a handler is registered elsewhere on UNET, then dispatch to them for
     eventual reflection back through server aggregation of data.
-/*/ function m_CheckRemoteHandlers( pkt ) {
+/*/ function m_PromiseRemoteHandlers( pkt ) {
       // debugging values
       let s_uaddr = pkt.SourceAddress();
       // logic values
@@ -284,7 +312,6 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
           case 'msend':
           case 'mcall':
             if (s_uaddr!==d_uaddr) {
-              console.log(PR,`${type} '${pkt.Message()}' ${s_uaddr} to ${d_uaddr}`);
               promises.push(f_make_remote_resolver_func(pkt,d_uaddr));
             } else {
               // console.log(PR,`${type} '${pkt.Message()}' -NO ECHO- ${d_uaddr}`);
@@ -310,18 +337,10 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
         newpkt.MakeNewID();
         newpkt.CopySourceAddress(srcPkt);
         if (verbose) {
-          console.log('make_resolver_func:',`PKT: ${srcPkt.Type()} '${srcPkt.Message()}' from ${srcPkt.SourceAddress()} to d_uaddr:${d_uaddr} dispatch to d_sock.UADDR:${d_sock.UADDR}`);
+          console.log('make_resolver_func:',`PKT: ${srcPkt.Type()} '${srcPkt.Message()}' from ${srcPkt.Info()} to d_uaddr:${d_uaddr} dispatch to d_sock.UADDR:${d_sock.UADDR}`);
         }
         return newpkt.QueueTransaction(d_sock);
       }
-    }
-
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ function m_SendMessage( socket, pkt ) {
-      if (DBG) console.log(PR,'send',pkt.Data(),pkt.SeqNum());
-      if (socket) socket.send(pkt.JSON());
-      else throw Error(ERR_NULL_SOCKET);
     }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -332,10 +351,13 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       socket.UADDR = sid;
       // save socket
       mu_sockets.set(sid,socket);
-      if (DBG) console.log(PR,`saving ${socket.UADDR} to mu_sockets`);
+      if (DBG) console.log(PR,`socket ADD ${socket.UADDR} to network`);
+      LOGGER.Write(socket.UADDR,'joined network');
       if (DBG) m_ListSockets(`add ${sid}`);
     }
-    function m_GetNewUADDR( prefix='UADDR' ) {
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ function m_GetNewUADDR( prefix='UADDR' ) {
       ++mu_sid_counter;
       let cstr = mu_sid_counter.toString(10).padStart(2,'0');
       return `${prefix}_${cstr}`;
@@ -345,7 +367,8 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
 /*/ function m_SocketDelete( socket ) {
       let uaddr = socket.UADDR;
       if (!mu_sockets.has(uaddr)) throw Error(DBG_SOCK_BADCLOSE);
-      if (DBG) console.log(PR,`deleting ${uaddr} from mu_sockets`);
+      if (DBG) console.log(PR,`socket DEL ${uaddr} from network`);
+      LOGGER.Write(socket.UADDR,'left network');
       mu_sockets.delete(uaddr);
       // delete socket reference from previously registered handlers
       let rmesgs = m_socket_msgs_list.get(uaddr);

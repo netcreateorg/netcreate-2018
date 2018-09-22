@@ -80,7 +80,7 @@ class NodeDetail extends UNISYS.Component {
         <div className={this.state.label===undefined ? "d-none" : ""}
              style={{minHeight:'300px',minWidth:'240px',backgroundColor:'#c7f1f1',padding:'5px',marginBottom:'10px'}}>
           <FormText>NODE DETAIL (RF)</FormText>
-          <Table borderless="true" striped size="sm"><tbody>
+          <Table borderless striped size="sm"><tbody>
             <tr><td>Label:&nbsp;&nbsp;</td><td>{this.state.label}</td></tr>
             <tr><td>Type: </td><td>{this.state.type}</td></tr>
             <tr><td>Notes:</td><td>{this.state.notes}</td></tr>

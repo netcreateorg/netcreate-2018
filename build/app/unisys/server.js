@@ -10,6 +10,7 @@ const DBG = false;
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNET      = require('./server-network');
 const UDB       = require('./server-database');
+const LOGGER    = require('./server-logger');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,7 +65,16 @@ var UNISYS = {};
 
       UNET.HandleMessage('SRV_DBUPDATE',function(pkt) {
         if (DBG) console.log(PR,sprint_message(pkt));
-        return UDB.PKT_Update(pkt);
+        let data = UDB.PKT_Update(pkt);
+        // add src attribute for client SOURCE_UPDATE to know
+        // this is a remote update
+        data.src = 'remote';
+        // fire update messages
+        if (data.node) UNET.NetSend('SOURCE_UPDATE',data);
+        if (data.edge) UNET.NetSend('EDGE_UPDATE',data);
+        if (data.edgeID!==undefined) UNET.NetSend('EDGE_DELETE',data);
+        // return SRV_DBUPDATE value (required)
+        return { OK:true, info:'SRC_DBUPDATE' };
       });
 
       UNET.HandleMessage('SRV_DBGETNODEID',function(pkt) {
@@ -75,6 +85,11 @@ var UNISYS = {};
       UNET.HandleMessage('SRV_DBGETEDGEID',function(pkt) {
         if (DBG) console.log(PR,sprint_message(pkt));
         return UDB.PKT_GetNewEdgeID(pkt);
+      });
+
+      UNET.HandleMessage('SRV_LOG_EVENT',function(pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return LOGGER.PKT_LogEvent(pkt);
       });
 
       // utility function //

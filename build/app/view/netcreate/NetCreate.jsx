@@ -33,6 +33,7 @@
 
 /// UNISYS INITIALIZE REQUIRES for REACT ROOT /////////////////////////////////
 const UNISYS       = require('unisys/client');
+const SessionShell = require('unisys/component/SessionShell');
 
 /// DEBUG SWITCHES ////////////////////////////////////////////////////////////
 var   DBG          = false;
@@ -42,13 +43,14 @@ const PR           = PROMPTS.Pad('ACD');
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React        = require('react');
+const { Route }    = require('react-router-dom');
 const NetGraph     = require('./components/NetGraph');
 const Search       = require('./components/Search');
 const NodeSelector = require('./components/NodeSelector');
 const Help         = require('./components/Help');
 const NodeTable    = require('./components/NodeTable');
 const EdgeTable    = require('./components/EdgeTable');
-const ACD_LOGIC    = require('./nc-logic');
+const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
 
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
@@ -90,6 +92,9 @@ const ACD_LOGIC    = require('./nc-logic');
                 width:'100%', height:'100vh',overflow:'hidden'}}>
               <div id="left" style={{backgroundColor:'#EEE',flex:'1 1 25%',maxWidth:'400px',padding:'10px',overflow:'scroll',marginTop:'56px'}}>
                 <div style={{display:'flex',flexFlow:'column nowrap'}}>
+                  <Route path='/edit/:token' exact={true} component={SessionShell}/>
+                  <Route path='/edit' exact={true} component={SessionShell}/>
+                  <Route path='/' exact={true} component={SessionShell}/>
                   <Search/>
                   <NodeSelector/>
                 </div>

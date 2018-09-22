@@ -39,7 +39,9 @@ const DBG        = false;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const SETTINGS   = require('settings');
 const UNISYS     = require('unisys/client');
+const JSCLI      = require('system/util/jscli');
 const D3         = require('d3');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
@@ -129,8 +131,9 @@ var   UDATA      = UNISYS.NewDataLink(MOD);
 var   D3DATA           = null;    // see above for description
 var   TEMPLATE         = null;    // template definition for prompts
 const DATASTORE        = require('system/datastore');
+const SESSION          = require('unisys/common-session');
 const PROMPTS          = require('system/util/prompts');
-const PR               = PROMPTS.Pad('ACDLogic');
+const PR               = PROMPTS.Pad('NCLOGIC');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -138,7 +141,6 @@ const DESELECTED_COLOR = '';
 const SEARCH_COLOR     = '#008800';
 const SOURCE_COLOR     = '#0000DD';
 const TARGET_COLOR     = '#FF0000';
-
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -193,7 +195,10 @@ const TARGET_COLOR     = '#FF0000';
         if (nodes!==undefined) {
           if (nodes.length>0) {
             let color = '#0000DD';
-            nodes.forEach( node => m_MarkNodeById(node.id,color));
+            nodes.forEach( node => {
+              m_MarkNodeById(node.id,color);
+              UNISYS.Log('select node',node.id,node.label);
+            });
           } else {
             m_UnMarkAllNodes();
           }
@@ -246,7 +251,7 @@ const TARGET_COLOR     = '#FF0000';
           // No node selected, so deselect
         }
 
-        if (DBG) console.log('ACL: SOURCE_SELECT got',node);
+        if (DBG) console.log(PR,'SOURCE_SELECT got',node);
 
         if (node===undefined) {
           // Node not found, create a new node
@@ -268,7 +273,6 @@ const TARGET_COLOR     = '#FF0000';
             edges : edges
           };
         }
-        // TODO: CONVERT this to use a DATASTORE method
 
         // Set the SELECTION state so that listeners such as NodeSelectors update themselves
         UDATA.SetAppState('SELECTION',newState);
@@ -308,63 +312,41 @@ const TARGET_COLOR     = '#FF0000';
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ SOURCE_UPDATE is called when the properties of a node has changed
       Globally updates DATASTORE and working D3DATA objects with the new node data.
+      NOTE: SOURCE_UPDATE can be invoked remotely by the server on a DATABASE
+      update.
   /*/ UDATA.HandleMessage('SOURCE_UPDATE', function( data ) {
         let { node } = data;
-        let attribs = {
-          'Node_Type'  : node.type,
-          'Extra Info' : node.info,
-          'Notes'      : node.notes
-        };
-        let newNode = {
-          label        : node.label,
-          attributes   : attribs,
-          id           : node.id
-        };
-        // set matching nodes
-        let updatedNodes = m_SetMatchingNodesByProp({id:node.id},newNode);
-        if (DBG) console.log('HandleSourceUpdate: updated',updatedNodes);
+        // try updating existing nodes with this id?
+        let updatedNodes = m_SetMatchingNodesByProp({id:node.id},node);
+        if (DBG) console.log('SOURCE_UPDATE: updated',updatedNodes);
         // if no nodes had matched, then add a new node!
-        if (updatedNodes.length===0) {
-          if (DBG) console.log('pushing node',newNode);
-          DATASTORE.Update({ op:'insert', newNode });
-          D3DATA.nodes.push(newNode);
-        }
-        if (updatedNodes.length===1) {
-          // DATASTORE/server-database.json expects a 'node' key not 'newNode' with updates
-          if (DBG) console.log('updating existing node',newNode);
-          DATASTORE.Update({ op:'update', node:newNode });
-        }
         if (updatedNodes.length>1) {
-          throw Error("SourceUpdate found duplicate IDs");
+          console.error('SOURCE_UPDATE: duplicate ids in',updatedNodes);
+          throw Error('SOURCE_UPDATE: found duplicate IDs');
         }
+        if (updatedNodes.length===0) D3DATA.nodes.push(node);
         UDATA.SetAppState('D3DATA',D3DATA);
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ EDGE_UPDATE is called when the properties of an edge has changed
+      NOTE: SOURCE_UPDATE can be invoked remotely by the server on a DATABASE
+      update.
   /*/ UDATA.HandleMessage('EDGE_UPDATE', function( data ) {
         let { edge } = data;
-        let attribs = {
-          'Relationship' : edge.attributes['Relationship'],
-          'Info'         : edge.attributes['Info'],
-          'Citations'    : edge.attributes['Citations'],
-          'Notes'        : edge.attributes['Notes']
-        };
-        let newEdge = {
-          source         : m_FindNodeById(edge.source),
-          target         : m_FindNodeById(edge.target),
-          attributes     : attribs,
-          id             : edge.id
-        };
+        // edge.source and edge.target are initially ids
+        // replace then with node data
+        edge.source = m_FindNodeById(edge.source);
+        edge.target = m_FindNodeById(edge.target);
         // set matching nodes
-        let updatedEdges = m_SetMatchingEdgesByProp({id:edge.id},newEdge);
-        if (DBG) console.log('HandleEdgeUpdate: updated',updatedEdges);
+        let updatedEdges = m_SetMatchingEdgesByProp({id:edge.id},edge);
+        if (DBG) console.log('EDGE_UPDATE: updated',updatedEdges);
+
         // if no nodes had matched, then add a new node!
         if (updatedEdges.length===0) {
-          if (DBG) console.log('pushing edge',newEdge);
+          if (DBG) console.log('EDGE_UPDATE: pushing edge',edge);
           // created edges should have a default size
-          newEdge.size = 1;
-          D3DATA.edges.push(newEdge);
-
+          edge.size = 1;
+          D3DATA.edges.push(edge);
           // Edge source and target links should be stored as
           // ids rather than references to the actual source and
           // target node objects.
@@ -375,13 +357,11 @@ const TARGET_COLOR     = '#FF0000';
           // So we explicitly set and store ids rather than objects here.
           //
           // (If we don't do this, the edges become disconnected from nodes)
-          newEdge.source = newEdge.source.id;
-          newEdge.target = newEdge.target.id;
-
-          DATASTORE.Update({ op:'insert', newEdge });
+          edge.source = edge.source.id;
+          edge.target = edge.target.id;
         }
+        // if there was one node
         if (updatedEdges.length===1) {
-
           // Edge source and target links should be stored as
           // ids rather than references to the actual source and
           // target node objects.
@@ -392,12 +372,10 @@ const TARGET_COLOR     = '#FF0000';
           // So we explicitly set and store ids rather than objects here.
           //
           // (If we don't do this, the edges become disconnected from nodes)
-          newEdge.source = newEdge.source.id;
-          newEdge.target = newEdge.target.id;
-
-          // DATASTORE/server-database.json expects 'edge' not 'newEdge' with updates
-          DATASTORE.Update({ op:'update', edge:newEdge });
+          edge.source = edge.source.id;
+          edge.target = edge.target.id;
         }
+        // if there were more edges than expected
         if (updatedEdges.length>1) {
           throw Error("EdgeUpdate found duplicate IDs");
         }
@@ -407,19 +385,21 @@ const TARGET_COLOR     = '#FF0000';
   /*/ EDGE_DELETE is called when an edge should be removed from...something?
   /*/ UDATA.HandleMessage('EDGE_DELETE', function( data ) {
         let { edgeID } = data;
+        let edges = [];
         // remove specified edge from edge list
         D3DATA.edges = m_DeleteMatchingEdgeByProp({id:edgeID});
         UDATA.SetAppState('D3DATA',D3DATA);
         // Also update selection so edges in EdgeEditor will update
         let selection = UDATA.AppState('SELECTION');
         if ((selection.nodes===undefined) || (selection.nodes.length<1) || (selection.nodes[0].id===undefined)) {
-          throw Error('nc-logic.EDGE_DELETE can\'t find source node!  This shoudln\'t happen!');
-        }
-        let nodeID = selection.nodes[0].id;
-        let edges = [];
-        // Remove the deleted edge from the selection
-        if ((selection.edges!==undefined) && (selection.edges.length>0)) {
-          edges = edges.concat( selection.edges.filter( edge => edge.id!==edgeID ));
+          if (DBG) console.log(PR,'no selection:',selection);
+        } else {
+          if (DBG) console.log(PR,'updating selection:',selection);
+          let nodeID = selection.nodes[0].id;
+          // Remove the deleted edge from the selection
+          if ((selection.edges!==undefined) && (selection.edges.length>0)) {
+            edges = edges.concat( selection.edges.filter( edge => edge.id!==edgeID ));
+          }
         }
         UDATA.SetAppState('SELECTION',{
           nodes: selection.nodes,
@@ -433,6 +413,7 @@ const TARGET_COLOR     = '#FF0000';
         m_HandleAutoCompleteSelect( data );
       });
     }); // end UNISYS_INIT
+
     function m_HandleAutoCompleteSelect ( data ) {
       if (DBG) console.log('ACL: Setting activeAutoCompleteId to',data.id);
       UDATA.SetAppState('ACTIVEAUTOCOMPLETE',{
@@ -664,11 +645,8 @@ const TARGET_COLOR     = '#FF0000';
 
 /// COMMAND LINE UTILITIES ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    let CMD = [];
-    MOD.Hook('RESET', m_InitCLI);
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Command: RESET THE DATABASE from default data
-/*/ CMD.push(function ncPushDatabase( jsonFile ) {
+/*/ JSCLI.AddFunction(function ncPushDatabase( jsonFile ) {
       jsonFile = jsonFile || 'data.reducedlinks.json';
         DATASTORE.PromiseJSONFile(jsonFile)
         .then((data)=>{
@@ -694,41 +672,37 @@ const TARGET_COLOR     = '#FF0000';
     });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Command: EMPTY THE DATABASE from default data
-/*/ CMD.push(function ncEmptyDatabase() {
+/*/ JSCLI.AddFunction(function ncEmptyDatabase() {
       window.ncPushDatabase('nada.json');
       return "FYI: pushing empty database from assets/data/nada.json...reloading";
     });
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Initialize the CLI interface by loading functions in CMD array into
-    window space, then print out instructions
-/*/ function m_InitCLI() {
-      let silent = true;
-
-      let E_SHELL = document.getElementById('fdshell');
-      let E_OUT = document.createElement('pre');
-      let E_HEADER = document.createElement('h4');
-
-      if (!silent) {
-        E_SHELL.appendChild(E_HEADER);
-        E_SHELL.appendChild(E_OUT);
-        E_HEADER.innerHTML='Command Information';
-        E_OUT.innerHTML = 'The following CLI commands are available:\n\n';
+/*/ Command: Token Generator
+/*/ JSCLI.AddFunction( function ncMakeTokens (clsId, projId, numGroups ) {
+      // type checking
+      if (typeof clsId!=='string') return "args: str classId, str projId, int numGroups"
+      if (typeof projId!=='string') return "args: str classId, str projId, int numGroups"
+      if (clsId.length>12) return "classId arg1 should be 12 chars or less";
+      if (projId.length>12) return "classId arg1 should be 12 chars or less";
+      if (!Number.isInteger(numGroups)) return "numGroups arg3 must be integer";
+      if (numGroups<1) return "numGroups arg3 must be positive integeger";
+      // let's do this!
+      let out = `\nTOKEN LIST for class '${clsId}' project '${projId}'\n\n`;
+      let pad = String(numGroups).length;
+      for (let i=1; i<=numGroups; i++) {
+        let id = String(i);
+        id = id.padStart(pad,'0');
+        out += `group ${id}\t${SESSION.MakeToken(clsId,projId,i)}\n`;
       }
-
-      CMD.forEach((f)=>{
-        window[f.name] = f;
-        if (!silent) E_OUT.innerHTML+=`  ${f.name}()\n`;
-      });
-
-      if (!silent) {
-        E_OUT.innerText += "\n";
-        E_OUT.innerText += "Mac shortcuts to open console\n";
-        E_OUT.innerText += "  Chrome  : cmd-option-j\n";
-        E_OUT.innerText += "  Firefox : cmd-option-k\n";
-        E_OUT.innerText += "PC use ctrl-shift instead\n";
+      if (window && window.location) {
+        let ubits = new URL(window.location);
+        let hash = ubits.hash.split('/')[0];
+        let url = `${ubits.protocol}//${ubits.host}/${hash}`;
+        out += `\nexample url: ${SETTINGS.ServerAppURL()}/edit/${SESSION.MakeToken(clsId,projId,1)}\n`;
       }
-    }
+      return out;
+    });
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////

@@ -237,6 +237,16 @@ var   UDATA        = new UniData(UNISYS);
       return NETWORK.SocketUADDR();
     };
 
+/// DATA LOGGING //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ send a logging message
+/*/ UNISYS.Log = ( event, ...items ) => {
+      if (typeof event!=='string') {
+        console.error("UNISYS.Log( 'eventString', value, value, value... )");
+      }
+      UDATA.NetSignal('SRV_LOG_EVENT',{event,items});
+    };
+
 /// REACT INTEGRATION /////////////////////////////////////////////////////////
 /*/ return the referene to the UNISYS extension of React.Component
 /*/ UNISYS.Component = UniComponent;

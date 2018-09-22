@@ -4,7 +4,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 const UNISYS      = require('unisys/client');
 const REFLECT     = require('system/util/reflection');
 /// MAGIC: DevUnisysLogic will add UNISYS Lifecycle Hooks on require()
-const LOGIC       = require('./DevUnisysLogic');
+const LOGIC       = require('./devunisys-logic');
 const {Switch, Route, Redirect, Link} = require('react-router-dom');
 
 

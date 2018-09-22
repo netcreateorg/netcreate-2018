@@ -21,8 +21,9 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 
 /// DEBUG SUPPORT /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    const PROMPTS       = require('system/util/prompts');
     const DBG           = { handler:false };
+    const PROMPTS       = require('system/util/prompts');
+    const JSCLI         = require('system/util/jscli');
     // these constants are used in m_StartTests()
     const TEST_WAIT     = 3000;
     var   TEST_TIMER    = null;
