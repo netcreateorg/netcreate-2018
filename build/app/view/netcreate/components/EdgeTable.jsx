@@ -121,6 +121,13 @@ class EdgeTable extends UNISYS.Component {
               bkey = b.attributes[key];
           if (akey<bkey) return -1;
           if (akey>bkey) return 1;
+          if (akey===bkey) {
+            // Secondary sort on Source label
+            let source_a = a.source.label;
+            let source_b = b.source.label;
+            if (source_a<source_b) return -1;
+            if (source_a>source_b) return 1;
+          }
           return 0;
         });
       }
