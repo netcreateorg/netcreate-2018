@@ -41,9 +41,6 @@ class NodeTable extends UNISYS.Component {
 
       this.onButtonClick            = this.onButtonClick.bind(this);
       this.onToggleExpanded         = this.onToggleExpanded.bind(this);
-      this.m_FindMatchingObjsByProp = this.m_FindMatchingObjsByProp.bind(this);
-      this.m_FindMatchingNodeByProp = this.m_FindMatchingNodeByProp.bind(this);
-      this.m_FindNodeById           = this.m_FindNodeById.bind(this);
       this.setSortKey               = this.setSortKey.bind(this);
 
 
@@ -138,13 +135,11 @@ class NodeTable extends UNISYS.Component {
 /*/ onButtonClick (event) {
       event.preventDefault();
 
-      let nodeID = event.target.value;
-      let node = this.m_FindNodeById( nodeID );
-
-      if (DBG) console.log('NodeTable: Node id',node.id,'selected for editing');
-
-      // Load Source then Node
-      UDATA.LocalCall('SOURCE_SELECT',{ nodeIDs: [node.id] });
+      // REVIEW: For some reason React converts the integer IDs into string
+      // values when returned in event.target.value.  So we have to convert
+      // it here.
+      let nodeID = parseInt( event.target.value );
+      UDATA.LocalCall('SOURCE_SELECT',{ nodeIDs: [nodeID] });
 
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -165,17 +160,11 @@ class NodeTable extends UNISYS.Component {
 /*/ selectNode (id, event) {
       event.preventDefault();
 
-/// EDGE HELPERS //////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Return array of nodes that match the match_me object keys/values
-    NOTE: make sure that strings are compared with strings, etc
-/*/ m_FindMatchingNodeByProp( match_me={} ) {
-      return this.m_FindMatchingObjsByProp(this.state.nodes,match_me);
-    }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Convenience function to retrieve edge by ID
-/*/ m_FindNodeById( id ) {
-      return this.m_FindMatchingNodeByProp({ id })[0];
+      // REVIEW: For some reason React converts the integer IDs into string
+      // values when returned in event.target.value.  So we have to convert
+      // it here.
+      // Load Source
+      UDATA.LocalCall('SOURCE_SELECT',{ nodeIDs: [parseInt(id)] });
     }
 
 

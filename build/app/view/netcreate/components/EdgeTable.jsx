@@ -163,7 +163,7 @@ class EdgeTable extends UNISYS.Component {
 /*/ onButtonClick (event) {
       event.preventDefault();
 
-      let edgeID = event.target.value;
+      let edgeID = parseInt( event.target.value );
       let edge = this.m_FindEdgeById( edgeID );
 
       if (DBG) console.log('EdgeTable: Edge id',edge.id,'selected for editing');
