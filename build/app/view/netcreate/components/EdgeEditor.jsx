@@ -216,6 +216,7 @@ class EdgeEditor extends UNISYS.Component {
             notes:     '',
             id:        ''
         },
+        isLocked:        true,       // User has not logged in, don't allow edge edit
         isEditable:      false,      // Form is in an edtiable state
         isExpanded:      false,      // Show EdgeEditor Component in Summary view vs Expanded view
         sourceIsEditable:false,      // Source ndoe field is only editable when source is not parent
@@ -227,6 +228,8 @@ class EdgeEditor extends UNISYS.Component {
       /// Initialize UNISYS DATA LINK for REACT
       UDATA = UNISYS.NewDataLink(this);
 
+      this.updateLoggedInStatus   = this.updateLoggedInStatus.bind(this);
+      this.handleLogin            = this.handleLogin.bind(this);
       this.handleSelection        = this.handleSelection.bind(this);
       this.onButtonClick          = this.onButtonClick.bind(this);
       this.onDeleteButtonClick    = this.onDeleteButtonClick.bind(this);
@@ -242,6 +245,13 @@ class EdgeEditor extends UNISYS.Component {
 
       // Always make sure class methods are bind()'d before using them
       // as a handler, otherwise object context is lost
+
+      // **********************************
+      // REPLACE THIS WITH APPROPRIATE Call
+      this.OnAppStateChange('LOGIN',(data) => {
+        console.error('LOGIN',data.isLoggedIn);
+        this.handleLogin(data.isLoggedIn);
+      });
       this.OnAppStateChange('SELECTION',(data) => {
         this.handleSelection(data);
       });
@@ -398,6 +408,20 @@ class EdgeEditor extends UNISYS.Component {
 
 /// UDATA STATE HANDLERS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Handle updated LOGIN
+/*/ updateLoggedInStatus () {
+      // **********************************
+      // REPLACE THIS WITH APPROPRIATE Call
+      this.handleSelection( this.AppState('LOGIN').isLoggedIn );
+      // **********************************
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Handle updated LOGIN
+    If the user is logged in, show Add New Node and Edit Node buttons.
+/*/ handleLogin ( isLoggedIn ) {
+      this.setState({isLocked: !isLoggedIn});
+    }
 /*/ When the user is creating a new node, they need to set a target node.
     The target node is set via an AutoComplete field.
     When a node is selected via the AutoComplete field, the SELECTION state is updated.
@@ -778,10 +802,11 @@ class EdgeEditor extends UNISYS.Component {
               </FormGroup>
               <FormGroup className="text-right" style={{paddingRight:'5px'}}>
                 <Button className="small text-muted float-left btn btn-outline-light" size="sm"
+                 hidden={this.state.isLocked}
                  onClick={this.onDeleteButtonClick}
                 >Delete</Button>&nbsp;
                 <Button outline size="sm"
-                  hidden={this.state.isEditable}
+                  hidden={this.state.isLocked || this.state.isEditable}
                   onClick={this.onEditButtonClick}
                 >{this.state.isEditable?"Add New Edge":"Edit Edge"}</Button>&nbsp;
                 <Button size="sm"

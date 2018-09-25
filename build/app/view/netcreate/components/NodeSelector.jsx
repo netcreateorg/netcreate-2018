@@ -34,12 +34,25 @@
     NodeSelector's internal representation of form data up-to-date, we rely on
     the SELECTION updates' searchLabel field to update the label.
 
+    There are two different levels of write-access:
+
+      isLocked        Nodes can be selected for viewing, but editing
+                      cannot be enabled.
+
+      isEditable      The form fields are active and can be edited.
+
+
     ## STATES
 
       formData        Node data that is shown in the form
 
-      isEditable      If true, form is enabled for editing
+      isLocked        If true (defauilt), nodes can be displayed, but
+                      "Add New Node" and "Edit Node" buttons are hidden.
+                      The state is unlocked when the user logs in.
+
+      isEditable      If true, form fields are enabled for editing
                       If false, form is readonly
+
 
     ## TESTING
 
@@ -126,12 +139,15 @@ class NodeSelector extends UNISYS.Component {
             color: "#FF0000"
           }
         ],
+        isLocked:      true,
         isEditable:    false,
         isValid:       false
       };
       // Bind functions to this component's object context
       this.clearForm                             = this.clearForm.bind(this);
       this.getNewNodeID                          = this.getNewNodeID.bind(this);
+      this.updateLoggedInStatus                  = this.updateLoggedInStatus.bind(this);
+      this.handleLogin                           = this.handleLogin.bind(this);
       this.handleSelection                       = this.handleSelection.bind(this);
       this.onStateChange_SEARCH                  = this.onStateChange_SEARCH.bind(this);
       this.loadFormFromNode                      = this.loadFormFromNode.bind(this);
@@ -148,6 +164,14 @@ class NodeSelector extends UNISYS.Component {
 
       // NOTE: assign UDATA handlers AFTER functions have been bind()'ed
       // otherwise they will lose context
+
+      // **********************************
+      // REPLACE THIS WITH APPROPRIATE Call
+      this.OnAppStateChange('LOGIN',(data) => {
+        console.error('LOGIN',data.isLoggedIn);
+        this.handleLogin(data.isLoggedIn);
+      });
+
       this.OnAppStateChange('SELECTION',(change) => {
         this.handleSelection(change);
       });
@@ -221,6 +245,21 @@ class NodeSelector extends UNISYS.Component {
       return (highestID+1).toString();
       /*/
     } // getNewEdgeID
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Handle updated LOGIN
+/*/ updateLoggedInStatus () {
+      // **********************************
+      // REPLACE THIS WITH APPROPRIATE Call
+      console.error('Updating logged in status, was',this.state.isLocked);
+      this.handleSelection( this.AppState('LOGIN').isLoggedIn );
+      // **********************************
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Handle updated LOGIN
+    If the user is logged in, show Add New Node and Edit Node buttons.
+/*/ handleLogin ( isLoggedIn ) {
+      this.setState({isLocked: !isLoggedIn});
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle updated SELECTION
 /*/ handleSelection ( data ) {
@@ -513,6 +552,7 @@ class NodeSelector extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ componentWillMount () {
+      this.updateLoggedInStatus();
       this.validateForm();
     }
 /*/ REACT calls this to receive the component layout and data sources
@@ -521,7 +561,7 @@ class NodeSelector extends UNISYS.Component {
         <div>
           <FormGroup className="text-right" style={{paddingRight:'5px'}}>
             <Button outline size="sm"
-              hidden={this.state.isEditable}
+              hidden={this.state.isLocked || this.state.isEditable}
               onClick={this.onNewNodeButtonClick}
             >{"Add New Node"}</Button>
           </FormGroup>
@@ -586,9 +626,9 @@ class NodeSelector extends UNISYS.Component {
             </FormGroup>
             <FormGroup className="text-right" style={{paddingRight:'5px'}}>
               <Button outline size="sm"
-                hidden={this.state.isEditable || (this.state.formData.id==='') }
+                hidden={this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
                 onClick={this.onEditButtonClick}
-              >{"Edit Node"}</Button>
+              >Edit Node</Button>
               <Button outline size="sm"
                 hidden={!this.state.isEditable}
                 onClick={this.onCancelButtonClick}
@@ -613,7 +653,7 @@ class NodeSelector extends UNISYS.Component {
             ))}
             <FormGroup className="text-right">
               <Button outline size="sm"
-                hidden={this.state.formData.id===''||this.state.isEditable}
+                hidden={this.state.isLocked || this.state.formData.id===''||this.state.isEditable}
                 onClick={this.onAddNewEdgeButtonClick}
               >Add New Edge</Button>
             </FormGroup>
