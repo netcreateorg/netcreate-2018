@@ -293,9 +293,8 @@ class NodeSelector extends UNISYS.Component {
       // Only update if we are the currently active field
       // otherwise an Edge might be active
       let { activeAutoCompleteId } = this.AppState('ACTIVEAUTOCOMPLETE');
-      if (
-        (activeAutoCompleteId!==thisIdentifier) &&
-        (activeAutoCompleteId!=='search')
+      if ( ! ((activeAutoCompleteId==thisIdentifier) &&
+              (activeAutoCompleteId=='search'))
       ) return;
 
       let formData = this.state.formData;
