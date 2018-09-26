@@ -216,6 +216,7 @@ class EdgeEditor extends UNISYS.Component {
             notes:     '',
             id:        ''
         },
+        isLocked:        true,       // User has not logged in, don't allow edge edit
         isEditable:      false,      // Form is in an edtiable state
         isExpanded:      false,      // Show EdgeEditor Component in Summary view vs Expanded view
         sourceIsEditable:false,      // Source ndoe field is only editable when source is not parent
@@ -228,6 +229,9 @@ class EdgeEditor extends UNISYS.Component {
       UDATA = UNISYS.NewDataLink(this);
 
       this.handleSelection        = this.handleSelection.bind(this);
+      this.handleEdgeSelection    = this.handleEdgeSelection.bind(this);
+      this.handleEdgeEdit         = this.handleEdgeEdit.bind(this);
+      this.onStateChange_SESSION  = this.onStateChange_SESSION.bind(this);
       this.onButtonClick          = this.onButtonClick.bind(this);
       this.onDeleteButtonClick    = this.onDeleteButtonClick.bind(this);
       this.onEditButtonClick      = this.onEditButtonClick.bind(this);
@@ -242,12 +246,20 @@ class EdgeEditor extends UNISYS.Component {
 
       // Always make sure class methods are bind()'d before using them
       // as a handler, otherwise object context is lost
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ SESSION is called by SessionSHell when the ID changes
+      set system-wide. data: { classId, projId, hashedId, groupId, isValid }
+  /*/ this.OnAppStateChange('SESSION',this.onStateChange_SESSION);
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       this.OnAppStateChange('SELECTION',(data) => {
         this.handleSelection(data);
       });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       UDATA.HandleMessage('EDGE_SELECT',(data) => {
         this.handleEdgeSelection(data);
       });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       UDATA.HandleMessage('EDGE_EDIT',(data) => {
         this.handleEdgeEdit(data);
       });
@@ -498,6 +510,16 @@ class EdgeEditor extends UNISYS.Component {
       }
 
     } // handleEdgeEdit
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Handle change in SESSION data
+    Called both by componentDidMount() and AppStateChange handler.
+    The 'SESSION' state change is triggered in two places in SessionShell during
+    its handleChange() when active typing is occuring, and also during
+    SessionShell.componentWillMount()
+/*/ onStateChange_SESSION( decoded ) {
+      let update = { isLocked:   !decoded.isValid };
+      this.setState(update);
+    }
 
 
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
@@ -778,10 +800,11 @@ class EdgeEditor extends UNISYS.Component {
               </FormGroup>
               <FormGroup className="text-right" style={{paddingRight:'5px'}}>
                 <Button className="small text-muted float-left btn btn-outline-light" size="sm"
+                 hidden={this.state.isLocked}
                  onClick={this.onDeleteButtonClick}
                 >Delete</Button>&nbsp;
                 <Button outline size="sm"
-                  hidden={this.state.isEditable}
+                  hidden={this.state.isLocked || this.state.isEditable}
                   onClick={this.onEditButtonClick}
                 >{this.state.isEditable?"Add New Edge":"Edit Edge"}</Button>&nbsp;
                 <Button size="sm"
@@ -804,6 +827,7 @@ class EdgeEditor extends UNISYS.Component {
 /*/ componentDidMount () {
       if (DBG) console.log('EdgeEditor.componentDidMount!');
       this.loadSourceAndTarget();
+      this.onStateChange_SESSION(this.AppState('SESSION'));
     }
 } // class EdgeEditor
 

@@ -34,12 +34,25 @@
     NodeSelector's internal representation of form data up-to-date, we rely on
     the SELECTION updates' searchLabel field to update the label.
 
+    There are two different levels of write-access:
+
+      isLocked        Nodes can be selected for viewing, but editing
+                      cannot be enabled.
+
+      isEditable      The form fields are active and can be edited.
+
+
     ## STATES
 
       formData        Node data that is shown in the form
 
-      isEditable      If true, form is enabled for editing
+      isLocked        If true (defauilt), nodes can be displayed, but
+                      "Add New Node" and "Edit Node" buttons are hidden.
+                      The state is unlocked when the user logs in.
+
+      isEditable      If true, form fields are enabled for editing
                       If false, form is readonly
+
 
     ## TESTING
 
@@ -126,6 +139,7 @@ class NodeSelector extends UNISYS.Component {
             color: "#FF0000"
           }
         ],
+        isLocked:      true,
         isEditable:    false,
         isValid:       false
       };
@@ -134,6 +148,7 @@ class NodeSelector extends UNISYS.Component {
       this.getNewNodeID                          = this.getNewNodeID.bind(this);
       this.handleSelection                       = this.handleSelection.bind(this);
       this.onStateChange_SEARCH                  = this.onStateChange_SEARCH.bind(this);
+      this.onStateChange_SESSION                 = this.onStateChange_SESSION.bind(this);
       this.loadFormFromNode                      = this.loadFormFromNode.bind(this);
       this.validateForm                          = this.validateForm.bind(this);
       this.onLabelChange                         = this.onLabelChange.bind(this);
@@ -148,9 +163,16 @@ class NodeSelector extends UNISYS.Component {
 
       // NOTE: assign UDATA handlers AFTER functions have been bind()'ed
       // otherwise they will lose context
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ SESSION is called by SessionSHell when the ID changes
+      set system-wide. data: { classId, projId, hashedId, groupId, isValid }
+  /*/ this.OnAppStateChange('SESSION',this.onStateChange_SESSION);
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       this.OnAppStateChange('SELECTION',(change) => {
         this.handleSelection(change);
       });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       this.OnAppStateChange('SEARCH', this.onStateChange_SEARCH);
 
       // Load Template
@@ -167,8 +189,6 @@ class NodeSelector extends UNISYS.Component {
 
 
     } // constructor
-
-
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -282,6 +302,17 @@ class NodeSelector extends UNISYS.Component {
       this.validateForm();
 
     } // handleSelection
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Handle change in SESSION data
+    Called both by componentWillMount() and AppStateChange handler.
+    The 'SESSION' state change is triggered in two places in SessionShell during
+    its handleChange() when active typing is occuring, and also during
+    SessionShell.componentWillMount()
+/*/ onStateChange_SESSION( decoded ) {
+      let update = { isLocked:   !decoded.isValid };
+      this.setState(update);
+    }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle updated SEARCH
     AutoComplete handles its internal updates, but we do need to validate the form
@@ -513,18 +544,13 @@ class NodeSelector extends UNISYS.Component {
 
 
 /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ componentWillMount () {
-      this.validateForm();
-    }
 /*/ REACT calls this to receive the component layout and data sources
 /*/ render () {
       return (
         <div>
           <FormGroup className="text-right" style={{paddingRight:'5px'}}>
             <Button outline size="sm"
-              hidden={this.state.isEditable}
+              hidden={this.state.isLocked || this.state.isEditable}
               onClick={this.onNewNodeButtonClick}
             >{"Add New Node"}</Button>
           </FormGroup>
@@ -589,9 +615,9 @@ class NodeSelector extends UNISYS.Component {
             </FormGroup>
             <FormGroup className="text-right" style={{paddingRight:'5px'}}>
               <Button outline size="sm"
-                hidden={this.state.isEditable || (this.state.formData.id==='') }
+                hidden={this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
                 onClick={this.onEditButtonClick}
-              >{"Edit Node"}</Button>
+              >Edit Node</Button>
               <Button outline size="sm"
                 hidden={!this.state.isEditable}
                 onClick={this.onCancelButtonClick}
@@ -616,7 +642,7 @@ class NodeSelector extends UNISYS.Component {
             ))}
             <FormGroup className="text-right">
               <Button outline size="sm"
-                hidden={this.state.formData.id===''||this.state.isEditable}
+                hidden={this.state.isLocked || this.state.formData.id===''||this.state.isEditable}
                 onClick={this.onAddNewEdgeButtonClick}
               >Add New Edge</Button>
             </FormGroup>
@@ -624,6 +650,14 @@ class NodeSelector extends UNISYS.Component {
         </div>
       )
     }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ componentDidMount () {
+      this.onStateChange_SESSION(this.AppState('SESSION'));
+      this.validateForm();
+    }
+
 } // class NodeSelector
 
 
