@@ -115,11 +115,13 @@ class SessionShell extends UNISYS.Component {
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     componentWillMount() {
+      // the code below reads a pre-existing matching path, which may be set
+      // to a valid token string AFTER the changeHandler() detected a valid
+      // login after a ForceReload. This is a bit hacky and the app would benefit
+      // from not relying on forced reloads. See handleChange().
       let token = this.props.match.params.token;
       let decoded = SESSION.DecodeToken(token) || {};
-      if (!decoded.isValid) {
-        this.setState({ errBadURL:true });
-      }
+      this.SetAppState('SESSION',decoded);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Main Render Function
@@ -132,7 +134,6 @@ class SessionShell extends UNISYS.Component {
       if (token) {
         let decoded = SESSION.DecodeToken(token);
         if (decoded.isValid) {
-          this.AppCall('GROUPID_CHANGE',token);
           return this.renderLoggedIn(decoded);
         }
       }
@@ -147,6 +148,7 @@ class SessionShell extends UNISYS.Component {
       let decoded = SESSION.DecodeToken(token);
       let { classId, projId, hashedId, groupId } = decoded;
       this.setState(decoded);
+      this.SetAppState('SESSION',decoded);
       if (decoded.groupId) {
         // force a page URL change
         let redirect = `/edit/${event.target.value}`;

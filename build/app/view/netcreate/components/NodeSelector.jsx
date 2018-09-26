@@ -146,10 +146,9 @@ class NodeSelector extends UNISYS.Component {
       // Bind functions to this component's object context
       this.clearForm                             = this.clearForm.bind(this);
       this.getNewNodeID                          = this.getNewNodeID.bind(this);
-      this.updateLoggedInStatus                  = this.updateLoggedInStatus.bind(this);
-      this.handleLogin                           = this.handleLogin.bind(this);
       this.handleSelection                       = this.handleSelection.bind(this);
       this.onStateChange_SEARCH                  = this.onStateChange_SEARCH.bind(this);
+      this.onStateChange_SESSION                 = this.onStateChange_SESSION.bind(this);
       this.loadFormFromNode                      = this.loadFormFromNode.bind(this);
       this.validateForm                          = this.validateForm.bind(this);
       this.onLabelChange                         = this.onLabelChange.bind(this);
@@ -165,16 +164,15 @@ class NodeSelector extends UNISYS.Component {
       // NOTE: assign UDATA handlers AFTER functions have been bind()'ed
       // otherwise they will lose context
 
-      // **********************************
-      // REPLACE THIS WITH APPROPRIATE Call
-      this.OnAppStateChange('LOGIN',(data) => {
-        console.error('LOGIN',data.isLoggedIn);
-        this.handleLogin(data.isLoggedIn);
-      });
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ SESSION is called by SessionSHell when the ID changes
+      set system-wide. data: { classId, projId, hashedId, groupId, isValid }
+  /*/ this.OnAppStateChange('SESSION',this.onStateChange_SESSION);
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       this.OnAppStateChange('SELECTION',(change) => {
         this.handleSelection(change);
       });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       this.OnAppStateChange('SEARCH', this.onStateChange_SEARCH);
 
       // Load Template
@@ -191,8 +189,6 @@ class NodeSelector extends UNISYS.Component {
 
 
     } // constructor
-
-
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -245,21 +241,6 @@ class NodeSelector extends UNISYS.Component {
       return (highestID+1).toString();
       /*/
     } // getNewEdgeID
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Handle updated LOGIN
-/*/ updateLoggedInStatus () {
-      // **********************************
-      // REPLACE THIS WITH APPROPRIATE Call
-      console.error('Updating logged in status, was',this.state.isLocked);
-      this.handleSelection( this.AppState('LOGIN').isLoggedIn );
-      // **********************************
-    }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Handle updated LOGIN
-    If the user is logged in, show Add New Node and Edit Node buttons.
-/*/ handleLogin ( isLoggedIn ) {
-      this.setState({isLocked: !isLoggedIn});
-    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle updated SELECTION
 /*/ handleSelection ( data ) {
@@ -321,6 +302,17 @@ class NodeSelector extends UNISYS.Component {
       this.validateForm();
 
     } // handleSelection
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Handle change in SESSION data
+    Called both by componentWillMount() and AppStateChange handler.
+    The 'SESSION' state change is triggered in two places in SessionShell during
+    its handleChange() when active typing is occuring, and also during
+    SessionShell.componentWillMount()
+/*/ onStateChange_SESSION( decoded ) {
+      let update = { isLocked:   !decoded.isValid };
+      this.setState(update);
+    }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle updated SEARCH
     AutoComplete handles its internal updates, but we do need to validate the form
@@ -552,7 +544,7 @@ class NodeSelector extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ componentWillMount () {
-      this.updateLoggedInStatus();
+      this.onStateChange_SESSION(this.AppState('SESSION'));
       this.validateForm();
     }
 /*/ REACT calls this to receive the component layout and data sources

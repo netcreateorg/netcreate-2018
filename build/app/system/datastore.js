@@ -33,12 +33,16 @@ let D3DATA        = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ establish message handlers during INITIALIZE phase
 /*/ DSTOR.Hook('INITIALIZE',()=>{
+
       UDATA.HandleMessage('DB_UPDATE', function( data ) {
         DSTOR.UpdateServerDB(data);
       });
+
       UDATA.HandleMessage('GROUPID_CHANGE', function( data ) {
         DSTOR.SetSessionGroupID(data);
+        console.log('Handling GROUPID_CHANGE');
       });
+
     });
 
 
@@ -47,13 +51,14 @@ let D3DATA        = {};
 /*/ datastore needs to set NetMessage GroupID property on behalf of SESSIONS
     because SESSION can't include NetMessage (or vice versa)
 /*/ DSTOR.SetSessionGroupID = function ( token ) {
-      let good = SESSION.DecodeToken(token).isValid;
-      if (good) {
+      let decoded = SESSION.DecodeToken(token);
+      if (decoded.isValid) {
         NetMessage.GlobalSetGroupID(token);
         console.log('setting NetMessage group id',token);
       } else {
         console.warn('will not set bad group id:',token);
       }
+      UDATA.SetAppState('SESSION',decoded);
     }
 
 /// DB INTERFACE //////////////////////////////////////////////////////////////
