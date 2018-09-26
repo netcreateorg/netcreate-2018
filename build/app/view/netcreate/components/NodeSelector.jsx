@@ -391,10 +391,14 @@ class NodeSelector extends UNISYS.Component {
 /*/ onNewNodeButtonClick (event) {
       event.preventDefault();
 
-      // clear AutoComplete form
+      // Save the search label to re-insert into the new node
+      let label = this.AppState('SEARCH').searchLabel;
+
+      // claim the AutoComplete form and populate it with the
+      // current search term
       this.AppCall('AUTOCOMPLETE_SELECT',{id:thisIdentifier})
       .then(()=>{
-        this.AppCall('SOURCE_SEARCH', { searchString: '' });
+        this.AppCall('SOURCE_SEARCH', { searchString: label });
       });
       // HACK: call server to retrieve an unused node ID
       // FIXME: this kind of data manipulation should not be in a GUI component
