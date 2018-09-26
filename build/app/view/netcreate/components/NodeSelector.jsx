@@ -541,12 +541,6 @@ class NodeSelector extends UNISYS.Component {
 
 
 /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ componentWillMount () {
-      this.onStateChange_SESSION(this.AppState('SESSION'));
-      this.validateForm();
-    }
 /*/ REACT calls this to receive the component layout and data sources
 /*/ render () {
       return (
@@ -653,6 +647,14 @@ class NodeSelector extends UNISYS.Component {
         </div>
       )
     }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ componentDidMount () {
+      this.onStateChange_SESSION(this.AppState('SESSION'));
+      this.validateForm();
+    }
+
 } // class NodeSelector
 
 
