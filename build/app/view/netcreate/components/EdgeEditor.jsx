@@ -228,9 +228,10 @@ class EdgeEditor extends UNISYS.Component {
       /// Initialize UNISYS DATA LINK for REACT
       UDATA = UNISYS.NewDataLink(this);
 
-      this.updateLoggedInStatus   = this.updateLoggedInStatus.bind(this);
-      this.handleLogin            = this.handleLogin.bind(this);
       this.handleSelection        = this.handleSelection.bind(this);
+      this.handleEdgeSelection    = this.handleEdgeSelection.bind(this);
+      this.handleEdgeEdit         = this.handleEdgeEdit.bind(this);
+      this.onStateChange_SESSION  = this.onStateChange_SESSION.bind(this);
       this.onButtonClick          = this.onButtonClick.bind(this);
       this.onDeleteButtonClick    = this.onDeleteButtonClick.bind(this);
       this.onEditButtonClick      = this.onEditButtonClick.bind(this);
@@ -246,18 +247,19 @@ class EdgeEditor extends UNISYS.Component {
       // Always make sure class methods are bind()'d before using them
       // as a handler, otherwise object context is lost
 
-      // **********************************
-      // REPLACE THIS WITH APPROPRIATE Call
-      this.OnAppStateChange('LOGIN',(data) => {
-        console.error('LOGIN',data.isLoggedIn);
-        this.handleLogin(data.isLoggedIn);
-      });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ SESSION is called by SessionSHell when the ID changes
+      set system-wide. data: { classId, projId, hashedId, groupId, isValid }
+  /*/ this.OnAppStateChange('SESSION',this.onStateChange_SESSION);
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       this.OnAppStateChange('SELECTION',(data) => {
         this.handleSelection(data);
       });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       UDATA.HandleMessage('EDGE_SELECT',(data) => {
         this.handleEdgeSelection(data);
       });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       UDATA.HandleMessage('EDGE_EDIT',(data) => {
         this.handleEdgeEdit(data);
       });
@@ -408,20 +410,6 @@ class EdgeEditor extends UNISYS.Component {
 
 /// UDATA STATE HANDLERS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Handle updated LOGIN
-/*/ updateLoggedInStatus () {
-      // **********************************
-      // REPLACE THIS WITH APPROPRIATE Call
-      this.handleSelection( this.AppState('LOGIN').isLoggedIn );
-      // **********************************
-    }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Handle updated LOGIN
-    If the user is logged in, show Add New Node and Edit Node buttons.
-/*/ handleLogin ( isLoggedIn ) {
-      this.setState({isLocked: !isLoggedIn});
-    }
 /*/ When the user is creating a new node, they need to set a target node.
     The target node is set via an AutoComplete field.
     When a node is selected via the AutoComplete field, the SELECTION state is updated.
@@ -522,6 +510,16 @@ class EdgeEditor extends UNISYS.Component {
       }
 
     } // handleEdgeEdit
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Handle change in SESSION data
+    Called both by componentDidMount() and AppStateChange handler.
+    The 'SESSION' state change is triggered in two places in SessionShell during
+    its handleChange() when active typing is occuring, and also during
+    SessionShell.componentWillMount()
+/*/ onStateChange_SESSION( decoded ) {
+      let update = { isLocked:   !decoded.isValid };
+      this.setState(update);
+    }
 
 
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
@@ -829,6 +827,7 @@ class EdgeEditor extends UNISYS.Component {
 /*/ componentDidMount () {
       if (DBG) console.log('EdgeEditor.componentDidMount!');
       this.loadSourceAndTarget();
+      this.onStateChange_SESSION(this.AppState('SESSION'));
     }
 } // class EdgeEditor
 
