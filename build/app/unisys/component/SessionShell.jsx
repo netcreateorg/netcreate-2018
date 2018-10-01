@@ -134,6 +134,7 @@ class SessionShell extends UNISYS.Component {
       if (token) {
         let decoded = SESSION.DecodeToken(token);
         if (decoded.isValid) {
+          this.AppCall('GROUPID_CHANGE',token);
           return this.renderLoggedIn(decoded);
         }
       }
