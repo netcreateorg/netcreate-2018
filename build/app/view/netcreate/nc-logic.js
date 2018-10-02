@@ -144,15 +144,16 @@ const TARGET_COLOR     = '#FF0000';
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ LOADASSETS fires during <NetCreate>.componentDidMount
+/*/ LOADASSETS fires before react components are loaded
+    see client-lifecycle.js for description
 /*/ MOD.Hook('LOADASSETS',()=>{
       // load data into D3DATA
       let p1 =  DATASTORE.PromiseD3Data()
                 .then((data)=>{
                   if (DBG) console.log(PR,'DATASTORE returned data',data);
                   D3DATA = m_CleanIDs( data );
+                  D3DATA = m_RecalculateAllEdgeWeights( data );
                   UDATA.SetAppState('D3DATA',D3DATA);
-                  m_RecalculateAllEdgeWeights();
                 });
       // load Template data and return it as a promise
       // so that react render is called only after the template is loaded
@@ -180,7 +181,7 @@ const TARGET_COLOR     = '#FF0000';
                 });
 
       return Promise.all([p1,p2]);
-    }); // end INITIALIZE HOOK
+    }); // end LOADASSETS HOOK
 
 
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
@@ -428,6 +429,15 @@ const TARGET_COLOR     = '#FF0000';
       });
     }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ lifecycle RESET handler
+/*/ MOD.Hook('RESET', () => {
+      // Force an AppState update here so that the react components will load
+      // the data after they've been initialized.  The SetAppState call in
+      // LOADASSETS is broadcast before react components have been loaded.
+      UDATA.SetAppState('D3DATA',D3DATA);
+    }); // end UNISYS_RESET
+
 /// APP_READY MESSAGE REGISTRATION ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ The APP_READY hook is fired after all initialization phases have finished
@@ -578,13 +588,11 @@ const TARGET_COLOR     = '#FF0000';
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Count number of edges with the same source/target to determine weight
-/*/ function m_RecalculateAllEdgeWeights() {
-      let D3DATA = UDATA.AppState('D3DATA');
-      let edges = D3DATA.edges;
-      edges.forEach( (edge) => {
-          edge.size = m_CalculateEdgeWeight( edge, edges );
+/*/ function m_RecalculateAllEdgeWeights( D3DATA ) {
+      D3DATA.edges.forEach( (edge) => {
+          edge.size = m_CalculateEdgeWeight( edge, D3DATA.edges );
       });
-      UDATA.SetAppState('D3DATA',D3DATA);
+      return D3DATA;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Count number of edges with the same source/target to determine weight
