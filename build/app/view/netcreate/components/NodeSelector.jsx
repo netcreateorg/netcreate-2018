@@ -120,9 +120,6 @@ const thisIdentifier = 'nodeSelector';   // SELECTION identifier
 /// export a class object for consumption by brunch/require
 class NodeSelector extends UNISYS.Component {
     constructor (props) {
-
-      console.error('NodeSelector constructor');
-
       super(props);
       this.state = {
         nodePrompts:   this.AppState('TEMPLATE').nodePrompts,
