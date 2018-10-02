@@ -147,38 +147,39 @@ const TARGET_COLOR     = '#FF0000';
 /*/ LOADASSETS fires during <NetCreate>.componentDidMount
 /*/ MOD.Hook('LOADASSETS',()=>{
       // load data into D3DATA
-      DATASTORE.PromiseD3Data()
-      .then((data)=>{
-        if (DBG) console.log(PR,'DATASTORE returned data',data);
-        D3DATA = m_CleanIDs( data );
-        UDATA.SetAppState('D3DATA',D3DATA);
-        m_RecalculateAllEdgeWeights();
-      });
-      // load Template data
-      DATASTORE.PromiseJSONFile( '../templates/alexander.json' )
-      .then((data)=>{
-        if (DBG) console.log(PR,'DATASTORE returned json',data);
-        TEMPLATE = data;
-        UDATA.SetAppState('TEMPLATE',TEMPLATE);
-        // Process Node, NodeColorMap and Edge options
-        try {
-          UDATA.SetAppState('NODETYPES', TEMPLATE.nodePrompts.type);
-        } catch (error) {
-          console.error(PR,'received bad TEMPLATE node type',error,data);
-        }
-        try {
-          let nodeColorMap = {};
-          TEMPLATE.nodePrompts.type.options.forEach( (o)=>{nodeColorMap[o.label] = o.color;});
-          UDATA.SetAppState('NODECOLORMAP', nodeColorMap);
-        } catch (error) {
-          console.error(PR,'received bad TEMPLATE node options',error,data);
-        }
-        try {
-          UDATA.SetAppState('EDGETYPES', TEMPLATE.edgePrompts.type);
-        } catch (error) {
-          console.error(PR,'received bad TEMPLATE edge options',error,data);
-        }
-      });
+      let p1 =  DATASTORE.PromiseD3Data()
+                .then((data)=>{
+                  if (DBG) console.log(PR,'DATASTORE returned data',data);
+                  D3DATA = m_CleanIDs( data );
+                  UDATA.SetAppState('D3DATA',D3DATA);
+                  m_RecalculateAllEdgeWeights();
+                });
+      // load Template data and return it as a promise
+      // so that react render is called only after the template is loaded
+      let p2 =  DATASTORE.PromiseJSONFile( '../templates/alexander.json' )
+                .then((data)=>{
+                  if (DBG) console.log(PR,'DATASTORE returned json',data);
+                  TEMPLATE = data;
+                  UDATA.SetAppState('TEMPLATE',TEMPLATE);
+                  // Process Node, NodeColorMap and Edge options
+
+                  // REVIEW: Load ColorMap in d3?  or elsewhere?  does it need its own state?
+                  try {
+                    let nodeColorMap = {};
+                    TEMPLATE.nodePrompts.type.options.forEach( (o)=>{nodeColorMap[o.label] = o.color;});
+                    UDATA.SetAppState('NODECOLORMAP', nodeColorMap);
+                  } catch (error) {
+                    console.error(PR,'received bad TEMPLATE node options',error,data);
+                  }
+
+                  // REVIEW
+                  // Add validation for nodePrompts and edgePrompts
+                  //      if ( (options===undefined) || !Array.isArray(options) ) console.error(PR,'received bad Options definition:',options);
+
+
+                });
+
+      return Promise.all([p1,p2]);
     }); // end INITIALIZE HOOK
 
 

@@ -36,9 +36,10 @@ class EdgeTable extends UNISYS.Component {
       super(props);
 
       this.state = {
-        edges:      [],
-        isExpanded: false,
-        sortkey:    'Citations'
+        edgePrompts:  this.AppState('TEMPLATE').edgePrompts,
+        edges:        [],
+        isExpanded:   false,
+        sortkey:      'Citations'
       };
 
       this.onButtonClick            = this.onButtonClick.bind(this);
@@ -56,6 +57,11 @@ class EdgeTable extends UNISYS.Component {
       // as a handler, otherwise object context is lost
       this.OnAppStateChange('D3DATA',(data) => {
         this.handleDataUpdate(data);
+      });
+
+      // Handle Template updates
+      this.OnAppStateChange('TEMPLATE',(data) => {
+        this.setState({edgePrompts: data.edgePrompts});
       });
     } // constructor
 
@@ -250,6 +256,7 @@ class EdgeTable extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ render () {
+      let { edgePrompts } = this.state;
       return (
         <div style={{maxHeight:'50vh',overflow:'scroll',backgroundColor:'#f3f3ff'}}>
           <Button size="sm" outline
@@ -260,51 +267,43 @@ class EdgeTable extends UNISYS.Component {
           >
             <thead>
               <tr>
-                {DBG
-                  ? <th><Button size="sm"
+                <th hidden={!DBG}><Button size="sm"
                       disabled={this.state.sortkey==="id"}
                       onClick={()=>this.setSortKey("id")}
                     >ID</Button></th>
-                  : <th></th>}
-                {DBG
-                  ? <th>Size</th>
-                  : <th></th>}
+                <th hidden={!DBG}>Size</th>
                 <th></th>
                 <th><Button size="sm"
                       disabled={this.state.sortkey==="source"}
                       onClick={()=>this.setSortKey("source")}
-                    >Source</Button></th>
+                    >{edgePrompts.source.label}</Button></th>
                 <th><Button size="sm"
                       disabled={this.state.sortkey==="Relationship"}
                       onClick={()=>this.setSortKey("Relationship")}
-                    >Type</Button></th>
+                    >{edgePrompts.type.label}</Button></th>
                 <th><Button size="sm"
                       disabled={this.state.sortkey==="target"}
                       onClick={()=>this.setSortKey("target")}
-                    >Target</Button></th>
-                <th><Button size="sm"
+                    >{edgePrompts.target.label}</Button></th>
+                <th hidden={edgePrompts.citation.hidden}><Button size="sm"
                       disabled={this.state.sortkey==="Citations"}
                       onClick={()=>this.setSortKey("Citations")}
-                    >Citations</Button></th>
-                <th><Button size="sm"
+                    >{edgePrompts.citation.label}</Button></th>
+                <th hidden={edgePrompts.notes.hidden}><Button size="sm"
                       disabled={this.state.sortkey==="Notes"}
                       onClick={()=>this.setSortKey("Notes")}
-                    >Notes</Button></th>
-                <th><Button size="sm"
+                    >{edgePrompts.notes.label}</Button></th>
+                <th hidden={edgePrompts.info.hidden}><Button size="sm"
                       disabled={this.state.sortkey==="Info"}
                       onClick={()=>this.setSortKey("Info")}
-                    >Info</Button></th>
+                    >{edgePrompts.info.label}</Button></th>
               </tr>
             </thead>
             <tbody>
             {this.state.edges.map( (edge,i) => (
               <tr key={i}>
-                {DBG
-                  ? <td>{edge.id}</td>
-                  : <td></td>}
-                {DBG
-                  ? <td>{edge.size}</td>
-                  : <td></td>}
+                <td hidden={!DBG}>{edge.id}</td>
+                <td hidden={!DBG}>{edge.size}</td>
                 <td><Button size="sm" outline
                       value={edge.id}
                       onClick={this.onButtonClick}
@@ -315,9 +314,9 @@ class EdgeTable extends UNISYS.Component {
                 <td>{edge.attributes["Relationship"]}</td>
                 <td><a href="#" onClick={(e)=>this.selectNode(edge.target.id,e)}
                     >{edge.target.label || edge.target}</a></td>
-                <td>{edge.attributes["Citations"]}</td>
-                <td>{edge.attributes["Notes"]}</td>
-                <td>{edge.attributes["Info"]}</td>
+                <td hidden={edgePrompts.citation.hidden}>{edge.attributes["Citations"]}</td>
+                <td hidden={edgePrompts.notes.hidden}>{edge.attributes["Notes"]}</td>
+                <td hidden={edgePrompts.info.hidden}>{edge.attributes["Info"]}</td>
               </tr>
             ))}
             </tbody>

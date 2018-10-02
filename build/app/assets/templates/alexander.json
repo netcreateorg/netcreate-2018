@@ -1,9 +1,13 @@
 {
 
-  "_comment":    "/// NetCreate Template File ///",
-  "_comment2":   "/// IMPORTANT: As of 9/6/2018 only nodePrompts.type and edgePrompts.type are being used ///",
-  "_comment3":   "/// The rest of the definitions are there as placeholders for future functionality      ///",
-
+  "_comments":  [ "/// NetCreate Template File ///",
+                  "/// IMPORTANT: As of 10/2/2018, the following functionality is available:               ///",
+                  "///  * `label` parameter for each field may be customized                               ///",
+                  "///  * `hidden` parameter may be used to hide fields                                    ///",
+                  "///  * changing the order of the `options` WILL change their order on selections        ///",
+                  "///  * changing the order of the prompts themselves will NOT change their order         ///",
+                  "/// The rest of the definitions are there as placeholders for future functionality      ///"
+  ],
 
   "name":        "Alexander The Great",
 
@@ -14,11 +18,13 @@
   "nodePrompts": {
     "label": {
                 "label":    "Label",
-                "help":     "A short title for the node"
+                "help":     "A short title for the node",
+                "_cmt4":    "/// `Label` is always required and cannot be hidden"
              },
     "type":  {
                 "label":    "Type",
                 "help":     "Multiple people are a 'Group'",
+                "hidden":   false,
                 "options": [
                   {
                     "_comment": "Default color when nothing is selected",
@@ -54,12 +60,14 @@
                 ]
              },
     "notes": {
-                "label": "Notes",
-                "help":  "Add some details."
+                "label": "Significance",
+                "help":  "Add some details.",
+                "hidden": false
               },
     "info":  {
                 "label": "Geocode or Date",
-                "help":  "Use latitude/longitude or a date mm/dd/yyy"
+                "help":  "Use latitude/longitude or a date mm/dd/yyy",
+                "hidden": true
               }
   },
 
@@ -68,11 +76,13 @@
   "edgePrompts": {
     "source":   {
                   "label": "Source",
-                  "help":  ""
+                  "help":  "",
+                  "hidden": false
                 },
     "type":     {
                   "label": "Type",
                   "help":  "",
+                  "hidden": false,
                   "options": [
                     {
                       "id":    "notSelected",
@@ -106,19 +116,23 @@
                 },
     "target":   {
                   "label": "Target",
-                  "help":  ""
+                  "help":  "",
+                  "hidden": false
                 },
     "notes":    {
-                  "label": "Notes",
-                  "help":  ""
+                  "label": "Signficance",
+                  "help":  "",
+                  "hidden": false
                 },
     "info":     {
                   "label": "Approximate Date of Interaction",
-                  "help":  ""
+                  "help":  "",
+                  "hidden": true
                 },
     "citation": {
                   "label": "Citation",
-                  "help":  "Enter Chapter number."
+                  "help":  "Enter Chapter number.",
+                  "hidden": false
                 }
   }
 

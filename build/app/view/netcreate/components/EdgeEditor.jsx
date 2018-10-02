@@ -192,6 +192,7 @@ class EdgeEditor extends UNISYS.Component {
     constructor (props) {
       super(props);
       this.state = {
+        edgePrompts:    this.AppState('TEMPLATE').edgePrompts,
         formData: {                 // Holds the state of the form fields
           sourceId:     '',
           targetId:     '',
@@ -264,14 +265,9 @@ class EdgeEditor extends UNISYS.Component {
         this.handleEdgeEdit(data);
       });
 
-      // Load template
-      const options = this.AppState('EDGETYPES').options;
-      if ( (options===undefined) || !Array.isArray(options) ) console.error(PR,'received bad Options definition:',options);
-      this.state.options = options;
-
       // Template handler
-      this.OnAppStateChange('EDGETYPES',(data) => {
-        this.setState({options: data.options});
+      this.OnAppStateChange('TEMPLATE',(data) => {
+        this.setState({edgePrompts: data.edgePrompts});
       });
 
     } // constructor
@@ -681,7 +677,7 @@ class EdgeEditor extends UNISYS.Component {
 /*/
 /*/ render () {
       const { edgeID, parentNodeLabel } = this.props;
-      const { formData, sourceNode, targetNode, options } = this.state;
+      const { formData, sourceNode, targetNode, edgePrompts } = this.state;
       const me = <span style={{color:"rgba(0,0,0,0.2)",fontStyle:"italic"}}>this</span>;
       return (
         <div>
@@ -721,7 +717,7 @@ class EdgeEditor extends UNISYS.Component {
                   >Change Source</Button>
                 </Col>
               </FormGroup>
-              <FormGroup row>
+              <FormGroup row hidden={edgePrompts.type.hidden}>
                 <Col sm={3}>
                   <Label for="relationship" className="small text-muted">Type</Label>
                 </Col>
@@ -731,7 +727,7 @@ class EdgeEditor extends UNISYS.Component {
                     onChange={this.onRelationshipChange}
                     disabled={!this.state.isEditable}
                     >
-                    {options.map( (option,i) => (
+                    {edgePrompts.type.options.map( (option,i) => (
                       <option id={option.id} key={option.id}>{option.label}</option>
                     ))}
                   </Input>
@@ -762,38 +758,38 @@ class EdgeEditor extends UNISYS.Component {
                   >&uarr;&darr;</Button>
                 </Col>
               </FormGroup>
-              <FormGroup row>
+              <FormGroup row hidden={edgePrompts.citation.hidden}>
                 <Col sm={3}>
-                  <Label for="notes" className="small text-muted">Notes</Label>
+                  <Label for="citation" className="small text-muted">{edgePrompts.citation.label}</Label>
                 </Col>
                 <Col sm={9}>
-                  <Input type="text" name="notes" id="notes"
+                  <Input type="text" name="citation" id="citation"
+                    value={formData.citation}
+                    onChange={this.onCitationChange}
+                    readOnly={!this.state.isEditable}
+                  />
+                </Col>
+              </FormGroup>
+              <FormGroup row hidden={edgePrompts.notes.hidden}>
+                <Col sm={3}>
+                  <Label for="notes" className="small text-muted">{edgePrompts.notes.label}</Label>
+                </Col>
+                <Col sm={9}>
+                  <Input type="textarea" name="notes" id="notes"
                     value={formData.notes}
                     onChange={this.onNotesChange}
                     readOnly={!this.state.isEditable}
                   />
                 </Col>
               </FormGroup>
-              <FormGroup row>
+              <FormGroup row hidden={edgePrompts.info.hidden}>
                 <Col sm={3}>
-                  <Label for="info" className="small text-muted">Approximate Date of Interaction</Label>
+                  <Label for="info" className="small text-muted">{edgePrompts.info.label}</Label>
                 </Col>
                 <Col sm={9}>
                   <Input type="text" name="info" id="info"
                     value={formData.info}
                     onChange={this.onInfoChange}
-                    readOnly={!this.state.isEditable}
-                  />
-                </Col>
-              </FormGroup>
-              <FormGroup row>
-                <Col sm={3}>
-                  <Label for="citation" className="small text-muted">Citation</Label>
-                </Col>
-                <Col sm={9}>
-                  <Input type="text" name="citation" id="citation"
-                    value={formData.citation}
-                    onChange={this.onCitationChange}
                     readOnly={!this.state.isEditable}
                   />
                 </Col>
