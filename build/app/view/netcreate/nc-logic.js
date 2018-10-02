@@ -144,42 +144,69 @@ const TARGET_COLOR     = '#FF0000';
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ LOADASSETS fires during <NetCreate>.componentDidMount
+/*/ LOADASSETS fires before react components are loaded
+    see client-lifecycle.js for description
 /*/ MOD.Hook('LOADASSETS',()=>{
       // load data into D3DATA
-      DATASTORE.PromiseD3Data()
-      .then((data)=>{
-        if (DBG) console.log(PR,'DATASTORE returned data',data);
-        D3DATA = m_CleanIDs( data );
-        UDATA.SetAppState('D3DATA',D3DATA);
-        m_RecalculateAllEdgeWeights();
-      });
-      // load Template data
-      DATASTORE.PromiseJSONFile( '../templates/alexander.json' )
-      .then((data)=>{
-        if (DBG) console.log(PR,'DATASTORE returned json',data);
-        TEMPLATE = data;
-        UDATA.SetAppState('TEMPLATE',TEMPLATE);
-        // Process Node, NodeColorMap and Edge options
-        try {
-          UDATA.SetAppState('NODETYPES', TEMPLATE.nodePrompts.type);
-        } catch (error) {
-          console.error(PR,'received bad TEMPLATE node type',error,data);
-        }
-        try {
-          let nodeColorMap = {};
-          TEMPLATE.nodePrompts.type.options.forEach( (o)=>{nodeColorMap[o.label] = o.color;});
-          UDATA.SetAppState('NODECOLORMAP', nodeColorMap);
-        } catch (error) {
-          console.error(PR,'received bad TEMPLATE node options',error,data);
-        }
-        try {
-          UDATA.SetAppState('EDGETYPES', TEMPLATE.edgePrompts.type);
-        } catch (error) {
-          console.error(PR,'received bad TEMPLATE edge options',error,data);
-        }
-      });
-    }); // end INITIALIZE HOOK
+      let p1 =  DATASTORE.PromiseD3Data()
+                .then((data)=>{
+                  if (DBG) console.log(PR,'DATASTORE returned data',data);
+                  D3DATA = m_CleanIDs( data );
+                  D3DATA = m_RecalculateAllEdgeWeights( data );
+                  UDATA.SetAppState('D3DATA',D3DATA);
+                });
+      // load Template data and return it as a promise
+      // so that react render is called only after the template is loaded
+      let templateURL = '../templates/alexander.json';
+      let p2 =  DATASTORE.PromiseJSONFile( templateURL )
+                .then((data)=>{
+                  if (DBG) console.log(PR,'DATASTORE returned json',data);
+                  TEMPLATE = data;
+                  UDATA.SetAppState('TEMPLATE',TEMPLATE);
+                  // Process Node, NodeColorMap and Edge options
+
+                  // Validate the template file
+                  try {
+                    // nodePrompts
+                    let nodePrompts = TEMPLATE.nodePrompts;
+                    if (nodePrompts===undefined) throw "Missing `nodePrompts` nodePrompts="+nodePrompts;
+                    if (nodePrompts.label===undefined) throw "Missing `nodePrompts.label` label="+nodePrompts.label;
+                    if (nodePrompts.type===undefined) throw "Missing `nodePrompts.type` type= "+nodePrompts.type;
+                    if ( (nodePrompts.type.options===undefined) ||
+                         !Array.isArray(nodePrompts.type.options) )
+                      throw "Missing or bad `nodePrompts.type.options` options="+nodePrompts.type.options;
+                    if (nodePrompts.notes===undefined) throw "Missing `nodePrompts.notes` notes="+nodePrompts.notes;
+                    if (nodePrompts.info===undefined) throw "Missing `nodePrompts.info` info="+nodePrompts.info;
+
+                    // edgePrompts
+                    let edgePrompts = TEMPLATE.edgePrompts;
+                    if (edgePrompts===undefined) throw "Missing `edgePrompts` edgePrompts="+edgePrompts;
+                    if (edgePrompts.source===undefined) throw "Missing `edgePrompts.source` source="+edgePrompts.source;
+                    if (edgePrompts.type===undefined) throw "Missing `edgePrompts.type` type= "+edgePrompts.type;
+                    if ( (edgePrompts.type.options===undefined) ||
+                         !Array.isArray(edgePrompts.type.options) )
+                      throw "Missing or bad `edgePrompts.type.options` options="+edgePrompts.type.options;
+                    if (edgePrompts.target===undefined) throw "Missing `edgePrompts.target` label="+edgePrompts.target;
+                    if (edgePrompts.notes===undefined) throw "Missing `edgePrompts.notes` notes="+edgePrompts.notes;
+                    if (edgePrompts.info===undefined) throw "Missing `edgePrompts.info` info="+edgePrompts.info;
+                    if (edgePrompts.citation===undefined) throw "Missing `edgePrompts.citation` info="+edgePrompts.citation;
+                  } catch (error) {
+                    console.error( PR+"Error loading template `",templateURL,"`::::",error );
+                  }
+
+                  // REVIEW: Load ColorMap in d3?  or elsewhere?  does it need its own state?
+                  try {
+                    let nodeColorMap = {};
+                    TEMPLATE.nodePrompts.type.options.forEach( (o)=>{nodeColorMap[o.label] = o.color;});
+                    UDATA.SetAppState('NODECOLORMAP', nodeColorMap);
+                  } catch (error) {
+                    console.error(PR,'received bad TEMPLATE node options.  ERROR:',error,'. DATA:',data);
+                  }
+
+                });
+
+      return Promise.all([p1,p2]);
+    }); // end LOADASSETS HOOK
 
 
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
@@ -427,6 +454,15 @@ const TARGET_COLOR     = '#FF0000';
       });
     }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ lifecycle RESET handler
+/*/ MOD.Hook('RESET', () => {
+      // Force an AppState update here so that the react components will load
+      // the data after they've been initialized.  The SetAppState call in
+      // LOADASSETS is broadcast before react components have been loaded.
+      UDATA.SetAppState('D3DATA',D3DATA);
+    }); // end UNISYS_RESET
+
 /// APP_READY MESSAGE REGISTRATION ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ The APP_READY hook is fired after all initialization phases have finished
@@ -577,13 +613,11 @@ const TARGET_COLOR     = '#FF0000';
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Count number of edges with the same source/target to determine weight
-/*/ function m_RecalculateAllEdgeWeights() {
-      let D3DATA = UDATA.AppState('D3DATA');
-      let edges = D3DATA.edges;
-      edges.forEach( (edge) => {
-          edge.size = m_CalculateEdgeWeight( edge, edges );
+/*/ function m_RecalculateAllEdgeWeights( D3DATA ) {
+      D3DATA.edges.forEach( (edge) => {
+          edge.size = m_CalculateEdgeWeight( edge, D3DATA.edges );
       });
-      UDATA.SetAppState('D3DATA',D3DATA);
+      return D3DATA;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Count number of edges with the same source/target to determine weight

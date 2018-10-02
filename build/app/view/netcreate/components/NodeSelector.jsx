@@ -119,10 +119,10 @@ const thisIdentifier = 'nodeSelector';   // SELECTION identifier
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
 class NodeSelector extends UNISYS.Component {
-
     constructor (props) {
       super(props);
       this.state = {
+        nodePrompts:   this.AppState('TEMPLATE').nodePrompts,
         formData: {
             label:     '',
             type:      '',
@@ -132,13 +132,6 @@ class NodeSelector extends UNISYS.Component {
             isNewNode: true
         },
         edges:         [],
-        options: [
-          {
-            id:    "test",
-            label: "Test",
-            color: "#FF0000"
-          }
-        ],
         isLocked:      true,
         isEditable:    false,
         isValid:       false
@@ -175,16 +168,9 @@ class NodeSelector extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       this.OnAppStateChange('SEARCH', this.onStateChange_SEARCH);
 
-      // Load Template
-      let options = this.AppState('NODETYPES').options;
-      // When we first render, the TEMPLATE may not be loaded yet.
-      // If it's not loaded, define a dummy option for now
-      if ( (options===undefined) || !Array.isArray(options) ) options = [];
-      this.state.options = options;
-
       // Handle Template updates
-      this.OnAppStateChange('NODETYPES',(data) => {
-        this.setState({options: data.options});
+      this.OnAppStateChange('TEMPLATE',(data) => {
+        this.setState({nodePrompts: data.nodePrompts});
       });
 
 
@@ -544,6 +530,7 @@ class NodeSelector extends UNISYS.Component {
 /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
 /*/ REACT calls this to receive the component layout and data sources
 /*/ render () {
+      let { nodePrompts } = this.state;
       return (
         <div>
           <FormGroup className="text-right" style={{paddingRight:'5px'}}>
@@ -571,7 +558,7 @@ class NodeSelector extends UNISYS.Component {
             <div style={{position:'absolute',left:'300px',maxWidth:'300px'}}>
               <NodeDetail/>
             </div>
-            <FormGroup row>
+            <FormGroup row hidden={nodePrompts.type.hidden}>
               <Col sm={3}>
                 <Label for="type" className="small text-muted">Type</Label>
               </Col>
@@ -581,15 +568,15 @@ class NodeSelector extends UNISYS.Component {
                   onChange={this.onTypeChange}
                   disabled={!this.state.isEditable}
                   >
-                  {this.state.options.map( (option,i) => (
+                  {nodePrompts.type.options.map( (option,i) => (
                     <option id={option.id} key={option.id}>{option.label}</option>
                   ))}
                 </Input>
               </Col>
             </FormGroup>
-            <FormGroup row>
+            <FormGroup row hidden={nodePrompts.notes.hidden}>
               <Col sm={3}>
-                <Label for="notes" className="small text-muted">Notes</Label>
+                <Label for="notes" className="small text-muted">{nodePrompts.notes.label}</Label>
               </Col>
               <Col sm={9}>
                 <Input type="textarea" name="note" id="notesText"
@@ -599,7 +586,7 @@ class NodeSelector extends UNISYS.Component {
                   />
               </Col>
             </FormGroup>
-            <FormGroup row>
+            <FormGroup row hidden={nodePrompts.info.hidden}>
               <Col sm={3}>
                 <Label for="info" className="small text-muted">Geocode or Date</Label>
               </Col>

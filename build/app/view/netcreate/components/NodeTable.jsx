@@ -34,9 +34,10 @@ class NodeTable extends UNISYS.Component {
       super(props);
 
       this.state = {
-        nodes:      [],
-        isExpanded: false,
-        sortkey:    'label'
+        nodePrompts:  this.AppState('TEMPLATE').nodePrompts,
+        nodes:        [],
+        isExpanded:   false,
+        sortkey:      'label'
       };
 
       this.onButtonClick            = this.onButtonClick.bind(this);
@@ -52,6 +53,12 @@ class NodeTable extends UNISYS.Component {
       this.OnAppStateChange('D3DATA',(data) => {
         this.handleDataUpdate(data);
       });
+
+      // Handle Template updates
+      this.OnAppStateChange('TEMPLATE',(data) => {
+        this.setState({nodePrompts: data.nodePrompts});
+      });
+
     } // constructor
 
 
@@ -179,6 +186,7 @@ class NodeTable extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ render () {
+      let { nodePrompts } = this.state;
       return (
         <div style={{maxHeight:'50vh',overflow:'scroll',backgroundColor:'#eafcff'}}>
           <Button size="sm" outline
@@ -197,19 +205,22 @@ class NodeTable extends UNISYS.Component {
                 <th><Button size="sm"
                       disabled={this.state.sortkey==="label"}
                       onClick={()=>this.setSortKey("label")}
-                    >Label</Button></th>
-                <th><Button size="sm"
+                    >{nodePrompts.label.label}</Button></th>
+                <th hidden={nodePrompts.type.hidden}>
+                    <Button size="sm"
                       disabled={this.state.sortkey==="type"}
                       onClick={()=>this.setSortKey("type")}
-                    >Type</Button></th>
-                <th><Button size="sm"
+                    >{nodePrompts.type.label}</Button></th>
+                <th hidden={nodePrompts.info.hidden}>
+                    <Button size="sm"
                       disabled={this.state.sortkey==="info"}
                       onClick={()=>this.setSortKey("info")}
-                    >Geocode/Date</Button></th>
-                <th><Button size="sm"
+                    >{nodePrompts.info.label}</Button></th>
+                <th width="45%" hidden={nodePrompts.notes.hidden}>
+                    <Button size="sm"
                       disabled={this.state.sortkey==="notes"}
                       onClick={()=>this.setSortKey("notes")}
-                    >Notes</Button></th>
+                    >{nodePrompts.notes.label}</Button></th>
               </tr>
             </thead>
             <tbody>
@@ -223,9 +234,9 @@ class NodeTable extends UNISYS.Component {
                 </td>
                 <td><a href="#" onClick={(e)=>this.selectNode(node.id,e)}
                     >{node.label}</a></td>
-                <td>{node.attributes["Node_Type"]}</td>
-                <td style={{}}>{node.attributes["Extra Info"]}</td>
-                <td>{node.attributes["Notes"]}</td>
+                <td hidden={nodePrompts.type.hidden}>{node.attributes["Node_Type"]}</td>
+                <td hidden={nodePrompts.info.hidden}>{node.attributes["Extra Info"]}</td>
+                <td hidden={nodePrompts.notes.hidden}>{node.attributes["Notes"]}</td>
               </tr>
             )}
             </tbody>
