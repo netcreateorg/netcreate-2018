@@ -157,12 +157,42 @@ const TARGET_COLOR     = '#FF0000';
                 });
       // load Template data and return it as a promise
       // so that react render is called only after the template is loaded
-      let p2 =  DATASTORE.PromiseJSONFile( '../templates/alexander.json' )
+      let templateURL = '../templates/alexander.json';
+      let p2 =  DATASTORE.PromiseJSONFile( templateURL )
                 .then((data)=>{
                   if (DBG) console.log(PR,'DATASTORE returned json',data);
                   TEMPLATE = data;
                   UDATA.SetAppState('TEMPLATE',TEMPLATE);
                   // Process Node, NodeColorMap and Edge options
+
+                  // Validate the template file
+                  try {
+                    // nodePrompts
+                    let nodePrompts = TEMPLATE.nodePrompts;
+                    if (nodePrompts===undefined) throw "Missing `nodePrompts` nodePrompts="+nodePrompts;
+                    if (nodePrompts.label===undefined) throw "Missing `nodePrompts.label` label="+nodePrompts.label;
+                    if (nodePrompts.type===undefined) throw "Missing `nodePrompts.type` type= "+nodePrompts.type;
+                    if ( (nodePrompts.type.options===undefined) ||
+                         !Array.isArray(nodePrompts.type.options) )
+                      throw "Missing or bad `nodePrompts.type.options` options="+nodePrompts.type.options;
+                    if (nodePrompts.notes===undefined) throw "Missing `nodePrompts.notes` notes="+nodePrompts.notes;
+                    if (nodePrompts.info===undefined) throw "Missing `nodePrompts.info` info="+nodePrompts.info;
+
+                    // edgePrompts
+                    let edgePrompts = TEMPLATE.edgePrompts;
+                    if (edgePrompts===undefined) throw "Missing `edgePrompts` edgePrompts="+edgePrompts;
+                    if (edgePrompts.source===undefined) throw "Missing `edgePrompts.source` source="+edgePrompts.source;
+                    if (edgePrompts.type===undefined) throw "Missing `edgePrompts.type` type= "+edgePrompts.type;
+                    if ( (edgePrompts.type.options===undefined) ||
+                         !Array.isArray(edgePrompts.type.options) )
+                      throw "Missing or bad `edgePrompts.type.options` options="+edgePrompts.type.options;
+                    if (edgePrompts.target===undefined) throw "Missing `edgePrompts.target` label="+edgePrompts.target;
+                    if (edgePrompts.notes===undefined) throw "Missing `edgePrompts.notes` notes="+edgePrompts.notes;
+                    if (edgePrompts.info===undefined) throw "Missing `edgePrompts.info` info="+edgePrompts.info;
+                    if (edgePrompts.citation===undefined) throw "Missing `edgePrompts.citation` info="+edgePrompts.citation;
+                  } catch (error) {
+                    console.error( PR+"Error loading template `",templateURL,"`::::",error );
+                  }
 
                   // REVIEW: Load ColorMap in d3?  or elsewhere?  does it need its own state?
                   try {
@@ -170,13 +200,8 @@ const TARGET_COLOR     = '#FF0000';
                     TEMPLATE.nodePrompts.type.options.forEach( (o)=>{nodeColorMap[o.label] = o.color;});
                     UDATA.SetAppState('NODECOLORMAP', nodeColorMap);
                   } catch (error) {
-                    console.error(PR,'received bad TEMPLATE node options',error,data);
+                    console.error(PR,'received bad TEMPLATE node options.  ERROR:',error,'. DATA:',data);
                   }
-
-                  // REVIEW
-                  // Add validation for nodePrompts and edgePrompts
-                  //      if ( (options===undefined) || !Array.isArray(options) ) console.error(PR,'received bad Options definition:',options);
-
 
                 });
 
