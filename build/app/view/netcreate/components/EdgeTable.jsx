@@ -70,8 +70,10 @@ class EdgeTable extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle updated SELECTION
 /*/ handleDataUpdate ( data ) {
-      this.setState({edges: data.edges});
-      this.sortTable();
+      if (data && data.edges) {
+        this.setState({edges: data.edges});
+        this.sortTable();
+      }
     }
 
 

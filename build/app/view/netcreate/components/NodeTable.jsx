@@ -66,8 +66,10 @@ class NodeTable extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle updated SELECTION
 /*/ handleDataUpdate ( data ) {
-      this.setState({nodes: data.nodes});
-      this.sortTable();
+      if (data && data.nodes) {
+        this.setState({nodes: data.nodes});
+        this.sortTable();
+      }
     }
 
 
