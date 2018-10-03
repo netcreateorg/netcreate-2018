@@ -151,9 +151,11 @@ const TARGET_COLOR     = '#FF0000';
       let p1 =  DATASTORE.PromiseD3Data()
                 .then((data)=>{
                   if (DBG) console.log(PR,'DATASTORE returned data',data);
-                  D3DATA = m_CleanIDs( data );
-                  D3DATA = m_RecalculateAllEdgeWeights( data );
-                  UDATA.SetAppState('D3DATA',D3DATA);
+                  m_ConvertData( data );
+                  m_RecalculateAllEdgeWeights( data );
+                  UDATA.SetAppState('D3DATA',data);
+                  // Save off local reference because we don't have D3DATA AppStateChange handler
+                  D3DATA = data;
                 });
       // load Template data and return it as a promise
       // so that react render is called only after the template is loaded
@@ -615,11 +617,14 @@ const TARGET_COLOR     = '#FF0000';
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Count number of edges with the same source/target to determine weight
-/*/ function m_RecalculateAllEdgeWeights( D3DATA ) {
-      D3DATA.edges.forEach( (edge) => {
-          edge.size = m_CalculateEdgeWeight( edge, D3DATA.edges );
+      `data` is passed by reference
+      This modifies `data`
+      data = { nodes: [], edges: [] }
+/*/ function m_RecalculateAllEdgeWeights( data ) {
+      data.edges.forEach( (edge) => {
+          edge.size = m_CalculateEdgeWeight( edge, data.edges );
       });
-      return D3DATA;
+      return data;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Count number of edges with the same source/target to determine weight
@@ -662,15 +667,17 @@ const TARGET_COLOR     = '#FF0000';
     are integers.  However, with older data sets, the IDs may have been strings.
     e.g. exports from Gephi will have string IDs.
     This mismatch is a problem when looking up nodes by ID.
-/*/ function m_CleanIDs( D3DATA ) {
-      D3DATA.nodes.forEach( (node) => {node.id = parseInt(node.id);} );
-      D3DATA.edges.forEach( (edge) => {
+      `data` is passed by reference
+      This modifies `data`
+      data = { nodes: [], edges: [] }
+/*/ function m_ConvertData( data ) {
+      data.nodes.forEach( (node) => {node.id = parseInt(node.id);} );
+      data.edges.forEach( (edge) => {
         edge.id = parseInt(edge.id);
         // before D3 processing, edge.source and edge.target are ids
         edge.source = parseInt(edge.source);
         edge.target = parseInt(edge.target);
       });
-      return D3DATA;
     }
 
 /// NODE MARKING METHODS //////////////////////////////////////////////////////
