@@ -173,8 +173,9 @@ const TARGET_COLOR     = '#FF0000';
                     if (nodePrompts.label===undefined) throw "Missing `nodePrompts.label` label="+nodePrompts.label;
                     if (nodePrompts.type===undefined) throw "Missing `nodePrompts.type` type= "+nodePrompts.type;
                     if ( (nodePrompts.type.options===undefined) ||
-                         !Array.isArray(nodePrompts.type.options) )
+                         !Array.isArray(nodePrompts.type.options) ) {
                       throw "Missing or bad `nodePrompts.type.options` options="+nodePrompts.type.options;
+                    }
                     if (nodePrompts.notes===undefined) throw "Missing `nodePrompts.notes` notes="+nodePrompts.notes;
                     if (nodePrompts.info===undefined) throw "Missing `nodePrompts.info` info="+nodePrompts.info;
 
@@ -184,8 +185,9 @@ const TARGET_COLOR     = '#FF0000';
                     if (edgePrompts.source===undefined) throw "Missing `edgePrompts.source` source="+edgePrompts.source;
                     if (edgePrompts.type===undefined) throw "Missing `edgePrompts.type` type= "+edgePrompts.type;
                     if ( (edgePrompts.type.options===undefined) ||
-                         !Array.isArray(edgePrompts.type.options) )
+                         !Array.isArray(edgePrompts.type.options) ) {
                       throw "Missing or bad `edgePrompts.type.options` options="+edgePrompts.type.options;
+                    }
                     if (edgePrompts.target===undefined) throw "Missing `edgePrompts.target` label="+edgePrompts.target;
                     if (edgePrompts.notes===undefined) throw "Missing `edgePrompts.notes` notes="+edgePrompts.notes;
                     if (edgePrompts.info===undefined) throw "Missing `edgePrompts.info` info="+edgePrompts.info;
