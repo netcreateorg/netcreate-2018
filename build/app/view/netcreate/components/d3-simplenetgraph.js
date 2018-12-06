@@ -29,6 +29,8 @@
        https://bl.ocks.org/mbostock/3808218
     *  Coderwall's zoom and pan method
        https://coderwall.com/p/psogia/simplest-way-to-add-zoom-pan-on-d3-js
+    *  Vladyslav Babenko's zoom buttons example
+       https://jsfiddle.net/vbabenko/jcsqqu6j/9/
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -92,6 +94,7 @@ class D3NetGraph {
 
       this.rootElement  = rootElement;
       this.d3svg        = {};
+      this.zoom = {};
       this.zoomWrapper  = {};
       this.simulation   = {};
       this.data         = {};
@@ -107,6 +110,10 @@ class D3NetGraph {
   /// D3 CODE ///////////////////////////////////////////////////////////////////
   /// note: this is all inside the class constructor function!
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+      // Set up Zoom
+      this.zoom = d3.zoom().on("zoom", this._HandleZoom);
+
   /*/ Create svg element which will contain our D3 DOM elements.
       Add default click handler so when clicking empty space, deselect all.
       NOTE: the svg element is actualy d3.selection object, not an svg obj.
@@ -118,11 +125,11 @@ class D3NetGraph {
             UDATA.LocalCall('SOURCE_SELECT',{ nodeLabels: [] });
             }
         )
-        .call(d3.zoom().on("zoom", function () {
-          d3.select('.zoomer').attr("transform", d3.event.transform);
-        }));
-      this.zoomWrapper = this.d3svg.append('g').attr("class","zoomer");
+        .call(this.zoom);
+
+      this.zoomWrapper = this.d3svg.append('g').attr("class", "zoomer");
       this.simulation = d3.forceSimulation();
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// END D3 CODE ///////////////////////////////////////////////////////////////
 
@@ -132,7 +139,8 @@ class D3NetGraph {
       this._Initialize        = this._Initialize.bind(this);
       this._UpdateGraph       = this._UpdateGraph.bind(this);
       this._UpdateForces      = this._UpdateForces.bind(this);
-      this._Tick              = this._Tick.bind(this);
+      this._Tick = this._Tick.bind(this);
+      this._HandleZoom = this._HandleZoom.bind(this);
       this._Dragstarted       = this._Dragstarted.bind(this);
       this._Dragged           = this._Dragged.bind(this);
       this._Dragended         = this._Dragended.bind(this);
@@ -150,6 +158,23 @@ class D3NetGraph {
       UDATA.OnAppStateChange('NODECOLORMAP',(data)=>{
         if (DBG) console.log(PR,'got state NODECOLORMAP',data);
         this._UpdateGraph();
+      });
+
+      UDATA.HandleMessage('ZOOM_RESET', (data) => {
+        if (DBG) console.log(PR, 'ZOOM_RESET got state D3DATA', data);
+        this.d3svg.transition()
+          .duration(200)
+          .call(this.zoom.scaleTo, 1);
+      });
+
+      UDATA.HandleMessage('ZOOM_IN', (data) => {
+        if (DBG) console.log(PR, 'ZOOM_IN got state D3DATA', data);
+        this._Transition(1.2);
+      });
+
+      UDATA.HandleMessage('ZOOM_OUT', (data) => {
+        if (DBG) console.log(PR, 'ZOOM_OUT got state D3DATA', data);
+        this._Transition(0.8);
       });
 
   }
@@ -449,6 +474,21 @@ class D3NetGraph {
 
 
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ This primarily handles mousewheel zooms
+/*/
+_HandleZoom() {
+  d3.select('.zoomer').attr("transform", d3.event.transform);
+}
+/*/ This handles zoom button zooms.
+/*/
+_Transition(zoomLevel) {
+  this.d3svg.transition()
+    //.delay(100)
+    .duration(200)
+    .call(this.zoom.scaleBy, zoomLevel);
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ _Dragstarted (d, self) {
