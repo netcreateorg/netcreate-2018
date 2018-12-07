@@ -14,6 +14,13 @@
 
     Set `DBG` to true to show the `ID` column.
 
+  ## 2018-12-07 Update
+  
+    Since we're not using tab navigation:
+    1. The table isExpanded is now true by default.
+    2. The "Show/Hide Table" button is hidden.
+    
+    Reset these to restore previous behavior.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -38,7 +45,7 @@ class EdgeTable extends UNISYS.Component {
       this.state = {
         edgePrompts:  this.AppState('TEMPLATE').edgePrompts,
         edges:        [],
-        isExpanded:   false,
+        isExpanded:   true,
         sortkey:      'Citations'
       };
 
@@ -273,7 +280,7 @@ class EdgeTable extends UNISYS.Component {
       return (
         <div style={{maxHeight:'50vh',backgroundColor:'#f3f3ff'}}>
           <style>{styles}</style>
-          <Button size="sm" outline
+          <Button size="sm" outline hidden
             onClick={this.onToggleExpanded}
           >{this.state.isExpanded ? "Hide Edge Table" : "Show Edge Table"}</Button>
           <Table hidden={!this.state.isExpanded} hover size="sm"
