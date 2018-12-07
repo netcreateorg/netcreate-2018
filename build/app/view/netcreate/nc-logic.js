@@ -228,7 +228,8 @@ const TARGET_COLOR     = '#FF0000';
           if (nodes.length>0) {
             let color = '#0000DD';
             nodes.forEach( node => {
-              m_MarkNodeById(node.id,color);
+              m_MarkNodeById(node.id, color);
+              m_MarkSelectedEdges(edges, node);
               UNISYS.Log('select node',node.id,node.label);
             });
           } else {
@@ -740,6 +741,24 @@ const TARGET_COLOR     = '#FF0000';
       m_SetMatchingNodesByLabel(searchString, matched, notmatched);
       UDATA.SetAppState('D3DATA',D3DATA);
     }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Sets the 'selected' state of edges that are attached to the node
+/*/
+function m_MarkSelectedEdges(edges, node) {
+  // Delesect all edges first
+  edges.forEach(edge => { edge.selected = false; });
+  // Find connected edges
+  console.log('marking edges for node', node);
+  let id = node.id;
+  D3DATA.edges.forEach(edge => {
+    if ( (edge.source.id === id) || (edge.target.id === id) ) {
+      edge.selected = true;
+    } else {
+      edge.selected = false;
+    }
+  })
+  UDATA.SetAppState('D3DATA', D3DATA);
+}
 
 /// COMMAND LINE UTILITIES ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

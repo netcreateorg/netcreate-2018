@@ -390,21 +390,38 @@ class D3NetGraph {
       // TELL D3 what to do when a data node goes away
       nodeElements.exit().remove()
 
+
+      // Used by linElements.enter() and linkElements.merge() below
+      function updateLinkStrokeWidth(edge) {
+        if (edge.selected) {
+          console.log('d3 enter edge', edge.id, 'selected');
+          return edge.size ** 2;  // Use **2 to make size differences more noticeable
+        } else {
+          return 0.05;             // Barely visible if not selected
+        }
+      }
+
       // NOW TELL D3 HOW TO HANDLE NEW EDGE DATA
       // .insert will add an svg `line` before the objects classed `.node`
+      // .enter() sets the initial state of links as they are created
       linkElements.enter()
         .insert("line",".node")
-          .classed('edge', true)
-          .style('stroke-width', (d) => { return d.size**2 } )    // Use **2 to make size differences more noticeable
-        .on("click",   (d) => {
-          if (DBG) console.log('clicked on',d.label,d.id)
-          this.edgeClickFn( d )
-        })
+        .classed('edge', true)
+        .style('stroke', '#999')
+        // .style('stroke', 'rgba(0,0,0,0.1)')  // don't use alpha unless we're prepared to handle layering -- reveals unmatching links
+        .style('stroke-width', updateLinkStrokeWidth )
+        // old stroke setting
+        // .style('stroke-width', (d) => { return d.size**2 } )    // Use **2 to make size differences more noticeable
+        // Edge selection disabled.
+        // .on("click",   (d) => {
+        //   if (DBG) console.log('clicked on',d.label,d.id)
+        //   this.edgeClickFn( d )
+        // })
 
+      // .merge() updates the visuals whenever the data is updated.
       linkElements.merge(linkElements)
         .classed("selected",  (d) => { return d.selected })
-        // .style('stroke', 'rgba(0,0,0,0.1)')  // don't use alpha unless we're prepared to handle layering -- reveals unmatching links
-        .style('stroke-width', (d) => { return d.size**2 } )
+        .style('stroke-width', updateLinkStrokeWidth)
 
       linkElements.exit().remove()
 
