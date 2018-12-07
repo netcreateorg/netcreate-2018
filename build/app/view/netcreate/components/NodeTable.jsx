@@ -35,7 +35,8 @@ class NodeTable extends UNISYS.Component {
 
       this.state = {
         nodePrompts:  this.AppState('TEMPLATE').nodePrompts,
-        nodes:        [],
+        nodes: [],
+        edgeCounts: {},         // {nodeID:count,...}
         isExpanded:   false,
         sortkey:      'label'
       };
@@ -65,12 +66,25 @@ class NodeTable extends UNISYS.Component {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle updated SELECTION
-/*/ handleDataUpdate ( data ) {
-      if (data && data.nodes) {
-        this.setState({nodes: data.nodes});
-        this.sortTable();
-      }
-    }
+/*/
+handleDataUpdate(data) {
+  if (data && data.nodes) {
+    this.countEdges();
+    this.setState({nodes: data.nodes});
+    this.sortTable();
+  }
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Build table of counts
+/*/
+countEdges() {
+  let edgeCounts = this.state.edgeCounts;
+  this.AppState('D3DATA').edges.forEach( edge => {
+    edgeCounts[edge.source] = edgeCounts[edge.source]!==undefined ? edgeCounts[edge.source]+1 : 1;
+    edgeCounts[edge.target] = edgeCounts[edge.target]!== undefined ? edgeCounts[edge.target]+1 : 1;
+  })
+  this.setState({ edgeCounts: edgeCounts });
+}
 
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
@@ -83,6 +97,21 @@ class NodeTable extends UNISYS.Component {
               bkey = b.id;
           if (akey<bkey) return -1;
           if (akey>bkey) return 1;
+          return 0;
+        });
+      }
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ sortByEdgeCount(nodes) {
+      if (nodes) {
+        let edgeCounts = this.state.edgeCounts;
+        return nodes.sort( (a, b) => {
+          let akey = edgeCounts[a.id] || 0,
+            bkey = edgeCounts[b.id] || 0;
+          // sort descending
+          if (akey > bkey) return -1;
+          if (akey < bkey) return 1;
           return 0;
         });
       }
@@ -120,6 +149,9 @@ class NodeTable extends UNISYS.Component {
       switch (sortkey) {
         case 'id':
           this.sortByID(nodes);
+          break;
+        case 'edgeCount':
+          this.sortByEdgeCount(nodes);
           break;
         case 'type':
           this.sortByAttribute(nodes, 'Node_Type');
@@ -205,6 +237,10 @@ class NodeTable extends UNISYS.Component {
                     >ID</Button></th>
                 <th></th>
                 <th><Button size="sm"
+                      disabled={this.state.sortkey === "edgeCount"}
+                      onClick={() => this.setSortKey("edgeCount")}
+                    >Num Edges</Button></th>
+                <th><Button size="sm"
                       disabled={this.state.sortkey==="label"}
                       onClick={()=>this.setSortKey("label")}
                     >{nodePrompts.label.label}</Button></th>
@@ -234,6 +270,7 @@ class NodeTable extends UNISYS.Component {
                       onClick={this.onButtonClick}
                     >Edit</Button>
                 </td>
+                <td>{this.state.edgeCounts[node.id]}</td>
                 <td><a href="#" onClick={(e)=>this.selectNode(node.id,e)}
                     >{node.label}</a></td>
                 <td hidden={nodePrompts.type.hidden}>{node.attributes["Node_Type"]}</td>
