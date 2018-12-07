@@ -239,7 +239,7 @@ countEdges() {
                 <th><Button size="sm"
                       disabled={this.state.sortkey === "edgeCount"}
                       onClick={() => this.setSortKey("edgeCount")}
-                    >Num Edges</Button></th>
+                    >{nodePrompts.degrees.label}</Button></th>
                 <th><Button size="sm"
                       disabled={this.state.sortkey==="label"}
                       onClick={()=>this.setSortKey("label")}

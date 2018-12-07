@@ -59,6 +59,11 @@
                   }
                 ]
              },
+    "degrees": {
+      "label": "Degrees",
+      "help": "Number of edges.",
+      "hidden": false
+    },
     "notes": {
                 "label": "Significance",
                 "help":  "Add some details.",
