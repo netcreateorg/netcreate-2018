@@ -49,7 +49,8 @@ var   UDATA           = null;
 /// PRIVATE VARS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let m_width   = 1024;
-let m_height  = 1024;
+let m_height = 1024;
+let mouseoverNodeId = -1;   // id of the node the mouse is currently over
 let m_forceProperties = {   // values for all forces
       center: {
         x: 0.5,
@@ -125,6 +126,15 @@ class D3NetGraph {
             UDATA.LocalCall('SOURCE_SELECT',{ nodeLabels: [] });
             }
         )
+        .on("mouseover", (d) => {
+          // Deselect edges
+          mouseoverNodeId = -1;
+          d3.selectAll('.edge')
+            .transition()
+            .duration(1500)
+            .style('stroke-width', this._UpdateLinkStrokeWidth)
+          d3.event.stopPropagation();
+        })
         .call(this.zoom);
 
       this.zoomWrapper = this.d3svg.append('g').attr("class", "zoomer");
@@ -268,7 +278,15 @@ class D3NetGraph {
             if (DBG) console.log('clicked on',d.label,d.id)
             UDATA.LocalCall('SOURCE_SELECT',{ nodeIDs: [d.id] });
             d3.event.stopPropagation();
-          });
+        })
+        .on("mouseover", (d) => {
+          mouseoverNodeId = d.id;
+          d3.selectAll('.edge')
+            .transition()
+            .duration(500)
+            .style('stroke-width', this._UpdateLinkStrokeWidth)
+          d3.event.stopPropagation();
+        })
 
       // enter node: also append 'circle' element of a calculated size
       elementG
@@ -390,17 +408,6 @@ class D3NetGraph {
       // TELL D3 what to do when a data node goes away
       nodeElements.exit().remove()
 
-
-      // Used by linElements.enter() and linkElements.merge() below
-      function updateLinkStrokeWidth(edge) {
-        if (edge.selected) {
-          console.log('d3 enter edge', edge.id, 'selected');
-          return edge.size ** 2;  // Use **2 to make size differences more noticeable
-        } else {
-          return 0.05;             // Barely visible if not selected
-        }
-      }
-
       // NOW TELL D3 HOW TO HANDLE NEW EDGE DATA
       // .insert will add an svg `line` before the objects classed `.node`
       // .enter() sets the initial state of links as they are created
@@ -409,7 +416,7 @@ class D3NetGraph {
         .classed('edge', true)
         .style('stroke', '#999')
         // .style('stroke', 'rgba(0,0,0,0.1)')  // don't use alpha unless we're prepared to handle layering -- reveals unmatching links
-        .style('stroke-width', updateLinkStrokeWidth )
+        .style('stroke-width', this._UpdateLinkStrokeWidth )
         // old stroke setting
         // .style('stroke-width', (d) => { return d.size**2 } )    // Use **2 to make size differences more noticeable
         // Edge selection disabled.
@@ -421,7 +428,7 @@ class D3NetGraph {
       // .merge() updates the visuals whenever the data is updated.
       linkElements.merge(linkElements)
         .classed("selected",  (d) => { return d.selected })
-        .style('stroke-width', updateLinkStrokeWidth)
+        .style('stroke-width', this._UpdateLinkStrokeWidth)
 
       linkElements.exit().remove()
 
@@ -473,7 +480,7 @@ class D3NetGraph {
     gets drawn first -- the drawing order is determined by the ordering in the
     DOM.  See the notes under link_update.enter() above for one technique for
     setting the ordering in the DOM.
-/*/ _Tick() {
+/*/ _Tick () {
       // Drawing the nodes: Update the location of each node group element
       // from the x, y fields of the corresponding node object.
       this.zoomWrapper.selectAll(".node")
@@ -488,6 +495,22 @@ class D3NetGraph {
         .attr("y2", (d) => { return d.target.y; })
     }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Sets the width of the links during update cycles
+    Used by linElements.enter() and linkElements.merge()
+    and mouseover events.
+/*/
+_UpdateLinkStrokeWidth (edge) {
+  if (edge.selected ||
+    (edge.source.id === mouseoverNodeId) ||
+    (edge.target.id === mouseoverNodeId) ||
+    (mouseoverNodeId === -1)
+  ) {
+    return edge.size ** 2;  // Use **2 to make size differences more noticeable
+  } else {
+    return 0.05;             // Barely visible if not selected
+  }
+}
 
 
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
