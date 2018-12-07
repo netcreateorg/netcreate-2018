@@ -259,13 +259,26 @@ class EdgeTable extends UNISYS.Component {
 /*/
 /*/ render () {
       let { edgePrompts } = this.state;
+      let styles = `thead, tbody { display: block; }
+                    thead { position: relative; }
+                    tbody { overflow: auto; max-height: 40vh; }
+                    .edgetable td:nth-child(1), .edgetable th:nth-child(1) {width: 2em; }
+                    .edgetable td:nth-child(2), .edgetable th:nth-child(2) {width: 2em; }
+                    .edgetable td:nth-child(3), .edgetable th:nth-child(3) {width: 4em; }
+                    .edgetable td:nth-child(4), .edgetable th:nth-child(4) {width: 6em; }
+                    .edgetable td:nth-child(5), .edgetable th:nth-child(5) {min-width: 14em; }
+                    .edgetable td:nth-child(6), .edgetable th:nth-child(6) {min-width: 6em; }
+                    .edgetable td:nth-child(7), .edgetable th:nth-child(7) {min-width: 6em; }
+                    .edgetable td:nth-child(8), .edgetable th:nth-child(8) {min-width: 6em; }`
       return (
-        <div style={{maxHeight:'50vh',overflow:'scroll',backgroundColor:'#f3f3ff'}}>
+        <div style={{maxHeight:'50vh',backgroundColor:'#f3f3ff'}}>
+          <style>{styles}</style>
           <Button size="sm" outline
             onClick={this.onToggleExpanded}
           >{this.state.isExpanded ? "Hide Edge Table" : "Show Edge Table"}</Button>
           <Table hidden={!this.state.isExpanded} hover size="sm"
                  responsive striped
+                 className="edgetable"
           >
             <thead>
               <tr>

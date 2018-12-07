@@ -221,13 +221,24 @@ countEdges() {
 /*/
 /*/ render () {
       let { nodePrompts } = this.state;
+      let styles = `thead, tbody { display: block; }
+                    thead { position: relative; }
+                    tbody { overflow: auto; max-height: 40vh; }
+                    .nodetable td:nth-child(1), .nodetable th:nth-child(1) {width: 2em; }
+                    .nodetable td:nth-child(2), .nodetable th:nth-child(2) {width: 2em; }
+                    .nodetable td:nth-child(3), .nodetable th:nth-child(3) {width: 4em; }
+                    .nodetable td:nth-child(4), .nodetable th:nth-child(4) {width: 12em; }
+                    .nodetable td:nth-child(5), .nodetable th:nth-child(5) {min-width: 4em; }
+                    .nodetable td:nth-child(6), .nodetable th:nth-child(6) {min-width: 2em; }`
       return (
-        <div style={{maxHeight:'50vh',overflow:'scroll',backgroundColor:'#eafcff'}}>
+        <div style={{maxHeight:'50vh',backgroundColor:'#eafcff'}}>
+          <style>{styles}</style>
           <Button size="sm" outline
             onClick={this.onToggleExpanded}
           >{this.state.isExpanded ? "Hide Node Table" : "Show Node Table"}</Button>
           <Table hidden={!this.state.isExpanded} hover size="sm"
                  responsive striped
+                 className="nodetable"
           >
             <thead>
               <tr>
