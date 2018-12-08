@@ -44,15 +44,10 @@ const PR           = PROMPTS.Pad('ACD');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React        = require('react');
 const { Route }    = require('react-router-dom');
-const ReactStrap   = require('reactstrap');
-const { TabContent, TabPane, Nav, NavItem, NavLink, Row, Col } = ReactStrap;
-const classnames   = require('classnames');
 const NetGraph     = require('./components/NetGraph');
 const Search       = require('./components/Search');
 const NodeSelector = require('./components/NodeSelector');
-const Help         = require('./components/Help');
-const NodeTable    = require('./components/NodeTable');
-const EdgeTable    = require('./components/EdgeTable');
+const InfoPanel    = require('./components/InfoPanel');
 const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
 
 
@@ -78,25 +73,19 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
         this.OnRun(()=>{
           if (DBG) console.log(PR,'OnRun');
         });
-        
-        this.toggle = this.toggle.bind(this);
-        
-        this.state = {
-          activeTab: '1'
-        }
       }
-  
-      toggle (tab) {
-        if (this.state.activeTab !== tab) {
-          this.setState({ activeTab: tab });
-        }
-      }
+
+
+
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ This is the root component, so this fires after all subcomponents have
       been fully rendered by render().
   /*/ componentDidMount () {
+        // Init dragger
+        let dragger = document.getElementById('dragger');
+        dragger.onmousedown = this.handleMouseDown;
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Define the component structure of the web application
@@ -115,68 +104,7 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
                 </div>
               </div>
               <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 60%', padding:'10px',marginTop:'56px'}}>
-
-                <Nav tabs>
-                  <NavItem>
-                    <NavLink
-                      className={classnames({ active: this.state.activeTab === '1' })}
-                      onClick={() => { this.toggle('1'); }}
-                    >
-                      Graph
-                    </NavLink>
-                  </NavItem>
-                  <NavItem>
-                    <NavLink
-                      className={classnames({ active: this.state.activeTab === '2' })}
-                      onClick={() => { this.toggle('2'); }}
-                    >
-                      Nodes Table
-                    </NavLink>
-                  </NavItem>
-                  <NavItem>
-                    <NavLink
-                      className={classnames({ active: this.state.activeTab === '3' })}
-                      onClick={() => { this.toggle('3'); }}
-                    >
-                      Edges Table
-                    </NavLink>
-                  </NavItem>
-                  <NavItem>
-                    <NavLink
-                      className={classnames({ active: this.state.activeTab === '4' })}
-                      onClick={() => { this.toggle('4'); }}
-                    >
-                      Help
-                    </NavLink>
-                  </NavItem>
-                </Nav>
-                <TabContent activeTab={this.state.activeTab}>
-                  <TabPane tabId="1">
-                  </TabPane>
-                  <TabPane tabId="2">
-                    <Row>
-                      <Col sm="12">
-                        <h4>Tab 1 Contents</h4>
-                        <NodeTable />
-                      </Col>
-                    </Row>
-                  </TabPane>
-                  <TabPane tabId="3">
-                    <Row>
-                      <Col sm="12">
-                        <EdgeTable />
-                      </Col>
-                    </Row>
-                  </TabPane>
-                  <TabPane tabId="4">
-                    <Row>
-                      <Col sm="12">
-                        <Help />
-                      </Col>
-                    </Row>
-                  </TabPane>
-                </TabContent>
-
+                <InfoPanel/>
                 <NetGraph/>
                 <div style={{fontSize:'10px',position:'absolute',left:'0px',bottom:'0px',zIndex:'1500',color:'#aaa',backgroundColor:'#eee',padding:'5px 10px'}}>Please contact Professor
                 Kalani Craig, Institute for Digital Arts & Humanities at

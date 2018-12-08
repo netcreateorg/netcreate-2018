@@ -229,9 +229,10 @@ countEdges() {
 /*/
 /*/ render () {
       let { nodePrompts } = this.state;
+      let { tableHeight } = this.props;
       let styles = `thead, tbody { display: block; }
                     thead { position: relative; }
-                    tbody { overflow: auto; max-height: 40vh; }
+                    tbody { overflow: auto; }
                     .nodetable td:nth-child(1), .nodetable th:nth-child(1) {width: 2em; }
                     .nodetable td:nth-child(2), .nodetable th:nth-child(2) {width: 2em; }
                     .nodetable td:nth-child(3), .nodetable th:nth-child(3) {width: 4em; }
@@ -239,7 +240,7 @@ countEdges() {
                     .nodetable td:nth-child(5), .nodetable th:nth-child(5) {min-width: 4em; }
                     .nodetable td:nth-child(6), .nodetable th:nth-child(6) {min-width: 2em; }`
       return (
-        <div style={{maxHeight:'50vh',backgroundColor:'#eafcff'}}>
+        <div style={{backgroundColor:'#eafcff'}}>
           <style>{styles}</style>
           <Button size="sm" outline hidden
             onClick={this.onToggleExpanded}
@@ -280,7 +281,7 @@ countEdges() {
                     >{nodePrompts.notes.label}</Button></th>
               </tr>
             </thead>
-            <tbody>
+            <tbody style={{maxHeight: tableHeight}}>
             {this.state.nodes.map( (node,i) =>
               <tr key={i}>
                 <td>{node.id}</td>

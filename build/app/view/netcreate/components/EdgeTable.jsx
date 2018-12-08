@@ -15,11 +15,11 @@
     Set `DBG` to true to show the `ID` column.
 
   ## 2018-12-07 Update
-  
+
     Since we're not using tab navigation:
     1. The table isExpanded is now true by default.
     2. The "Show/Hide Table" button is hidden.
-    
+
     Reset these to restore previous behavior.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
@@ -266,9 +266,10 @@ class EdgeTable extends UNISYS.Component {
 /*/
 /*/ render () {
       let { edgePrompts } = this.state;
+      let { tableHeight } = this.props;
       let styles = `thead, tbody { display: block; }
                     thead { position: relative; }
-                    tbody { overflow: auto; max-height: 40vh; }
+                    tbody { overflow: auto; }
                     .edgetable td:nth-child(1), .edgetable th:nth-child(1) {width: 2em; }
                     .edgetable td:nth-child(2), .edgetable th:nth-child(2) {width: 2em; }
                     .edgetable td:nth-child(3), .edgetable th:nth-child(3) {width: 4em; }
@@ -278,7 +279,7 @@ class EdgeTable extends UNISYS.Component {
                     .edgetable td:nth-child(7), .edgetable th:nth-child(7) {min-width: 6em; }
                     .edgetable td:nth-child(8), .edgetable th:nth-child(8) {min-width: 6em; }`
       return (
-        <div style={{maxHeight:'50vh',backgroundColor:'#f3f3ff'}}>
+        <div style={{backgroundColor:'#f3f3ff'}}>
           <style>{styles}</style>
           <Button size="sm" outline hidden
             onClick={this.onToggleExpanded}
@@ -321,7 +322,7 @@ class EdgeTable extends UNISYS.Component {
                     >{edgePrompts.info.label}</Button></th>
               </tr>
             </thead>
-            <tbody>
+            <tbody style={{ maxHeight: tableHeight }}>
             {this.state.edges.map( (edge,i) => (
               <tr key={i}>
                 <td hidden={!DBG}>{edge.id}</td>
