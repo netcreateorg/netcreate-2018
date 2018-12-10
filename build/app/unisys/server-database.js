@@ -139,7 +139,7 @@ let DB = {};
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     DB.PKT_Update = function ( pkt ) {
-      let { node, edge, edgeID } = pkt.Data();
+      let { node, edge, nodeID, replacementNodeID, edgeID } = pkt.Data();
       let retval = {};
 
       // PROCESS NODE INSERT/UPDATE
@@ -191,6 +191,48 @@ let DB = {};
         }
         return retval;
       } // if edge
+
+      // DELETE NODES
+      if (nodeID !== undefined) {
+        if (DBG) console.log(PR, `PKT_Update ${pkt.Info()} DELETE nodeID ${nodeID}`);
+
+        // Log first so it's apparent what is triggering the edge changes
+        LOGGER.Write(pkt.Info(), `delete node`, nodeID);
+
+        // handle edges
+        let edgesToProcess = EDGES.where((e) => {
+          console.log('...evaluating', e.id, 'source', e.source, 'target', e.target, 'against', nodeID);
+          return e.source === nodeID || e.target === nodeID;
+        });
+        if (replacementNodeID !== undefined) {
+          // re-link edges to replacementNodeID
+          EDGES.findAndUpdate({ source: nodeID }, (e) => {
+            console.log('...updating edge', e.id, 'source', e.source, 'to', nodeID)
+            LOGGER.Write(`...`, pkt.Info(), `relinking edge`, e.id, `to`, replacementNodeID);
+            e.source = replacementNodeID;
+          });
+          EDGES.findAndUpdate({ target: nodeID }, (e) => {
+            console.log('...updating edge', e.id, 'target', e.target, 'to', nodeID)
+            LOGGER.Write(`...`, pkt.Info(), `relinking edge`, e.id, `to`, replacementNodeID);
+            e.target = replacementNodeID;
+          });
+        } else {
+          // delete edges
+          console.log('edges to delete', edgesToProcess);
+          EDGES.findAndRemove({ source: nodeID }, (e) => {
+            console.log('...deleting edge', e.id, 'source', e.source, 'to', nodeID)
+            LOGGER.Write(`...`, pkt.Info(), `deleting edge`, e.id, `from`, nodeID);
+            e.source = nodeID;
+          });
+          EDGES.findAndRemove({ target: nodeID }, (e) => {
+            console.log('...deleting edge', e.id, 'target', e.target, 'to', nodeID)
+            LOGGER.Write(`...`, pkt.Info(), `deleting edge`, e.id, `from`, nodeID);
+            e.target = nodeID;
+          });
+        }
+        NODES.findAndRemove({ id: nodeID });
+        return { op: 'delete', nodeID };
+      }
 
       // DELETE EDGES
       if (edgeID!==undefined) {

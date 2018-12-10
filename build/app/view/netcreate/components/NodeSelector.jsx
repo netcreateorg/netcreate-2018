@@ -149,6 +149,7 @@ class NodeSelector extends UNISYS.Component {
       this.onNotesChange                         = this.onNotesChange.bind(this);
       this.onInfoChange                          = this.onInfoChange.bind(this);
       this.onNewNodeButtonClick                  = this.onNewNodeButtonClick.bind(this);
+      this.onDeleteButtonClick                   = this.onDeleteButtonClick.bind(this);
       this.onEditButtonClick                     = this.onEditButtonClick.bind(this);
       this.onAddNewEdgeButtonClick               = this.onAddNewEdgeButtonClick.bind(this);
       this.onCancelButtonClick                   = this.onCancelButtonClick.bind(this);
@@ -438,10 +439,22 @@ class NodeSelector extends UNISYS.Component {
     } // onNewNodeButtonClick
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
-/*/ onDeleteButtonClick() {
-      this.clearForm();
-      this.AppCall('DB_UPDATE', { edgeID: this.props.edgeID });
-    }
+/*/
+onDeleteButtonClick() {
+  let nodeID = this.state.formData.id;
+
+  // Re-link edges or delete edges?
+  let replacementNodeID;   // 'undefined' = Delete edges by default
+
+  // hack test
+  replacementNodeID = 1;
+
+  // this.clearForm();
+  this.AppCall('DB_UPDATE', {
+    nodeID: nodeID,
+    replacementNodeID: replacementNodeID
+  });
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onEditButtonClick (event) {
