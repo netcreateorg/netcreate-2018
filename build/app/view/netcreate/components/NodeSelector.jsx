@@ -8,7 +8,7 @@
     NodeSelector does not modify any data.  It passes all events (text updates,
     highlights, and suggestion selections) up to nc-logic. it
     should process the events and update the data accordingly.  The
-    updated data is then rendered by NodeSelect.
+    updated data is then rendered by NodeSelector.
 
     ## USAGE
 
@@ -438,6 +438,12 @@ class NodeSelector extends UNISYS.Component {
     } // onNewNodeButtonClick
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
+/*/ onDeleteButtonClick() {
+      this.clearForm();
+      this.AppCall('DB_UPDATE', { edgeID: this.props.edgeID });
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
 /*/ onEditButtonClick (event) {
       event.preventDefault();
       this.setState({ isEditable: true });
@@ -599,6 +605,10 @@ class NodeSelector extends UNISYS.Component {
               </Col>
             </FormGroup>
             <FormGroup className="text-right" style={{paddingRight:'5px'}}>
+              <Button className="small text-muted float-left btn btn-outline-light" size="sm"
+                hidden={this.state.isLocked || (this.state.formData.id === '') || nodePrompts.delete.hidden }
+                onClick={this.onDeleteButtonClick}
+              >Delete</Button>&nbsp;
               <Button outline size="sm"
                 hidden={this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
                 onClick={this.onEditButtonClick}
