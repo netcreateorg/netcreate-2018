@@ -134,7 +134,8 @@ class NodeSelector extends UNISYS.Component {
         edges:         [],
         isLocked:      true,
         isEditable:    false,
-        isValid:       false
+        isValid:       false,
+        replacementNodeID: ''
       };
       // Bind functions to this component's object context
       this.clearForm                             = this.clearForm.bind(this);
@@ -148,6 +149,7 @@ class NodeSelector extends UNISYS.Component {
       this.onTypeChange                          = this.onTypeChange.bind(this);
       this.onNotesChange                         = this.onNotesChange.bind(this);
       this.onInfoChange                          = this.onInfoChange.bind(this);
+      this.onReplacementNodeIDChange             = this.onReplacementNodeIDChange.bind(this);
       this.onNewNodeButtonClick                  = this.onNewNodeButtonClick.bind(this);
       this.onDeleteButtonClick                   = this.onDeleteButtonClick.bind(this);
       this.onEditButtonClick                     = this.onEditButtonClick.bind(this);
@@ -192,7 +194,8 @@ class NodeSelector extends UNISYS.Component {
         },
         edges: [],
         isEditable:      false,
-        isValid:         false
+        isValid:         false,
+        replacementNodeID: ''
       });
     } // clearFform
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -404,6 +407,11 @@ class NodeSelector extends UNISYS.Component {
     } // onInfoChange
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
+/*/ onReplacementNodeIDChange(event) {
+      this.setState({ replacementNodeID: event.target.value });
+    } // onInfoChange
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
 /*/ onNewNodeButtonClick (event) {
       event.preventDefault();
 
@@ -444,12 +452,9 @@ onDeleteButtonClick() {
   let nodeID = this.state.formData.id;
 
   // Re-link edges or delete edges?
-  let replacementNodeID;   // 'undefined' = Delete edges by default
+  let replacementNodeID = this.state.replacementNodeID==='' ? '' : parseInt( this.state.replacementNodeID );   // '' = Delete edges by default
 
-  // hack test
-  replacementNodeID = 1;
-
-  // this.clearForm();
+  this.clearForm();
   this.AppCall('DB_UPDATE', {
     nodeID: nodeID,
     replacementNodeID: replacementNodeID
@@ -618,6 +623,12 @@ onDeleteButtonClick() {
               </Col>
             </FormGroup>
             <FormGroup className="text-right" style={{paddingRight:'5px'}}>
+              <Input type="text" name="replacementNodeID" id="replacementNodeID"
+                hidden={this.state.isLocked || (this.state.formData.id === '') || nodePrompts.delete.hidden}
+                value={this.state.replacementNodeID || ''}
+                onChange={this.onReplacementNodeIDChange}
+                className="float-left" style={{ width: `4em` }} bsSize="sm"
+              />&nbsp;
               <Button className="small text-muted float-left btn btn-outline-light" size="sm"
                 hidden={this.state.isLocked || (this.state.formData.id === '') || nodePrompts.delete.hidden }
                 onClick={this.onDeleteButtonClick}

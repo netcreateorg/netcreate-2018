@@ -204,7 +204,7 @@ let DB = {};
           console.log('...evaluating', e.id, 'source', e.source, 'target', e.target, 'against', nodeID);
           return e.source === nodeID || e.target === nodeID;
         });
-        if (replacementNodeID !== undefined) {
+        if (replacementNodeID !== '') {
           // re-link edges to replacementNodeID
           EDGES.findAndUpdate({ source: nodeID }, (e) => {
             console.log('...updating edge', e.id, 'source', e.source, 'to', nodeID)

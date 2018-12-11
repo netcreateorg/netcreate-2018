@@ -370,9 +370,8 @@ const TARGET_COLOR     = '#FF0000';
 
         // Remove or replace edges
         let edgesToProcess;
-        if (replacementNodeID !== undefined) {
+        if (replacementNodeID !== '') {
           // replace
-          //console.log('replacing');
           let replacementNode = m_FindNodeById(replacementNodeID);
           edgesToProcess = D3DATA.edges.map((edge) => {
             if (edge.source.id === nodeID) edge.source = replacementNode;
