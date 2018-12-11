@@ -231,7 +231,7 @@ let DB = {};
           });
         }
         NODES.findAndRemove({ id: nodeID });
-        return { op: 'delete', nodeID };
+        return { op: 'delete', nodeID, replacementNodeID };
       }
 
       // DELETE EDGES
