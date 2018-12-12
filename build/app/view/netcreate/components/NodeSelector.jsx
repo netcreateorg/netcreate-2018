@@ -105,7 +105,7 @@ const PR  = 'NodeSelector';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React        = require('react');
 const ReactStrap   = require('reactstrap');
-const { Button, Col, Form, FormGroup, Label, Input, FormText } = ReactStrap;
+const { Button, Col, Form, FormGroup, FormFeedback, FormText, Label, Input } = ReactStrap;
 const AutoComplete = require('./AutoComplete');
 const NodeDetail   = require('./NodeDetail');
 const EdgeEditor   = require('./EdgeEditor');
@@ -135,7 +135,8 @@ class NodeSelector extends UNISYS.Component {
         isLocked:      true,
         isEditable:    false,
         isValid:       false,
-        replacementNodeID: ''
+        replacementNodeID: '',
+        isValidReplacementNodeID: true
       };
       // Bind functions to this component's object context
       this.clearForm                             = this.clearForm.bind(this);
@@ -195,7 +196,8 @@ class NodeSelector extends UNISYS.Component {
         edges: [],
         isEditable:      false,
         isValid:         false,
-        replacementNodeID: ''
+        replacementNodeID: '',
+        isValidReplacementNodeID: true
       });
     } // clearFform
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -407,9 +409,20 @@ class NodeSelector extends UNISYS.Component {
     } // onInfoChange
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
-/*/ onReplacementNodeIDChange(event) {
-      this.setState({ replacementNodeID: event.target.value });
-    } // onInfoChange
+/*/
+  onReplacementNodeIDChange(event) {
+    let replacementNodeID = parseInt( event.target.value );
+    let isValid = false;
+    // Allow `` because we use a a blank field to indicate delete node without relinking edges.
+    if ((event.target.value === '') ||
+        (this.AppState('D3DATA').nodes.find(node => { return node.id === replacementNodeID; })) ) {
+      isValid = true;
+    }
+    this.setState({
+      replacementNodeID: replacementNodeID,
+      isValidReplacementNodeID: isValid
+    });
+  } // onReplacementNodeIDChange
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onNewNodeButtonClick (event) {
@@ -622,17 +635,7 @@ onDeleteButtonClick() {
                   />
               </Col>
             </FormGroup>
-            <FormGroup className="text-right" style={{paddingRight:'5px'}}>
-              <Input type="text" name="replacementNodeID" id="replacementNodeID"
-                hidden={this.state.isLocked || (this.state.formData.id === '') || nodePrompts.delete.hidden}
-                value={this.state.replacementNodeID || ''}
-                onChange={this.onReplacementNodeIDChange}
-                className="float-left" style={{ width: `4em` }} bsSize="sm"
-              />&nbsp;
-              <Button className="small text-muted float-left btn btn-outline-light" size="sm"
-                hidden={this.state.isLocked || (this.state.formData.id === '') || nodePrompts.delete.hidden }
-                onClick={this.onDeleteButtonClick}
-              >Delete</Button>&nbsp;
+            <FormGroup className="text-right" style={{ paddingRight: '5px' }}>
               <Button outline size="sm"
                 hidden={this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
                 onClick={this.onEditButtonClick}
@@ -645,6 +648,26 @@ onDeleteButtonClick() {
                 disabled={!this.state.isValid}
                 hidden={!this.state.isEditable}
               >Save</Button>
+            </FormGroup>
+            <FormGroup row className="text-left" style={{
+              padding: '10px 5px', margin: '0 -4px', backgroundColor: '#c5e0ef' }}
+              hidden={this.state.isLocked || (this.state.formData.id === '') || nodePrompts.delete.hidden}
+            >
+              <Col sm={6}>
+                <FormText>Re-link edges to this Node ID (leave blank to delete edge)</FormText>
+              </Col>
+              <Col sm={6}>
+                <Input type="text" name="replacementNodeID" id="replacementNodeID"
+                  value={this.state.replacementNodeID || ''}
+                  onChange={this.onReplacementNodeIDChange}
+                  className="" style={{ width: `4em` }} bsSize="sm"
+                  invalid={!this.state.isValidReplacementNodeID}
+                />
+                <FormFeedback>Invalid Node ID!</FormFeedback>
+                <Button className="small text-muted btn btn-outline-light" size="sm"
+                  onClick={this.onDeleteButtonClick}
+                >Delete</Button>
+              </Col>
             </FormGroup>
           </Form>
           <div style={{backgroundColor:'#B9DFFF',padding:'5px',marginBottom:'10px'}}>
