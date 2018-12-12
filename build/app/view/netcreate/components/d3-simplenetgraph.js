@@ -508,7 +508,7 @@ _UpdateLinkStrokeWidth (edge) {
   ) {
     return edge.size ** 2;  // Use **2 to make size differences more noticeable
   } else {
-    return 0.05;             // Barely visible if not selected
+    return 0.175;             // Barely visible if not selected
   }
 }
 
