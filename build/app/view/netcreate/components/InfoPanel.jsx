@@ -200,7 +200,6 @@ class InfoPanel extends UNISYS.Component {
           }}
           onMouseDown={this.handleMouseDown}
         ></div>
-        <Button onClick={() => { this.setState({ test: 'test' }); }}>Click</Button>
 
       </div>
     );
