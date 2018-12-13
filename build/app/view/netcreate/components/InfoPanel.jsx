@@ -79,6 +79,14 @@ class InfoPanel extends UNISYS.Component {
           hideDragger: false
         });
       }
+    } else {
+      // Second click on currently open tab
+      // so select tab 1
+      this.setState({ activeTab: `1` });
+      this.setState({
+        tabpanelHeight: '50px', // show only tab buttons
+        hideDragger: true
+      });
     }
   }
 
