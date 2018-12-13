@@ -42,6 +42,11 @@
       isEditable      The form fields are active and can be edited.
 
 
+    Delete Button
+    The Delete button is only displayed for an admin user.  Right now we are detecting
+    this by displaying it only when the user is on `localhost`,
+
+
     ## STATES
 
       formData        Node data that is shown in the form
@@ -112,8 +117,11 @@ const EdgeEditor   = require('./EdgeEditor');
 
 const UNISYS       = require('unisys/client');
 const DATASTORE    = require('system/datastore');
+const SETTINGS     = require('settings');
 
 const thisIdentifier = 'nodeSelector';   // SELECTION identifier
+
+const isLocalHost = (SETTINGS.EJSProp('client').ip === '127.0.0.1');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -651,7 +659,9 @@ onDeleteButtonClick() {
             </FormGroup>
             <FormGroup row className="text-left" style={{
               padding: '10px 5px', margin: '0 -4px', backgroundColor: '#c5e0ef' }}
-              hidden={this.state.isLocked || (this.state.formData.id === '') || nodePrompts.delete.hidden}
+              hidden={
+                !isLocalHost ||
+                this.state.isLocked || (this.state.formData.id === '') || nodePrompts.delete.hidden}
             >
               <Col sm={6}>
                 <FormText>Re-link edges to this Node ID (leave blank to delete edge)</FormText>
