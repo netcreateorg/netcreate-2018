@@ -249,7 +249,7 @@ class EdgeEditor extends UNISYS.Component {
       // as a handler, otherwise object context is lost
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ SESSION is called by SessionSHell when the ID changes
+  /*/ SESSION is called by SessionShell when the ID changes
       set system-wide. data: { classId, projId, hashedId, groupId, isValid }
   /*/ this.OnAppStateChange('SESSION',this.onStateChange_SESSION);
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -434,7 +434,7 @@ class EdgeEditor extends UNISYS.Component {
           // SOURCE
           if (DBG) console.log('EdgeEditor.handleSelection:',this.props.edgeID,'setting source node to',node);
 
-          // Set sourceNpde state
+          // Set sourceNode state
           this.setState({
             sourceNode: node
           });
@@ -451,7 +451,7 @@ class EdgeEditor extends UNISYS.Component {
             sourceIsEditable: false
           });
 
-        } else {
+        } else if (this.state.targetIsEditable) {
           // TARGET
           if (DBG) console.log('EdgeEditor.handleSelection:',this.props.edgeID,'setting target node to',node);
 
