@@ -233,11 +233,11 @@ countEdges() {
       let styles = `thead, tbody { display: block; }
                     thead { position: relative; }
                     tbody { overflow: auto; }
-                    .nodetable td:nth-child(1), .nodetable th:nth-child(1) {width: 2em; }
-                    .nodetable td:nth-child(2), .nodetable th:nth-child(2) {width: 2em; }
-                    .nodetable td:nth-child(3), .nodetable th:nth-child(3) {width: 4em; }
-                    .nodetable td:nth-child(4), .nodetable th:nth-child(4) {width: 12em; }
-                    .nodetable td:nth-child(5), .nodetable th:nth-child(5) {min-width: 4em; }
+                    .nodetable td:nth-child(1), .nodetable th:nth-child(1) {width: 2em; min-width: 2em;}
+                    .nodetable td:nth-child(2), .nodetable th:nth-child(2) {width: 2em; min-width: 2em;}
+                    .nodetable td:nth-child(3), .nodetable th:nth-child(3) {width: 4em; min-width: 4em;}
+                    .nodetable td:nth-child(4), .nodetable th:nth-child(4) {width: 12em; min-width: 12em;}
+                    .nodetable td:nth-child(5), .nodetable th:nth-child(5) {width: 4em; min-width: 4em;}
                     .nodetable td:nth-child(6), .nodetable th:nth-child(6) {min-width: 2em; }`
       return (
         <div style={{backgroundColor:'#eafcff'}}>

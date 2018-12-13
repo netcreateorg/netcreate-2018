@@ -270,13 +270,13 @@ class EdgeTable extends UNISYS.Component {
       let styles = `thead, tbody { display: block; }
                     thead { position: relative; }
                     tbody { overflow: auto; }
-                    .edgetable td:nth-child(1), .edgetable th:nth-child(1) {width: 2em; }
-                    .edgetable td:nth-child(2), .edgetable th:nth-child(2) {width: 2em; }
-                    .edgetable td:nth-child(3), .edgetable th:nth-child(3) {width: 4em; }
-                    .edgetable td:nth-child(4), .edgetable th:nth-child(4) {width: 6em; }
-                    .edgetable td:nth-child(5), .edgetable th:nth-child(5) {min-width: 14em; }
-                    .edgetable td:nth-child(6), .edgetable th:nth-child(6) {min-width: 6em; }
-                    .edgetable td:nth-child(7), .edgetable th:nth-child(7) {min-width: 6em; }
+                    .edgetable td:nth-child(1), .edgetable th:nth-child(1) {width: 2em; min-width: 2em;}
+                    .edgetable td:nth-child(2), .edgetable th:nth-child(2) {width: 2em; min-width: 2em;}
+                    .edgetable td:nth-child(3), .edgetable th:nth-child(3) {width: 4em; min-width: 4em;}
+                    .edgetable td:nth-child(4), .edgetable th:nth-child(4) {width: 6em; min-width: 6em;}
+                    .edgetable td:nth-child(5), .edgetable th:nth-child(5) {width: 14em; min-width: 14em;}
+                    .edgetable td:nth-child(6), .edgetable th:nth-child(6) {width: 6em; min-width: 6em;}
+                    .edgetable td:nth-child(7), .edgetable th:nth-child(7) {width: 6em; min-width: 6em;}
                     .edgetable td:nth-child(8), .edgetable th:nth-child(8) {min-width: 6em; }`
       return (
         <div style={{backgroundColor:'#f3f3ff'}}>
