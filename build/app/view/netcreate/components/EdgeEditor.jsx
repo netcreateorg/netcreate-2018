@@ -313,12 +313,16 @@ class EdgeEditor extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ populate formdata from D3DATA
 /*/ loadSourceAndTarget () {
-      if (DBG) console.log('EdgeEditor.loadSourceAndTarget!')
+  if (DBG) console.log('EdgeEditor.loadSourceAndTarget!')
+  
       let edgeID = this.props.edgeID || '';
-
+      // Clean Data
+      if (isNaN(edgeID)) { edgeID = parseInt(edgeID); }
+  
       let D3DATA = this.AppState('D3DATA');
 
-      let edges = D3DATA.edges.filter( edge=>edge.id===edgeID );
+      // parseInt in case of old bad string id
+      let edges = D3DATA.edges.filter( edge=>parseInt(edge.id)===edgeID );
       if (!edges) {
         throw 'EdgeEditor: Passed edgeID'+edgeID+'not found!';
       }
@@ -344,7 +348,7 @@ class EdgeEditor extends UNISYS.Component {
         // Define `edge` so it can be loaded later during setState.
         edge = {
           id: edgeID,
-          source: sourceNodes[0].id,  // REVIEW: d3data 'source' is id, rename this to 'sourceId'?
+          source: parseInt(sourceNodes[0].id),  // REVIEW: d3data 'source' is id, rename this to 'sourceId'?
                                       // though after d3 processes, source does become an object.
           target: undefined,
           attributes: {
@@ -365,8 +369,8 @@ class EdgeEditor extends UNISYS.Component {
 
         // LOAD EXISTING EDGE
 
-        sourceNodes = D3DATA.nodes.filter( node => node.id===edge.source.id );
-        targetNodes = D3DATA.nodes.filter( node => node.id===edge.target.id );
+        sourceNodes = D3DATA.nodes.filter( node => parseInt(node.id)===parseInt(edge.source.id) );
+        targetNodes = D3DATA.nodes.filter( node => parseInt(node.id)===parseInt(edge.target.id) );
 
         // Assume we have a valid target node
         this.setState({
@@ -388,7 +392,7 @@ class EdgeEditor extends UNISYS.Component {
       if (DBG) console.log('...EdgeEditor.loadSourceAndTarget: Setting formData sourceID to',edge.source,'and sourceNode to',sourceNode,'and targetNode to',targetNode);
       this.setState({
         formData: {
-          id:           edge.id || '',
+          id:           parseInt(edge.id) || '',
           sourceId:     edge.source,
           targetId:     edge.target,
           relationship: edge.attributes["Relationship"] || '',   // Make sure there's valid data
