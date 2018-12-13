@@ -614,7 +614,7 @@ class NodeSelector extends UNISYS.Component {
                   inactiveMode={'disabled'}
                   shouldIgnoreSelection={this.state.isEditable}
                 />
-                <p className="text-danger small" hidden={!this.state.isDuplicateNodeLabel}>Duplicate node label!</p>
+                <p className="text-danger small" hidden={!this.state.isDuplicateNodeLabel}>{nodePrompts.label.duplicateWarning}</p>
               </Col>
             </FormGroup>
             <div style={{position:'absolute',left:'300px',maxWidth:'300px'}}>
