@@ -335,7 +335,7 @@ class NodeSelector extends UNISYS.Component {
       // We want to allow students to enter a duplicate label if necessary
       let isDuplicateNodeLabel = false;
       if (formData.label !== '' &&
-        this.AppState('D3DATA').nodes.find(node => { return node.label === formData.label; })) {
+        this.AppState('D3DATA').nodes.find(node => { return (node.label === formData.label) && (node.id!==formData.id); })) {
         isDuplicateNodeLabel = true;
       }
 
@@ -375,7 +375,8 @@ class NodeSelector extends UNISYS.Component {
           id:        node.id,
           isNewNode: false
         },
-        isEditable:  false
+        isEditable: false,
+        isDuplicateNodeLabel: false
       });
 
       this.validateForm();
