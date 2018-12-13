@@ -143,6 +143,7 @@ class NodeSelector extends UNISYS.Component {
         isLocked:      true,
         isEditable:    false,
         isValid:       false,
+        isDuplicateNodeLabel: false,
         replacementNodeID: '',
         isValidReplacementNodeID: true
       };
@@ -204,6 +205,7 @@ class NodeSelector extends UNISYS.Component {
         edges: [],
         isEditable:      false,
         isValid:         false,
+        isDuplicateNodeLabel: false,
         replacementNodeID: '',
         isValidReplacementNodeID: true
       });
@@ -328,8 +330,18 @@ class NodeSelector extends UNISYS.Component {
 
       let formData = this.state.formData;
       formData.label = data.searchLabel;
+
+      // "Duplicate Node Label" is only a warning, not an error.
+      // We want to allow students to enter a duplicate label if necessary
+      let isDuplicateNodeLabel = false;
+      if (formData.label !== '' &&
+        this.AppState('D3DATA').nodes.find(node => { return node.label === formData.label; })) {
+        isDuplicateNodeLabel = true;
+      }
+
       this.setState({
-        formData
+        formData,
+        isDuplicateNodeLabel
       });
 
       this.validateForm();
@@ -602,6 +614,7 @@ class NodeSelector extends UNISYS.Component {
                   inactiveMode={'disabled'}
                   shouldIgnoreSelection={this.state.isEditable}
                 />
+                <p className="text-danger small" hidden={!this.state.isDuplicateNodeLabel}>Duplicate node label!</p>
               </Col>
             </FormGroup>
             <div style={{position:'absolute',left:'300px',maxWidth:'300px'}}>
