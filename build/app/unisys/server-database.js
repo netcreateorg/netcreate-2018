@@ -201,31 +201,26 @@ let DB = {};
 
         // handle edges
         let edgesToProcess = EDGES.where((e) => {
-          console.log('...evaluating', e.id, 'source', e.source, 'target', e.target, 'against', nodeID);
           return e.source === nodeID || e.target === nodeID;
         });
+        // `NaN` is not valid JSON, so we use ``
         if (replacementNodeID !== '') {
           // re-link edges to replacementNodeID
           EDGES.findAndUpdate({ source: nodeID }, (e) => {
-            console.log('...updating edge', e.id, 'source', e.source, 'to', nodeID)
             LOGGER.Write(`...`, pkt.Info(), `relinking edge`, e.id, `to`, replacementNodeID);
             e.source = replacementNodeID;
           });
           EDGES.findAndUpdate({ target: nodeID }, (e) => {
-            console.log('...updating edge', e.id, 'target', e.target, 'to', nodeID)
             LOGGER.Write(`...`, pkt.Info(), `relinking edge`, e.id, `to`, replacementNodeID);
             e.target = replacementNodeID;
           });
         } else {
           // delete edges
-          console.log('edges to delete', edgesToProcess);
           EDGES.findAndRemove({ source: nodeID }, (e) => {
-            console.log('...deleting edge', e.id, 'source', e.source, 'to', nodeID)
             LOGGER.Write(`...`, pkt.Info(), `deleting edge`, e.id, `from`, nodeID);
             e.source = nodeID;
           });
           EDGES.findAndRemove({ target: nodeID }, (e) => {
-            console.log('...deleting edge', e.id, 'target', e.target, 'to', nodeID)
             LOGGER.Write(`...`, pkt.Info(), `deleting edge`, e.id, `from`, nodeID);
             e.target = nodeID;
           });

@@ -136,7 +136,7 @@ class NodeSelector extends UNISYS.Component {
             type:      '',
             info:      '',
             notes:     '',
-            id:        '',
+            id:        '',   // Always convert this to a Number
             isNewNode: true
         },
         edges:         [],
@@ -198,7 +198,7 @@ class NodeSelector extends UNISYS.Component {
             type:      '',
             info:      '',
             notes:     '',
-            id:        '',
+            id:         '',   // Always convert this to a Number
             isNewNode: true
         },
         edges: [],
@@ -344,7 +344,9 @@ class NodeSelector extends UNISYS.Component {
       // Clean data
       // REVIEW: Basic data structure probably needs updating
       let node = {attributes:{}};
-      if (newNode.attributes===undefined) { newNode.attributes = {} }
+      if (newNode.attributes === undefined) { newNode.attributes = {} }
+      // Backward Compatibility: Always convert ids to a Number or loki lookups will fail.
+      if (isNaN(newNode.id)) { newNode.id = parseInt(newNode.id); }
       //
       node.label                    = newNode.label || '';
       node.id                       = newNode.id    || '';
@@ -466,21 +468,23 @@ class NodeSelector extends UNISYS.Component {
         this.validateForm();
       });
     } // onNewNodeButtonClick
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/
-onDeleteButtonClick() {
-  let nodeID = this.state.formData.id;
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/
+  /*/
+  onDeleteButtonClick() {
+    // nodeID needs to be a Number.  It should have been set in loadFormFromNode
+    let nodeID = this.state.formData.id;
 
-  // Re-link edges or delete edges?
-  let replacementNodeID = this.state.replacementNodeID==='' ? '' : parseInt( this.state.replacementNodeID );   // '' = Delete edges by default
+    // Re-link edges or delete edges?
+    // `NaN` is not valid JSON, so we need to pass ``
+    let replacementNodeID = this.state.replacementNodeID==='' ? '' : parseInt( this.state.replacementNodeID );   // '' = Delete edges by default
 
-  this.clearForm();
-  this.AppCall('DB_UPDATE', {
-    nodeID: nodeID,
-    replacementNodeID: replacementNodeID
-  });
-}
+    this.clearForm();
+    this.AppCall('DB_UPDATE', {
+      nodeID: nodeID,
+      replacementNodeID: replacementNodeID
+    });
+  }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onEditButtonClick (event) {
