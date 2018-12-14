@@ -327,15 +327,18 @@ class NodeSelector extends UNISYS.Component {
       // otherwise an Edge might be active
       let { activeAutoCompleteId } = this.AppState('ACTIVEAUTOCOMPLETE');
       if ( activeAutoCompleteId!==thisIdentifier ) return;
-
       let formData = this.state.formData;
       formData.label = data.searchLabel;
 
       // "Duplicate Node Label" is only a warning, not an error.
       // We want to allow students to enter a duplicate label if necessary
+      // This is a case insensitive search
       let isDuplicateNodeLabel = false;
       if (formData.label !== '' &&
-        this.AppState('D3DATA').nodes.find(node => { return (node.label === formData.label) && (node.id!==formData.id); })) {
+          this.AppState('D3DATA').nodes.find(node => {
+          return ( (node.id !== formData.id) &&
+                 (node.label.localeCompare( formData.label,'en', { usage: 'search', sensitivity: 'base' } ) )===0 )
+        })) {
         isDuplicateNodeLabel = true;
       }
 
