@@ -19,7 +19,7 @@
     "label": {
                 "label":    "Label",
                 "help":     "A short title for the node",
-                "duplicateWarning": "You’re entering a duplicate.  Do you want to edit the existing, or is this an actual entry?",
+                "duplicateWarning": "You’re entering a duplicate node.  Do you want to View the Existing node, or Continue creating?",
                 "_cmt4":    "/// `Label` is always required and cannot be hidden"
              },
     "type":  {

@@ -121,7 +121,10 @@ const SETTINGS     = require('settings');
 
 const thisIdentifier = 'nodeSelector';   // SELECTION identifier
 
-const isLocalHost = (SETTINGS.EJSProp('client').ip === '127.0.0.1');
+const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1');
+
+var   UDATA        = null;
+
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -144,6 +147,7 @@ class NodeSelector extends UNISYS.Component {
         isEditable:    false,
         isValid:       false,
         isDuplicateNodeLabel: false,
+        duplicateNodeID:   '',
         replacementNodeID: '',
         isValidReplacementNodeID: true
       };
@@ -165,10 +169,16 @@ class NodeSelector extends UNISYS.Component {
       this.onEditButtonClick                     = this.onEditButtonClick.bind(this);
       this.onAddNewEdgeButtonClick               = this.onAddNewEdgeButtonClick.bind(this);
       this.onCancelButtonClick                   = this.onCancelButtonClick.bind(this);
+      this.onEditOriginal                        = this.onEditOriginal.bind(this);
+      this.onCloseDuplicateDialog                = this.onCloseDuplicateDialog.bind(this);
       this.onSubmit                              = this.onSubmit.bind(this);
 
       // NOTE: assign UDATA handlers AFTER functions have been bind()'ed
       // otherwise they will lose context
+
+      /// Initialize UNISYS DATA LINK for REACT
+      UDATA = UNISYS.NewDataLink(this);
+
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ SESSION is called by SessionSHell when the ID changes
@@ -206,6 +216,7 @@ class NodeSelector extends UNISYS.Component {
         isEditable:      false,
         isValid:         false,
         isDuplicateNodeLabel: false,
+        duplicateNodeID:   '',
         replacementNodeID: '',
         isValidReplacementNodeID: true
       });
@@ -298,7 +309,7 @@ class NodeSelector extends UNISYS.Component {
         // * force exit?
         // * prevent load?
         // * prevent selection?
-        if (DBG) console.log('NodeSelector: Already editing, ignoring SELECTION');
+        if (DBG) console.error('NodeSelector: Already editing, ignoring SELECTION');
       }
 
       this.validateForm();
@@ -334,17 +345,22 @@ class NodeSelector extends UNISYS.Component {
       // We want to allow students to enter a duplicate label if necessary
       // This is a case insensitive search
       let isDuplicateNodeLabel = false;
+      let duplicateNodeID;
       if (formData.label !== '' &&
           this.AppState('D3DATA').nodes.find(node => {
-          return ( (node.id !== formData.id) &&
-                 (node.label.localeCompare( formData.label,'en', { usage: 'search', sensitivity: 'base' } ) )===0 )
+            if ((node.id !== formData.id) &&
+              (node.label.localeCompare(formData.label, 'en', { usage: 'search', sensitivity: 'base' })) === 0) {
+              duplicateNodeID = node.id;
+              return true;
+            }
         })) {
         isDuplicateNodeLabel = true;
       }
 
       this.setState({
         formData,
-        isDuplicateNodeLabel
+        isDuplicateNodeLabel,
+        duplicateNodeID
       });
 
       this.validateForm();
@@ -564,6 +580,28 @@ class NodeSelector extends UNISYS.Component {
       }
     } // onCancelButtonClick
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Select the node for editing
+  /*/
+  onEditOriginal(event) {
+    event.preventDefault();
+    let duplicateNodeID = parseInt(this.state.duplicateNodeID);
+    this.clearForm();
+    this.setState({
+      isEditable: false,
+      isDuplicateNodeLabel: false
+    }, () => {
+        // Wait for the edit state to clear, then open up the original node
+        UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [duplicateNodeID] });
+    });
+    this.AppCall('AUTOCOMPLETE_SELECT', { id: 'search' });
+  }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ User confirms they want to edit the existing node.
+  /*/
+  onCloseDuplicateDialog() {
+    this.setState({ isDuplicateNodeLabel: false });
+  }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onSubmit ( event ) {
       event.preventDefault();
@@ -618,8 +656,13 @@ class NodeSelector extends UNISYS.Component {
                   inactiveMode={'disabled'}
                   shouldIgnoreSelection={this.state.isEditable}
                 />
-                <p className="text-danger small" hidden={!this.state.isDuplicateNodeLabel}>{nodePrompts.label.duplicateWarning}</p>
               </Col>
+              <div hidden={!this.state.isDuplicateNodeLabel}
+                style={{ width: '200px', height: '150px', backgroundColor: '#B8EDFF', position: 'fixed', left: '350px', zIndex: '1000', padding: '10px' }}>
+                <p className="text-danger small">{nodePrompts.label.duplicateWarning}</p>
+                <Button size="sm" onClick={this.onEditOriginal}>View Existing</Button>
+                <Button outline size="sm" onClick={this.onCloseDuplicateDialog}>Continue</Button>
+              </div>
             </FormGroup>
             <div style={{position:'absolute',left:'300px',maxWidth:'300px'}}>
               <NodeDetail/>
