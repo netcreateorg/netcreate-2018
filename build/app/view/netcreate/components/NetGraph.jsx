@@ -94,7 +94,7 @@ class NetGraph extends UNISYS.Component {
 /*/
 /*/ render () {
       return (
-        <div>
+        <div style={{ height: '100%' }}>
           <div><span style={{ fontSize: '9px' }}>NETGRAPH</span></div>
           <div style={{ position: 'absolute', right: '10px', width: '50px', zIndex:1001 }}>
             <Button outline onClick={this.onZoomIn} style={{width:'35px'}}>+</Button>&nbsp;

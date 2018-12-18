@@ -48,8 +48,8 @@ var   UDATA           = null;
 
 /// PRIVATE VARS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let m_width   = 1024;
-let m_height = 1024;
+let m_width  = 800;
+let m_height = 800;
 let mouseoverNodeId = -1;   // id of the node the mouse is currently over
 let m_forceProperties = {   // values for all forces
       center: {
@@ -119,8 +119,9 @@ class D3NetGraph {
       Add default click handler so when clicking empty space, deselect all.
       NOTE: the svg element is actualy d3.selection object, not an svg obj.
   /*/ this.d3svg = d3.select(rootElement).append('svg')
-        .attr('width', "100%")            // overrride m_width so SVG is wide
-        .attr('height',m_height)
+        .attr('id', 'netgraph')
+        .attr('width',  "100%")  // maximize width and height
+        .attr('height', "100%")  // then set center dynamically below
         .on("click", ( e, event ) => {
             // Deselect
             UDATA.LocalCall('SOURCE_SELECT',{ nodeLabels: [] });
@@ -137,7 +138,13 @@ class D3NetGraph {
         })
         .call(this.zoom);
 
-      this.zoomWrapper = this.d3svg.append('g').attr("class", "zoomer");
+      this.zoomWrapper = this.d3svg.append('g').attr("class", "zoomer")
+
+      // Set SVG size and centering.
+      let svg = document.getElementById('netgraph');
+      m_width = svg.clientWidth;
+      m_height = svg.clientHeight;
+
       this.simulation = d3.forceSimulation();
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -149,8 +156,8 @@ class D3NetGraph {
       this._Initialize        = this._Initialize.bind(this);
       this._UpdateGraph       = this._UpdateGraph.bind(this);
       this._UpdateForces      = this._UpdateForces.bind(this);
-      this._Tick = this._Tick.bind(this);
-      this._HandleZoom = this._HandleZoom.bind(this);
+      this._Tick              = this._Tick.bind(this);
+      this._HandleZoom        = this._HandleZoom.bind(this);
       this._Dragstarted       = this._Dragstarted.bind(this);
       this._Dragged           = this._Dragged.bind(this);
       this._Dragended         = this._Dragended.bind(this);
