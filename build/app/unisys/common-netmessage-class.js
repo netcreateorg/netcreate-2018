@@ -244,14 +244,26 @@ class NetMessage {
       the socket because it's handling multiple sockets from different clients.
   /*/
   SocketSend(socket = m_netsocket) {
-    this.s_group = NetMessage.GlobalGroupID();
-    let dst = socket.UADDR || "unregistered socket";
-    if (!socket) throw Error("SocketSend(sock) requires a valid socket");
-    if (DBG.send) {
-      let status = `sending '${this.Message()}' to ${dst}`;
-      console.log(PR, status);
+    if (m_mode === M_ONLINE || m_mode === M_INIT) {
+      this.s_group = NetMessage.GlobalGroupID();
+      let dst = socket.UADDR || "unregistered socket";
+      if (!socket) throw Error("SocketSend(sock) requires a valid socket");
+      if (DBG.send) {
+        let status = `sending '${this.Message()}' to ${dst}`;
+        console.log(PR, status);
+      }
+      socket.send(this.JSON());
+    } else if (m_mode !== M_OFFLINE) {
+      console.log(
+        PR,
+        "SocketSend: Can't send because NetMessage mode is",
+        m_mode
+      );
+    } else {
+      console.log(
+        "SocketSend(): Network is in offline mode: all network traffic suppressed"
+      );
     }
-    socket.send(this.JSON());
     // FYI: global m_netsocket is not defined on server, since packets arrive on multiple sockets
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -352,15 +364,18 @@ NetMessage.GlobalSetup = function(config) {
   // NOTE: m_netsocket is set only on clients since on server, there are multiple sockets
   if (netsocket) {
     if (typeof netsocket.send !== "function") throw ERR_BAD_SOCKET;
+    console.log(PR, "GlobalSetup: netsocket set, mode online");
     m_netsocket = netsocket;
     m_mode = M_ONLINE;
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ cleanup any allocated storage
-/*/ NetMessage.GlobalCleanup = function() {
+/*/
+
+NetMessage.GlobalCleanup = function() {
   if (m_netsocket) {
-    console.log(PR, "GlobalCleanup: deallocating netsocket");
+    console.log(PR, "GlobalCleanup: deallocating netsocket, mode closed");
     m_netsocket = null;
     m_mode = M_CLOSED;
   }
@@ -373,6 +388,8 @@ NetMessage.GlobalOfflineMode = function() {
     console.log(PR, "GlobalDisconnect: deallocating netsocket");
     m_netsocket = null;
     m_mode = M_OFFLINE;
+  } else {
+    console.log(PR, "GlobalDisconnect: netsocket already deallocated");
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

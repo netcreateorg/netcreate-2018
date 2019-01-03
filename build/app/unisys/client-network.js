@@ -6,7 +6,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = { connect: false, handle: false };
+const DBG = { connect: true, handle: false };
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -82,7 +82,8 @@ NETWORK.Connect = function(datalink, opt) {
   });
   NETWORK.AddListener("close", function(event) {
     if (DBG.connect) console.log(PR, "..CLOSE", event.target.url);
-    m_status = M0_INIT;
+    NetMessage.GlobalOfflineMode();
+    m_status = M_OFFLINE;
   });
   // handle socket errors
   NETWORK.AddListener("error", function(event) {
