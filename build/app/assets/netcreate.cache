@@ -1,0 +1,6 @@
+CACHE MANIFEST
+# version 1.0
+scripts/netc-lib.js
+scripts/netc-app.js
+styles/netc-app.css
+templates/alexander.json
