@@ -4,6 +4,7 @@ CACHE MANIFEST
 scripts/netc-lib.js
 scripts/netc-app.js
 styles/netc-app.css
+favicon.ico
 templates/alexander.json
 # will be auto generated in the future
-# 006
+# 059

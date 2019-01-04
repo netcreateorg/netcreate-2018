@@ -5,7 +5,7 @@
   a NetMessage does not require addressing since the SERVER distributes
   messages to UNISYS addresses that have registered for them.
 
-  The NetMessage declaration is shared in both node and browser javascript
+  The NetMessage declaration is SHARED in both node and browser javascript
   codebases.
 
   NetMessages also provide the data context for "transactions" of calls.
@@ -270,6 +270,10 @@ class NetMessage {
   /*/ Create a promise to resolve when packet returns
   /*/
   QueueTransaction(socket = m_netsocket) {
+    if (m_mode === M_OFFLINE) {
+      console.log("ISOFFLINE");
+      return Promise.resolve();
+    }
     // global m_netsocket is not defined on server, since packets arrive on multiple sockets
     if (!socket) throw Error("QueueTransaction(sock) requires a valid socket");
     // save our current UADDR
@@ -357,6 +361,8 @@ class NetMessage {
 /// STATIC CLASS METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ set the NETWORK interface object that implements Send()
+    This class operates both under the server and the client.
+    This is a client feature.
 /*/
 NetMessage.GlobalSetup = function(config) {
   let { netsocket, uaddr } = config;
@@ -370,9 +376,9 @@ NetMessage.GlobalSetup = function(config) {
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ cleanup any allocated storage
+/*/ cleanup any allocated storage. This class operates both under the
+    server and the client. This is a client feature.
 /*/
-
 NetMessage.GlobalCleanup = function() {
   if (m_netsocket) {
     console.log(PR, "GlobalCleanup: deallocating netsocket, mode closed");
@@ -381,15 +387,17 @@ NetMessage.GlobalCleanup = function() {
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ cleanup any allocated storage
+/*/ cleanup any allocated storage internally. This class operates both under the
+    server and the client. This is a client feature.
 /*/
 NetMessage.GlobalOfflineMode = function() {
+  m_mode = M_OFFLINE;
   if (m_netsocket) {
-    console.log(PR, "GlobalDisconnect: deallocating netsocket");
+    console.error(PR, "GlobalDisconnect: deallocating netsocket");
     m_netsocket = null;
-    m_mode = M_OFFLINE;
-  } else {
-    console.log(PR, "GlobalDisconnect: netsocket already deallocated");
+    let event = new CustomEvent("UNISYSDisconnect", {});
+    console.log("dispatching event to", document, event);
+    document.dispatchEvent(event);
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

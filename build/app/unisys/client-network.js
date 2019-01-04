@@ -9,7 +9,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 const DBG = { connect: true, handle: false };
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SETTINGS = require("settings");
 const NetMessage = require("unisys/common-netmessage-class");
 const PROMPTS = require("system/util/prompts");
@@ -20,13 +20,13 @@ const ERR_NO_SOCKET = "Network socket has not been established yet";
 const ERR_BAD_UDATA = "An instance of 'client-datalink-class' is required";
 
 /// GLOBAL NETWORK INFO (INJECTED ON INDEX) ///////////////////////////////////
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var NETSOCK = SETTINGS.EJSProp("socket");
 var NETCLIENT = SETTINGS.EJSProp("client");
 var NETSERVER = SETTINGS.EJSProp("server");
 
 /// NETWORK ID VALUES /////////////////////////////////////////////////////////
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const M0_INIT = 0;
 const M1_CONNECTING = 1;
 const M2_CONNECTED = 2;
@@ -38,12 +38,12 @@ var m_status = M0_INIT;
 var m_options = {};
 
 /// API METHODS ///////////////////////////////////////////////////////////////
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var NETWORK = {};
 var UDATA = null; // assigned during NETWORK.Connect()
 
 /// CONNECT ///////////////////////////////////////////////////////////////////
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Establish connection to UNISYS server. This is called by client.js during
     NetworkInitialize(), which itself fires after the application has rendered
     completely.
@@ -106,6 +106,8 @@ NETWORK.Connect = function(datalink, opt) {
         console.info(WARN, "OFFLINE MODE. USING CACHED DATA");
         m_status = M_OFFLINE;
         NetMessage.GlobalOfflineMode(); // deregister socket
+        // force promise to succeed
+        if (typeof m_options.success === "function") m_options.success();
         break;
       default:
         m_status = M_NOCONNECT;
@@ -117,7 +119,7 @@ NETWORK.Connect = function(datalink, opt) {
   NETWORK.AddListener("message", m_HandleRegistrationMessage);
 }; // Connect()
 
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ After 'open' event, we expect the first message on the socket to contain
     network session-related messages
 /*/
@@ -138,7 +140,7 @@ function m_HandleRegistrationMessage(msgEvent) {
   // (4) network is initialized
   if (typeof m_options.success === "function") m_options.success();
 }
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_HandleMessage(msgEvent) {
   let pkt = new NetMessage(msgEvent.data);
   let msg = pkt.Message();
@@ -202,7 +204,7 @@ function m_HandleMessage(msgEvent) {
   }
 }
 
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Send a packet on socket connection, assuming it is valid
 /*/
 NETWORK.Send = function(pkt) {
@@ -215,7 +217,7 @@ NETWORK.Send = function(pkt) {
     console.log("Socket not ReadyState 1, is", NETSOCK.ws.readyState);
   }
 };
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Send a packet on socket connection, return Promise
 /*/
 NETWORK.Call = function(pkt) {
@@ -228,7 +230,7 @@ NETWORK.Call = function(pkt) {
     console.log("Socket not ReadyState 1, is", NETSOCK.ws.readyState);
   }
 };
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Force close of connection, for example if UNISYS.AppReady() fails
 /*/
 NETWORK.Close = function(code, reason) {
@@ -236,7 +238,7 @@ NETWORK.Close = function(code, reason) {
   reason = reason || "unisys forced close";
   NETSOCK.ws.close(code, reason);
 };
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 NETWORK.AddListener = function(event, handlerFunction) {
   if (NETSOCK.ws instanceof WebSocket) {
     NETSOCK.ws.addEventListener(event, handlerFunction);
@@ -244,7 +246,7 @@ NETWORK.AddListener = function(event, handlerFunction) {
     throw Error(ERR_NO_SOCKET);
   }
 };
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 NETWORK.RemoveListener = function(event, handlerFunction) {
   if (NETSOCK.ws instanceof WebSocket) {
     NETSOCK.ws.removeEventListener(event, handlerFunction);
@@ -252,21 +254,25 @@ NETWORK.RemoveListener = function(event, handlerFunction) {
     throw Error(ERR_NO_SOCKET);
   }
 };
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 NETWORK.LocalInfo = function() {
   return NETCLIENT;
 };
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 NETWORK.ServerInfo = function() {
   return NETSERVER;
 };
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 NETWORK.ServerSocketInfo = function() {
   return NETSOCK;
 };
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 NETWORK.SocketUADDR = function() {
   return NetMessage.SocketUADDR();
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+NETWORK.IsOfflineMode = function() {
+  return m_status === M_OFFLINE;
 };
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
