@@ -176,6 +176,7 @@ DB.PKT_Update = function(pkt) {
           `PKT_Update ${pkt.Info()} INSERT nodeID ${JSON.stringify(node)}`
         );
       LOGGER.Write(pkt.Info(), `insert node`, node.id, JSON.stringify(node));
+      DB.AppendNodeLog(node, pkt); // log GroupId to node stored in database
       NODES.insert(node);
       retval = { op: "insert", node };
     } else if (matches.length === 1) {
@@ -189,6 +190,7 @@ DB.PKT_Update = function(pkt) {
             )}`
           );
         LOGGER.Write(pkt.Info(), `update node`, node.id, JSON.stringify(node));
+        DB.AppendNodeLog(n, pkt); // log GroupId to node stored in database
         Object.assign(n, node);
       });
       retval = { op: "update", node };
@@ -252,6 +254,29 @@ DB.PKT_Update = function(pkt) {
 
   // return update value
   return { op: "error-noaction" };
+};
+
+/// NODE ANNOTATION ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ write/remove packet SourceGroupID() information into the node before writing
+    the first entry is the insert, subsequent operations are updates
+/*/
+DB.AppendNodeLog = function(node, pkt) {
+  if (!node.log) node.log = [];
+  let gid = pkt.SourceGroupID() || pkt.SourceAddress();
+  node.log.push(gid);
+  if (DBG) {
+    let out = "";
+    node.log.forEach(el => {
+      out += `[${el}] `;
+    });
+    console.log(PR, "nodelog", out);
+  }
+};
+DB.FilterNodeLog = function(node) {
+  let newNode = Object.assign({}, node);
+  Reflect.deleteProperty(newNode, "log");
+  return newNode;
 };
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
