@@ -11,6 +11,14 @@
 
       <NodeTable/>
 
+  ## 2018-12-07 Update
+
+    Since we're not using tab navigation:
+    1. The table isExpanded is now true by default.
+    2. The "Show/Hide Table" button is hidden.
+
+    Reset these to restore previous behavior.
+
 
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
@@ -35,8 +43,9 @@ class NodeTable extends UNISYS.Component {
 
       this.state = {
         nodePrompts:  this.AppState('TEMPLATE').nodePrompts,
-        nodes:        [],
-        isExpanded:   false,
+        nodes: [],
+        edgeCounts: {},         // {nodeID:count,...}
+        isExpanded:   true,
         sortkey:      'label'
       };
 
@@ -65,12 +74,25 @@ class NodeTable extends UNISYS.Component {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle updated SELECTION
-/*/ handleDataUpdate ( data ) {
-      if (data && data.nodes) {
-        this.setState({nodes: data.nodes});
-        this.sortTable();
-      }
-    }
+/*/
+handleDataUpdate(data) {
+  if (data && data.nodes) {
+    this.countEdges();
+    this.setState({nodes: data.nodes});
+    this.sortTable();
+  }
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Build table of counts
+/*/
+countEdges() {
+  let edgeCounts = this.state.edgeCounts;
+  this.AppState('D3DATA').edges.forEach( edge => {
+    edgeCounts[edge.source] = edgeCounts[edge.source]!==undefined ? edgeCounts[edge.source]+1 : 1;
+    edgeCounts[edge.target] = edgeCounts[edge.target]!== undefined ? edgeCounts[edge.target]+1 : 1;
+  })
+  this.setState({ edgeCounts: edgeCounts });
+}
 
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
@@ -83,6 +105,21 @@ class NodeTable extends UNISYS.Component {
               bkey = b.id;
           if (akey<bkey) return -1;
           if (akey>bkey) return 1;
+          return 0;
+        });
+      }
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ sortByEdgeCount(nodes) {
+      if (nodes) {
+        let edgeCounts = this.state.edgeCounts;
+        return nodes.sort( (a, b) => {
+          let akey = edgeCounts[a.id] || 0,
+            bkey = edgeCounts[b.id] || 0;
+          // sort descending
+          if (akey > bkey) return -1;
+          if (akey < bkey) return 1;
           return 0;
         });
       }
@@ -120,6 +157,9 @@ class NodeTable extends UNISYS.Component {
       switch (sortkey) {
         case 'id':
           this.sortByID(nodes);
+          break;
+        case 'edgeCount':
+          this.sortByEdgeCount(nodes);
           break;
         case 'type':
           this.sortByAttribute(nodes, 'Node_Type');
@@ -189,13 +229,25 @@ class NodeTable extends UNISYS.Component {
 /*/
 /*/ render () {
       let { nodePrompts } = this.state;
+      let { tableHeight } = this.props;
+      let styles = `thead, tbody { display: block; }
+                    thead { position: relative; }
+                    tbody { overflow: auto; }
+                    .nodetable td:nth-child(1), .nodetable th:nth-child(1) {width: 2em; min-width: 2em;}
+                    .nodetable td:nth-child(2), .nodetable th:nth-child(2) {width: 2em; min-width: 2em;}
+                    .nodetable td:nth-child(3), .nodetable th:nth-child(3) {width: 4em; min-width: 4em;}
+                    .nodetable td:nth-child(4), .nodetable th:nth-child(4) {width: 12em; min-width: 12em;}
+                    .nodetable td:nth-child(5), .nodetable th:nth-child(5) {width: 4em; min-width: 4em;}
+                    .nodetable td:nth-child(6), .nodetable th:nth-child(6) {min-width: 2em; }`
       return (
-        <div style={{maxHeight:'50vh',overflow:'scroll',backgroundColor:'#eafcff'}}>
-          <Button size="sm" outline
+        <div style={{backgroundColor:'#eafcff'}}>
+          <style>{styles}</style>
+          <Button size="sm" outline hidden
             onClick={this.onToggleExpanded}
           >{this.state.isExpanded ? "Hide Node Table" : "Show Node Table"}</Button>
           <Table hidden={!this.state.isExpanded} hover size="sm"
                  responsive striped
+                 className="nodetable"
           >
             <thead>
               <tr>
@@ -204,6 +256,10 @@ class NodeTable extends UNISYS.Component {
                       onClick={()=>this.setSortKey("id")}
                     >ID</Button></th>
                 <th></th>
+                <th><Button size="sm"
+                      disabled={this.state.sortkey === "edgeCount"}
+                      onClick={() => this.setSortKey("edgeCount")}
+                    >{nodePrompts.degrees.label}</Button></th>
                 <th><Button size="sm"
                       disabled={this.state.sortkey==="label"}
                       onClick={()=>this.setSortKey("label")}
@@ -225,7 +281,7 @@ class NodeTable extends UNISYS.Component {
                     >{nodePrompts.notes.label}</Button></th>
               </tr>
             </thead>
-            <tbody>
+            <tbody style={{maxHeight: tableHeight}}>
             {this.state.nodes.map( (node,i) =>
               <tr key={i}>
                 <td>{node.id}</td>
@@ -234,6 +290,7 @@ class NodeTable extends UNISYS.Component {
                       onClick={this.onButtonClick}
                     >Edit</Button>
                 </td>
+                <td>{this.state.edgeCounts[node.id]}</td>
                 <td><a href="#" onClick={(e)=>this.selectNode(node.id,e)}
                     >{node.label}</a></td>
                 <td hidden={nodePrompts.type.hidden}>{node.attributes["Node_Type"]}</td>

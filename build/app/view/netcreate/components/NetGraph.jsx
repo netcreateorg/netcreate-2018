@@ -33,6 +33,8 @@ var DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React      = require('react')
 const ReactDOM   = require('react-dom')
+const ReactStrap = require('reactstrap');
+const { Button } = ReactStrap;
 const D3NetGraph = require('./d3-simplenetgraph')
 const UNISYS     = require('unisys/client');
 
@@ -47,16 +49,35 @@ class NetGraph extends UNISYS.Component {
       this.state = {
         d3NetGraph: {}
       }
+
+      this.onZoomReset = this.onZoomReset.bind(this);
+      this.onZoomIn    = this.onZoomIn.bind(this);
+      this.onZoomOut   = this.onZoomOut.bind(this);
+
     } // constructor
 
 
+/// CLASS PRIVATE METHODS /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ onZoomReset() {
+      this.AppCall('ZOOM_RESET', {});
+    }
+/*/
+/*/ onZoomIn() {
+      this.AppCall('ZOOM_IN', {});
+    }
+/*/
+/*/ onZoomOut() {
+      this.AppCall('ZOOM_OUT', {});
+    }
 
 /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ componentDidMount () {
       // D3NetGraph Constructor
-      let el = ReactDOM.findDOMNode( this )
+      let el = ReactDOM.findDOMNode(this);
       let d3NetGraph = new D3NetGraph(el);
       this.setState({ d3NetGraph });
     }
@@ -67,12 +88,21 @@ class NetGraph extends UNISYS.Component {
       // allowing D3 to handle the simulation animation updates
       // This is also necessary for D3 to handle the
       // drag events.
-      return false
+      return false;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ render () {
-      return (<div><span style={{fontSize:'9px'}}>NETGRAPH</span></div>)
+      return (
+        <div style={{ height: '100%' }}>
+          <div><span style={{ fontSize: '9px' }}>NETGRAPH</span></div>
+          <div style={{ position: 'absolute', right: '10px', width: '50px', zIndex:1001 }}>
+            <Button outline onClick={this.onZoomIn} style={{width:'35px'}}>+</Button>&nbsp;
+            <Button outline onClick={this.onZoomReset} style={{ width: '35px' }}>&bull;</Button>&nbsp;
+            <Button outline onClick={this.onZoomOut} style={{ width: '35px' }}>-</Button>
+          </div>
+        </div>
+      )
     }
 } // class NetGraph
 

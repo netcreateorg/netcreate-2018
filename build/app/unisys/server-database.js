@@ -139,7 +139,7 @@ let DB = {};
     };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     DB.PKT_Update = function ( pkt ) {
-      let { node, edge, edgeID } = pkt.Data();
+      let { node, edge, nodeID, replacementNodeID, edgeID } = pkt.Data();
       let retval = {};
 
       // PROCESS NODE INSERT/UPDATE
@@ -191,6 +191,43 @@ let DB = {};
         }
         return retval;
       } // if edge
+
+      // DELETE NODES
+      if (nodeID !== undefined) {
+        if (DBG) console.log(PR, `PKT_Update ${pkt.Info()} DELETE nodeID ${nodeID}`);
+
+        // Log first so it's apparent what is triggering the edge changes
+        LOGGER.Write(pkt.Info(), `delete node`, nodeID);
+
+        // handle edges
+        let edgesToProcess = EDGES.where((e) => {
+          return e.source === nodeID || e.target === nodeID;
+        });
+        // `NaN` is not valid JSON, so we use ``
+        if (replacementNodeID !== '') {
+          // re-link edges to replacementNodeID
+          EDGES.findAndUpdate({ source: nodeID }, (e) => {
+            LOGGER.Write(`...`, pkt.Info(), `relinking edge`, e.id, `to`, replacementNodeID);
+            e.source = replacementNodeID;
+          });
+          EDGES.findAndUpdate({ target: nodeID }, (e) => {
+            LOGGER.Write(`...`, pkt.Info(), `relinking edge`, e.id, `to`, replacementNodeID);
+            e.target = replacementNodeID;
+          });
+        } else {
+          // delete edges
+          EDGES.findAndRemove({ source: nodeID }, (e) => {
+            LOGGER.Write(`...`, pkt.Info(), `deleting edge`, e.id, `from`, nodeID);
+            e.source = nodeID;
+          });
+          EDGES.findAndRemove({ target: nodeID }, (e) => {
+            LOGGER.Write(`...`, pkt.Info(), `deleting edge`, e.id, `from`, nodeID);
+            e.target = nodeID;
+          });
+        }
+        NODES.findAndRemove({ id: nodeID });
+        return { op: 'delete', nodeID, replacementNodeID };
+      }
 
       // DELETE EDGES
       if (edgeID!==undefined) {
