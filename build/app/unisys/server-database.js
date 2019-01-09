@@ -4,7 +4,7 @@ DATABASE SERVER
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = false;
+const DBG = true;
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -219,6 +219,7 @@ DB.PKT_Update = function(pkt) {
           )}`
         );
       LOGGER.Write(pkt.Info(), `insert edge`, edge.id, JSON.stringify(edge));
+      DB.AppendEdgeLog(edge, pkt); // log GroupId to edge stored in database
       EDGES.insert(edge);
       retval = { op: "insert", edge };
     } else if (matches.length === 1) {
@@ -232,6 +233,7 @@ DB.PKT_Update = function(pkt) {
             } ${JSON.stringify(edge)}`
           );
         LOGGER.Write(pkt.Info(), `update edge`, edge.id, JSON.stringify(edge));
+        DB.AppendEdgeLog(e, pkt); // log GroupId to edge stored in database
         Object.assign(e, edge);
       });
       retval = { op: "update", edge };
@@ -262,12 +264,12 @@ DB.PKT_Update = function(pkt) {
     the first entry is the insert, subsequent operations are updates
 /*/
 DB.AppendNodeLog = function(node, pkt) {
-  if (!node.log) node.log = [];
+  if (!node._nlog) node._nlog = [];
   let gid = pkt.SourceGroupID() || pkt.SourceAddress();
-  node.log.push(gid);
+  node._nlog.push(gid);
   if (DBG) {
     let out = "";
-    node.log.forEach(el => {
+    node._nlog.forEach(el => {
       out += `[${el}] `;
     });
     console.log(PR, "nodelog", out);
@@ -275,10 +277,31 @@ DB.AppendNodeLog = function(node, pkt) {
 };
 DB.FilterNodeLog = function(node) {
   let newNode = Object.assign({}, node);
-  Reflect.deleteProperty(newNode, "log");
+  Reflect.deleteProperty(newNode, "_nlog");
   return newNode;
 };
-
+/// EDGE ANNOTATION ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ write/remove packet SourceGroupID() information into the node before writing
+    the first entry is the insert, subsequent operations are updates
+/*/
+DB.AppendEdgeLog = function(edge, pkt) {
+  if (!edge._elog) edge._elog = [];
+  let gid = pkt.SourceGroupID() || pkt.SourceAddress();
+  edge._elog.push(gid);
+  if (DBG) {
+    let out = "";
+    edge._elog.forEach(el => {
+      out += `[${el}] `;
+    });
+    console.log(PR, "edgelog", out);
+  }
+};
+DB.FilterEdgeLog = function(edge) {
+  let newEdge = Object.assign({}, edge);
+  Reflect.deleteProperty(newEdge, "_elog");
+  return newEdge;
+};
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 module.exports = DB;

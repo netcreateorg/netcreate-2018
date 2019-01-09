@@ -66,7 +66,6 @@ SESUTIL.DecodeToken = function(token) {
   // at this point groupId is valid
   // check for valid subgroupId
   if (subId) {
-    console.log("test", subId.substring(2));
     if (
       subId.length > 2 &&
       subId.indexOf("ID") === 0 &&
