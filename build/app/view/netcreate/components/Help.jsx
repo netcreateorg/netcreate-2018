@@ -25,7 +25,7 @@ const UNISYS   = require('unisys/client');
 class Help extends UNISYS.Component {
     constructor (props) {
       super(props);
-      this.state = {isExpanded: false};
+      this.state = {isExpanded: true};
       this.onToggleExpanded = this.onToggleExpanded.bind(this);
     } // constructor
 
@@ -54,15 +54,15 @@ class Help extends UNISYS.Component {
 /*/ render () {
       return (
         <div className="help"
-             style={{maxHeight:'50vh',maxWidth:'50%',overflow:'scroll',
-                     position:'fixed',right:'10px',zIndex:100
+             style={{maxWidth:'50%',overflow:'scroll',
+                     position:'fixed',right:'10px',zIndex:2000
              }}>
-          <Button size="sm" outline
+          <Button size="sm" outline hidden
             style={{float:'right'}}
             onClick={this.onToggleExpanded}
           >{this.state.isExpanded ? "Hide Help" : "Help"}</Button>
           <div hidden={!this.state.isExpanded}
-            style={{backgroundColor:'rgba(240,240,240,0.85)',padding:'10px'}}>
+            style={{backgroundColor:'rgba(240,240,240,0.95)',padding:'10px'}}>
             <h1>Navigation</h1>
             <ul>
               <li>Zoom --

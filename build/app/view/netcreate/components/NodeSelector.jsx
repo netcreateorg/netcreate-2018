@@ -8,7 +8,7 @@
     NodeSelector does not modify any data.  It passes all events (text updates,
     highlights, and suggestion selections) up to nc-logic. it
     should process the events and update the data accordingly.  The
-    updated data is then rendered by NodeSelect.
+    updated data is then rendered by NodeSelector.
 
     ## USAGE
 
@@ -40,6 +40,11 @@
                       cannot be enabled.
 
       isEditable      The form fields are active and can be edited.
+
+
+    Delete Button
+    The Delete button is only displayed for an admin user.  Right now we are detecting
+    this by displaying it only when the user is on `localhost`,
 
 
     ## STATES
@@ -105,15 +110,21 @@ const PR  = 'NodeSelector';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React        = require('react');
 const ReactStrap   = require('reactstrap');
-const { Button, Col, Form, FormGroup, Label, Input, FormText } = ReactStrap;
+const { Button, Col, Form, FormGroup, FormFeedback, FormText, Label, Input } = ReactStrap;
 const AutoComplete = require('./AutoComplete');
 const NodeDetail   = require('./NodeDetail');
 const EdgeEditor   = require('./EdgeEditor');
 
 const UNISYS       = require('unisys/client');
 const DATASTORE    = require('system/datastore');
+const SETTINGS     = require('settings');
 
 const thisIdentifier = 'nodeSelector';   // SELECTION identifier
+
+const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1');
+
+var   UDATA        = null;
+
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -128,13 +139,17 @@ class NodeSelector extends UNISYS.Component {
             type:      '',
             info:      '',
             notes:     '',
-            id:        '',
+            id:        '',   // Always convert this to a Number
             isNewNode: true
         },
         edges:         [],
         isLocked:      true,
         isEditable:    false,
-        isValid:       false
+        isValid:       false,
+        isDuplicateNodeLabel: false,
+        duplicateNodeID:   '',
+        replacementNodeID: '',
+        isValidReplacementNodeID: true
       };
       // Bind functions to this component's object context
       this.clearForm                             = this.clearForm.bind(this);
@@ -148,14 +163,22 @@ class NodeSelector extends UNISYS.Component {
       this.onTypeChange                          = this.onTypeChange.bind(this);
       this.onNotesChange                         = this.onNotesChange.bind(this);
       this.onInfoChange                          = this.onInfoChange.bind(this);
+      this.onReplacementNodeIDChange             = this.onReplacementNodeIDChange.bind(this);
       this.onNewNodeButtonClick                  = this.onNewNodeButtonClick.bind(this);
+      this.onDeleteButtonClick                   = this.onDeleteButtonClick.bind(this);
       this.onEditButtonClick                     = this.onEditButtonClick.bind(this);
       this.onAddNewEdgeButtonClick               = this.onAddNewEdgeButtonClick.bind(this);
       this.onCancelButtonClick                   = this.onCancelButtonClick.bind(this);
+      this.onEditOriginal                        = this.onEditOriginal.bind(this);
+      this.onCloseDuplicateDialog                = this.onCloseDuplicateDialog.bind(this);
       this.onSubmit                              = this.onSubmit.bind(this);
 
       // NOTE: assign UDATA handlers AFTER functions have been bind()'ed
       // otherwise they will lose context
+
+      /// Initialize UNISYS DATA LINK for REACT
+      UDATA = UNISYS.NewDataLink(this);
+
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ SESSION is called by SessionSHell when the ID changes
@@ -186,12 +209,16 @@ class NodeSelector extends UNISYS.Component {
             type:      '',
             info:      '',
             notes:     '',
-            id:        '',
+            id:         '',   // Always convert this to a Number
             isNewNode: true
         },
         edges: [],
         isEditable:      false,
-        isValid:         false
+        isValid:         false,
+        isDuplicateNodeLabel: false,
+        duplicateNodeID:   '',
+        replacementNodeID: '',
+        isValidReplacementNodeID: true
       });
     } // clearFform
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -282,7 +309,7 @@ class NodeSelector extends UNISYS.Component {
         // * force exit?
         // * prevent load?
         // * prevent selection?
-        if (DBG) console.log('NodeSelector: Already editing, ignoring SELECTION');
+        if (DBG) console.error('NodeSelector: Already editing, ignoring SELECTION');
       }
 
       this.validateForm();
@@ -311,11 +338,29 @@ class NodeSelector extends UNISYS.Component {
       // otherwise an Edge might be active
       let { activeAutoCompleteId } = this.AppState('ACTIVEAUTOCOMPLETE');
       if ( activeAutoCompleteId!==thisIdentifier ) return;
-
       let formData = this.state.formData;
       formData.label = data.searchLabel;
+
+      // "Duplicate Node Label" is only a warning, not an error.
+      // We want to allow students to enter a duplicate label if necessary
+      // This is a case insensitive search
+      let isDuplicateNodeLabel = false;
+      let duplicateNodeID;
+      if (formData.label !== '' &&
+          this.AppState('D3DATA').nodes.find(node => {
+            if ((node.id !== formData.id) &&
+              (node.label.localeCompare(formData.label, 'en', { usage: 'search', sensitivity: 'base' })) === 0) {
+              duplicateNodeID = node.id;
+              return true;
+            }
+        })) {
+        isDuplicateNodeLabel = true;
+      }
+
       this.setState({
-        formData
+        formData,
+        isDuplicateNodeLabel,
+        duplicateNodeID
       });
 
       this.validateForm();
@@ -330,7 +375,9 @@ class NodeSelector extends UNISYS.Component {
       // Clean data
       // REVIEW: Basic data structure probably needs updating
       let node = {attributes:{}};
-      if (newNode.attributes===undefined) { newNode.attributes = {} }
+      if (newNode.attributes === undefined) { newNode.attributes = {} }
+      // Backward Compatibility: Always convert ids to a Number or loki lookups will fail.
+      if (isNaN(newNode.id)) { newNode.id = parseInt(newNode.id); }
       //
       node.label                    = newNode.label || '';
       node.id                       = newNode.id    || '';
@@ -347,7 +394,8 @@ class NodeSelector extends UNISYS.Component {
           id:        node.id,
           isNewNode: false
         },
-        isEditable:  false
+        isEditable: false,
+        isDuplicateNodeLabel: false
       });
 
       this.validateForm();
@@ -403,6 +451,22 @@ class NodeSelector extends UNISYS.Component {
     } // onInfoChange
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
+/*/
+  onReplacementNodeIDChange(event) {
+    let replacementNodeID = parseInt( event.target.value );
+    let isValid = false;
+    // Allow `` because we use a a blank field to indicate delete node without relinking edges.
+    if ((event.target.value === '') ||
+        (this.AppState('D3DATA').nodes.find(node => { return node.id === replacementNodeID; })) ) {
+      isValid = true;
+    }
+    this.setState({
+      replacementNodeID: replacementNodeID,
+      isValidReplacementNodeID: isValid
+    });
+  } // onReplacementNodeIDChange
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
 /*/ onNewNodeButtonClick (event) {
       event.preventDefault();
 
@@ -436,6 +500,23 @@ class NodeSelector extends UNISYS.Component {
         this.validateForm();
       });
     } // onNewNodeButtonClick
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/
+  /*/
+  onDeleteButtonClick() {
+    // nodeID needs to be a Number.  It should have been set in loadFormFromNode
+    let nodeID = this.state.formData.id;
+
+    // Re-link edges or delete edges?
+    // `NaN` is not valid JSON, so we need to pass ``
+    let replacementNodeID = this.state.replacementNodeID==='' ? '' : parseInt( this.state.replacementNodeID );   // '' = Delete edges by default
+
+    this.clearForm();
+    this.AppCall('DB_UPDATE', {
+      nodeID: nodeID,
+      replacementNodeID: replacementNodeID
+    });
+  }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onEditButtonClick (event) {
@@ -499,6 +580,28 @@ class NodeSelector extends UNISYS.Component {
       }
     } // onCancelButtonClick
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Select the node for editing
+  /*/
+  onEditOriginal(event) {
+    event.preventDefault();
+    let duplicateNodeID = parseInt(this.state.duplicateNodeID);
+    this.clearForm();
+    this.setState({
+      isEditable: false,
+      isDuplicateNodeLabel: false
+    }, () => {
+        // Wait for the edit state to clear, then open up the original node
+        UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [duplicateNodeID] });
+    });
+    this.AppCall('AUTOCOMPLETE_SELECT', { id: 'search' });
+  }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ User confirms they want to edit the existing node.
+  /*/
+  onCloseDuplicateDialog() {
+    this.setState({ isDuplicateNodeLabel: false });
+  }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onSubmit ( event ) {
       event.preventDefault();
@@ -554,6 +657,12 @@ class NodeSelector extends UNISYS.Component {
                   shouldIgnoreSelection={this.state.isEditable}
                 />
               </Col>
+              <div hidden={!this.state.isDuplicateNodeLabel}
+                style={{ width: '200px', height: '150px', backgroundColor: '#B8EDFF', position: 'fixed', left: '350px', zIndex: '1000', padding: '10px' }}>
+                <p className="text-danger small">{nodePrompts.label.duplicateWarning}</p>
+                <Button size="sm" onClick={this.onEditOriginal}>View Existing</Button>
+                <Button outline size="sm" onClick={this.onCloseDuplicateDialog}>Continue</Button>
+              </div>
             </FormGroup>
             <div style={{position:'absolute',left:'300px',maxWidth:'300px'}}>
               <NodeDetail/>
@@ -598,7 +707,7 @@ class NodeSelector extends UNISYS.Component {
                   />
               </Col>
             </FormGroup>
-            <FormGroup className="text-right" style={{paddingRight:'5px'}}>
+            <FormGroup className="text-right" style={{ paddingRight: '5px' }}>
               <Button outline size="sm"
                 hidden={this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
                 onClick={this.onEditButtonClick}
@@ -611,6 +720,28 @@ class NodeSelector extends UNISYS.Component {
                 disabled={!this.state.isValid}
                 hidden={!this.state.isEditable}
               >Save</Button>
+            </FormGroup>
+            <FormGroup row className="text-left" style={{
+              padding: '10px 5px', margin: '0 -4px', backgroundColor: '#c5e0ef' }}
+              hidden={
+                !isLocalHost ||
+                this.state.isLocked || (this.state.formData.id === '') || nodePrompts.delete.hidden}
+            >
+              <Col sm={6}>
+                <FormText>Re-link edges to this Node ID (leave blank to delete edge)</FormText>
+              </Col>
+              <Col sm={6}>
+                <Input type="text" name="replacementNodeID" id="replacementNodeID"
+                  value={this.state.replacementNodeID || ''}
+                  onChange={this.onReplacementNodeIDChange}
+                  className="" style={{ width: `4em` }} bsSize="sm"
+                  invalid={!this.state.isValidReplacementNodeID}
+                />
+                <FormFeedback>Invalid Node ID!</FormFeedback>
+                <Button className="small text-muted btn btn-outline-light" size="sm"
+                  onClick={this.onDeleteButtonClick}
+                >Delete</Button>
+              </Col>
             </FormGroup>
           </Form>
           <div style={{backgroundColor:'#B9DFFF',padding:'5px',marginBottom:'10px'}}>

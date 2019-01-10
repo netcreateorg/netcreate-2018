@@ -92,6 +92,11 @@ td {
   hyphens: auto;
 }
 
+/* Bootstrap override */
+.nav-item {
+  cursor: pointer;
+}
+
 /* SVG styles */
 /* REVIEW!!!  These are global!!! */
 svg {

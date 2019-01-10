@@ -340,7 +340,7 @@ class AutoComplete extends UNISYS.Component {
     https://reactjs.org/blog/2015/12/16/ismounted-antipattern.html
 /*/ componentDidMount () {
       _IsMounted = true;
-      this.setState({ mode: this.props.inactiveMode })
+      this.setState({ mode: this.props.inactiveMode });
     }
 /*/
 /*/ componentWillUnmount () {
@@ -357,34 +357,75 @@ class AutoComplete extends UNISYS.Component {
         onChange    : this.onInputChange
       };
       let jsx;
-      switch (this.state.mode) {
-        case MODE_STATIC:
-          jsx = ( <p>{this.props.disabledValue}</p> );
-          break;
-        case MODE_DISABLED:
-          jsx = ( <Input type="text" value={this.props.disabledValue} readOnly={true}/> );
-          break;
-        case MODE_ACTIVE:
-          jsx = (
-            <Autosuggest
-              suggestions={suggestions}
-              shouldRenderSuggestions={this.shouldRenderSuggestions}
-              // Map to Local Handlers for Autosuggest event triggers (requests)
-              onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
-              onSuggestionsClearRequested={this.onSuggestionsClearRequested}
-              getSuggestionValue={this.getSuggestionValue}
-              renderSuggestion={this.renderSuggestion}
-              // Receive Data from Autosuggest
-              onSuggestionHighlighted={this.onSuggestionHighlighted}
-              onSuggestionSelected={this.onSuggestionSelected}
-              // Pass Data to Autosuggest
-              inputProps={inputProps}
-            />
-          );
-          break;
-        default:
-          throw Error(`AutoComplete: Unhandled mode '${this.state.mode}'`);
+
+      // Show different widgets depending on mode.
+      // If MODE_ACTIVE is just show the active state,
+      // otherwise, use the current inactive mode in this.props.inactiveMode
+      // to define the inactive state
+      // because this.state.mode may not be up to date if the mode is inactive
+      // due to prop changes not triggering mode updates.
+      // e.g. if the parent container changed props from a disabled to
+      // static state, it does not trigger a mode update in AUTOCOMPLETE.
+      // This is mostly an edge case with EDGE_EDITs which will update props
+      // without a corresponding UNISYS message call to trigger the mode
+      // change.
+      if (this.state.mode === MODE_ACTIVE) {
+        jsx = (
+          <Autosuggest
+            suggestions={suggestions}
+            shouldRenderSuggestions={this.shouldRenderSuggestions}
+            // Map to Local Handlers for Autosuggest event triggers (requests)
+            onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
+            onSuggestionsClearRequested={this.onSuggestionsClearRequested}
+            getSuggestionValue={this.getSuggestionValue}
+            renderSuggestion={this.renderSuggestion}
+            // Receive Data from Autosuggest
+            onSuggestionHighlighted={this.onSuggestionHighlighted}
+            onSuggestionSelected={this.onSuggestionSelected}
+            // Pass Data to Autosuggest
+            inputProps={inputProps}
+          />
+        );
+      } else if (this.props.inactiveMode === MODE_STATIC) {
+        jsx = (<p>{this.props.disabledValue}</p>);
+      } else if (this.props.inactiveMode === MODE_DISABLED) {
+        jsx = (<Input type="text" value={this.props.disabledValue} readOnly={true} />);
+      } else {
+        throw Error(`AutoComplete: Unhandled mode '${this.state.mode}'`);
       }
+
+      // OLD METHOD
+      // This relied on mode being updated, but a change in props does not
+      // trigger a corresponding change in mode.
+      // switch (this.state.mode) {
+      //   case MODE_STATIC:
+      //     jsx = ( <p>{this.props.disabledValue}</p> );
+      //     break;
+      //   case MODE_DISABLED:
+      //     jsx = ( <Input type="text" value={this.props.disabledValue} readOnly={true}/> );
+      //     break;
+      //   case MODE_ACTIVE:
+      //     jsx = (
+      //       <Autosuggest
+      //         suggestions={suggestions}
+      //         shouldRenderSuggestions={this.shouldRenderSuggestions}
+      //         // Map to Local Handlers for Autosuggest event triggers (requests)
+      //         onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
+      //         onSuggestionsClearRequested={this.onSuggestionsClearRequested}
+      //         getSuggestionValue={this.getSuggestionValue}
+      //         renderSuggestion={this.renderSuggestion}
+      //         // Receive Data from Autosuggest
+      //         onSuggestionHighlighted={this.onSuggestionHighlighted}
+      //         onSuggestionSelected={this.onSuggestionSelected}
+      //         // Pass Data to Autosuggest
+      //         inputProps={inputProps}
+      //       />
+      //     );
+      //     break;
+      //   default:
+      //     throw Error(`AutoComplete: Unhandled mode '${this.state.mode}'`);
+      // }
+
       return jsx;
     } // render()
 

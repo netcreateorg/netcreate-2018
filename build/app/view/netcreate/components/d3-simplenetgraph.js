@@ -29,6 +29,8 @@
        https://bl.ocks.org/mbostock/3808218
     *  Coderwall's zoom and pan method
        https://coderwall.com/p/psogia/simplest-way-to-add-zoom-pan-on-d3-js
+    *  Vladyslav Babenko's zoom buttons example
+       https://jsfiddle.net/vbabenko/jcsqqu6j/9/
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -46,8 +48,9 @@ var   UDATA           = null;
 
 /// PRIVATE VARS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let m_width   = 1024;
-let m_height  = 1024;
+let m_width  = 800;
+let m_height = 800;
+let mouseoverNodeId = -1;   // id of the node the mouse is currently over
 let m_forceProperties = {   // values for all forces
       center: {
         x: 0.5,
@@ -92,6 +95,7 @@ class D3NetGraph {
 
       this.rootElement  = rootElement;
       this.d3svg        = {};
+      this.zoom = {};
       this.zoomWrapper  = {};
       this.simulation   = {};
       this.data         = {};
@@ -107,22 +111,42 @@ class D3NetGraph {
   /// D3 CODE ///////////////////////////////////////////////////////////////////
   /// note: this is all inside the class constructor function!
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+      // Set up Zoom
+      this.zoom = d3.zoom().on("zoom", this._HandleZoom);
+
   /*/ Create svg element which will contain our D3 DOM elements.
       Add default click handler so when clicking empty space, deselect all.
       NOTE: the svg element is actualy d3.selection object, not an svg obj.
   /*/ this.d3svg = d3.select(rootElement).append('svg')
-        .attr('width', "100%")            // overrride m_width so SVG is wide
-        .attr('height',m_height)
+        .attr('id', 'netgraph')
+        .attr('width',  "100%")  // maximize width and height
+        .attr('height', "100%")  // then set center dynamically below
         .on("click", ( e, event ) => {
             // Deselect
             UDATA.LocalCall('SOURCE_SELECT',{ nodeLabels: [] });
             }
         )
-        .call(d3.zoom().on("zoom", function () {
-          d3.select('.zoomer').attr("transform", d3.event.transform);
-        }));
-      this.zoomWrapper = this.d3svg.append('g').attr("class","zoomer");
+        .on("mouseover", (d) => {
+          // Deselect edges
+          mouseoverNodeId = -1;
+          d3.selectAll('.edge')
+            .transition()
+            .duration(1500)
+            .style('stroke-width', this._UpdateLinkStrokeWidth)
+          d3.event.stopPropagation();
+        })
+        .call(this.zoom);
+
+      this.zoomWrapper = this.d3svg.append('g').attr("class", "zoomer")
+
+      // Set SVG size and centering.
+      let svg = document.getElementById('netgraph');
+      m_width = svg.clientWidth;
+      m_height = svg.clientHeight;
+
       this.simulation = d3.forceSimulation();
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// END D3 CODE ///////////////////////////////////////////////////////////////
 
@@ -133,6 +157,7 @@ class D3NetGraph {
       this._UpdateGraph       = this._UpdateGraph.bind(this);
       this._UpdateForces      = this._UpdateForces.bind(this);
       this._Tick              = this._Tick.bind(this);
+      this._HandleZoom        = this._HandleZoom.bind(this);
       this._Dragstarted       = this._Dragstarted.bind(this);
       this._Dragged           = this._Dragged.bind(this);
       this._Dragended         = this._Dragended.bind(this);
@@ -150,6 +175,23 @@ class D3NetGraph {
       UDATA.OnAppStateChange('NODECOLORMAP',(data)=>{
         if (DBG) console.log(PR,'got state NODECOLORMAP',data);
         this._UpdateGraph();
+      });
+
+      UDATA.HandleMessage('ZOOM_RESET', (data) => {
+        if (DBG) console.log(PR, 'ZOOM_RESET got state D3DATA', data);
+        this.d3svg.transition()
+          .duration(200)
+          .call(this.zoom.scaleTo, 1);
+      });
+
+      UDATA.HandleMessage('ZOOM_IN', (data) => {
+        if (DBG) console.log(PR, 'ZOOM_IN got state D3DATA', data);
+        this._Transition(1.2);
+      });
+
+      UDATA.HandleMessage('ZOOM_OUT', (data) => {
+        if (DBG) console.log(PR, 'ZOOM_OUT got state D3DATA', data);
+        this._Transition(0.8);
       });
 
   }
@@ -243,7 +285,15 @@ class D3NetGraph {
             if (DBG) console.log('clicked on',d.label,d.id)
             UDATA.LocalCall('SOURCE_SELECT',{ nodeIDs: [d.id] });
             d3.event.stopPropagation();
-          });
+        })
+        .on("mouseover", (d) => {
+          mouseoverNodeId = d.id;
+          d3.selectAll('.edge')
+            .transition()
+            .duration(500)
+            .style('stroke-width', this._UpdateLinkStrokeWidth)
+          d3.event.stopPropagation();
+        })
 
       // enter node: also append 'circle' element of a calculated size
       elementG
@@ -367,19 +417,25 @@ class D3NetGraph {
 
       // NOW TELL D3 HOW TO HANDLE NEW EDGE DATA
       // .insert will add an svg `line` before the objects classed `.node`
+      // .enter() sets the initial state of links as they are created
       linkElements.enter()
         .insert("line",".node")
-          .classed('edge', true)
-          .style('stroke-width', (d) => { return d.size**2 } )    // Use **2 to make size differences more noticeable
-        .on("click",   (d) => {
-          if (DBG) console.log('clicked on',d.label,d.id)
-          this.edgeClickFn( d )
-        })
+        .classed('edge', true)
+        .style('stroke', '#999')
+        // .style('stroke', 'rgba(0,0,0,0.1)')  // don't use alpha unless we're prepared to handle layering -- reveals unmatching links
+        .style('stroke-width', this._UpdateLinkStrokeWidth )
+        // old stroke setting
+        // .style('stroke-width', (d) => { return d.size**2 } )    // Use **2 to make size differences more noticeable
+        // Edge selection disabled.
+        // .on("click",   (d) => {
+        //   if (DBG) console.log('clicked on',d.label,d.id)
+        //   this.edgeClickFn( d )
+        // })
 
+      // .merge() updates the visuals whenever the data is updated.
       linkElements.merge(linkElements)
         .classed("selected",  (d) => { return d.selected })
-        // .style('stroke', 'rgba(0,0,0,0.1)')  // don't use alpha unless we're prepared to handle layering -- reveals unmatching links
-        .style('stroke-width', (d) => { return d.size**2 } )
+        .style('stroke-width', this._UpdateLinkStrokeWidth)
 
       linkElements.exit().remove()
 
@@ -431,7 +487,7 @@ class D3NetGraph {
     gets drawn first -- the drawing order is determined by the ordering in the
     DOM.  See the notes under link_update.enter() above for one technique for
     setting the ordering in the DOM.
-/*/ _Tick() {
+/*/ _Tick () {
       // Drawing the nodes: Update the location of each node group element
       // from the x, y fields of the corresponding node object.
       this.zoomWrapper.selectAll(".node")
@@ -446,9 +502,40 @@ class D3NetGraph {
         .attr("y2", (d) => { return d.target.y; })
     }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Sets the width of the links during update cycles
+    Used by linElements.enter() and linkElements.merge()
+    and mouseover events.
+/*/
+_UpdateLinkStrokeWidth (edge) {
+  if (edge.selected ||
+    (edge.source.id === mouseoverNodeId) ||
+    (edge.target.id === mouseoverNodeId) ||
+    (mouseoverNodeId === -1)
+  ) {
+    return edge.size ** 2;  // Use **2 to make size differences more noticeable
+  } else {
+    return 0.175;             // Barely visible if not selected
+  }
+}
 
 
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ This primarily handles mousewheel zooms
+/*/
+_HandleZoom() {
+  d3.select('.zoomer').attr("transform", d3.event.transform);
+}
+/*/ This handles zoom button zooms.
+/*/
+_Transition(zoomLevel) {
+  this.d3svg.transition()
+    //.delay(100)
+    .duration(200)
+    .call(this.zoom.scaleBy, zoomLevel);
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ _Dragstarted (d, self) {

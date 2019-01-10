@@ -47,9 +47,7 @@ const { Route }    = require('react-router-dom');
 const NetGraph     = require('./components/NetGraph');
 const Search       = require('./components/Search');
 const NodeSelector = require('./components/NodeSelector');
-const Help         = require('./components/Help');
-const NodeTable    = require('./components/NodeTable');
-const EdgeTable    = require('./components/EdgeTable');
+const InfoPanel    = require('./components/InfoPanel');
 const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
 
 
@@ -77,11 +75,17 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
         });
       }
 
+
+
+
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ This is the root component, so this fires after all subcomponents have
       been fully rendered by render().
   /*/ componentDidMount () {
+        // Init dragger
+        let dragger = document.getElementById('dragger');
+        dragger.onmousedown = this.handleMouseDown;
       }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Define the component structure of the web application
@@ -100,9 +104,7 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
                 </div>
               </div>
               <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 60%', padding:'10px',marginTop:'56px'}}>
-                <Help/>
-                <NodeTable/>
-                <EdgeTable/>
+                <InfoPanel/>
                 <NetGraph/>
                 <div style={{fontSize:'10px',position:'absolute',left:'0px',bottom:'0px',zIndex:'1500',color:'#aaa',backgroundColor:'#eee',padding:'5px 10px'}}>Please contact Professor
                 Kalani Craig, Institute for Digital Arts & Humanities at

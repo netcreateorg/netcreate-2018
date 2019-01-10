@@ -19,6 +19,7 @@
     "label": {
                 "label":    "Label",
                 "help":     "A short title for the node",
+                "duplicateWarning": "You’re entering a duplicate node.  Do you want to View the Existing node, or Continue creating?",
                 "_cmt4":    "/// `Label` is always required and cannot be hidden"
              },
     "type":  {
@@ -59,6 +60,11 @@
                   }
                 ]
              },
+    "degrees": {
+      "label": "Degrees",
+      "help": "Number of edges.",
+      "hidden": false
+    },
     "notes": {
                 "label": "Significance",
                 "help":  "Add some details.",
@@ -68,7 +74,10 @@
                 "label": "Geocode or Date",
                 "help":  "Use latitude/longitude or a date mm/dd/yyy",
                 "hidden": true
-              }
+              },
+    "delete": {
+      "hidden": false
+    }
   },
 
 
