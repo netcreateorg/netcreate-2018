@@ -224,8 +224,6 @@ class NetMessage {
   /*/ return an informational string about the packet useful for logging
   /*/
   Info(key) {
-    key
-  ) {
     switch (key) {
       case "src": /* falls-through */
       default:
