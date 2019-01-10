@@ -517,24 +517,37 @@ class NodeSelector extends UNISYS.Component {
       replacementNodeID: replacementNodeID
     });
   }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ onEditButtonClick (event) {
-      event.preventDefault();
-      this.setState({ isEditable: true });
-      // Add ID if one isn't already defined
-      let formData = this.state.formData;
-      if (formData.id==='') {
-        throw Error('NodeSelector.onEditButtonClick trying to edit a node with no id!  This shouldn\'t happen!');
-      }
-      this.AppCall('AUTOCOMPLETE_SELECT',{id:thisIdentifier}).then(()=>{
-        // Set AutoComplete field to current data, otherwise, previously canceled label
-        // might be displayed
-        this.AppCall('SOURCE_SEARCH', { searchString: formData.label });
-      });
-      this.setState({ formData });
-      this.validateForm();
-    } // onEditButtonClick
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/
+  /*/
+  onEditButtonClick(event) {
+    event.preventDefault();
+    console.log("'BEN SAYS: I AM TRYING TO VERIFY THAT THIS NODE IS NOT CURRENTLY BEING EDITED BY SOMEONE ELSE AND I CAN EDIT IT.");
+    // pseudo code
+    // call('OKTOEDIT', {
+    //   onOK: { editNode },
+    //   onLocked: {
+    //     function() { alert("Sorry, this node is currently being edited by someone else"); } }
+    // }
+  } // onEditButtonClick
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/
+  /*/
+  editNode() {
+    this.setState({ isEditable: true });
+    // Add ID if one isn't already defined
+    let formData = this.state.formData;
+    if (formData.id==='') {
+      throw Error('NodeSelector.onEditButtonClick trying to edit a node with no id!  This shouldn\'t happen!');
+    }
+    this.AppCall('AUTOCOMPLETE_SELECT',{id:thisIdentifier}).then(()=>{
+      // Set AutoComplete field to current data, otherwise, previously canceled label
+      // might be displayed
+      this.AppCall('SOURCE_SEARCH', { searchString: formData.label });
+    });
+    this.setState({ formData });
+    this.validateForm();
+  } // editNode
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onAddNewEdgeButtonClick (event) {
