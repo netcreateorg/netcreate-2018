@@ -306,7 +306,6 @@ MOD.Hook("INITIALIZE", () => {
       }
     }
   }); // StateChange SELECTION
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ Search field has been updated
   /*/
@@ -379,8 +378,7 @@ MOD.Hook("INITIALIZE", () => {
       } else {
         edges = edges.concat(
           D3DATA.edges.filter(
-            edge =>
-              edge.source.label === nodeLabel || edge.target.label === nodeLabel
+            edge => edge.source.label === nodeLabel || edge.target.label === nodeLabel
           )
         );
       }
@@ -451,7 +449,48 @@ MOD.Hook("INITIALIZE", () => {
     if (updatedNodes.length === 0) D3DATA.nodes.push(node);
     UDATA.SetAppState("D3DATA", D3DATA);
   });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ NODE_DELETE is called by NodeSelector via datastore.js and
+      Server.js when an node should be removed
+  /*/
+  UDATA.HandleMessage("NODE_DELETE", function(data) {
+    let { nodeID, replacementNodeID } = data;
 
+    // Remove or replace edges
+    let edgesToProcess;
+    if (replacementNodeID !== "") {
+      // replace
+      let replacementNode = m_FindNodeById(replacementNodeID);
+      edgesToProcess = D3DATA.edges.map(edge => {
+        if (edge.source.id === nodeID) edge.source = replacementNode;
+        if (edge.target.id === nodeID) edge.target = replacementNode;
+        return edge;
+      });
+    } else {
+      // delete nodes
+      edgesToProcess = D3DATA.edges.filter(edge => {
+        let pass = false;
+        if (edge.source.id !== nodeID && edge.target.id !== nodeID) {
+          pass = true;
+        }
+        return pass;
+      });
+    }
+    D3DATA.edges = edgesToProcess;
+
+    // // Remove node
+    let updatedNodes = m_DeleteMatchingNodesByProp({ id: nodeID });
+    D3DATA.nodes = updatedNodes;
+    UDATA.SetAppState("D3DATA", D3DATA);
+
+    // Also update selection so nodes in EdgeEditor will update
+    UDATA.SetAppState("SELECTION", {
+      nodes: undefined,
+      edges: undefined
+    });
+    // FIXME: need to also update AutoUpdate!!!
+    // FIXME: Need to also trigger resize!
+  });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ EDGE_UPDATE is called when the properties of an edge has changed
       NOTE: SOURCE_UPDATE can be invoked remotely by the server on a DATABASE
@@ -589,6 +628,7 @@ MOD.Hook("APP_READY", function(info) {
     // register ONLY messages we want to make public
     UNISYS.RegisterMessagesPromise([
       "SOURCE_UPDATE",
+      `NODE_DELETE`,
       "EDGE_UPDATE",
       "EDGE_DELETE"
     ]).then(d => {
@@ -668,6 +708,22 @@ function m_SetAllObjs(obj_list, all = {}) {
 
 /// NODE HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Return array of nodes that DON'T match del_me object keys/values
+/*/
+function m_DeleteMatchingNodesByProp(del_me = {}) {
+  let matches = D3DATA.nodes.filter(node => {
+    let pass = false;
+    for (let key in del_me) {
+      if (del_me[key] !== node[key]) {
+        pass = true;
+        break;
+      }
+    }
+    return pass;
+  });
+  // return array of matches (can be empty array)
+  return matches;
+}
 /*/ Return array of nodes that match the match_me object keys/values
     NOTE: make sure that strings are compared with strings, etc
 /*/
@@ -879,6 +935,25 @@ function m_SetStrokeColorThatMatch(searchString, color) {
   let matched = { strokeColor: color };
   let notmatched = { strokeColor: undefined };
   m_SetMatchingNodesByLabel(searchString, matched, notmatched);
+  UDATA.SetAppState("D3DATA", D3DATA);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Sets the 'selected' state of edges that are attached to the node
+/*/
+function m_MarkSelectedEdges(edges, node) {
+  // Delesect all edges first
+  edges.forEach(edge => {
+    edge.selected = false;
+  });
+  // Find connected edges
+  let id = node.id;
+  D3DATA.edges.forEach(edge => {
+    if (edge.source.id === id || edge.target.id === id) {
+      edge.selected = true;
+    } else {
+      edge.selected = false;
+    }
+  });
   UDATA.SetAppState("D3DATA", D3DATA);
 }
 

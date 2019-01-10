@@ -71,7 +71,8 @@ var UNISYS = {};
         data.src = 'remote';
         // fire update messages
         if (data.node) UNET.NetSend('SOURCE_UPDATE',data);
-        if (data.edge) UNET.NetSend('EDGE_UPDATE',data);
+        if (data.edge) UNET.NetSend('EDGE_UPDATE', data);
+        if (data.nodeID!==undefined) UNET.NetSend('NODE_DELETE', data);
         if (data.edgeID!==undefined) UNET.NetSend('EDGE_DELETE',data);
         // return SRV_DBUPDATE value (required)
         return { OK:true, info:'SRC_DBUPDATE' };

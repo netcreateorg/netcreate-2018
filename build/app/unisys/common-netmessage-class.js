@@ -222,7 +222,8 @@ class NetMessage {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ return an informational string about the packet useful for logging
-  /*/ Info(
+  /*/
+  Info(key) {
     key
   ) {
     switch (key) {
