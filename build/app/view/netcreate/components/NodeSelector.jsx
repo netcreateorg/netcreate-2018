@@ -346,13 +346,15 @@ class NodeSelector extends UNISYS.Component {
       // This is a case insensitive search
       let isDuplicateNodeLabel = false;
       let duplicateNodeID;
-      if (formData.label !== '' &&
-          this.AppState('D3DATA').nodes.find(node => {
+      if (
+        formData.label !== '' &&
+        this.AppState('D3DATA').nodes.find(node => {
             if ((node.id !== formData.id) &&
               (node.label.localeCompare(formData.label, 'en', { usage: 'search', sensitivity: 'base' })) === 0) {
               duplicateNodeID = node.id;
               return true;
             }
+            return false;
         })) {
         isDuplicateNodeLabel = true;
       }
@@ -522,13 +524,15 @@ class NodeSelector extends UNISYS.Component {
   /*/
   onEditButtonClick(event) {
     event.preventDefault();
-    console.log("'BEN SAYS: I AM TRYING TO VERIFY THAT THIS NODE IS NOT CURRENTLY BEING EDITED BY SOMEONE ELSE AND I CAN EDIT IT.");
-    // pseudo code
-    // call('OKTOEDIT', {
-    //   onOK: { editNode },
-    //   onLocked: {
-    //     function() { alert("Sorry, this node is currently being edited by someone else"); } }
-    // }
+    this.NetCall('SRV_DBLOCKNODE',{ nodeID: 2 })
+    .then((data)=>{
+      if (data.NOP) {
+        console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
+      } else if (data.locked) {
+        console.log(`SERVER SAYS: lock success! you can edit Node ${data.nodeID}`);
+        console.log(`SERVER SAYS: unlock the node after successful DBUPDATE`);
+      }
+    });
   } // onEditButtonClick
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/
@@ -639,7 +643,19 @@ class NodeSelector extends UNISYS.Component {
       // write data to database
       // setting dbWrite to true will distinguish this update
       // from a remote one
-      this.AppCall('DB_UPDATE', { node });
+      this.AppCall('DB_UPDATE', { node })
+      .then(()=>{
+        this.NetCall('SRV_DBUNLOCKNODE',{ nodeID: 2 })
+        .then((data)=>{
+          if (data.NOP) {
+            console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
+          } else if (data.unlocked) {
+            console.log(`SERVER SAYS: unlock success! you have released Node ${data.nodeID}`);
+          }
+        });
+      });
+      // probably should unlock the node:
+
     } // onSubmit
 
 
