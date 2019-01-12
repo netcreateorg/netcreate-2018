@@ -4,7 +4,7 @@ DATABASE SERVER
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = true;
+const DBG = false;
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -37,7 +37,6 @@ let DB = {};
 /*/ API: Initialize the database
 /*/
 DB.InitializeDatabase = function(options = {}) {
-  console.log(PR, `InitializeDatabase`);
   FS.ensureDir(PATH.dirname(DB_FILE));
   if (!FS.existsSync(DB_FILE)) {
     console.log(PR, `No ${DB_FILE} yet, so filling from ${DB_CLONEMASTER}...`);
@@ -54,7 +53,6 @@ DB.InitializeDatabase = function(options = {}) {
   ropt = Object.assign(ropt, options);
   m_db = new Loki(DB_FILE, ropt);
   m_options = ropt;
-  console.log(PR, `Initialized LokiJS Database '${DB_FILE}'`);
 
   // callback on load
   function f_DatabaseInitialize() {

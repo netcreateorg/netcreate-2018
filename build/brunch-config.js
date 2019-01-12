@@ -60,7 +60,8 @@ module.exports = {
       // npm i --save-dev babel babel-preset-env babel-preset-react
       // npm i --save-dev babel-brunch@github:babel/babel-brunch
         presets   : ['env', 'react']
-      }
+      },
+      autoReload : { enabled: true }
     },
 
 /// SERVER CONFIGURATION //////////////////////////////////////////////////////
@@ -71,7 +72,7 @@ module.exports = {
 /*/ server: {
       // viewing url is http://localhost:3000
       port   : 3000
-     },
+    },
 
 /// NPM INTEGRATION ///////////////////////////////////////////////////////////
 /*/ Brunch is aware of the node_modules directory but sometimes needs help to
@@ -84,6 +85,35 @@ module.exports = {
       globals: {
         jquery: 'jquery'
       }
+    },
+
+/// OVERRIDES FOR PRODUCTION //////////////////////////////////////////////////
+/*/ Brunch configuration settings default to development mode in the
+    environment. You can override each env (e.g. production) after all other
+    declarations are done.
+/*/ overrides: {
+      classroom: {
+        plugins: {
+          autoReload: { enabled: false }
+        },
+        hooks: {
+          onCompile() {
+            const server = require("./brunch-server");
+            return new Promise((resolve, reject) => {
+              server({ port : 3000}, function() {
+                resolve();
+              });
+            });
+          }
+        }
+      },
+      classroom_zip: {
+        optimize: false,
+        sourceMaps: true,
+        plugins: {
+          autoReload: { enabled: false }
+        }
+      }
     }
 
-};
+}; // module.exports
