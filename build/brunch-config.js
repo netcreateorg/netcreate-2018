@@ -19,6 +19,10 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+/// LOAD LIBRARIES ////////////////////////////////////////////////////////////
+/// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+const UDB = require('./app/unisys/server-database');
+
 // CommonJS module format
 // exports a configuration object
 module.exports = {
@@ -92,6 +96,7 @@ module.exports = {
     environment. You can override each env (e.g. production) after all other
     declarations are done.
 /*/ overrides: {
+      // env 'classroom' is set by npm start / npm run start
       classroom: {
         plugins: {
           autoReload: { enabled: false }
@@ -107,11 +112,32 @@ module.exports = {
           }
         }
       },
-      classroom_zip: {
+      // env 'package' is set by npm run package
+      package: {
         optimize: false,
         sourceMaps: true,
         plugins: {
           autoReload: { enabled: false }
+        },
+        hooks: {
+          preCompile() {
+            // save json of database to public/data
+            UDB.WriteJSON(`${__dirname}/public/data/standalone-db.json`);
+          }
+        }
+      },
+      // env 'package_dbg' is set by npm run package:debug
+      package_debug: {
+        optimize: false,
+        sourceMaps: true,
+        server : {
+          path: `${__dirname}/brunch-server-static.js`
+        },
+        hooks: {
+          preCompile() {
+            // save json of database to public/data
+            UDB.WriteJSON(`${__dirname}/public/data/standalone-db.json`);
+          }
         }
       }
     }

@@ -49,6 +49,16 @@ var UDATA = null; // assigned during NETWORK.Connect()
     completely.
 /*/
 NETWORK.Connect = function(datalink, opt) {
+  // special case: OFFLINE mode is set by a different set of magical
+  // window.NC_UNISYS properties
+  if (window.NC_UNISYS.server.ip==='standalone') {
+    m_status = M_OFFLINE;
+    console.warn(PR,"OFFLINE MODE: NETWORK.Connect() suppressed!");
+    NetMessage.GlobalOfflineMode();
+    if (typeof opt.success === "function") opt.success();
+    return;
+  }
+
   // if multiple network connections occur, emit warning
   // warning: don't modify this unless you have a deep knowledge of how
   // the webapp system works or you might break something

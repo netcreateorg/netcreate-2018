@@ -37,7 +37,7 @@ let DB = {};
 /*/ API: Initialize the database
 /*/
 DB.InitializeDatabase = function(options = {}) {
-  FS.ensureDir(PATH.dirname(DB_FILE));
+  FS.ensureDirSync(PATH.dirname(DB_FILE));
   if (!FS.existsSync(DB_FILE)) {
     console.log(PR, `No ${DB_FILE} yet, so filling from ${DB_CLONEMASTER}...`);
     FS.copySync(`./runtime/${DB_CLONEMASTER}`, DB_FILE);
@@ -89,10 +89,14 @@ DB.InitializeDatabase = function(options = {}) {
     } else {
       m_max_edgeID = 0;
     }
-    console.log(
+    if (DBG) console.log(
       PR,
       `highest ids: NODE.id='${m_max_nodeID}', EDGE.id='${m_max_edgeID}'`
     );
+
+    if (typeof m_options.onLoadComplete==='function') {
+      m_options.onLoadComplete();
+    }
   } // end f_DatabaseInitialize
 
   // UTILITY FUNCTION
@@ -341,6 +345,36 @@ DB.FilterEdgeLog = function(edge) {
   Reflect.deleteProperty(newEdge, "_elog");
   return newEdge;
 };
+
+/// JSON EXPORT ///////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ called by brunch to generate an up-to-date JSON file to path.
+    creates the path if it doesn't exist
+/*/
+DB.WriteJSON = function( filePath ) {
+  let db = new Loki(DB_FILE,{
+      autoload: true,
+      autoloadCallback: () => {
+        if (typeof filePath==='string') {
+          console.log(PR,`writing { nodes, edges } to '${filePath}'`);
+          let nodes = db.getCollection("nodes").chain()
+            .data({ removeMeta: true });
+          let edges = db.getCollection("edges").chain()
+            .data({ removeMeta: true });
+          let data = { nodes, edges };
+          let json = JSON.stringify(data);
+          console.log(PR,`ensuring DIR ${PATH.dirname(filePath)}`);
+          FS.ensureDirSync(PATH.dirname( filePath ));
+          console.log(PR,`writing file ${filePath}`);
+          FS.writeFileSync( filePath, json );
+        } else {
+          console.log(PR,`ERR path ${filePath} must be a pathname`);
+        }
+      }
+    }
+  );
+};
+
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 module.exports = DB;

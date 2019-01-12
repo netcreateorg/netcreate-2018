@@ -151,41 +151,64 @@ const TEMPLATE_URL = "../templates/alexander.json";
     see client-lifecycle.js for description
 /*/
 MOD.Hook("LOADASSETS", () => {
-  if (NETWORK.IsOfflineMode()) {
-    console.warn("NCLOGIC LOADASSETS DETECT OFFLINE MODE");
-    return new Promise((resolve, reject) => {
-      const lstore = window.localStorage;
-      let ld3 = lstore.getItem("D3DATA");
-      D3DATA = JSON.parse(ld3);
-      if (!D3DATA) reject(Error("couldn't get D3DATA from Local Store"));
-      UDATA.SetAppState("D3DATA", D3DATA);
-      let tem = lstore.getItem("TEMPLATE");
-      TEMPLATE = JSON.parse(tem);
-      console.log(D3DATA, TEMPLATE);
-      if (!TEMPLATE) reject(Error("couldn't get TEMPLATE from Local Store"));
-      UDATA.SetAppState("TEMPLATE", TEMPLATE);
-      resolve();
-    });
-  } else {
-    // not offline startup, so access network
-    // load data into D3DATA
-    let p1 = DATASTORE.PromiseD3Data().then(data => {
-      if (DBG) console.log(PR, "DATASTORE returned data", data);
+  if (UNISYS.IsOfflineMode()) {
+
+    const USE_CACHE = false;
+    if (USE_CACHE) {
+      console.warn(PR,"OFFLINE MODE: 'LOADASSETS' using browser cache");
+      return new Promise((resolve, reject) => {
+        const lstore = window.localStorage;
+        let ld3 = lstore.getItem("D3DATA");
+        D3DATA = JSON.parse(ld3);
+        if (!D3DATA) reject(Error("couldn't get D3DATA from Local Store"));
+        UDATA.SetAppState("D3DATA", D3DATA);
+        let tem = lstore.getItem("TEMPLATE");
+        TEMPLATE = JSON.parse(tem);
+        console.log(D3DATA, TEMPLATE);
+        if (!TEMPLATE) reject(Error("couldn't get TEMPLATE from Local Store"));
+        UDATA.SetAppState("TEMPLATE", TEMPLATE);
+        resolve();
+      });
+    }
+    // don't use cache, but instead try loading standalone files
+    console.warn(PR,"OFFLINE MODE: 'LOADASSETS' is using files (USE_CACHE=false)");
+    let p1 = DATASTORE.PromiseJSONFile("../data/standalone-db.json")
+    .then(data => {
+      console.log(data);
       m_ConvertData(data);
       m_RecalculateAllEdgeWeights(data);
       UDATA.SetAppState("D3DATA", data);
       // Save off local reference because we don't have D3DATA AppStateChange handler
       D3DATA = data;
     });
-    // load Template data and return it as a promise
-    // so that react render is called only after the template is loaded
-    let p2 = DATASTORE.PromiseJSONFile(TEMPLATE_URL).then(data => {
-      if (DBG) console.log(PR, "DATASTORE returned json", data);
+    // load template
+    let p2 = DATASTORE.PromiseJSONFile(TEMPLATE_URL)
+    .then(data => {
       TEMPLATE = data;
       UDATA.SetAppState("TEMPLATE", TEMPLATE);
     });
-    return Promise.all([p1, p2]);
+    return Promise.all([p1,p2]);
   }
+  // if got this far...
+  // NOT OFFLINE MODE so load data into D3DATA
+  let p1 = DATASTORE.PromiseD3Data()
+  .then(data => {
+    if (DBG) console.log(PR, "DATASTORE returned data", data);
+    m_ConvertData(data);
+    m_RecalculateAllEdgeWeights(data);
+    UDATA.SetAppState("D3DATA", data);
+    // Save off local reference because we don't have D3DATA AppStateChange handler
+    D3DATA = data;
+  });
+  // load Template data and return it as a promise
+  // so that react render is called only after the template is loaded
+  let p2 = DATASTORE.PromiseJSONFile(TEMPLATE_URL)
+  .then(data => {
+    if (DBG) console.log(PR, "DATASTORE returned json", data);
+    TEMPLATE = data;
+    UDATA.SetAppState("TEMPLATE", TEMPLATE);
+  });
+  return Promise.all([p1, p2]);
 }); // loadassets
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////

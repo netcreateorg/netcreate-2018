@@ -259,8 +259,9 @@ class NetMessage {
         m_mode
       );
     } else {
-      console.log(
-        "SocketSend(): Network is in offline mode: all network traffic suppressed"
+      console.warn(
+        PR,
+        "OFFLINE MODE: SocketSend() suppressed!"
       );
     }
     // FYI: global m_netsocket is not defined on server, since packets arrive on multiple sockets
@@ -270,7 +271,7 @@ class NetMessage {
   /*/
   QueueTransaction(socket = m_netsocket) {
     if (m_mode === M_OFFLINE) {
-      console.log("ISOFFLINE");
+      console.warn(PR, "OFFLINE MODE: QueueTransaction() suppressed!");
       return Promise.resolve();
     }
     // global m_netsocket is not defined on server, since packets arrive on multiple sockets
@@ -392,7 +393,7 @@ NetMessage.GlobalCleanup = function() {
 NetMessage.GlobalOfflineMode = function() {
   m_mode = M_OFFLINE;
   if (m_netsocket) {
-    console.error(PR, "GlobalDisconnect: deallocating netsocket");
+    console.warn(PR, "OFFLINE MODE: NetMessage disabling network");
     m_netsocket = null;
     let event = new CustomEvent("UNISYSDisconnect", {});
     console.log("dispatching event to", document, event);

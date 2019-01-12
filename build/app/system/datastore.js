@@ -71,6 +71,12 @@ DSTOR.Data = function() {
 /*/ API: Write update to database
 /*/
 DSTOR.UpdateServerDB = function(data) {
+  // check that network is online
+  if (UNISYS.IsOfflineMode()) {
+    console.warn(PR,`OFFLINE MODE: UpdateServerDB() suppressed!`);
+    return;
+  }
+  // it is!
   UDATA.Call("SRV_DBUPDATE", data).then(res => {
     if (res.OK) {
       console.log(PR, `server db transaction`, data, `success`);
