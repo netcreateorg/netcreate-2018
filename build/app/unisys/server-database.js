@@ -99,9 +99,8 @@ DB.InitializeDatabase = function(options = {}) {
   function f_AutosaveStatus() {
     let nodeCount = NODES.count();
     let edgeCount = EDGES.count();
-    if (DBG)
-      console.log(
-        PR,
+    if (DBG) console.log(
+          PR,
         `autosaving ${nodeCount} nodes and ${edgeCount} edges...`
       );
   }
@@ -114,8 +113,7 @@ DB.InitializeDatabase = function(options = {}) {
 DB.PKT_GetDatabase = function(pkt) {
   let nodes = NODES.chain().data({ removeMeta: true });
   let edges = EDGES.chain().data({ removeMeta: true });
-  if (DBG)
-    console.log(
+  if (DBG) console.log(
       PR,
       `PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${
         edges.length
@@ -147,15 +145,13 @@ DB.PKT_SetDatabase = function(pkt) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_GetNewNodeID = function(pkt) {
   m_max_nodeID += 1;
-  if (DBG)
-    console.log(PR, `PKT_GetNewNodeID ${pkt.Info()} nodeID ${m_max_nodeID}`);
+  if (DBG) console.log(PR, `PKT_GetNewNodeID ${pkt.Info()} nodeID ${m_max_nodeID}`);
   return { nodeID: m_max_nodeID };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_GetNewEdgeID = function(pkt) {
   m_max_edgeID += 1;
-  if (DBG)
-    console.log(PR, `PKT_GetNewEdgeID ${pkt.Info()} edgeID ${m_max_edgeID}`);
+  if (DBG) console.log(PR, `PKT_GetNewEdgeID ${pkt.Info()} edgeID ${m_max_edgeID}`);
   return { edgeID: m_max_edgeID };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -168,8 +164,7 @@ DB.PKT_Update = function(pkt) {
     let matches = NODES.find({ id: node.id });
     if (matches.length === 0) {
       // if there was no node, then this is an insert new operation
-      if (DBG)
-        console.log(
+      if (DBG) console.log(
           PR,
           `PKT_Update ${pkt.Info()} INSERT nodeID ${JSON.stringify(node)}`
         );
@@ -180,8 +175,7 @@ DB.PKT_Update = function(pkt) {
     } else if (matches.length === 1) {
       // there was one match to update
       NODES.findAndUpdate({ id: node.id }, n => {
-        if (DBG)
-          console.log(
+        if (DBG) console.log(
             PR,
             `PKT_Update ${pkt.Info()} UPDATE nodeID ${node.id} ${JSON.stringify(
               node
@@ -193,8 +187,7 @@ DB.PKT_Update = function(pkt) {
       });
       retval = { op: "update", node };
     } else {
-      if (DBG)
-        console.log(
+      if (DBG) console.log(
           PR,
           `WARNING: multiple nodeID ${node.id} x${matches.length}`
         );
@@ -209,8 +202,7 @@ DB.PKT_Update = function(pkt) {
     let matches = EDGES.find({ id: edge.id });
     if (matches.length === 0) {
       // this is a new edge
-      if (DBG)
-        console.log(
+      if (DBG) console.log(
           PR,
           `PKT_Update ${pkt.Info()} INSERT edgeID ${edge.id} ${JSON.stringify(
             edge
@@ -223,8 +215,7 @@ DB.PKT_Update = function(pkt) {
     } else if (matches.length === 1) {
       // update this edge
       EDGES.findAndUpdate({ id: edge.id }, e => {
-        if (DBG)
-          console.log(
+        if (DBG) console.log(
             PR,
             `PKT_Update ${pkt.SourceGroupID()} UPDATE edgeID ${
               edge.id
@@ -245,8 +236,7 @@ DB.PKT_Update = function(pkt) {
 
   // DELETE NODES
   if (nodeID !== undefined) {
-    if (DBG)
-      console.log(PR, `PKT_Update ${pkt.Info()} DELETE nodeID ${nodeID}`);
+    if (DBG) console.log(PR, `PKT_Update ${pkt.Info()} DELETE nodeID ${nodeID}`);
 
     // Log first so it's apparent what is triggering the edge changes
     LOGGER.Write(pkt.Info(), `delete node`, nodeID);
@@ -297,8 +287,7 @@ DB.PKT_Update = function(pkt) {
 
   // DELETE EDGES
   if (edgeID !== undefined) {
-    if (DBG)
-      console.log(PR, `PKT_Update ${pkt.Info()} DELETE edgeID ${edgeID}`);
+    if (DBG) console.log(PR, `PKT_Update ${pkt.Info()} DELETE edgeID ${edgeID}`);
     LOGGER.Write(pkt.Info(), `delete edge`, edgeID);
     EDGES.findAndRemove({ id: edgeID });
     return { op: "delete", edgeID };
