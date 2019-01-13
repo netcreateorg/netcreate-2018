@@ -1,7 +1,7 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     NETCREATE CUSTOM APP SERVER
-    brunch-config.js specifies this custom server
+    automatically loaded by 'brunch watch -s' from package.json
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -18,7 +18,7 @@ const EXEC       = require('child_process').exec;
 /// LOCAL CONSTANTS, VARS AND FLAGS ///////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPTS    = require('./app/system/util/prompts');
-const PR         = PROMPTS.Pad('AppServer');
+const PR         = PROMPTS.Pad('APP_SERV');
 const DP         = PROMPTS.Stars(3);
 const GIT        = PROMPTS.Pad('GIT');
 var   UKEY_IDX   = 0;

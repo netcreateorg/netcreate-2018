@@ -13,7 +13,7 @@ module.exports = ( config, callback ) => {
   const app = express();
   app.use(express.static(`${__dirname}/public`));
   app.listen(config.port,function() {
-    const PR  = 'PKG_DEBUG';
+    const PR  = 'PKGDEBUG -';
     const DP  = '***';
     console.log(PR);
     console.log(PR,DP,`PACKAGE DEBUG SERVER (STATIC HTML ONLY, NO UNISYS)`,DP);

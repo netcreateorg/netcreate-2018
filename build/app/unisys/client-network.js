@@ -32,7 +32,7 @@ const M1_CONNECTING = 1;
 const M2_CONNECTED = 2;
 const M3_REGISTERED = 3;
 const M4_READY = 4;
-const M_OFFLINE = 5;
+const M_STANDALONE = 5;
 const M_NOCONNECT = 6;
 var m_status = M0_INIT;
 var m_options = {};
@@ -49,11 +49,11 @@ var UDATA = null; // assigned during NETWORK.Connect()
     completely.
 /*/
 NETWORK.Connect = function(datalink, opt) {
-  // special case: OFFLINE mode is set by a different set of magical
+  // special case: STANDALONE mode is set by a different set of magical
   // window.NC_UNISYS properties
   if (window.NC_UNISYS.server.ip==='standalone') {
-    m_status = M_OFFLINE;
-    console.warn(PR,"OFFLINE MODE: NETWORK.Connect() suppressed!");
+    m_status = M_STANDALONE;
+    console.warn(PR,"STANDALONE MODE: NETWORK.Connect() suppressed!");
     NetMessage.GlobalOfflineMode();
     if (typeof opt.success === "function") opt.success();
     return;
@@ -93,7 +93,7 @@ NETWORK.Connect = function(datalink, opt) {
   NETWORK.AddListener("close", function(event) {
     if (DBG.connect) console.log(PR, "..CLOSE", event.target.url);
     NetMessage.GlobalOfflineMode();
-    m_status = M_OFFLINE;
+    m_status = M_STANDALONE;
   });
   // handle socket errors
   NETWORK.AddListener("error", function(event) {
@@ -113,8 +113,8 @@ NETWORK.Connect = function(datalink, opt) {
       case appCache.UPDATEREADY: /* falls-through */
       case appCache.OBSOLETE:
         // this occurs
-        console.info(WARN, "OFFLINE MODE. USING CACHED DATA");
-        m_status = M_OFFLINE;
+        console.info(WARN, "STANDALONE MODE. USING CACHED DATA");
+        m_status = M_STANDALONE;
         NetMessage.GlobalOfflineMode(); // deregister socket
         // force promise to succeed
         if (typeof m_options.success === "function") m_options.success();
@@ -281,8 +281,8 @@ NETWORK.SocketUADDR = function() {
   return NetMessage.SocketUADDR();
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-NETWORK.IsOfflineMode = function() {
-  return m_status === M_OFFLINE;
+NETWORK.IsStandaloneMode = function() {
+  return m_status === M_STANDALONE;
 };
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////

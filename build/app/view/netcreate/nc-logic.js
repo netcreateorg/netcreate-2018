@@ -151,11 +151,11 @@ const TEMPLATE_URL = "../templates/alexander.json";
     see client-lifecycle.js for description
 /*/
 MOD.Hook("LOADASSETS", () => {
-  if (UNISYS.IsOfflineMode()) {
+  if (UNISYS.IsStandaloneMode()) {
 
     const USE_CACHE = false;
     if (USE_CACHE) {
-      console.warn(PR,"OFFLINE MODE: 'LOADASSETS' using browser cache");
+      console.warn(PR,"STANDALONE MODE: 'LOADASSETS' using browser cache");
       return new Promise((resolve, reject) => {
         const lstore = window.localStorage;
         let ld3 = lstore.getItem("D3DATA");
@@ -171,10 +171,9 @@ MOD.Hook("LOADASSETS", () => {
       });
     }
     // don't use cache, but instead try loading standalone files
-    console.warn(PR,"OFFLINE MODE: 'LOADASSETS' is using files (USE_CACHE=false)");
+    console.warn(PR,"STANDALONE MODE: 'LOADASSETS' is using files (USE_CACHE=false)");
     let p1 = DATASTORE.PromiseJSONFile("../data/standalone-db.json")
     .then(data => {
-      console.log(data);
       m_ConvertData(data);
       m_RecalculateAllEdgeWeights(data);
       UDATA.SetAppState("D3DATA", data);
@@ -190,7 +189,7 @@ MOD.Hook("LOADASSETS", () => {
     return Promise.all([p1,p2]);
   }
   // if got this far...
-  // NOT OFFLINE MODE so load data into D3DATA
+  // NOT STANDALONE MODE so load data into D3DATA
   let p1 = DATASTORE.PromiseD3Data()
   .then(data => {
     if (DBG) console.log(PR, "DATASTORE returned data", data);

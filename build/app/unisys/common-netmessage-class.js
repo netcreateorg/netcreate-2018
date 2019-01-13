@@ -29,7 +29,7 @@ var m_group_id = null;
 
 const M_INIT = "init";
 const M_ONLINE = "online";
-const M_OFFLINE = "offline";
+const M_STANDALONE = "offline";
 const M_CLOSED = "closed";
 const M_ERROR = "error";
 var m_mode = M_INIT;
@@ -252,7 +252,7 @@ class NetMessage {
         console.log(PR, status);
       }
       socket.send(this.JSON());
-    } else if (m_mode !== M_OFFLINE) {
+    } else if (m_mode !== M_STANDALONE) {
       console.log(
         PR,
         "SocketSend: Can't send because NetMessage mode is",
@@ -261,7 +261,7 @@ class NetMessage {
     } else {
       console.warn(
         PR,
-        "OFFLINE MODE: SocketSend() suppressed!"
+        "STANDALONE MODE: SocketSend() suppressed!"
       );
     }
     // FYI: global m_netsocket is not defined on server, since packets arrive on multiple sockets
@@ -270,8 +270,8 @@ class NetMessage {
   /*/ Create a promise to resolve when packet returns
   /*/
   QueueTransaction(socket = m_netsocket) {
-    if (m_mode === M_OFFLINE) {
-      console.warn(PR, "OFFLINE MODE: QueueTransaction() suppressed!");
+    if (m_mode === M_STANDALONE) {
+      console.warn(PR, "STANDALONE MODE: QueueTransaction() suppressed!");
       return Promise.resolve();
     }
     // global m_netsocket is not defined on server, since packets arrive on multiple sockets
@@ -391,9 +391,9 @@ NetMessage.GlobalCleanup = function() {
     server and the client. This is a client feature.
 /*/
 NetMessage.GlobalOfflineMode = function() {
-  m_mode = M_OFFLINE;
+  m_mode = M_STANDALONE;
   if (m_netsocket) {
-    console.warn(PR, "OFFLINE MODE: NetMessage disabling network");
+    console.warn(PR, "STANDALONE MODE: NetMessage disabling network");
     m_netsocket = null;
     let event = new CustomEvent("UNISYSDisconnect", {});
     console.log("dispatching event to", document, event);

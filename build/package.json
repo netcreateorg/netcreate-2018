@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "brunch watch -s",
     "dev:inspect": "node --inspect brunch-server.js",
-    "start": "npm run classroom",
+    "start": "brunch build -e classroom",
     "classroom": "brunch build -e classroom",
     "package": "brunch build -e package",
     "package:debug": "brunch watch -e package_debug -s",

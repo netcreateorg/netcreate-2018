@@ -60,8 +60,8 @@ var UDATA = new UniData(UNISYS);
 /// UNISYS MESSAGE REGISTRATION ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UNISYS.RegisterMessagesPromise = (messages = []) => {
-  if (NETWORK.IsOfflineMode()) {
-    console.warn(PR,"OFFLINE MODE: RegisterMessagesPromise() suppressed!");
+  if (NETWORK.IsStandaloneMode()) {
+    console.warn(PR,"STANDALONE MODE: RegisterMessagesPromise() suppressed!");
     return Promise.resolve();
   }
   if (messages.length) {
@@ -280,8 +280,8 @@ UNISYS.SocketUADDR = () => {
   return NETWORK.SocketUADDR();
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UNISYS.IsOfflineMode = () => {
-  return NETWORK.IsOfflineMode();
+UNISYS.IsStandaloneMode = () => {
+  return NETWORK.IsStandaloneMode();
 }
 
 /// DATA LOGGING //////////////////////////////////////////////////////////////

@@ -91,6 +91,12 @@ module.exports = {
       }
     },
 
+    hooks: {
+      onCompile() {
+        console.log(`\n*** NetCreate (DEV) is running ***\n`);
+      }
+    },
+
 /// OVERRIDES FOR PRODUCTION //////////////////////////////////////////////////
 /*/ Brunch configuration settings default to development mode in the
     environment. You can override each env (e.g. production) after all other
@@ -106,6 +112,7 @@ module.exports = {
             const server = require("./brunch-server");
             return new Promise((resolve, reject) => {
               server({ port : 3000}, function() {
+                console.log(`\n*** NetCreate (CLASSROOM) is running ***\n`);
                 resolve();
               });
             });
@@ -123,6 +130,12 @@ module.exports = {
           preCompile() {
             // save json of database to public/data
             UDB.WriteJSON(`${__dirname}/public/data/standalone-db.json`);
+          },
+          onCompile() {
+            console.log(`\n*** STANDALONE PACKAGE has been BUILT`);
+            console.log(`\n    The standalone package is in public/ and run from index.html.`);
+            console.log(`    Edit index.html to change the prompts shown in the app.`);
+            console.log(`    Upload contents of public/ to a web server to use!\n`);
           }
         }
       },
@@ -137,6 +150,10 @@ module.exports = {
           preCompile() {
             // save json of database to public/data
             UDB.WriteJSON(`${__dirname}/public/data/standalone-db.json`);
+          },
+          onCompile() {
+            console.log(`\n*** STANDALONE PACKAGE DEBUG MODE`);
+            console.log(`    Point browser to MAINAPP or CLIENT addresses indicated `);
           }
         }
       }

@@ -17,7 +17,7 @@ const FS = require("fs-extra");
 const SESSION = require("../unisys/common-session");
 const LOGGER = require("../unisys/server-logger");
 const PROMPTS = require("../system/util/prompts");
-const PR = PROMPTS.Pad("SRV-DB");
+const PR = PROMPTS.Pad("ServerDB");
 const DB_FILE = "./runtime/netcreate.loki";
 const DB_CLONEMASTER = "alexander.loki";
 
@@ -89,9 +89,7 @@ DB.InitializeDatabase = function(options = {}) {
     } else {
       m_max_edgeID = 0;
     }
-    if (DBG) console.log(
-      PR,
-      `highest ids: NODE.id='${m_max_nodeID}', EDGE.id='${m_max_edgeID}'`
+    console.log(PR,`DATABASE LOADED! m_max_nodeID '${m_max_nodeID}', m_max_edgeID '${m_max_edgeID}'`
     );
 
     if (typeof m_options.onLoadComplete==='function') {
@@ -103,10 +101,7 @@ DB.InitializeDatabase = function(options = {}) {
   function f_AutosaveStatus() {
     let nodeCount = NODES.count();
     let edgeCount = EDGES.count();
-    if (DBG) console.log(
-          PR,
-        `autosaving ${nodeCount} nodes and ${edgeCount} edges...`
-      );
+    console.log(PR,`AUTOSAVING! ${nodeCount} NODES / ${edgeCount} EDGES <3`);
   }
 }; // InitializeDatabase()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -356,17 +351,18 @@ DB.WriteJSON = function( filePath ) {
       autoload: true,
       autoloadCallback: () => {
         if (typeof filePath==='string') {
-          console.log(PR,`writing { nodes, edges } to '${filePath}'`);
+          if (DBG) console.log(PR,`writing { nodes, edges } to '${filePath}'`);
           let nodes = db.getCollection("nodes").chain()
             .data({ removeMeta: true });
           let edges = db.getCollection("edges").chain()
             .data({ removeMeta: true });
           let data = { nodes, edges };
           let json = JSON.stringify(data);
-          console.log(PR,`ensuring DIR ${PATH.dirname(filePath)}`);
+          if (DBG) console.log(PR,`ensuring DIR ${PATH.dirname(filePath)}`);
           FS.ensureDirSync(PATH.dirname( filePath ));
-          console.log(PR,`writing file ${filePath}`);
+          if (DBG) console.log(PR,`writing file ${filePath}`);
           FS.writeFileSync( filePath, json );
+          console.log(PR,`*** WROTE JSON DATABASE`);
         } else {
           console.log(PR,`ERR path ${filePath} must be a pathname`);
         }

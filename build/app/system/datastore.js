@@ -72,8 +72,8 @@ DSTOR.Data = function() {
 /*/
 DSTOR.UpdateServerDB = function(data) {
   // check that network is online
-  if (UNISYS.IsOfflineMode()) {
-    console.warn(PR,`OFFLINE MODE: UpdateServerDB() suppressed!`);
+  if (UNISYS.IsStandaloneMode()) {
+    console.warn(PR,`STANDALONE MODE: UpdateServerDB() suppressed!`);
     return;
   }
   // it is!
@@ -95,7 +95,11 @@ DSTOR.PromiseNewNodeID = function() {
         if (DBG) console.log(PR, "server allocated node_id", data.nodeID);
         resolve(data.nodeID);
       } else {
-        reject(new Error("unknown error" + JSON.stringify(data)));
+        if (UNISYS.IsStandaloneMode()) {
+          reject(new Error("STANDALONE MODE: UI should prevent PromiseNewNodeID() from running!"));
+        } else {
+          reject(new Error("unknown error" + JSON.stringify(data)));
+        }
       }
     });
   });
@@ -110,7 +114,11 @@ DSTOR.PromiseNewEdgeID = function() {
         if (DBG) console.log(PR, "server allocated edge_id:", data.edgeID);
         resolve(data.edgeID);
       } else {
-        reject(new Error("unknown error" + JSON.stringify(data)));
+        if (UNISYS.IsStandaloneMode()) {
+          reject(new Error("STANDALONE MODE: UI should prevent PromiseNewEdgeID() from running!"));
+        } else {
+          reject(new Error("unknown error" + JSON.stringify(data)));
+        }
       }
     });
   });

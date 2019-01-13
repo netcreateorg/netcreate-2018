@@ -14,9 +14,13 @@
             // index.html is loaded only by standalone mode without a server
             // server-based operation uses index.ejs
 			window.NC_UNISYS = {
-				standalone : true,
+				standalone : {
+					prompt: 'STANDALONE VIEW',
+					timestamp: '1/1/2019'
+				},
                 server : { ip : 'standalone' },
 				client : { ip : 'standalone' },
+				
             }
 		</script>
 		<script src="scripts/netc-lib.js"></script>
