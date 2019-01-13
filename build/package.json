@@ -46,7 +46,7 @@
     "popper.js": "^1.14.3",
     "react": "^16.4.1",
     "react-autosuggest": "^9.3.4",
-    "react-dom": "^16.4.1",
+    "react-dom": "^16.4.2",
     "react-faux-dom": "^4.1.0",
     "react-popper": "^0.7.4",
     "react-router-config": "^1.0.0-beta.4",
