@@ -769,7 +769,7 @@ class NodeSelector extends UNISYS.Component {
                 hidden={this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
                 onClick={this.onEditButtonClick}
               >Edit Node</Button>
-              <p hidden={!this.state.sourceNodeIsLocked} className="small text-danger">This node is currently being editted by someone else, please try again later.</p>
+              <p hidden={!this.state.sourceNodeIsLocked} className="small text-danger">{nodePrompts.label.sourceNodeIsLockedMessage}</p>
               <Button outline size="sm"
                 hidden={!this.state.isEditable}
                 onClick={this.onCancelButtonClick}
