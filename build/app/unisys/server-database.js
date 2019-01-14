@@ -164,12 +164,30 @@ DB.PKT_GetNewEdgeID = function(pkt) {
   return { edgeID: m_max_edgeID };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// utility function for cleaning nodes with numeric id property
+function m_CleanObjID(prompt, obj) {
+  if (typeof obj.id==='string') {
+    let int = parseInt(obj.id,10);
+    console.log(PR,`${prompt} "${obj.id}" should not be string; converting to number ${int}`);
+    obj.id=int;
+  }
+  return obj;
+}
+function m_CleanID(prompt, id) {
+  if (typeof id==='string') {
+    let int = parseInt(id,10);
+    console.log(PR,`${prompt} "${id}" should not be string; converting to number ${int}`);
+    id = int;
+  }
+  return id;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_Update = function(pkt) {
   let { node, edge, nodeID, replacementNodeID, edgeID } = pkt.Data();
   let retval = {};
-
   // PROCESS NODE INSERT/UPDATE
   if (node) {
+    m_CleanObjID('node.id',node);
     let matches = NODES.find({ id: node.id });
     if (matches.length === 0) {
       // if there was no node, then this is an insert new operation
@@ -208,15 +226,11 @@ DB.PKT_Update = function(pkt) {
 
   // PROCESS EDGE INSERT/UPDATE
   if (edge) {
+    m_CleanObjID('edge.id',edge);
     let matches = EDGES.find({ id: edge.id });
     if (matches.length === 0) {
       // this is a new edge
-      if (DBG) console.log(
-          PR,
-          `PKT_Update ${pkt.Info()} INSERT edgeID ${edge.id} ${JSON.stringify(
-            edge
-          )}`
-        );
+      if (DBG) console.log(PR,`PKT_Update ${pkt.Info()} INSERT edgeID ${edge.id} ${JSON.stringify(edge)}`);
       LOGGER.Write(pkt.Info(), `insert edge`, edge.id, JSON.stringify(edge));
       DB.AppendEdgeLog(edge, pkt); // log GroupId to edge stored in database
       EDGES.insert(edge);
@@ -245,8 +259,8 @@ DB.PKT_Update = function(pkt) {
 
   // DELETE NODES
   if (nodeID !== undefined) {
+    nodeID = m_CleanID('nodeID',nodeID);
     if (DBG) console.log(PR, `PKT_Update ${pkt.Info()} DELETE nodeID ${nodeID}`);
-
     // Log first so it's apparent what is triggering the edge changes
     LOGGER.Write(pkt.Info(), `delete node`, nodeID);
 
@@ -296,6 +310,7 @@ DB.PKT_Update = function(pkt) {
 
   // DELETE EDGES
   if (edgeID !== undefined) {
+    edgeID = m_CleanID('edgeID',edgeID);
     if (DBG) console.log(PR, `PKT_Update ${pkt.Info()} DELETE edgeID ${edgeID}`);
     LOGGER.Write(pkt.Info(), `delete edge`, edgeID);
     EDGES.findAndRemove({ id: edgeID });
