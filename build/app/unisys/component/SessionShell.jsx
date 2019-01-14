@@ -204,7 +204,6 @@ class SessionShell extends UNISYS.Component {
     let decoded = SESSION.DecodeToken(token);
     let { classId, projId, hashedId, subId, groupId } = decoded;
     this.setState(decoded);
-    this.SetAppState("SESSION", decoded);
   }
 
   onSubmit(event) {
