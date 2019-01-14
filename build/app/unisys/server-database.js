@@ -61,26 +61,38 @@ DB.InitializeDatabase = function(options = {}) {
     if (NODES === null) NODES = m_db.addCollection("nodes");
     EDGES = m_db.getCollection("edges");
     if (EDGES === null) EDGES = m_db.addCollection("edges");
+
     // find highest NODE ID
     if (NODES.count() > 0) {
       m_max_nodeID = NODES.mapReduce(
-        obj => {
-          return parseInt(obj.id, 10);
+        (obj) => {
+          if (typeof obj.id==='string') {
+            let int = parseInt(obj.id,10);
+            console.log(PR,`node.id "${obj.id}" should not be string; converted to ${int}`);
+            obj.id = int;
+          }
+          return obj.id;
         },
-        arr => {
+        (arr) => {
           return Math.max(...arr);
         }
       ); // end mapReduce node ids
     } else {
       m_max_nodeID = 0;
     }
+
     // find highest EDGE ID
     if (EDGES.count() > 0) {
       m_max_edgeID = EDGES.mapReduce(
-        obj => {
-          return parseInt(obj.id, 10);
+        (obj) => {
+          if (typeof obj.id==='string') {
+            let int = parseInt(obj.id,10);
+            console.log(PR,`edge.id "${obj.id}" should not be string; converted to ${int}`);
+            obj.id = int;
+          }
+          return obj.id;
         },
-        arr => {
+        (arr) => {
           return Math.max(...arr);
         }
       ); // end mapReduce edge ids
