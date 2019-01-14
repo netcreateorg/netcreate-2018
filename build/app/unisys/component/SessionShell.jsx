@@ -205,16 +205,21 @@ class SessionShell extends UNISYS.Component {
     let { classId, projId, hashedId, subId, groupId } = decoded;
     this.setState(decoded);
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   onSubmit(event) {
     event.preventDefault();
+    const BRUTAL_REDIRECT = true;
     if (this.state.isValid) {
       // force a page URL change
-      let redirect = `/edit/${this.state.token}`;
-      // window.location=redirect;
-      this.props.history.push(redirect);
+      if (BRUTAL_REDIRECT) {
+        const redirect = `/#/edit/${this.state.token}`;
+        window.location=redirect;
+      } else {
+        const redirect = `/edit/${this.state.token}`
+        this.props.history.push(redirect);
+      }
     }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   }
 } // UNISYS.Component SessionShell
 
