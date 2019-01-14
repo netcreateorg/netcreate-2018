@@ -102,11 +102,17 @@ module.exports = (config, callback) => {
       EXEC('git symbolic-ref --short -q HEAD',(error,stdout,stderr) => {
         if (error) {
           // console.error(BP,'git symbolic-ref query error',error);
-          console.log(PR,DP,'You are running a <detached> branch');
+          console.log(PR);
+          console.log(PR,'GIT STATUS:');
+          console.log(PR,'You are running a <detached> branch');
+          console.log(PR);
         }
         if (stdout) {
           stdout = stdout.trim();
-          console.log(PR,DP,'You are running the "'+stdout+'" branch');
+          console.log(PR);
+          console.log(PR,'GIT STATUS:');
+          console.log(PR,'You are running the "'+stdout+'" branch');
+          console.log(PR);
         }
       });
       // now start the UNISYS network
