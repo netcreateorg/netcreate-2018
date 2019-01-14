@@ -175,7 +175,6 @@ class SessionShell extends UNISYS.Component {
     let token = this.props.match.params.token;
     let decoded = SESSION.DecodeToken(token) || {};
     this.SetAppState("SESSION", decoded);
-    if (decoded.isValid) this.AppCall("GROUPID_CHANGE", token);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Main Render Function
