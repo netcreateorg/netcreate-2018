@@ -41,7 +41,7 @@ const PROMPTS = require("system/util/prompts");
 const SESSION = require("unisys/common-session");
 const PR = PROMPTS.Pad("SessionShell");
 const ReactStrap = require("reactstrap");
-const { Col, FormGroup, FormFeedback, Input, Label } = ReactStrap;
+const { InputGroup, InputGroupAddon, Button, Col, Row, Form, FormGroup, FormFeedback, Input, Label } = ReactStrap;
 const { Redirect } = require("react-router-dom");
 const UNISYS = require("unisys/client");
 
@@ -50,7 +50,6 @@ const UNISYS = require("unisys/client");
 /// these styles are copied from AutoComplete.css
 const INPUT_STYLE = {
   border: "1px solid #aaa",
-  borderRadius: "4px",
   fontFamily: "Helvetica, sans-serif",
   fontWeight: 300,
   fontSize: "10px",
@@ -76,13 +75,17 @@ class SessionShell extends UNISYS.Component {
     this.renderLogin = this.renderLogin.bind(this);
     this.renderLoggedIn = this.renderLoggedIn.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.onSubmit = this.onSubmit.bind(this);
     this.state = {
+      token: null,
       classId: null,
       projId: null,
       hashedId: null,
       groupId: null,
+      subId: null,
       isValid: false
     };
+
   }
 
   /// ROUTE RENDER FUNCTIONS ////////////////////////////////////////////////////
@@ -118,43 +121,49 @@ class SessionShell extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ render must login (readonly)
   /*/
-  renderLogin(token) {
-    let decoded = token ? SESSION.DecodeToken(token) : this.state;
-    let { classId, projId, groupId, subId, hashedId, isValid } = decoded;
-    let formFeedback, tip;
-    if (classId) tip = "keep entering...";
-    else tip = "enter group ID";
+  renderLogin() {
+    let { token, classId, projId, groupId, subId, hashedId, isValid } = this.state;
+    if (token) token = token.toUpperCase();
+    let formFeedback, tip, input;
+    tip = "type group ID";
+    if (classId) tip = "scanning for valid code...";
+    if (projId) tip = "waiting for valid code...";
+    if (groupId) tip = "waiting for extra ID...";
     if (hashedId) {
       if (hashedId.length >= 3) {
-        if (!isValid) tip = `'${token}' is an invalid code`;
+        if (!groupId) tip = `'${token}' is an invalid code`;
+        else {
+          if (subId) tip = `login in as GROUP ${groupId} ${subId}`;
+          else tip = `login as GROUP ${groupId} or add -ID<num>`;
+        }
       }
     }
-    formFeedback = tip ? (
-      <FormFeedback className="text-right">
-        <small>{tip}</small>
-      </FormFeedback>
-    ) : (
-      undefined
-    );
+    if (groupId) {
+      if (subId===0) {
+        tip = `e.g. ${classId}-${projId}-${hashedId} followed by -ID<num>`;
+        input = <Input invalid name="sessionToken" id="sessionToken" bsSize="sm" style={INPUT_STYLE} className="text-right" placeholder="CLASSID-PROJID-CODE" onChange={this.handleChange} />
+        formFeedback = <FormFeedback className="text-right"><small>{tip}</small></FormFeedback>
+      } else {
+        input = <Input valid name="sessionToken" id="sessionToken" bsSize="sm" style={INPUT_STYLE} className="text-right" placeholder="CLASSID-PROJID-CODE" onChange={this.handleChange} />
+        formFeedback = <FormFeedback valid className="text-right"><small>{tip}</small></FormFeedback>
+      }
+    } else {
+        input = <Input invalid name="sessionToken" id="sessionToken" bsSize="sm" style={INPUT_STYLE} className="text-right" placeholder="CLASSID-PROJID-CODE" onChange={this.handleChange} />
+        formFeedback = <FormFeedback className="text-right"><small>{tip}</small></FormFeedback>
+    }
+
     return (
+      <Form onSubmit={this.onSubmit}>
       <FormGroup row>
-        <Col sm={3}>
-          <Label className="small text-muted">Login</Label>
-        </Col>
-        <Col sm={9}>
-          <Input
-            invalid
-            name="sessionToken"
-            id="sessionToken"
-            bsSize="sm"
-            style={INPUT_STYLE}
-            className="text-right"
-            placeholder="CLASS-PROJECT-XYZ"
-            onChange={this.handleChange}
-          />
+        <Col>
+        <InputGroup>
+          <InputGroupAddon addonType="prepend"><Button style={{fontSize:'10px'}} color="secondary" size="sm" disabled={!isValid} onSubmit={this.onSubmit}>LOGIN</Button></InputGroupAddon>
+          {input}
           {formFeedback}
+        </InputGroup>
         </Col>
       </FormGroup>
+      </Form>
     );
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -166,6 +175,7 @@ class SessionShell extends UNISYS.Component {
     let token = this.props.match.params.token;
     let decoded = SESSION.DecodeToken(token) || {};
     this.SetAppState("SESSION", decoded);
+    if (decoded.isValid) this.AppCall("GROUPID_CHANGE", token);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Main Render Function
@@ -181,11 +191,10 @@ class SessionShell extends UNISYS.Component {
     // try to decode token
     let decoded = SESSION.DecodeToken(token);
     if (decoded.isValid) {
-      this.AppCall("GROUPID_CHANGE", token);
       return this.renderLoggedIn(decoded);
+    } else {
+      return this.renderLogin(token);
     }
-    // error in decode so render login field
-    return this.renderLogin(token);
   }
 
   /// EVENT HANDLERS ////////////////////////////////////////////////////////////
@@ -193,14 +202,20 @@ class SessionShell extends UNISYS.Component {
   handleChange(event) {
     let token = event.target.value;
     let decoded = SESSION.DecodeToken(token);
-    let { classId, projId, hashedId, groupId } = decoded;
+    let { classId, projId, hashedId, subId, groupId } = decoded;
     this.setState(decoded);
     this.SetAppState("SESSION", decoded);
-    if (decoded.groupId) {
+  }
+
+  onSubmit(event) {
+    event.preventDefault();
+    if (this.state.isValid) {
       // force a page URL change
-      let redirect = `/edit/${event.target.value}`;
+      let redirect = `/edit/${this.state.token}`;
+      // window.location=redirect;
       this.props.history.push(redirect);
     }
+
   }
 } // UNISYS.Component SessionShell
 
