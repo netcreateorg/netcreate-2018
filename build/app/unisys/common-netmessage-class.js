@@ -5,7 +5,7 @@
   a NetMessage does not require addressing since the SERVER distributes
   messages to UNISYS addresses that have registered for them.
 
-  The NetMessage declaration is shared in both node and browser javascript
+  The NetMessage declaration is SHARED in both node and browser javascript
   codebases.
 
   NetMessages also provide the data context for "transactions" of calls.
@@ -26,6 +26,13 @@ var m_id_prefix = "PKT";
 var m_transactions = {};
 var m_netsocket = null;
 var m_group_id = null;
+
+const M_INIT = "init";
+const M_ONLINE = "online";
+const M_STANDALONE = "offline";
+const M_CLOSED = "closed";
+const M_ERROR = "error";
+var m_mode = M_INIT;
 
 // constants
 const PROMPTS = require("../system/util/prompts");
@@ -56,8 +63,9 @@ class NetMessage {
     // create NetMessage from (generic object)
     if (typeof msg === "object" && data === undefined) {
       // make sure it has a msg and data obj
-      if (typeof msg.msg !== "string" || typeof msg.data !== "object")
+      if (typeof msg.msg !== "string" || typeof msg.data !== "object") {
         throw ERR_NOT_NETMESG;
+      }
       // merge properties into this new class instance and return it
       Object.assign(this, msg);
       m_SeqIncrement(this);
@@ -75,8 +83,9 @@ class NetMessage {
     // create new NetMessage from scratch (mesg,data)
     // unique id for every NetMessage
     if (typeof type === "string") m_CheckType(type);
-    if (typeof msg !== "string" || typeof data !== "object")
+    if (typeof msg !== "string" || typeof data !== "object") {
       throw ERR_ERR_BAD_CSTR;
+    }
     // allow calls with null data by setting to empty object
     this.data = data || {};
     this.msg = msg;
@@ -179,7 +188,8 @@ class NetMessage {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ return the session groupid (CLASS-PROJ-HASH) that's been set globally
-  /*/ SourceGroupID() {
+  /*/
+  SourceGroupID() {
     return this.s_group;
   }
 
@@ -233,20 +243,37 @@ class NetMessage {
       the socket because it's handling multiple sockets from different clients.
   /*/
   SocketSend(socket = m_netsocket) {
-    this.s_group = NetMessage.GlobalGroupID();
-    let dst = socket.UADDR || "unregistered socket";
-    if (!socket) throw Error("SocketSend(sock) requires a valid socket");
-    if (DBG.send) {
-      let status = `sending '${this.Message()}' to ${dst}`;
-      console.log(PR, status);
+    if (m_mode === M_ONLINE || m_mode === M_INIT) {
+      this.s_group = NetMessage.GlobalGroupID();
+      let dst = socket.UADDR || "unregistered socket";
+      if (!socket) throw Error("SocketSend(sock) requires a valid socket");
+      if (DBG.send) {
+        let status = `sending '${this.Message()}' to ${dst}`;
+        console.log(PR, status);
+      }
+      socket.send(this.JSON());
+    } else if (m_mode !== M_STANDALONE) {
+      console.log(
+        PR,
+        "SocketSend: Can't send because NetMessage mode is",
+        m_mode
+      );
+    } else {
+      console.warn(
+        PR,
+        "STANDALONE MODE: SocketSend() suppressed!"
+      );
     }
-    socket.send(this.JSON());
     // FYI: global m_netsocket is not defined on server, since packets arrive on multiple sockets
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Create a promise to resolve when packet returns
   /*/
   QueueTransaction(socket = m_netsocket) {
+    if (m_mode === M_STANDALONE) {
+      console.warn(PR, "STANDALONE MODE: QueueTransaction() suppressed!");
+      return Promise.resolve();
+    }
     // global m_netsocket is not defined on server, since packets arrive on multiple sockets
     if (!socket) throw Error("QueueTransaction(sock) requires a valid socket");
     // save our current UADDR
@@ -260,8 +287,9 @@ class NetMessage {
         // save the resolve function in transactions table;
         // promise will resolve on remote invocation with data
         m_transactions[hash] = function(data) {
-          if (dbg)
+          if (dbg) {
             console.log(PR, "resolving promise with", JSON.stringify(data));
+          }
           resolve(data);
         };
         this.SocketSend(socket);
@@ -333,6 +361,8 @@ class NetMessage {
 /// STATIC CLASS METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ set the NETWORK interface object that implements Send()
+    This class operates both under the server and the client.
+    This is a client feature.
 /*/
 NetMessage.GlobalSetup = function(config) {
   let { netsocket, uaddr } = config;
@@ -340,16 +370,34 @@ NetMessage.GlobalSetup = function(config) {
   // NOTE: m_netsocket is set only on clients since on server, there are multiple sockets
   if (netsocket) {
     if (typeof netsocket.send !== "function") throw ERR_BAD_SOCKET;
+    console.log(PR, "GlobalSetup: netsocket set, mode online");
     m_netsocket = netsocket;
+    m_mode = M_ONLINE;
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ cleanup any allocated storage
+/*/ cleanup any allocated storage. This class operates both under the
+    server and the client. This is a client feature.
 /*/
 NetMessage.GlobalCleanup = function() {
   if (m_netsocket) {
-    console.log(PR, "GlobalCleanup: deallocating netsocket");
+    console.log(PR, "GlobalCleanup: deallocating netsocket, mode closed");
     m_netsocket = null;
+    m_mode = M_CLOSED;
+  }
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ cleanup any allocated storage internally. This class operates both under the
+    server and the client. This is a client feature.
+/*/
+NetMessage.GlobalOfflineMode = function() {
+  m_mode = M_STANDALONE;
+  if (m_netsocket) {
+    console.warn(PR, "STANDALONE MODE: NetMessage disabling network");
+    m_netsocket = null;
+    let event = new CustomEvent("UNISYSDisconnect", {});
+    console.log("dispatching event to", document, event);
+    document.dispatchEvent(event);
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -396,8 +444,9 @@ function m_GetHashKey(pkt) {
 /*/ is this an allowed type? throw error if not
 /*/
 function m_CheckType(type) {
-  if (type === undefined)
+  if (type === undefined) {
     throw new Error("must pass a type string, not " + type);
+  }
   if (!KNOWN_TYPES.includes(type)) throw `${ERR_UNKNOWN_TYPE} '${type}'`;
   return type;
 }
@@ -405,8 +454,9 @@ function m_CheckType(type) {
 /*/ is this an allowed mode? throw error if not
 /*/
 function m_CheckRMode(mode) {
-  if (mode === undefined)
+  if (mode === undefined) {
     throw new Error("must pass a mode string, not " + mode);
+  }
   if (!ROUTING_MODE.includes(mode)) throw `${ERR_UNKNOWN_RMODE} '${mode}'`;
   return mode;
 }

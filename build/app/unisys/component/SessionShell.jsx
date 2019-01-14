@@ -80,6 +80,7 @@ class SessionShell extends UNISYS.Component {
       classId: null,
       projId: null,
       hashedId: null,
+      subId: null,
       groupId: null,
       isValid: false
     };
@@ -175,6 +176,20 @@ class SessionShell extends UNISYS.Component {
     // this.props.history, location, match added by withRouter(AppShell)
     // way back in init-appshell.jsx
 
+    // if standalone mode, no login possible
+    if (UNISYS.IsStandaloneMode()) {
+      const { prompt, timestamp } = window.NC_UNISYS.standalone;
+      return (
+        <FormGroup row style={GROUP_STYLE}>
+          <Col sm={9}>
+            <Label style={LABEL_STYLE} className="small">{prompt}</Label>
+          </Col>
+          <Col sm={3} className="text-right">
+            <Label style={LABEL_STYLE} className="small">{timestamp}</Label>
+          </Col>
+        </FormGroup>
+      );
+    }
     // no token so just render login
     let token = this.props.match.params.token;
     if (!token) return this.renderLogin();
@@ -193,7 +208,7 @@ class SessionShell extends UNISYS.Component {
   handleChange(event) {
     let token = event.target.value;
     let decoded = SESSION.DecodeToken(token);
-    let { classId, projId, hashedId, groupId } = decoded;
+    let { classId, projId, hashedId, groupId, subId } = decoded;
     this.setState(decoded);
     this.SetAppState("SESSION", decoded);
     if (decoded.groupId) {

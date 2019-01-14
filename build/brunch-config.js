@@ -19,6 +19,10 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+/// LOAD LIBRARIES ////////////////////////////////////////////////////////////
+/// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+const UDB = require('./app/unisys/server-database');
+
 // CommonJS module format
 // exports a configuration object
 module.exports = {
@@ -60,7 +64,8 @@ module.exports = {
       // npm i --save-dev babel babel-preset-env babel-preset-react
       // npm i --save-dev babel-brunch@github:babel/babel-brunch
         presets   : ['env', 'react']
-      }
+      },
+      autoReload : { enabled: true }
     },
 
 /// SERVER CONFIGURATION //////////////////////////////////////////////////////
@@ -71,7 +76,7 @@ module.exports = {
 /*/ server: {
       // viewing url is http://localhost:3000
       port   : 3000
-     },
+    },
 
 /// NPM INTEGRATION ///////////////////////////////////////////////////////////
 /*/ Brunch is aware of the node_modules directory but sometimes needs help to
@@ -84,6 +89,74 @@ module.exports = {
       globals: {
         jquery: 'jquery'
       }
+    },
+
+    hooks: {
+      onCompile() {
+        console.log(`\n*** NetCreate (DEV) is running ***\n`);
+      }
+    },
+
+/// OVERRIDES FOR PRODUCTION //////////////////////////////////////////////////
+/*/ Brunch configuration settings default to development mode in the
+    environment. You can override each env (e.g. production) after all other
+    declarations are done.
+/*/ overrides: {
+      // env 'classroom' is set by npm start / npm run start
+      classroom: {
+        plugins: {
+          autoReload: { enabled: false }
+        },
+        hooks: {
+          onCompile() {
+            const server = require("./brunch-server");
+            return new Promise((resolve, reject) => {
+              server({ port : 3000}, function() {
+                console.log(`\n*** NetCreate (CLASSROOM) is running ***\n`);
+                resolve();
+              });
+            });
+          }
+        }
+      },
+      // env 'package' is set by npm run package
+      package: {
+        optimize: false,
+        sourceMaps: true,
+        plugins: {
+          autoReload: { enabled: false }
+        },
+        hooks: {
+          preCompile() {
+            // save json of database to public/data
+            UDB.WriteJSON(`${__dirname}/public/data/standalone-db.json`);
+          },
+          onCompile() {
+            console.log(`\n*** STANDALONE PACKAGE has been BUILT`);
+            console.log(`\n    The standalone package is in public/ and run from index.html.`);
+            console.log(`    Edit index.html to change the prompts shown in the app.`);
+            console.log(`    Upload contents of public/ to a web server to use!\n`);
+          }
+        }
+      },
+      // env 'package_dbg' is set by npm run package:debug
+      package_debug: {
+        optimize: false,
+        sourceMaps: true,
+        server : {
+          path: `${__dirname}/brunch-server-static.js`
+        },
+        hooks: {
+          preCompile() {
+            // save json of database to public/data
+            UDB.WriteJSON(`${__dirname}/public/data/standalone-db.json`);
+          },
+          onCompile() {
+            console.log(`\n*** STANDALONE PACKAGE DEBUG MODE`);
+            console.log(`    Point browser to MAINAPP or CLIENT addresses indicated `);
+          }
+        }
+      }
     }
 
-};
+}; // module.exports

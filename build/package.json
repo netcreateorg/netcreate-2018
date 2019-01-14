@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "description": "research project for network graph analysis",
   "scripts": {
-    "bare": "node --inspect brunch-server.js",
     "dev": "brunch watch -s",
+    "dev:inspect": "node --inspect brunch-server.js",
+    "classroom": "brunch build -e classroom",
+    "package": "brunch build -e package",
+    "package:debug": "brunch watch -e package_debug -s",
     "clean": "rm -rf ./public ./node_modules; npm ci",
     "debug": "LOGGY_STACKS=true BRUNCH_DEVTOOLS=true ./brunch-debug watch --server",
-    "logtail": "tail -f -n100 \"$(ls -at ./runtime/logs/* | head -n 1)\""
+    "log": "tail -f -n100 \"$(ls -at ./runtime/logs/* | head -n 1)\""
   },
   "repository": {
     "type": "git",
