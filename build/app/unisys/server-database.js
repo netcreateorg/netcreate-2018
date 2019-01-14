@@ -19,7 +19,7 @@ const LOGGER = require("../unisys/server-logger");
 const PROMPTS = require("../system/util/prompts");
 const PR = PROMPTS.Pad("ServerDB");
 const DB_FILE = "./runtime/netcreate.loki";
-const DB_CLONEMASTER = "alexander.loki";
+const DB_CLONEMASTER = "blank.loki";
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -39,9 +39,7 @@ let DB = {};
 DB.InitializeDatabase = function(options = {}) {
   FS.ensureDirSync(PATH.dirname(DB_FILE));
   if (!FS.existsSync(DB_FILE)) {
-    console.log(PR, `No ${DB_FILE} yet, so filling from ${DB_CLONEMASTER}...`);
-    FS.copySync(`./runtime/${DB_CLONEMASTER}`, DB_FILE);
-    console.log(PR, `...success!`);
+    console.log(PR, `NO EXISTING DATABASE ${DB_FILE}, so creating BLANK DATABASE...`);
   }
   let ropt = {
     autoload: true,
