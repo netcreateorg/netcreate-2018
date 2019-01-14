@@ -4,7 +4,7 @@ DATABASE SERVER
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = true;
+const DBG = false;
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -17,7 +17,7 @@ const FS = require("fs-extra");
 const SESSION = require("../unisys/common-session");
 const LOGGER = require("../unisys/server-logger");
 const PROMPTS = require("../system/util/prompts");
-const PR = PROMPTS.Pad("SRV-DB");
+const PR = PROMPTS.Pad("ServerDB");
 const DB_FILE = "./runtime/netcreate.loki";
 const DB_CLONEMASTER = "alexander.loki";
 
@@ -37,8 +37,7 @@ let DB = {};
 /*/ API: Initialize the database
 /*/
 DB.InitializeDatabase = function(options = {}) {
-  console.log(PR, `InitializeDatabase`);
-  FS.ensureDir(PATH.dirname(DB_FILE));
+  FS.ensureDirSync(PATH.dirname(DB_FILE));
   if (!FS.existsSync(DB_FILE)) {
     console.log(PR, `No ${DB_FILE} yet, so filling from ${DB_CLONEMASTER}...`);
     FS.copySync(`./runtime/${DB_CLONEMASTER}`, DB_FILE);
@@ -54,7 +53,6 @@ DB.InitializeDatabase = function(options = {}) {
   ropt = Object.assign(ropt, options);
   m_db = new Loki(DB_FILE, ropt);
   m_options = ropt;
-  console.log(PR, `Initialized LokiJS Database '${DB_FILE}'`);
 
   // callback on load
   function f_DatabaseInitialize() {
@@ -91,21 +89,19 @@ DB.InitializeDatabase = function(options = {}) {
     } else {
       m_max_edgeID = 0;
     }
-    console.log(
-      PR,
-      `highest ids: NODE.id='${m_max_nodeID}', EDGE.id='${m_max_edgeID}'`
+    console.log(PR,`DATABASE LOADED! m_max_nodeID '${m_max_nodeID}', m_max_edgeID '${m_max_edgeID}'`
     );
+
+    if (typeof m_options.onLoadComplete==='function') {
+      m_options.onLoadComplete();
+    }
   } // end f_DatabaseInitialize
 
   // UTILITY FUNCTION
   function f_AutosaveStatus() {
     let nodeCount = NODES.count();
     let edgeCount = EDGES.count();
-    if (DBG)
-      console.log(
-        PR,
-        `autosaving ${nodeCount} nodes and ${edgeCount} edges...`
-      );
+    console.log(PR,`AUTOSAVING! ${nodeCount} NODES / ${edgeCount} EDGES <3`);
   }
 }; // InitializeDatabase()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -116,8 +112,7 @@ DB.InitializeDatabase = function(options = {}) {
 DB.PKT_GetDatabase = function(pkt) {
   let nodes = NODES.chain().data({ removeMeta: true });
   let edges = EDGES.chain().data({ removeMeta: true });
-  if (DBG)
-    console.log(
+  if (DBG) console.log(
       PR,
       `PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${
         edges.length
@@ -149,15 +144,13 @@ DB.PKT_SetDatabase = function(pkt) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_GetNewNodeID = function(pkt) {
   m_max_nodeID += 1;
-  if (DBG)
-    console.log(PR, `PKT_GetNewNodeID ${pkt.Info()} nodeID ${m_max_nodeID}`);
+  if (DBG) console.log(PR, `PKT_GetNewNodeID ${pkt.Info()} nodeID ${m_max_nodeID}`);
   return { nodeID: m_max_nodeID };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_GetNewEdgeID = function(pkt) {
   m_max_edgeID += 1;
-  if (DBG)
-    console.log(PR, `PKT_GetNewEdgeID ${pkt.Info()} edgeID ${m_max_edgeID}`);
+  if (DBG) console.log(PR, `PKT_GetNewEdgeID ${pkt.Info()} edgeID ${m_max_edgeID}`);
   return { edgeID: m_max_edgeID };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -170,8 +163,7 @@ DB.PKT_Update = function(pkt) {
     let matches = NODES.find({ id: node.id });
     if (matches.length === 0) {
       // if there was no node, then this is an insert new operation
-      if (DBG)
-        console.log(
+      if (DBG) console.log(
           PR,
           `PKT_Update ${pkt.Info()} INSERT nodeID ${JSON.stringify(node)}`
         );
@@ -182,8 +174,7 @@ DB.PKT_Update = function(pkt) {
     } else if (matches.length === 1) {
       // there was one match to update
       NODES.findAndUpdate({ id: node.id }, n => {
-        if (DBG)
-          console.log(
+        if (DBG) console.log(
             PR,
             `PKT_Update ${pkt.Info()} UPDATE nodeID ${node.id} ${JSON.stringify(
               node
@@ -195,8 +186,7 @@ DB.PKT_Update = function(pkt) {
       });
       retval = { op: "update", node };
     } else {
-      if (DBG)
-        console.log(
+      if (DBG) console.log(
           PR,
           `WARNING: multiple nodeID ${node.id} x${matches.length}`
         );
@@ -211,8 +201,7 @@ DB.PKT_Update = function(pkt) {
     let matches = EDGES.find({ id: edge.id });
     if (matches.length === 0) {
       // this is a new edge
-      if (DBG)
-        console.log(
+      if (DBG) console.log(
           PR,
           `PKT_Update ${pkt.Info()} INSERT edgeID ${edge.id} ${JSON.stringify(
             edge
@@ -225,8 +214,7 @@ DB.PKT_Update = function(pkt) {
     } else if (matches.length === 1) {
       // update this edge
       EDGES.findAndUpdate({ id: edge.id }, e => {
-        if (DBG)
-          console.log(
+        if (DBG) console.log(
             PR,
             `PKT_Update ${pkt.SourceGroupID()} UPDATE edgeID ${
               edge.id
@@ -247,8 +235,7 @@ DB.PKT_Update = function(pkt) {
 
   // DELETE NODES
   if (nodeID !== undefined) {
-    if (DBG)
-      console.log(PR, `PKT_Update ${pkt.Info()} DELETE nodeID ${nodeID}`);
+    if (DBG) console.log(PR, `PKT_Update ${pkt.Info()} DELETE nodeID ${nodeID}`);
 
     // Log first so it's apparent what is triggering the edge changes
     LOGGER.Write(pkt.Info(), `delete node`, nodeID);
@@ -299,8 +286,7 @@ DB.PKT_Update = function(pkt) {
 
   // DELETE EDGES
   if (edgeID !== undefined) {
-    if (DBG)
-      console.log(PR, `PKT_Update ${pkt.Info()} DELETE edgeID ${edgeID}`);
+    if (DBG) console.log(PR, `PKT_Update ${pkt.Info()} DELETE edgeID ${edgeID}`);
     LOGGER.Write(pkt.Info(), `delete edge`, edgeID);
     EDGES.findAndRemove({ id: edgeID });
     return { op: "delete", edgeID };
@@ -354,6 +340,37 @@ DB.FilterEdgeLog = function(edge) {
   Reflect.deleteProperty(newEdge, "_elog");
   return newEdge;
 };
+
+/// JSON EXPORT ///////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ called by brunch to generate an up-to-date JSON file to path.
+    creates the path if it doesn't exist
+/*/
+DB.WriteJSON = function( filePath ) {
+  let db = new Loki(DB_FILE,{
+      autoload: true,
+      autoloadCallback: () => {
+        if (typeof filePath==='string') {
+          if (DBG) console.log(PR,`writing { nodes, edges } to '${filePath}'`);
+          let nodes = db.getCollection("nodes").chain()
+            .data({ removeMeta: true });
+          let edges = db.getCollection("edges").chain()
+            .data({ removeMeta: true });
+          let data = { nodes, edges };
+          let json = JSON.stringify(data);
+          if (DBG) console.log(PR,`ensuring DIR ${PATH.dirname(filePath)}`);
+          FS.ensureDirSync(PATH.dirname( filePath ));
+          if (DBG) console.log(PR,`writing file ${filePath}`);
+          FS.writeFileSync( filePath, json );
+          console.log(PR,`*** WROTE JSON DATABASE`);
+        } else {
+          console.log(PR,`ERR path ${filePath} must be a pathname`);
+        }
+      }
+    }
+  );
+};
+
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 module.exports = DB;

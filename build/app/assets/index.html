@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>NetCreate</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <style>
+      body {
+        min-height: 100%
+      }
+    </style>
+    <script>
+      // index.html is loaded only by standalone mode without a server
+      // server-based operation uses index.ejs
+      window.NC_UNISYS = {
+        standalone : {
+          prompt: 'STANDALONE VIEW',
+          timestamp: '1/1/2019'
+        },
+        server : { ip : 'standalone' },
+        client : { ip : 'standalone' }
+      }
+    </script>
+    <script src="scripts/netc-lib.js"></script>
+    <script src="scripts/netc-app.js"></script>
+    <link rel="stylesheet" href="styles/netc-app.css" type="text/css">
+  </head>
+  <body>
+    <div id="app-container"></div>
+    <script>
+      document.title += ` @ ${window.NC_UNISYS.server.ip}`;
+      require("init");
+    </script>
+  </body>
+</html>
