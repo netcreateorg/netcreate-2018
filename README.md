@@ -28,7 +28,7 @@ You will be using these commands most frequently:
 To generate **access keys** for groups, there is a utility accessible from the **javascript console** of a browser that's running the NetCreate app. 
 
 * Open the javascript console (in MacOS Chrome, COMMAND-OPTION-J will open it)
-* Type `ncMakeTokens('class','project',10) to create 10 **group access keys** that can be used to connect to the application. This list can be generated ahead-of-time and assigned during class. These keys are logged by the server for every action so you can recreate what the students are doing.
+* Type `ncMakeTokens('class','project',10)` to create 10 **group access keys** that can be used to connect to the application. This list can be generated ahead-of-time and assigned during class. These keys are logged by the server for every action so you can recreate what the students are doing.
 * Students within a group and append a string of the form `-ID<#>`, where # is a positive integer to uniquely identify their computer. They can tell the teacher which ID they used.
 
 To **erase the database**, another javascript console command `ncEmptyDatabase()` will erase the server database. You may have to issue the command twice for it to take hold. Then refresh the browser and see if the database was erased.
