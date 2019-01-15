@@ -30,6 +30,8 @@ let m_max_nodeID;
 let m_dupe_set; // set of nodeIDs for determine whether there are duplicates
 let NODES; // loki "nodes" collection
 let EDGES; // loki "edges" collection
+let m_locked_nodes;
+let m_locked_edges;
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -60,6 +62,7 @@ DB.InitializeDatabase = function(options = {}) {
     // add (and configure) them now.
     NODES = m_db.getCollection("nodes");
     if (NODES === null) NODES = m_db.addCollection("nodes");
+    m_locked_nodes = new Set();
     EDGES = m_db.getCollection("edges");
     if (EDGES === null) EDGES = m_db.addCollection("edges");
 
@@ -170,6 +173,49 @@ DB.PKT_GetNewEdgeID = function(pkt) {
   if (DBG) console.log(PR, `PKT_GetNewEdgeID ${pkt.Info()} edgeID ${m_max_edgeID}`);
   return { edgeID: m_max_edgeID };
 };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DB.PKT_RequestLockNode = function(pkt) {
+  let { nodeID } = pkt.Data();
+  let errcode = m_IsInvalidNode( nodeID );
+  if (errcode) return errcode;
+  // check if node is already locked
+  if (m_locked_nodes.has(nodeID)) return m_MakeLockError(`nodeID ${nodeID} is already locked`);
+  // SUCCESS
+  // single matching node exists and is not yet locked, so lock it
+  m_locked_nodes.add(nodeID);
+  return { nodeID, locked : true };
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DB.PKT_RequestUnlockNode = function(pkt) {
+  let { nodeID } = pkt.Data();
+  let errcode = m_IsInvalidNode( nodeID );
+  if (errcode) return errcode;
+  // check that node is already locked
+  if (m_locked_nodes.has(nodeID)) {
+    m_locked_nodes.delete(nodeID);
+    return { nodeID, unlocked:true };
+  }
+  // this is an error because nodeID wasn't in the lock table
+  return m_MakeLockError(`nodeID ${nodeID} was not locked so can't unlock`);
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_IsInvalidNode ( nodeID ) {
+  if (!nodeID) return m_MakeLockError(`undefined nodeID`);
+  nodeID = Number.parseInt(nodeID,10);
+  if (isNaN(nodeID)) return m_MakeLockError(`nodeID was not a number`);
+  if (nodeID<0) return m_MakeLockError(`nodeID ${nodeID} must be positive integer`);
+  if (nodeID>m_max_nodeID) return m_MakeLockError(`nodeID ${nodeID} is out of range`);
+    // find if the node exists
+  let matches = NODES.find({ id: nodeID });
+  if (matches.length===0) return m_MakeLockError(`nodeID ${nodeID} not found`);
+  if (matches.length>1) return m_MakeLockError(`nodeID ${nodeID} matches multiple entries...critical error!`);
+  // no retval is no error!
+  return undefined;
+}
+function m_MakeLockError( info ) {
+  return { NOP:`ERR`, INFO:info };
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_Update = function(pkt) {
   let { node, edge, nodeID, replacementNodeID, edgeID } = pkt.Data();

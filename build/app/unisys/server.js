@@ -84,6 +84,16 @@ var UNISYS = {};
         return UDB.PKT_GetNewNodeID(pkt);
       });
 
+      UNET.HandleMessage('SRV_DBLOCKNODE',function(pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_RequestLockNode(pkt);
+      });
+
+      UNET.HandleMessage('SRV_DBUNLOCKNODE',function(pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_RequestUnlockNode(pkt);
+      });
+
       UNET.HandleMessage('SRV_DBGETEDGEID',function(pkt) {
         if (DBG) console.log(PR,sprint_message(pkt));
         return UDB.PKT_GetNewEdgeID(pkt);

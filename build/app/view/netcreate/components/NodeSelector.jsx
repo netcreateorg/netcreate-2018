@@ -57,6 +57,12 @@
 
       isEditable      If true, form fields are enabled for editing
                       If false, form is readonly
+                      
+      sourceNodeIsLocked
+                      If someone else has selected the node for editing,
+                      this flag will cause the sourceNodeIsLockedMessage
+                      to be displayed.  This is only checked when
+                      the user clicks "Edit".
 
 
     ## TESTING
@@ -144,6 +150,7 @@ class NodeSelector extends UNISYS.Component {
         },
         edges:         [],
         isLocked:      true,
+        sourceNodeIsLocked: false,
         isEditable:    false,
         isValid:       false,
         isDuplicateNodeLabel: false,
@@ -167,6 +174,7 @@ class NodeSelector extends UNISYS.Component {
       this.onNewNodeButtonClick                  = this.onNewNodeButtonClick.bind(this);
       this.onDeleteButtonClick                   = this.onDeleteButtonClick.bind(this);
       this.onEditButtonClick                     = this.onEditButtonClick.bind(this);
+      this.editNode = this.editNode.bind(this);
       this.onAddNewEdgeButtonClick               = this.onAddNewEdgeButtonClick.bind(this);
       this.onCancelButtonClick                   = this.onCancelButtonClick.bind(this);
       this.onEditOriginal                        = this.onEditOriginal.bind(this);
@@ -213,6 +221,7 @@ class NodeSelector extends UNISYS.Component {
             isNewNode: true
         },
         edges: [],
+        sourceNodeIsLocked: false,
         isEditable:      false,
         isValid:         false,
         isDuplicateNodeLabel: false,
@@ -346,13 +355,15 @@ class NodeSelector extends UNISYS.Component {
       // This is a case insensitive search
       let isDuplicateNodeLabel = false;
       let duplicateNodeID;
-      if (formData.label !== '' &&
-          this.AppState('D3DATA').nodes.find(node => {
+      if (
+        formData.label !== '' &&
+        this.AppState('D3DATA').nodes.find(node => {
             if ((node.id !== formData.id) &&
               (node.label.localeCompare(formData.label, 'en', { usage: 'search', sensitivity: 'base' })) === 0) {
               duplicateNodeID = node.id;
               return true;
             }
+            return false;
         })) {
         isDuplicateNodeLabel = true;
       }
@@ -394,6 +405,7 @@ class NodeSelector extends UNISYS.Component {
           id:        node.id,
           isNewNode: false
         },
+        sourceNodeIsLocked: false,
         isEditable: false,
         isDuplicateNodeLabel: false
       });
@@ -517,24 +529,46 @@ class NodeSelector extends UNISYS.Component {
       replacementNodeID: replacementNodeID
     });
   }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ onEditButtonClick (event) {
-      event.preventDefault();
-      this.setState({ isEditable: true });
-      // Add ID if one isn't already defined
-      let formData = this.state.formData;
-      if (formData.id==='') {
-        throw Error('NodeSelector.onEditButtonClick trying to edit a node with no id!  This shouldn\'t happen!');
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/
+  /*/
+  onEditButtonClick(event) {
+    event.preventDefault();
+    
+    // nodeID needs to be a Number.  It should have been set in loadFormFromNode
+    let nodeID = this.state.formData.id;
+
+    this.NetCall('SRV_DBLOCKNODE', { nodeID: nodeID })
+    .then((data)=>{
+      if (data.NOP) {
+        console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
+        this.setState({ sourceNodeIsLocked: true });
+      } else if (data.locked) {
+        console.log(`SERVER SAYS: lock success! you can edit Node ${data.nodeID}`);
+        console.log(`SERVER SAYS: unlock the node after successful DBUPDATE`);
+        this.setState({ sourceNodeIsLocked: false });
+        this.editNode();
       }
-      this.AppCall('AUTOCOMPLETE_SELECT',{id:thisIdentifier}).then(()=>{
-        // Set AutoComplete field to current data, otherwise, previously canceled label
-        // might be displayed
-        this.AppCall('SOURCE_SEARCH', { searchString: formData.label });
-      });
-      this.setState({ formData });
-      this.validateForm();
-    } // onEditButtonClick
+    });
+  } // onEditButtonClick
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/
+  /*/
+  editNode() {
+    this.setState({ isEditable: true });
+    // Add ID if one isn't already defined
+    let formData = this.state.formData;
+    if (formData.id==='') {
+      throw Error('NodeSelector.onEditButtonClick trying to edit a node with no id!  This shouldn\'t happen!');
+    }
+    this.AppCall('AUTOCOMPLETE_SELECT',{id:thisIdentifier}).then(()=>{
+      // Set AutoComplete field to current data, otherwise, previously canceled label
+      // might be displayed
+      this.AppCall('SOURCE_SEARCH', { searchString: formData.label });
+    });
+    this.setState({ formData });
+    this.validateForm();
+  } // editNode
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onAddNewEdgeButtonClick (event) {
@@ -575,6 +609,16 @@ class NodeSelector extends UNISYS.Component {
           // restore original node
           this.loadFormFromNode( originalNode );
           this.setState({ isEditable: false });
+          // unlock
+          this.NetCall('SRV_DBUNLOCKNODE', { nodeID: this.state.formData.id })
+            .then((data) => {
+              if (data.NOP) {
+                console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
+              } else if (data.unlocked) {
+                console.log(`SERVER SAYS: unlock success! you have released Node ${data.nodeID}`);
+                this.setState({ sourceNodeIsLocked: false });
+              }
+            });
         }
         this.AppCall('AUTOCOMPLETE_SELECT', {id:'search'});
       }
@@ -626,7 +670,20 @@ class NodeSelector extends UNISYS.Component {
       // write data to database
       // setting dbWrite to true will distinguish this update
       // from a remote one
-      this.AppCall('DB_UPDATE', { node });
+      this.AppCall('DB_UPDATE', { node })
+      .then(()=>{
+        this.NetCall('SRV_DBUNLOCKNODE', { nodeID: formData.id })
+          .then((data) => {
+            if (data.NOP) {
+              console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
+            } else if (data.unlocked) {
+              console.log(`SERVER SAYS: unlock success! you have released Node ${data.nodeID}`);
+              this.setState({ sourceNodeIsLocked: false });
+            }
+        });
+      });
+      // probably should unlock the node:
+
     } // onSubmit
 
 
@@ -712,6 +769,7 @@ class NodeSelector extends UNISYS.Component {
                 hidden={this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
                 onClick={this.onEditButtonClick}
               >Edit Node</Button>
+              <p hidden={!this.state.sourceNodeIsLocked} className="small text-danger">{nodePrompts.label.sourceNodeIsLockedMessage}</p>
               <Button outline size="sm"
                 hidden={!this.state.isEditable}
                 onClick={this.onCancelButtonClick}
