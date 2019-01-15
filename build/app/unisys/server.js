@@ -63,6 +63,7 @@ var UNISYS = {};
         return UDB.PKT_SetDatabase(pkt);
       });
 
+      // receives a packet from a client
       UNET.HandleMessage('SRV_DBUPDATE',function(pkt) {
         if (DBG) console.log(PR,sprint_message(pkt));
         let data = UDB.PKT_Update(pkt);

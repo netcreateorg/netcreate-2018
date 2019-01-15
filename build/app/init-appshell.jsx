@@ -176,7 +176,7 @@ class AppShell extends UNISYS.Component {
       return (
         <div style={{display:'flex', flexFlow:'column nowrap', width:'100%', height:'100vh'}}>
           <Navbar fixed="top" light expand="md" style={{ backgroundColor:'#f0f0f0'}}>
-            <NavbarBrand href="#">NetCreate August Demo</NavbarBrand>
+            <NavbarBrand href="#">NetCreate Spring Demo</NavbarBrand>
             <NavbarToggler onClick={this.toggle} />
             <Collapse isOpen={this.state.isOpen} navbar>
             {/*/ (1) add navigation links here /*/}

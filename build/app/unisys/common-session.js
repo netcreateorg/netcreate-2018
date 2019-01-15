@@ -63,7 +63,7 @@ SESUTIL.DecodeToken = function(token) {
     groupId = 0;
   }
 
-  // at this point groupId is valid
+  // at this point groupId is valid (begins with ID, all numeric)
   // check for valid subgroupId
   if (subId) {
     if (
@@ -76,13 +76,13 @@ SESUTIL.DecodeToken = function(token) {
     } else {
       // subId exists but didn't match subid format
       if (DBG) console.log("invalid subId string", subId);
-      isValid = false;
+      isValid = false; // groupId is still valid,
       subId = 0;
     }
   }
 
   // if isValid is false, check groupId is 0 or subId is 0, indicating error
-  let decoded = { isValid, classId, projId, hashedId, groupId, subId };
+  let decoded = { token, isValid, classId, projId, hashedId, groupId, subId };
   return decoded;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -520,8 +520,8 @@ class NodeSelector extends UNISYS.Component {
     let nodeID = this.state.formData.id;
 
     // Re-link edges or delete edges?
-    // `NaN` is not valid JSON, so we need to pass ``
-    let replacementNodeID = this.state.replacementNodeID==='' ? '' : parseInt( this.state.replacementNodeID );   // '' = Delete edges by default
+    // `NaN` is not valid JSON, so we need to pass -1
+    let replacementNodeID = this.state.replacementNodeID==='' ? -1 : parseInt( this.state.replacementNodeID );   // '' = Delete edges by default
 
     this.clearForm();
     this.AppCall('DB_UPDATE', {
