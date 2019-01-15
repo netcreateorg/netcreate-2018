@@ -251,7 +251,11 @@ class NetMessage {
         let status = `sending '${this.Message()}' to ${dst}`;
         console.log(PR, status);
       }
-      socket.send(this.JSON());
+      // for server-side ws library, send supports a function callback
+      // for WebSocket, this is ignored
+      socket.send(this.JSON(),(err) => {
+        if (err) console.error(`\nsocket ${socket.UADDR} reports error ${err}\n`);
+      });
     } else if (m_mode !== M_STANDALONE) {
       console.log(
         PR,
