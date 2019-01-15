@@ -27,6 +27,7 @@ let m_options; // saved initialization options
 let m_db; // loki database
 let m_max_edgeID;
 let m_max_nodeID;
+let m_dupe_set; // set of nodeIDs for determine whether there are duplicates
 let NODES; // loki "nodes" collection
 let EDGES; // loki "edges" collection
 
@@ -62,27 +63,45 @@ DB.InitializeDatabase = function(options = {}) {
     EDGES = m_db.getCollection("edges");
     if (EDGES === null) EDGES = m_db.addCollection("edges");
 
+    // initialize unique set manager
+    m_dupe_set = new Set();
+    let dupeNodes = [];
+
     // find highest NODE ID
     if (NODES.count() > 0) {
       m_max_nodeID = NODES.mapReduce(
         (obj) => {
+          // side-effect: make sure ids are numbers
           m_CleanObjID('node.id',obj);
+          // side-effect: check for duplicate ids
+          if (m_dupe_set.has(obj.id)) {
+            dupeNodes.push(obj);
+          } else {
+            m_dupe_set.add(obj.id);
+          }
+          // return value
           return obj.id;
         },
         (arr) => {
           return Math.max(...arr);
         }
-      ); // end mapReduce node ids
+      )
     } else {
       m_max_nodeID = 0;
     }
+    // remap duplicate NODE IDs
+    dupeNodes.forEach( (obj) => {
+      m_max_nodeID+=1;
+      LOGGER.Write(PR,`# rewriting duplicate nodeID ${obj.id} to ${m_max_nodeID}`);
+      obj.id += m_max_nodeID;
+    });
 
     // find highest EDGE ID
     if (EDGES.count() > 0) {
       m_max_edgeID = EDGES.mapReduce(
         (obj) => {
           m_CleanObjID('edge.id',obj);
-          m_CleanEdgeTargets(obj.id,obj);
+          m_CleanEdgeEndpoints(obj.id,obj);
           return obj.id;
         },
         (arr) => {
@@ -92,8 +111,8 @@ DB.InitializeDatabase = function(options = {}) {
     } else {
       m_max_edgeID = 0;
     }
-    console.log(PR,`DATABASE LOADED! m_max_nodeID '${m_max_nodeID}', m_max_edgeID '${m_max_edgeID}'`
-    );
+    console.log(PR,`DATABASE LOADED! m_max_nodeID '${m_max_nodeID}', m_max_edgeID '${m_max_edgeID}'`);
+    m_db.saveDatabase();
 
     if (typeof m_options.onLoadComplete==='function') {
       m_options.onLoadComplete();
@@ -115,12 +134,7 @@ DB.InitializeDatabase = function(options = {}) {
 DB.PKT_GetDatabase = function(pkt) {
   let nodes = NODES.chain().data({ removeMeta: true });
   let edges = EDGES.chain().data({ removeMeta: true });
-  if (DBG) console.log(
-      PR,
-      `PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${
-        edges.length
-      } edges)`
-    );
+  if (DBG) console.log(PR,`PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${edges.length} edges)`);
   LOGGER.Write(pkt.Info(), `getdatabase`);
   return { nodes, edges };
 };
@@ -156,37 +170,6 @@ DB.PKT_GetNewEdgeID = function(pkt) {
   if (DBG) console.log(PR, `PKT_GetNewEdgeID ${pkt.Info()} edgeID ${m_max_edgeID}`);
   return { edgeID: m_max_edgeID };
 };
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// utility function for cleaning nodes with numeric id property
-function m_CleanObjID(prompt, obj) {
-  if (typeof obj.id==='string') {
-    let int = parseInt(obj.id,10);
-    console.log(PR,`${prompt} "${obj.id}" should not be string; converting to number ${int}`);
-    obj.id=int;
-  }
-  return obj;
-}
-function  m_CleanEdgeTargets(prompt, edge) {
-  if (typeof edge.source==='string') {
-    let int = parseInt(edge.source,10);
-    console.log(PR,`  converting edge ${prompt} source "${edge.source}" to ${int}`);
-    edge.source = int;
-  }
-  if (typeof edge.target==='string') {
-    let int = parseInt(edge.target,10);
-    console.log(PR,`  converting edge ${prompt} target "${edge.target}" to ${int}`);
-    edge.target = int;
-  }
-  return edge;
-}
-function m_CleanID(prompt, id) {
-  if (typeof id==='string') {
-    let int = parseInt(id,10);
-    console.log(PR,`${prompt} "${id}" should not be string; converting to number ${int}`);
-    id = int;
-  }
-  return id;
-}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_Update = function(pkt) {
   let { node, edge, nodeID, replacementNodeID, edgeID } = pkt.Data();
@@ -372,6 +355,38 @@ DB.WriteJSON = function( filePath ) {
     }
   );
 };
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// utility function for cleaning nodes with numeric id property
+function m_CleanObjID(prompt, obj) {
+  if (typeof obj.id==='string') {
+    let int = parseInt(obj.id,10);
+    LOGGER.Write(PR,`! ${prompt} "${obj.id}" is string; converting to ${int}`);
+    obj.id=int;
+  }
+  return obj;
+}
+function  m_CleanEdgeEndpoints(prompt, edge) {
+  if (typeof edge.source==='string') {
+    let int = parseInt(edge.source,10);
+    LOGGER.Write(PR,`  edge ${prompt} source "${edge.source}" is string; converting to ${int}`);
+    edge.source = int;
+  }
+  if (typeof edge.target==='string') {
+    let int = parseInt(edge.target,10);
+    LOGGER.Write(PR,`  edge ${prompt} target "${edge.target}" is string; converting to ${int}`);
+    edge.target = int;
+  }
+  return edge;
+}
+function m_CleanID(prompt, id) {
+  if (typeof id==='string') {
+    let int = parseInt(id,10);
+    LOGGER.Write(PR,`! ${prompt} "${id}" is string; converting to number ${int}`);
+    id = int;
+  }
+  return id;
+}
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
