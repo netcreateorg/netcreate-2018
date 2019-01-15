@@ -93,7 +93,7 @@ module.exports = {
 
     hooks: {
       onCompile() {
-        console.log(`\n*** NetCreate (DEV) is running ***\n`);
+        console.log(`\n*** NetCreate is running (dev mode) ***\n`);
       }
     },
 
@@ -112,7 +112,7 @@ module.exports = {
             const server = require("./brunch-server");
             return new Promise((resolve, reject) => {
               server({ port : 3000}, function() {
-                console.log(`\n*** NetCreate (CLASSROOM) is running ***\n`);
+                console.log(`\n*** NetCreate is running (classroom mode) ***\n`);
                 resolve();
               });
             });

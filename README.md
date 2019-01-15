@@ -21,7 +21,8 @@ You will be using these commands most frequently:
 
 * `npm run dev` - Run the NetCreate Server in developer mode. This is the mode that most people use the most. The terminal will print status and instructions on how to connect to the NetCreate Server with the Chrome browser.
 * `npm run log` - While NetCreate is running, use another terminal window to print the contents of the current **session log**. You can use this to monitor the activity of the running server.
-* `npm run package` - After a NetCreate classroom session, use this command to make a snapshot of the current database and placed in the `netcreate-2018/build/public` directory. You can copy this directory to a webserver for read-only access to the netgraph!
+* `npm run package` - Make the 'standalone' version! After a NetCreate classroom session, use this command to make a snapshot of the current database and placed in the `netcreate-2018/build/public` directory. You can copy this directory to a webserver for read-only access to the netgraph!
+* `npm run package:debug` - Run/debug the current standalone version from http://localhost:3000
 
 ## SUPPORT OPERATIONS
 
