@@ -66,11 +66,7 @@ DB.InitializeDatabase = function(options = {}) {
     if (NODES.count() > 0) {
       m_max_nodeID = NODES.mapReduce(
         (obj) => {
-          if (typeof obj.id==='string') {
-            let int = parseInt(obj.id,10);
-            console.log(PR,`node.id "${obj.id}" should not be string; converted to ${int}`);
-            obj.id = int;
-          }
+          m_CleanObjID('node.id',obj);
           return obj.id;
         },
         (arr) => {
@@ -85,11 +81,8 @@ DB.InitializeDatabase = function(options = {}) {
     if (EDGES.count() > 0) {
       m_max_edgeID = EDGES.mapReduce(
         (obj) => {
-          if (typeof obj.id==='string') {
-            let int = parseInt(obj.id,10);
-            console.log(PR,`edge.id "${obj.id}" should not be string; converted to ${int}`);
-            obj.id = int;
-          }
+          m_CleanObjID('edge.id',obj);
+          m_CleanEdgeTargets(obj.id,obj);
           return obj.id;
         },
         (arr) => {
@@ -173,6 +166,19 @@ function m_CleanObjID(prompt, obj) {
   }
   return obj;
 }
+function  m_CleanEdgeTargets(prompt, edge) {
+  if (typeof edge.source==='string') {
+    let int = parseInt(edge.source,10);
+    console.log(PR,`  converting edge ${prompt} source "${edge.source}" to ${int}`);
+    edge.source = int;
+  }
+  if (typeof edge.target==='string') {
+    let int = parseInt(edge.target,10);
+    console.log(PR,`  converting edge ${prompt} target "${edge.target}" to ${int}`);
+    edge.target = int;
+  }
+  return edge;
+}
 function m_CleanID(prompt, id) {
   if (typeof id==='string') {
     let int = parseInt(id,10);
@@ -191,10 +197,7 @@ DB.PKT_Update = function(pkt) {
     let matches = NODES.find({ id: node.id });
     if (matches.length === 0) {
       // if there was no node, then this is an insert new operation
-      if (DBG) console.log(
-          PR,
-          `PKT_Update ${pkt.Info()} INSERT nodeID ${JSON.stringify(node)}`
-        );
+      if (DBG) console.log(PR,`PKT_Update ${pkt.Info()} INSERT nodeID ${JSON.stringify(node)}`);
       LOGGER.Write(pkt.Info(), `insert node`, node.id, JSON.stringify(node));
       DB.AppendNodeLog(node, pkt); // log GroupId to node stored in database
       NODES.insert(node);
@@ -202,22 +205,14 @@ DB.PKT_Update = function(pkt) {
     } else if (matches.length === 1) {
       // there was one match to update
       NODES.findAndUpdate({ id: node.id }, n => {
-        if (DBG) console.log(
-            PR,
-            `PKT_Update ${pkt.Info()} UPDATE nodeID ${node.id} ${JSON.stringify(
-              node
-            )}`
-          );
+        if (DBG) console.log(PR,`PKT_Update ${pkt.Info()} UPDATE nodeID ${node.id} ${JSON.stringify(node)}`);
         LOGGER.Write(pkt.Info(), `update node`, node.id, JSON.stringify(node));
         DB.AppendNodeLog(n, pkt); // log GroupId to node stored in database
         Object.assign(n, node);
       });
       retval = { op: "update", node };
     } else {
-      if (DBG) console.log(
-          PR,
-          `WARNING: multiple nodeID ${node.id} x${matches.length}`
-        );
+      if (DBG) console.log(PR,`WARNING: multiple nodeID ${node.id} x${matches.length}`);
       LOGGER.Write(pkt.Info(), `ERROR`, node.id, "duplicate node id");
       retval = { op: "error-multinodeid" };
     }
@@ -238,12 +233,7 @@ DB.PKT_Update = function(pkt) {
     } else if (matches.length === 1) {
       // update this edge
       EDGES.findAndUpdate({ id: edge.id }, e => {
-        if (DBG) console.log(
-            PR,
-            `PKT_Update ${pkt.SourceGroupID()} UPDATE edgeID ${
-              edge.id
-            } ${JSON.stringify(edge)}`
-          );
+        if (DBG) console.log(PR,`PKT_Update ${pkt.SourceGroupID()} UPDATE edgeID ${edge.id} ${JSON.stringify(edge)}`);
         LOGGER.Write(pkt.Info(), `update edge`, edge.id, JSON.stringify(edge));
         DB.AppendEdgeLog(e, pkt); // log GroupId to edge stored in database
         Object.assign(e, edge);
@@ -257,7 +247,7 @@ DB.PKT_Update = function(pkt) {
     return retval;
   } // if edge
 
-  // DELETE NODES
+  // DELETE NODE
   if (nodeID !== undefined) {
     nodeID = m_CleanID('nodeID',nodeID);
     if (DBG) console.log(PR, `PKT_Update ${pkt.Info()} DELETE nodeID ${nodeID}`);
@@ -268,42 +258,29 @@ DB.PKT_Update = function(pkt) {
     let edgesToProcess = EDGES.where(e => {
       return e.source === nodeID || e.target === nodeID;
     });
-    // `NaN` is not valid JSON, so we use ``
-    if (replacementNodeID !== "") {
-      // re-link edges to replacementNodeID
+
+    // handle linked nodes
+    replacementNodeID = m_CleanID('replacementNodeID',replacementNodeID);
+    if (replacementNodeID !== -1) {
+      // re-link edges to replacementNodeID...
       EDGES.findAndUpdate({ source: nodeID }, e => {
-        LOGGER.Write(
-          `...`,
-          pkt.Info(),
-          `relinking edge`,
-          e.id,
-          `to`,
-          replacementNodeID
-        );
+        LOGGER.Write(pkt.Info(),`relinking edge`,e.id,`to`,replacementNodeID);
         e.source = replacementNodeID;
       });
       EDGES.findAndUpdate({ target: nodeID }, e => {
-        LOGGER.Write(
-          `...`,
-          pkt.Info(),
-          `relinking edge`,
-          e.id,
-          `to`,
-          replacementNodeID
-        );
+        LOGGER.Write(pkt.Info(),`relinking edge`,e.id,`to`,replacementNodeID);
         e.target = replacementNodeID;
       });
     } else {
-      // delete edges
-      EDGES.findAndRemove({ source: nodeID }, e => {
-        LOGGER.Write(`...`, pkt.Info(), `deleting edge`, e.id, `from`, nodeID);
-        e.source = nodeID;
-      });
-      EDGES.findAndRemove({ target: nodeID }, e => {
-        LOGGER.Write(`...`, pkt.Info(), `deleting edge`, e.id, `from`, nodeID);
-        e.target = nodeID;
-      });
+      // ... or delete edges completely
+      let sourceEdges = EDGES.find({ source: nodeID });
+      EDGES.findAndRemove({ source: nodeID });
+      if (sourceEdges.length) LOGGER.Write(pkt.Info(), `deleting ${sourceEdges.length} sources matching ${nodeID}`);
+      let targetEdges = EDGES.find({ target: nodeID });
+      EDGES.findAndRemove({ target: nodeID });
+      if (targetEdges.length) LOGGER.Write(pkt.Info(), `deleting ${targetEdges.length} targets matching ${nodeID}`);
     }
+    // ...finally remove the node itself
     NODES.findAndRemove({ id: nodeID });
     return { op: "delete", nodeID, replacementNodeID };
   }

@@ -34,6 +34,7 @@ let D3DATA = {};
 /*/ establish message handlers during INITIALIZE phase
 /*/
 DSTOR.Hook("INITIALIZE", () => {
+  // DB_UPDATE is a local call originating from within the app
   UDATA.HandleMessage("DB_UPDATE", function(data) {
     DSTOR.UpdateServerDB(data);
   });

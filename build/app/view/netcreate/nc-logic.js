@@ -480,7 +480,7 @@ MOD.Hook("INITIALIZE", () => {
 
     // Remove or replace edges
     let edgesToProcess;
-    if (replacementNodeID !== "") {
+    if (replacementNodeID !== -1) {
       // replace
       let replacementNode = m_FindNodeById(replacementNodeID);
       edgesToProcess = D3DATA.edges.map(edge => {
