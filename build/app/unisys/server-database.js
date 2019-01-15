@@ -93,7 +93,7 @@ DB.InitializeDatabase = function(options = {}) {
     dupeNodes.forEach( (obj) => {
       m_max_nodeID+=1;
       LOGGER.Write(PR,`# rewriting duplicate nodeID ${obj.id} to ${m_max_nodeID}`);
-      obj.id += m_max_nodeID;
+      obj.id = m_max_nodeID;
     });
 
     // find highest EDGE ID
@@ -176,7 +176,7 @@ DB.PKT_Update = function(pkt) {
   let retval = {};
   // PROCESS NODE INSERT/UPDATE
   if (node) {
-    m_CleanObjID('node.id',node);
+    m_CleanObjID(`${pkt.Info()} node.id`,node);
     let matches = NODES.find({ id: node.id });
     if (matches.length === 0) {
       // if there was no node, then this is an insert new operation
@@ -204,7 +204,7 @@ DB.PKT_Update = function(pkt) {
 
   // PROCESS EDGE INSERT/UPDATE
   if (edge) {
-    m_CleanObjID('edge.id',edge);
+    m_CleanObjID(`${pkt.Info()} edge.id`,edge);
     let matches = EDGES.find({ id: edge.id });
     if (matches.length === 0) {
       // this is a new edge
@@ -232,7 +232,7 @@ DB.PKT_Update = function(pkt) {
 
   // DELETE NODE
   if (nodeID !== undefined) {
-    nodeID = m_CleanID('nodeID',nodeID);
+    nodeID = m_CleanID(`${pkt.Info()} nodeID`,nodeID);
     if (DBG) console.log(PR, `PKT_Update ${pkt.Info()} DELETE nodeID ${nodeID}`);
     // Log first so it's apparent what is triggering the edge changes
     LOGGER.Write(pkt.Info(), `delete node`, nodeID);
@@ -243,7 +243,7 @@ DB.PKT_Update = function(pkt) {
     });
 
     // handle linked nodes
-    replacementNodeID = m_CleanID('replacementNodeID',replacementNodeID);
+    replacementNodeID = m_CleanID(`${pkt.Info()} replacementNodeID`,replacementNodeID);
     if (replacementNodeID !== -1) {
       // re-link edges to replacementNodeID...
       EDGES.findAndUpdate({ source: nodeID }, e => {
@@ -270,7 +270,7 @@ DB.PKT_Update = function(pkt) {
 
   // DELETE EDGES
   if (edgeID !== undefined) {
-    edgeID = m_CleanID('edgeID',edgeID);
+    edgeID = m_CleanID(`${pkt.Info()} edgeID`,edgeID);
     if (DBG) console.log(PR, `PKT_Update ${pkt.Info()} DELETE edgeID ${edgeID}`);
     LOGGER.Write(pkt.Info(), `delete edge`, edgeID);
     EDGES.findAndRemove({ id: edgeID });
