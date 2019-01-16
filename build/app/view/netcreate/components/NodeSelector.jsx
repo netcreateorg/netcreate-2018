@@ -198,12 +198,20 @@ class NodeSelector extends UNISYS.Component {
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       this.OnAppStateChange('SEARCH', this.onStateChange_SEARCH);
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // Handle Template updates
       this.OnAppStateChange('TEMPLATE',(data) => {
         this.setState({nodePrompts: data.nodePrompts});
       });
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ If someone on the network updates a node or edge, SOURCE_UPDATE is broadcast.
+      We catch it here and update the selection if the node we're displaying matches
+      the updated node.
+      NOTE: We do not currently update NodeSelector if a new edge has been added
+      that references the currently selected node.
+  /*/ UDATA.HandleMessage("SOURCE_UPDATE", (data) => {
+        if (this.state.formData.id===data.node.id) UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [data.node.id] });
+      });
 
     } // constructor
 
