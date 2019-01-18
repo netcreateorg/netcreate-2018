@@ -207,11 +207,36 @@ class NodeSelector extends UNISYS.Component {
   /*/ If someone on the network updates a node or edge, SOURCE_UPDATE is broadcast.
       We catch it here and update the selection if the node we're displaying matches
       the updated node.
-      NOTE: We do not currently update NodeSelector if a new edge has been added
-      that references the currently selected node.
-  /*/ UDATA.HandleMessage("SOURCE_UPDATE", (data) => {
-        if (this.state.formData.id===data.node.id) UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [data.node.id] });
+      This basically handles updated Node labels in both the main node and in related
+      edges.
+  /*/
+      UDATA.HandleMessage("SOURCE_UPDATE", (data) => {
+        let needsUpdate = false;
+        let currentNodeID = this.state.formData.id;
+        let updatedNodeID = data.node.id;
+        if (currentNodeID === updatedNodeID) needsUpdate = true;
+        this.state.edges.forEach(edge => {
+          if ((edge.source.id === updatedNodeID) || (edge.target.id === updatedNodeID)) needsUpdate = true;
+        })
+        if (needsUpdate) UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [currentNodeID] });
       });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ This will add any new edges that have links to the currently selected node
+      to the list of edges in the NodeSelector.
+  /*/
+      UDATA.HandleMessage("EDGE_UPDATE", (data) => {
+        let currentNodeID = this.state.formData.id;
+        let updatedNodeIDs = [data.edge.source.id, data.edge.target.id];
+        if (updatedNodeIDs.includes(currentNodeID)) {
+          UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [currentNodeID] });
+        }
+      });
+      // This handler is not necessary because SELECTION event clears the form
+      // UDATA.HandleMessage("NODE_DELETE", (data) => {
+      // });
+      // This handler is not necessary because SELECTION event will update the edges
+      // UDATA.HandleMessage("EDGE_DELETE", (data) => {
+      // });
 
     } // constructor
 
