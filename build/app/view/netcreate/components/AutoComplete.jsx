@@ -221,7 +221,7 @@ class AutoComplete extends UNISYS.Component {
 /*/ onStateChange_SELECTION ( data ) {
       if (DBG) console.log('...AutoComplete',this.props.identifier,': Got SELECTION',data);
       if (this.props.shouldIgnoreSelection) {
-        if (DBG) console.error('...AutComplete',this.props.identifier,': Ignoring SELECTION (probably because NodeSelector is in edit mode).');
+        if (DBG) console.log('...AutComplete',this.props.identifier,': Ignoring SELECTION (probably because NodeSelector is in edit mode).');
         return;
       }
       let activeAutoCompleteId = this.AppState('ACTIVEAUTOCOMPLETE').activeAutoCompleteId;
@@ -343,9 +343,13 @@ class AutoComplete extends UNISYS.Component {
       this.setState({ mode: this.props.inactiveMode });
     }
 /*/
-/*/ componentWillUnmount () {
-      _IsMounted = false;
-    }
+/*/
+  componentWillUnmount() {
+    _IsMounted = false;
+    // deregister ACTIVEAUTOMPLETE when component unmounts
+    // otherwise state updates trigger a setState on unmounted component error
+    this.AppStateChangeOff('ACTIVEAUTOCOMPLETE', this.onStateChange_AUTOCOMPLETE);
+  }
 
 /*/ Conditionally render components based on current 'mode'. The mode
     is passed
