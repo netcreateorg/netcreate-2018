@@ -1,6 +1,8 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  UNISYS server loader
+    UNISYS SERVER
+    implemente UNISYS messaging system
+    invoked from brunch-server.js
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 

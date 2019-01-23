@@ -1,7 +1,7 @@
 if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    Messager - Handle a collection of named events and their handlers
+    MESSAGER - Handle a collection of named events and their handlers
     https://en.wikipedia.org/wiki/Event-driven_architecture#JavaScript
 
     NOTE: This class is often WRAPPED by other UNISYS modules that manage

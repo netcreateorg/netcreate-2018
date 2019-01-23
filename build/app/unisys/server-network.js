@@ -1,14 +1,7 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   WebSocketServer and Network Management for UNISYS
-  WORK IN PROGRESS
-
-  [x] - socket listener
-  [ ] - socket dictionary
-  [ ] - socket metadata for UNISYS defined, stored in sockets
-  [ ] - message dictionary
-  [ ] - message dispatching
-  [ ] - system message declaration
+  imported by server.js
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 

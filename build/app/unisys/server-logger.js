@@ -1,9 +1,7 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  LOGGER - WIP
-  porting PLAE logger for now to get it minimally working
-
-  SUPER UGLY PORT WILL CLEAN UP LATER AVERT YOUR EYES OMG
+  LOGGER
+  ported from PLAE
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -53,20 +51,20 @@ FSE.ensureDir(dir, function (err) {
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/	Log a standard system log message
 /*/	function LogLine ( ...args ) {
-		if (!fs_log) return;
+    if (!fs_log) return;
 
-		var out = str_TimeStamp()+' ';
-		var c = args.length;
+    var out = str_TimeStamp()+' ';
+    var c = args.length;
     // arguments are delimited
-		if (c) {
-			for (let i=0; i<c; i++) {
-				if (i>0) out += LOG_DELIMITER;
-				out += args[i];
-			}
-		}
-		out += '\n';
-		fs_log.write(out);
-	}
+    if (c) {
+      for (let i=0; i<c; i++) {
+        if (i>0) out += LOG_DELIMITER;
+        out += args[i];
+      }
+    }
+    out += '\n';
+    fs_log.write(out);
+  }
 
 /////////////////////////////////////////////////////////////////////////////
 /**	UTILITY FUNCTIONS ******************************************************/

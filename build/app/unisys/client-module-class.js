@@ -3,9 +3,10 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 
     UNISYS MODULE SHELL
 
-    A simple shell with a unique id and unique name. Currently this is just
-    a utility class for maintaining naming convention for modules, and
-    serves as the interface for module management within the UNISYS universe
+    An object with a unique id and unique name. Currently this is just a
+    utility class for maintaining naming convention for UNISYS client-side
+    modules, and serves as the interface for module management within the
+    UNISYS universe
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 

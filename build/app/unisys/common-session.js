@@ -1,7 +1,17 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     Session Utilities
-    collection of session-related data structures
+
+    A NetCreate "session" is used for distinguishing between groups accessing
+    the app using a special token string made from:
+
+    * class - the college class' course instance
+    * project - a project within the class
+    * group count - how many groups of students in the class
+    * subgroup id - a particular student within the group
+
+    This module creates and decodes tokens. The algorithm makes use of a
+    hash id to prevent students from making-up their own codes.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
