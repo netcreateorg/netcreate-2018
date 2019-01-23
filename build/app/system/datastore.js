@@ -3,7 +3,10 @@
     DATASTORE
     stub for testing module loading
     eventually will load data from database
-    data.json is { nodes: [ {} ... {} ] }
+    data.json is {
+      nodes: [ {} ... {} ]
+      edges: [ {} ... {} ]
+    }
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
