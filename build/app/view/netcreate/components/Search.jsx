@@ -71,7 +71,7 @@ class Search extends UNISYS.Component {
       return (
         <FormGroup row>
           <Col sm={3}>
-            <Label className="small text-muted">Search</Label>
+            <Label className="small text-muted">Type to search or add a node:</Label>
           </Col>
           <Col sm={9}>
             <AutoComplete
