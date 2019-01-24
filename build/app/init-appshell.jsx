@@ -87,6 +87,10 @@
         component: (props) => {return HTML(props)}
       },
       {
+        path: '/vocabulary',
+        component: (props) => {return HTML(props)}
+      },
+      {
         path: '*',
         restricted: false,
         component: NoMatch
@@ -210,6 +214,9 @@ class AppShell extends UNISYS.Component {
                       </DropdownItem>
                       <DropdownItem>
                         <NavLink to="/simple" tag={RRNavLink} replace>SimpleHTML Example</NavLink>
+                      </DropdownItem>
+                      <DropdownItem>
+                        <NavLink to="/vocabulary" tag={RRNavLink} replace>Network Vocabulary</NavLink>
                       </DropdownItem>
                     </DropdownMenu>
                   </UncontrolledDropdown>
