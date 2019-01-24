@@ -26,8 +26,10 @@ class Vocabulary extends UNISYS.Component {
     constructor (props) {
       super(props);
       this.state = {isExpanded: true};
-      this.onToggleExpanded = this.onToggleExpanded.bind(this);
-    } // constructor
+
+      this.onToggleExpanded         = this.onToggleExpanded.bind(this);
+
+          } // constructor
 
 
 
@@ -52,10 +54,12 @@ class Vocabulary extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ render () {
+        let { tableHeight } = this.props;
+
       return (
         <div className="help"
-             style={{maxWidth:'65%',overflow:'scroll',
-                     position:'fixed',right:'10px',zIndex:2000
+             style={{maxWidth:'65%',overflow:'auto',
+                     position:'fixed',display: 'block', right:'10px',zIndex:2000,maxHeight: tableHeight
              }}>
           <Button size="sm" outline hidden
             style={{float:'right'}}
