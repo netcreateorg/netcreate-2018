@@ -95,7 +95,7 @@ class Help extends UNISYS.Component {
               that parameter.</li>
             </ul>
             <h1>About Net.Create</h1>
-            <p>Net.Create is funded through the <a href="https://www.nsf.gov/pubs/policydocs/pappguide/nsf09_1/gpg_2.jsp#IID2">EAGER program</a> at <a href="https://www.nsf.gov/">NSF</a> under award #<a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=1848655">1848655</a>. <a href="http://www.kalanicraig.com">Kalani Craig</a> is the PI, with Co-PIs <a href="http://www.jdanish.com">Joshua Danish</a> and Cindy Hmelo-Silver. Software development provided by <a href="http://inquirium.net">Inquirium</a>.</p>
+            <p>Net.Create is funded through the <a href="https://www.nsf.gov/pubs/policydocs/pappguide/nsf09_1/gpg_2.jsp#IID2" target="NSF">EAGER program</a> at <a href="https://www.nsf.gov/" target="NSF">NSF</a> under award #<a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=1848655" target="NSF">1848655</a>. <a href="http://www.kalanicraig.com" target="Craig">Kalani Craig</a> is the PI, with Co-PIs <a href="http://www.joshuadanish.com" target="Danish">Joshua Danish</a> and <a href="https://education.indiana.edu/about/directory/profiles/hmelo-silver-cindy.html" target="Hmelo-Silver">Cindy Hmelo-Silver</a>. Software development provided by <a href="http://inquirium.net" target="Inquirium">Inquirium</a>. For more information, see <a href="http://netcreate.org" target="NetCreateOrg">Net.Create.org</a></p>
 
           </div>
         </div>
