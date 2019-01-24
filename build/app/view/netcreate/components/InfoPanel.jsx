@@ -7,7 +7,7 @@
   * Nodes Table
   * Edges Table
   * Help
-  
+
   The panel itself can be resized vertically.
 
 
@@ -28,6 +28,7 @@ const { TabContent, TabPane, Nav, NavItem, NavLink, Row, Col, Button } = ReactSt
 const classnames = require('classnames');
 
 const Help = require('./Help');
+const Vocabulary = require('./Vocabulary');
 const NodeTable = require('./NodeTable');
 const EdgeTable = require('./EdgeTable');
 
@@ -68,7 +69,7 @@ class InfoPanel extends UNISYS.Component {
     window.event.stopPropagation();
     if (this.state.activeTab !== tab) {
       this.setState({ activeTab: tab });
-      if ((tab === `1`) || (tab === '4')) {
+      if ((tab === `1`) || (tab === '4') || (tab === '5')) {
         this.setState({
           tabpanelHeight: '50px', // show only tab buttons
           hideDragger: true
@@ -169,6 +170,14 @@ class InfoPanel extends UNISYS.Component {
                 className={classnames({ active: this.state.activeTab === '4' })}
                 onClick={() => { this.toggle('4'); }}
               >
+                Vocabulary
+                        </NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink
+                className={classnames({ active: this.state.activeTab === '5' })}
+                onClick={() => { this.toggle('5'); }}
+              >
                 Help
                         </NavLink>
             </NavItem>
@@ -191,6 +200,13 @@ class InfoPanel extends UNISYS.Component {
               </Row>
             </TabPane>
             <TabPane tabId="4">
+              <Row>
+                <Col sm="12">
+                  <Vocabulary tableHeight={tableHeight} />
+                </Col>
+              </Row>
+            </TabPane>
+            <TabPane tabId="5">
               <Row>
                 <Col sm="12">
                   <Help />

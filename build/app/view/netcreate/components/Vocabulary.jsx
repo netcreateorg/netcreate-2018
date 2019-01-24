@@ -2,7 +2,7 @@
 
   ## OVERVIEW
 
-    Help displays a hideable generic help screen.
+    Vocabulary displays a list of common terms
 
 
 
@@ -22,7 +22,7 @@ const UNISYS   = require('unisys/client');
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
-class Help extends UNISYS.Component {
+class Vocabulary extends UNISYS.Component {
     constructor (props) {
       super(props);
       this.state = {isExpanded: true};
@@ -54,18 +54,15 @@ class Help extends UNISYS.Component {
 /*/ render () {
       return (
         <div className="help"
-             style={{maxWidth:'50%',overflow:'scroll',
+             style={{maxWidth:'65%',overflow:'scroll',
                      position:'fixed',right:'10px',zIndex:2000
              }}>
           <Button size="sm" outline hidden
             style={{float:'right'}}
             onClick={this.onToggleExpanded}
-          >{this.state.isExpanded ? "Hide Help" : "Help"}</Button>
+          >{this.state.isExpanded ? "Hide Vocabulary" : "Vocabulary"}</Button>
           <div hidden={!this.state.isExpanded}
             style={{backgroundColor:'rgba(240,240,240,0.95)',padding:'10px'}}>
-            <h1>Basic Network Analysis Vocabulary</h1>
-            In Net.Create, users can simultaneously do data entry on nodes and the edges between them.
-
             <dl>
             <dt>Node</dt>
             <dd>This describes the <em>entity</em> that is connected through relationships. This could be individual people, groups of people, institutions (like churches, organizations, schools). One way of thinking about this is that nodes are nouns and edges are verbs - nodes are things that are connected through edges. <em><strong>Similar terms include:</strong> actor, vertex</em></dd>
@@ -111,9 +108,9 @@ class Help extends UNISYS.Component {
       );
     }
 
-} // class Help
+} // class Vocabulary
 
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = Help;
+module.exports = Vocabulary;
