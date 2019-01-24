@@ -234,11 +234,10 @@ countEdges() {
                     thead { position: relative; }
                     tbody { overflow: auto; }
                     .nodetable td:nth-child(1), .nodetable th:nth-child(1) {width: 2em; min-width: 2em;}
-                    .nodetable td:nth-child(2), .nodetable th:nth-child(2) {width: 2em; min-width: 2em;}
-                    .nodetable td:nth-child(3), .nodetable th:nth-child(3) {width: 4em; min-width: 4em;}
-                    .nodetable td:nth-child(4), .nodetable th:nth-child(4) {width: 12em; min-width: 12em;}
-                    .nodetable td:nth-child(5), .nodetable th:nth-child(5) {width: 4em; min-width: 4em;}
-                    .nodetable td:nth-child(6), .nodetable th:nth-child(6) {min-width: 2em; }`
+                    .nodetable td:nth-child(2), .nodetable th:nth-child(2) {width: 4em; min-width: 4em;}
+                    .nodetable td:nth-child(3), .nodetable th:nth-child(3) {width: 10em; min-width: 10em;}
+                    .nodetable td:nth-child(4), .nodetable th:nth-child(4) {width: 4em; min-width: 4em;}
+                    .nodetable td:nth-child(5), .nodetable th:nth-child(5) {width: 25em; min-width: 25em; }`
       return (
         <div style={{backgroundColor:'#eafcff'}}>
           <style>{styles}</style>
@@ -251,10 +250,6 @@ countEdges() {
           >
             <thead>
               <tr>
-                <th><Button size="sm"
-                      disabled={this.state.sortkey==="id"}
-                      onClick={()=>this.setSortKey("id")}
-                    >ID</Button></th>
                 <th></th>
                 <th><Button size="sm"
                       disabled={this.state.sortkey === "edgeCount"}
@@ -284,7 +279,6 @@ countEdges() {
             <tbody style={{maxHeight: tableHeight}}>
             {this.state.nodes.map( (node,i) =>
               <tr key={i}>
-                <td>{node.id}</td>
                 <td><Button size="sm" outline
                       value={node.id}
                       onClick={this.onButtonClick}
