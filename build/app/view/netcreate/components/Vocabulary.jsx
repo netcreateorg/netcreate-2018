@@ -58,8 +58,8 @@ class Vocabulary extends UNISYS.Component {
 
       return (
         <div className="help"
-             style={{maxWidth:'65%',overflow:'auto',
-                     position:'fixed',display: 'block', right:'10px',zIndex:2000,maxHeight: tableHeight
+             style={{overflow:'auto',
+                     position:'relative',display: 'block', right:'10px',maxHeight: tableHeight
              }}>
           <Button size="sm" outline hidden
             style={{float:'right'}}

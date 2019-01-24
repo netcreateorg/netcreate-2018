@@ -69,7 +69,7 @@ class InfoPanel extends UNISYS.Component {
     window.event.stopPropagation();
     if (this.state.activeTab !== tab) {
       this.setState({ activeTab: tab });
-      if ((tab === `1`) || (tab === '4') || (tab === '5')) {
+      if ((tab === `1`) ||  (tab === '5')) {
         this.setState({
           tabpanelHeight: '50px', // show only tab buttons
           hideDragger: true
