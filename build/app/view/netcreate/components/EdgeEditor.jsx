@@ -314,11 +314,11 @@ class EdgeEditor extends UNISYS.Component {
 /*/ populate formdata from D3DATA
 /*/ loadSourceAndTarget () {
   if (DBG) console.log('EdgeEditor.loadSourceAndTarget!')
-  
+
       let edgeID = this.props.edgeID || '';
       // Clean Data
       if (isNaN(edgeID)) { edgeID = parseInt(edgeID); }
-  
+
       let D3DATA = this.AppState('D3DATA');
 
       // parseInt in case of old bad string id
@@ -682,7 +682,7 @@ class EdgeEditor extends UNISYS.Component {
 /*/ render () {
       const { edgeID, parentNodeLabel } = this.props;
       const { formData, sourceNode, targetNode, edgePrompts } = this.state;
-      const me = <span style={{color:"rgba(0,0,0,0.2)",fontStyle:"italic"}}>this</span>;
+      const me = <span style={{color:"rgba(0,0,0,0.2)",fontStyle:"italic"}}>this node</span>;
       return (
         <div>
 
