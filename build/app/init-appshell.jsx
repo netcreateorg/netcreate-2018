@@ -32,6 +32,7 @@
     const UNISYS = require('unisys/client');
 
 
+
 /** (1) ROUTED COMPONENTS ****************************************************\
   Used by render()'s <Switch> to load a React component (what we call a
   'view' in the NetCreate app). The component should return its elements
@@ -86,11 +87,18 @@
         component: (props) => {return HTML(props)}
       },
       {
+        path: '/vocabulary',
+        component: (props) => {return HTML(props)}
+      },
+      {
         path: '*',
         restricted: false,
         component: NoMatch
       }
     ];
+
+    // Joshua added to disable Extras
+    const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1');
 
 
 /** (2) ROUTED FUNCTIONS *****************************************************\
@@ -178,38 +186,41 @@ class AppShell extends UNISYS.Component {
           <Navbar fixed="top" light expand="md" style={{ backgroundColor:'#f0f0f0', padding:'8px 10px'}}>
             <NavbarBrand href="#" style={{padding:'0'}}><img src='images/netcreate-logo.svg' height='36px'/></NavbarBrand>
             <NavbarToggler onClick={this.toggle} />
-            <Collapse isOpen={this.state.isOpen} navbar>
-            {/*/ (1) add navigation links here /*/}
-              <Nav className="ml-auto" navbar>
-            { /* extra menu items
-                <NavItem>
-                  <NavLink to="/d3forcedemo" tag={RRNavLink} replace>D3 ForceDemo</NavLink>
-                </NavItem>
-            */ }
-                <UncontrolledDropdown direction="right" nav>
-                  <DropdownToggle>
-                    Extras
-                  </DropdownToggle>
-                  <DropdownMenu>
-                    <DropdownItem>
-                      <NavLink to="/dev-react" tag={RRNavLink} replace>dev-react</NavLink>
-                    </DropdownItem>
-                    <DropdownItem>
-                      <NavLink to="/dev-unisys" tag={RRNavLink} replace>dev-unisys</NavLink>
-                    </DropdownItem>
-                    <DropdownItem>
-                      <NavLink to="/dev-db" tag={RRNavLink} replace>dev-db</NavLink>
-                    </DropdownItem>
-                    <DropdownItem>
-                      <NavLink to="/dev-session" tag={RRNavLink} replace>dev-session</NavLink>
-                    </DropdownItem>
-                    <DropdownItem>
-                      <NavLink to="/simple" tag={RRNavLink} replace>SimpleHTML Example</NavLink>
-                    </DropdownItem>
-                  </DropdownMenu>
-                </UncontrolledDropdown>
-              </Nav>
-            </Collapse>
+              <Collapse isOpen={this.state.isOpen} navbar>
+              {/*/ (1) add navigation links here /*/}
+              <Nav className="ml-auto" navbar hidden={!isLocalHost}>
+              { /* extra menu items
+                  <NavItem>
+                    <NavLink to="/d3forcedemo" tag={RRNavLink} replace>D3 ForceDemo</NavLink>
+                  </NavItem>
+              */ }
+                  <UncontrolledDropdown direction="right" nav>
+                    <DropdownToggle>
+                      Extras
+                    </DropdownToggle>
+                    <DropdownMenu>
+                      <DropdownItem>
+                        <NavLink to="/dev-react" tag={RRNavLink} replace>dev-react</NavLink>
+                      </DropdownItem>
+                      <DropdownItem>
+                        <NavLink to="/dev-unisys" tag={RRNavLink} replace>dev-unisys</NavLink>
+                      </DropdownItem>
+                      <DropdownItem>
+                        <NavLink to="/dev-db" tag={RRNavLink} replace>dev-db</NavLink>
+                      </DropdownItem>
+                      <DropdownItem>
+                        <NavLink to="/dev-session" tag={RRNavLink} replace>dev-session</NavLink>
+                      </DropdownItem>
+                      <DropdownItem>
+                        <NavLink to="/simple" tag={RRNavLink} replace>SimpleHTML Example</NavLink>
+                      </DropdownItem>
+                      <DropdownItem>
+                        <NavLink to="/vocabulary" tag={RRNavLink} replace>Network Vocabulary</NavLink>
+                      </DropdownItem>
+                    </DropdownMenu>
+                  </UncontrolledDropdown>
+                </Nav>
+              </Collapse>
           </Navbar>
           <div style={{height:'3.5em'}}>{/*/ add space underneath the fixed navbar /*/}</div>
           <Switch>
