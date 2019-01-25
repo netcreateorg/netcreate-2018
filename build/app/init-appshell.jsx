@@ -97,8 +97,8 @@
       }
     ];
 
-// Joshua added to disable Extras
-const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1');
+    // Joshua added to disable Extras
+    const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1');
 
 
 /** (2) ROUTED FUNCTIONS *****************************************************\
@@ -181,7 +181,6 @@ class AppShell extends UNISYS.Component {
   To add a new VIEW, load the component
 /*/ render() {
       /// return component with matching routed view
-      if(isLocalHost)
       return (
         <div style={{display:'flex', flexFlow:'column nowrap', width:'100%', height:'100vh'}}>
           <Navbar fixed="top" light expand="md" style={{ backgroundColor:'#f0f0f0', padding:'8px 10px'}}>
@@ -189,7 +188,7 @@ class AppShell extends UNISYS.Component {
             <NavbarToggler onClick={this.toggle} />
               <Collapse isOpen={this.state.isOpen} navbar>
               {/*/ (1) add navigation links here /*/}
-                <Nav className="ml-auto" navbar>
+              <Nav className="ml-auto" navbar hidden={!isLocalHost}>
               { /* extra menu items
                   <NavItem>
                     <NavLink to="/d3forcedemo" tag={RRNavLink} replace>D3 ForceDemo</NavLink>
@@ -229,19 +228,6 @@ class AppShell extends UNISYS.Component {
           </Switch>
         </div>
       );
-    else
-      return(
-<div style={{display:'flex', flexFlow:'column nowrap', width:'100%', height:'100vh'}}>
-          <Navbar fixed="top" light expand="md" style={{ backgroundColor:'#f0f0f0', padding:'8px 10px'}}>
-            <NavbarBrand href="#" style={{padding:'0'}}><img src='images/netcreate-logo.svg' height='36px'/></NavbarBrand>
-
-          </Navbar>
-          <div style={{height:'3.5em'}}>{/*/ add space underneath the fixed navbar /*/}</div>
-          <Switch>
-            {renderRoutes(Routes)}
-          </Switch>
-        </div>
-        );
     } // render()
   } // AppShell()
 
