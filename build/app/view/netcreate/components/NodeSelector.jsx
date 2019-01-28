@@ -149,7 +149,8 @@ class NodeSelector extends UNISYS.Component {
             isNewNode: true
         },
         edges:         [],
-        isLocked:      true,
+        isLocked:       true,
+        edgesAreLocked: false,
         sourceNodeIsLocked: false,
         isEditable:    false,
         isValid:       false,
@@ -223,20 +224,34 @@ class NodeSelector extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ This will add any new edges that have links to the currently selected node
       to the list of edges in the NodeSelector.
+      IMPORTANT: We ignore edge updates if an edge is currently being edited to
+      prevent edge updates from clobbering the edit.  The list of edges is
+      updated after the edit is completed, so new edges are added then.
   /*/
       UDATA.HandleMessage("EDGE_UPDATE", (data) => {
         let currentNodeID = this.state.formData.id;
         let updatedNodeIDs = [data.edge.source.id, data.edge.target.id];
-        if (updatedNodeIDs.includes(currentNodeID)) {
+        if (updatedNodeIDs.includes(currentNodeID) && !this.state.edgesAreLocked) {
           UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [currentNodeID] });
         }
       });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // This handler is not necessary because SELECTION event clears the form
       // UDATA.HandleMessage("NODE_DELETE", (data) => {
       // });
       // This handler is not necessary because SELECTION event will update the edges
       // UDATA.HandleMessage("EDGE_DELETE", (data) => {
       // });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ This keeps track of whether an edge is being edited to prevent network
+      updates from clobbering an in-process edit.
+  /*/
+      UDATA.HandleMessage("EDGEEDIT_LOCK", (data) => {
+        this.setState({ edgesAreLocked: true });
+      });
+      UDATA.HandleMessage("EDGEEDIT_UNLOCK", (data) => {
+        this.setState({ edgesAreLocked: false });
+      });
 
     } // constructor
 
@@ -567,7 +582,7 @@ class NodeSelector extends UNISYS.Component {
   /*/
   onEditButtonClick(event) {
     event.preventDefault();
-    
+
     // nodeID needs to be a Number.  It should have been set in loadFormFromNode
     let nodeID = this.state.formData.id;
 

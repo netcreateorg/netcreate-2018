@@ -365,6 +365,8 @@ class EdgeEditor extends UNISYS.Component {
           isEditable:           true
         });
 
+        this.AppCall('EDGEEDIT_LOCK', { edgeID: this.props.edgeID });
+
       } else {
 
         // LOAD EXISTING EDGE
@@ -508,6 +510,7 @@ class EdgeEditor extends UNISYS.Component {
           isEditable: true
         });
       }
+      this.AppCall('EDGEEDIT_LOCK', { edgeID: this.props.edgeID });
 
     } // handleEdgeEdit
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -537,8 +540,10 @@ class EdgeEditor extends UNISYS.Component {
         if (this.state.isEditable) {
           this.loadSourceAndTarget();
           this.setState({ isEditable: false, targetIsEditable: false });
+          this.AppCall('EDGEEDIT_UNLOCK', { edgeID: this.props.edgeID });
           this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
         }
+
       } else {
         // expand, but don't set the autocomplete field, since we're not editing
         this.setState({ isExpanded: true });
@@ -548,12 +553,14 @@ class EdgeEditor extends UNISYS.Component {
 /*/
 /*/ onDeleteButtonClick () {
       this.clearForm();
+      this.AppCall('EDGEEDIT_UNLOCK', { edgeID: this.props.edgeID });
       this.AppCall('DB_UPDATE',{edgeID:this.props.edgeID});
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onEditButtonClick () {
       this.setState({ isEditable: true });
+      this.AppCall('EDGEEDIT_LOCK', { edgeID: this.props.edgeID });
 
       // Don't allow editing of the source or target fields.
       // If you want to change the edge, delete this one and create a new one.
@@ -662,6 +669,7 @@ class EdgeEditor extends UNISYS.Component {
       }
       if (DBG) console.group('EdgeEntry.onSubmit submitting',edge)
 
+      this.AppCall('EDGEEDIT_UNLOCK', { edgeID: this.props.edgeID });
       // pass currentAutoComplete back to nodeselector
       this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
       this.setState({ isEditable: false, sourceIsEditable: false, targetIsEditable: false });
