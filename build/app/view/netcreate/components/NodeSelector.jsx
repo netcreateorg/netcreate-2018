@@ -58,9 +58,9 @@
       isEditable      If true, form fields are enabled for editing
                       If false, form is readonly
                       
-      sourceNodeIsLocked
+      dbIsLocked
                       If someone else has selected the node for editing,
-                      this flag will cause the sourceNodeIsLockedMessage
+                      this flag will cause the dbIsLockedMessage
                       to be displayed.  This is only checked when
                       the user clicks "Edit".
 
@@ -151,7 +151,7 @@ class NodeSelector extends UNISYS.Component {
         edges:         [],
         isLocked:       true,
         edgesAreLocked: false,
-        sourceNodeIsLocked: false,
+        dbIsLocked: false,
         isEditable:    false,
         isValid:       false,
         isDuplicateNodeLabel: false,
@@ -269,7 +269,7 @@ class NodeSelector extends UNISYS.Component {
             isNewNode: true
         },
         edges: [],
-        sourceNodeIsLocked: false,
+        dbIsLocked: false,
         isEditable:      false,
         isValid:         false,
         isDuplicateNodeLabel: false,
@@ -366,7 +366,7 @@ class NodeSelector extends UNISYS.Component {
         // * force exit?
         // * prevent load?
         // * prevent selection?
-        if (DBG) console.error('NodeSelector: Already editing, ignoring SELECTION');
+        if (DBG) console.log('NodeSelector: Already editing, ignoring SELECTION');
       }
 
       this.validateForm();
@@ -453,7 +453,7 @@ class NodeSelector extends UNISYS.Component {
           id:        node.id,
           isNewNode: false
         },
-        sourceNodeIsLocked: false,
+        dbIsLocked: false,
         isEditable: false,
         isDuplicateNodeLabel: false
       });
@@ -590,11 +590,11 @@ class NodeSelector extends UNISYS.Component {
     .then((data)=>{
       if (data.NOP) {
         console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
-        this.setState({ sourceNodeIsLocked: true });
+        this.setState({ dbIsLocked: true });
       } else if (data.locked) {
         console.log(`SERVER SAYS: lock success! you can edit Node ${data.nodeID}`);
         console.log(`SERVER SAYS: unlock the node after successful DBUPDATE`);
-        this.setState({ sourceNodeIsLocked: false });
+        this.setState({ dbIsLocked: false });
         this.editNode();
       }
     });
@@ -664,7 +664,7 @@ class NodeSelector extends UNISYS.Component {
                 console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
               } else if (data.unlocked) {
                 console.log(`SERVER SAYS: unlock success! you have released Node ${data.nodeID}`);
-                this.setState({ sourceNodeIsLocked: false });
+                this.setState({ dbIsLocked: false });
               }
             });
         }
@@ -726,7 +726,7 @@ class NodeSelector extends UNISYS.Component {
               console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
             } else if (data.unlocked) {
               console.log(`SERVER SAYS: unlock success! you have released Node ${data.nodeID}`);
-              this.setState({ sourceNodeIsLocked: false });
+              this.setState({ dbIsLocked: false });
             }
         });
       });
@@ -817,7 +817,7 @@ class NodeSelector extends UNISYS.Component {
                 hidden={this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
                 onClick={this.onEditButtonClick}
               >Edit Node</Button>
-              <p hidden={!this.state.sourceNodeIsLocked} className="small text-danger">{nodePrompts.label.sourceNodeIsLockedMessage}</p>
+              <p hidden={!this.state.dbIsLocked} className="small text-danger">{nodePrompts.label.dbIsLockedMessage}</p>
               <Button outline size="sm"
                 hidden={!this.state.isEditable}
                 onClick={this.onCancelButtonClick}
