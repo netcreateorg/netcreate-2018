@@ -229,9 +229,36 @@ class NodeSelector extends UNISYS.Component {
       updated after the edit is completed, so new edges are added then.
   /*/
       UDATA.HandleMessage("EDGE_UPDATE", (data) => {
+        if (DBG) console.log('NodeSelector: Received EDGE_UPDATE edgesAreLocked', this.state.edgesAreLocked, data);
         let currentNodeID = this.state.formData.id;
-        let updatedNodeIDs = [data.edge.source.id, data.edge.target.id];
+        /* EDGE_UPDATES are triggered under two circumnstances:
+           a. When an existing edge is updated
+           b. When a new edge is created
+           The call sequence is:
+           1. EdgeEditor.Submit calls datastore.DB_UPDATE
+           2. datastore.DB_UPDATE calls server.SRV_DBUPDATE
+           3. server.SRV_DBUPDATE broadcasts EDGE_UPDATE
+              At this point, edge.source and edge.target are broadcast as Numbers.
+           4. EDGE_UPDATE is handled by:
+              a. nc-logic.handleMessage("EDGE_UPDATE"), and
+              b. NodeSelector.handlemMessage("EDGE_UPDATE") (this method)
+           5. nc-logic.handleMessage("EDGE_UPDATE") processes the data and
+              actually adds a new edge or updates the existing edge in D3DATA.
+              *** The key is that there is a difference in how it's handled.
+              For updates, the edge is simply updated.
+              But for new edges, the edge object is updated and then pushed to D3DATA.
+           6. When the edge object is pushed to D3DATA, D3 processes it and converts
+              edge.source and edge.target into node objects.
+              *** By the time NodeSelector receives the edge data, edge.source and
+              edge.target are node objects, not numbers.
+           So this method needs to account for the fact that edge.source and edge.target might be
+           received as either numbers or objects.
+        */
+        let sourceID = typeof data.edge.source === "number" ? data.edge.source : data.edge.source.id;
+        let targetID = typeof data.edge.target === "number" ? data.edge.target : data.edge.target.id;
+        let updatedNodeIDs = [sourceID, targetID];
         if (updatedNodeIDs.includes(currentNodeID) && !this.state.edgesAreLocked) {
+          if (DBG) console.log('NodeSelector: EDGE UPDATE: Calling SOURCE_SELECT!');
           UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [currentNodeID] });
         }
       });

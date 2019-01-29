@@ -520,55 +520,46 @@ MOD.Hook("INITIALIZE", () => {
   /*/
   UDATA.HandleMessage("EDGE_UPDATE", function(data) {
     let { edge } = data;
+    if (DBG) console.log("nc-logic.EDGE_UPDATE: received edge", edge);
     // edge.source and edge.target are initially ids
     // replace then with node data
     edge.source = m_FindNodeById(edge.source);
     edge.target = m_FindNodeById(edge.target);
     // set matching nodes
     let updatedEdges = m_SetMatchingEdgesByProp({ id: edge.id }, edge);
-    if (DBG) console.log("EDGE_UPDATE: updated", updatedEdges);
+    if (DBG) console.log("nc-logic.EDGE_UPDATE: updated", updatedEdges);
 
     // if no nodes had matched, then add a new node!
     if (updatedEdges.length === 0) {
-      if (DBG) console.log("EDGE_UPDATE: pushing edge", edge);
+      if (DBG) console.log("nc-logic.EDGE_UPDATE: adding new edge", edge);
       // created edges should have a default size
       edge.size = 1;
       D3DATA.edges.push(edge);
-      // Edge source and target links should be stored as
-      // ids rather than references to the actual source and
-      // target node objects.
-      //
-      // d3 will map the source and target ids to the
-      // node objects themsleves during the _UpdateGraph method.
-      //
-      // So we explicitly set and store ids rather than objects here.
-      //
-      // (If we don't do this, the edges become disconnected from nodes)
-      edge.source = edge.source.id;
-      edge.target = edge.target.id;
-      // Calculate Edge Size
-      edge.size = m_CalculateEdgeWeight(edge, D3DATA.edges);
     }
     // if there was one node
     if (updatedEdges.length === 1) {
-      // Edge source and target links should be stored as
-      // ids rather than references to the actual source and
-      // target node objects.
-      //
-      // d3 will map the source and target ids to the
-      // node objects themsleves during the _UpdateGraph method.
-      //
-      // So we explicitly set and store ids rather than objects here.
-      //
-      // (If we don't do this, the edges become disconnected from nodes)
-      edge.source = edge.source.id;
-      edge.target = edge.target.id;
-      edge.size = m_CalculateEdgeWeight(edge, D3DATA.edges);
+      console.log('nc-logic.EDGE_UPDATE: updating existing edge', updatedEdges)
     }
+    // Edge source and target links should be stored as
+    // ids rather than references to the actual source and
+    // target node objects.
+    //
+    // d3 will map the source and target ids to the
+    // node objects themsleves during the _UpdateGraph method.
+    //
+    // So we explicitly set and store ids rather than objects here.
+    //
+    // (If we don't do this, the edges become disconnected from nodes)
+    edge.source = edge.source.id;
+    edge.target = edge.target.id;
+    // Calculate Edge Size
+    edge.size = m_CalculateEdgeWeight(edge, D3DATA.edges);
+
     // if there were more edges than expected
     if (updatedEdges.length > 1) {
       throw Error("EdgeUpdate found duplicate IDs");
     }
+
     UDATA.SetAppState("D3DATA", D3DATA);
   });
 

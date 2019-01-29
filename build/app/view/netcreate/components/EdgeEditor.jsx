@@ -324,7 +324,7 @@ class EdgeEditor extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ populate formdata from D3DATA
 /*/ loadSourceAndTarget () {
-  if (DBG) console.log('EdgeEditor.loadSourceAndTarget!')
+      if (DBG) console.log('EdgeEditor.loadSourceAndTarget!')
 
       let edgeID = this.props.edgeID || '';
       // Clean Data
@@ -338,6 +338,7 @@ class EdgeEditor extends UNISYS.Component {
         throw 'EdgeEditor: Passed edgeID'+edgeID+'not found!';
       }
       let edge = edges[0];
+      if (DBG) console.log('EdgeEditor.loadSourceAndTarget: Loading edge', edge);
 
       let sourceNode, sourceNodes, targetNode, targetNodes;
 
@@ -429,16 +430,24 @@ class EdgeEditor extends UNISYS.Component {
     When a node is selected via the AutoComplete field, the SELECTION state is updated.
     So EdgeEditor needs to listen to the SELECTION state in order to
     know the target node has been selected.
+    SELECTION is also triggered when the network updates an edge.
 /*/ handleSelection ( data ) {
       if (DBG) console.log('EdgeEditor',this.props.edgeID,'got SELECTION data',data);
 
-      // If edge is not being edited, ignore the selection
-      if (!this.state.isEditable &&
-          !(this.state.sourceIsEditable || this.state.targetIsEditable) ) return;
+
+      // If we're one of the edges that have been updated, and we're not currently being edited,
+      // then update the data.
+      // If we're not currently being edited, then if edges have been updated, update self
+      let updatedEdge = data.edges.find((edge) => { return edge.id === this.state.formData.id; });
+      if (!this.state.isEditable && updatedEdge!==undefined) {
+        if (DBG) console.log('EdgeEditor: Updating edges with', updatedEdge);
+        this.loadSourceAndTarget();
+        return;
+      }
 
       // Technically we probably ought to also check to make sure we're the current
-      // activeAutoCompleteId, but we wouldn't be edtiable if we weren't.
-      if (data.nodes && data.nodes.length>0) {
+      // activeAutoCompleteId, but we wouldn't be editable if we weren't.
+      if (this.state.isEditable && data.nodes && data.nodes.length > 0) {
         // A node was selected, so load it
 
           let node = data.nodes[0];
@@ -469,7 +478,7 @@ class EdgeEditor extends UNISYS.Component {
           // TARGET
           if (DBG) console.log('EdgeEditor.handleSelection:',this.props.edgeID,'setting target node to',node);
 
-          // Set targetNpde state
+          // Set targetNode state
           this.setState({
             targetNode: node
           });
