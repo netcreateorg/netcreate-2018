@@ -364,7 +364,8 @@ MOD.Hook("INITIALIZE", () => {
       SEE ALSO: AutoComplete.onSuggestionSelected() and
                 D3SimpleNetGraph._UpdateGraph click handler
   /*/
-  UDATA.HandleMessage("SOURCE_SELECT", function(data) {
+  UDATA.HandleMessage("SOURCE_SELECT", m_sourceSelect);
+  function m_sourceSelect (data) {
     if (DBG) console.log(PR, "SOURCE_SELECT got data", data);
 
     let { nodeLabels = [], nodeIDs = [] } = data;
@@ -413,7 +414,7 @@ MOD.Hook("INITIALIZE", () => {
 
     // Set the SELECTION state so that listeners such as NodeSelectors update themselves
     UDATA.SetAppState("SELECTION", newState);
-  });
+  }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ SOURCE_SEARCH sets the current matching term as entered in an
@@ -430,6 +431,20 @@ MOD.Hook("INITIALIZE", () => {
     };
     // let SELECTION state listeners handle display updates
     UDATA.SetAppState("SEARCH", newState);
+  });
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ SOURCE_SEARCH_AND_SELECT first searches for an exact mathcing node
+      and if found, selects it.
+      This is called by AutoComplete onBlur in case we need to make an
+      implicit selection.
+  /*/
+  UDATA.HandleMessage("SOURCE_SEARCH_AND_SELECT", function (data) {
+    let { searchString } = data;
+    let node = m_FindMatchingNodesByLabel(searchString).shift();
+    if (node && (node.label === searchString)) {
+      m_sourceSelect({ nodeIDs: [node.id] });
+    }
   });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
