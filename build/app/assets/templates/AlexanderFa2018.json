@@ -9,9 +9,10 @@
                   "/// The rest of the definitions are there as placeholders for future functionality      ///"
   ],
 
-  "name":        "Tacitus",
+  "name":        "Alexander The Great",
 
-  "description": "Tacitus with all genders included in a single Person node type",
+  "description": "From Plutarch's Lives That Made Greek History -- Add something about what might make this template common to other source texts, e.g. we may not want to base this on a text but a text type?  Or perhaps to indicate which class it was for? e.g. Fall 2018 World History 101",
+
 
 
   "nodePrompts": {
@@ -36,7 +37,7 @@
                   {
                     "id":    "person",
                     "label": "Person",
-                    "color": "#aabaf2"
+                    "color": "#66CCFF"
                   },
                   {
                     "id":    "group",
