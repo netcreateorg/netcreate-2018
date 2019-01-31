@@ -179,7 +179,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = false;
+const DBG = true;
 const PR  = "EdgeEditor";
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
@@ -560,7 +560,7 @@ class EdgeEditor extends UNISYS.Component {
           this.AppCall('EDGEEDIT_UNLOCK', { edgeID: this.props.edgeID });
           this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
           // unlock
-          this.NetCall('SRV_DBUNLOCKEDGEE', { edgeID: this.state.formData.id })
+          this.NetCall('SRV_DBUNLOCKEDGE', { edgeID: this.state.formData.id })
             .then((data) => {
               if (data.NOP) {
                 if (DBG) console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
