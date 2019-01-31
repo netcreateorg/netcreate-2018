@@ -1,13 +1,16 @@
 {
 
   "_comments":  [ "/// NetCreate Template File ///",
-                  "/// IMPORTANT: As of 10/2/2018, the following functionality is available:               ///",
+                  "/// IMPORTANT: As of 1/31/2019, the following functionality is available:               ///",
                   "///  * `label` parameter for each field may be customized                               ///",
                   "///  * `hidden` parameter may be used to hide fields                                    ///",
                   "///  * changing the order of the `options` WILL change their order on selections        ///",
                   "///  * changing the order of the prompts themselves will NOT change their order         ///",
+                  "///  * `duplicateWarning` is used in NodeSelector                                       ///",
+                  "///  * `sourceNodeIsLockedMessage` is used in NodeSelector                              ///",
+                  "///  * `edgeIsLockedMessage` is used in EdgeEditor                                      ///",
                   "/// The rest of the definitions are there as placeholders for future functionality      ///"
-  ],
+                ],
 
   "name":        "Alexander The Great",
 
@@ -20,7 +23,7 @@
                 "label":    "Label",
                 "help":     "A short title for the node",
                 "duplicateWarning": "You’re entering a duplicate node.  Do you want to View the Existing node, or Continue creating?",
-                "sourceNodeIsLockedMessage": "This node is currently being editted by someone else, please try again later.",
+                "sourceNodeIsLockedMessage": "This node is currently being edited by someone else, please try again later.",
                 "_cmt4":    "/// `Label` is always required and cannot be hidden"
              },
     "type":  {
@@ -84,6 +87,7 @@
 
 
   "edgePrompts": {
+    "edgeIsLockedMessage": "This edge is currently being edited by someone else, please try again later.",
     "source":   {
                   "label": "Source",
                   "help":  "",
