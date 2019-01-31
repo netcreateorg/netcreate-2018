@@ -143,7 +143,7 @@ const SEARCH_COLOR = "#008800";
 const SOURCE_COLOR = "#0000DD";
 const TARGET_COLOR = "#FF0000";
 
-const TEMPLATE_URL = "../templates/alexander.json";
+const TEMPLATE_URL = "../templates/netcreate.json";
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
