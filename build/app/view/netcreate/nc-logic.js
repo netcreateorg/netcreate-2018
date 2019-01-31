@@ -370,7 +370,8 @@ MOD.Hook("INITIALIZE", () => {
       SEE ALSO: AutoComplete.onSuggestionSelected() and
                 D3SimpleNetGraph._UpdateGraph click handler
   /*/
-  UDATA.HandleMessage("SOURCE_SELECT", function(data) {
+  UDATA.HandleMessage("SOURCE_SELECT", m_sourceSelect);
+  function m_sourceSelect (data) {
     if (DBG) console.log(PR, "SOURCE_SELECT got data", data);
 
     let { nodeLabels = [], nodeIDs = [] } = data;
@@ -419,7 +420,7 @@ MOD.Hook("INITIALIZE", () => {
 
     // Set the SELECTION state so that listeners such as NodeSelectors update themselves
     UDATA.SetAppState("SELECTION", newState);
-  });
+  }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ SOURCE_SEARCH sets the current matching term as entered in an
@@ -436,6 +437,20 @@ MOD.Hook("INITIALIZE", () => {
     };
     // let SELECTION state listeners handle display updates
     UDATA.SetAppState("SEARCH", newState);
+  });
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ SOURCE_SEARCH_AND_SELECT first searches for an exact mathcing node
+      and if found, selects it.
+      This is called by AutoComplete onBlur in case we need to make an
+      implicit selection.
+  /*/
+  UDATA.HandleMessage("SOURCE_SEARCH_AND_SELECT", function (data) {
+    let { searchString } = data;
+    let node = m_FindMatchingNodesByLabel(searchString).shift();
+    if (node && (node.label === searchString)) {
+      m_sourceSelect({ nodeIDs: [node.id] });
+    }
   });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
@@ -526,55 +541,46 @@ MOD.Hook("INITIALIZE", () => {
   /*/
   UDATA.HandleMessage("EDGE_UPDATE", function(data) {
     let { edge } = data;
+    if (DBG) console.log("nc-logic.EDGE_UPDATE: received edge", edge);
     // edge.source and edge.target are initially ids
     // replace then with node data
     edge.source = m_FindNodeById(edge.source);
     edge.target = m_FindNodeById(edge.target);
     // set matching nodes
     let updatedEdges = m_SetMatchingEdgesByProp({ id: edge.id }, edge);
-    if (DBG) console.log("EDGE_UPDATE: updated", updatedEdges);
+    if (DBG) console.log("nc-logic.EDGE_UPDATE: updated", updatedEdges);
 
     // if no nodes had matched, then add a new node!
     if (updatedEdges.length === 0) {
-      if (DBG) console.log("EDGE_UPDATE: pushing edge", edge);
+      if (DBG) console.log("nc-logic.EDGE_UPDATE: adding new edge", edge);
       // created edges should have a default size
       edge.size = 1;
       D3DATA.edges.push(edge);
-      // Edge source and target links should be stored as
-      // ids rather than references to the actual source and
-      // target node objects.
-      //
-      // d3 will map the source and target ids to the
-      // node objects themsleves during the _UpdateGraph method.
-      //
-      // So we explicitly set and store ids rather than objects here.
-      //
-      // (If we don't do this, the edges become disconnected from nodes)
-      edge.source = edge.source.id;
-      edge.target = edge.target.id;
-      // Calculate Edge Size
-      edge.size = m_CalculateEdgeWeight(edge, D3DATA.edges);
     }
     // if there was one node
     if (updatedEdges.length === 1) {
-      // Edge source and target links should be stored as
-      // ids rather than references to the actual source and
-      // target node objects.
-      //
-      // d3 will map the source and target ids to the
-      // node objects themsleves during the _UpdateGraph method.
-      //
-      // So we explicitly set and store ids rather than objects here.
-      //
-      // (If we don't do this, the edges become disconnected from nodes)
-      edge.source = edge.source.id;
-      edge.target = edge.target.id;
-      edge.size = m_CalculateEdgeWeight(edge, D3DATA.edges);
+      console.log('nc-logic.EDGE_UPDATE: updating existing edge', updatedEdges)
     }
+    // Edge source and target links should be stored as
+    // ids rather than references to the actual source and
+    // target node objects.
+    //
+    // d3 will map the source and target ids to the
+    // node objects themsleves during the _UpdateGraph method.
+    //
+    // So we explicitly set and store ids rather than objects here.
+    //
+    // (If we don't do this, the edges become disconnected from nodes)
+    edge.source = edge.source.id;
+    edge.target = edge.target.id;
+    // Calculate Edge Size
+    edge.size = m_CalculateEdgeWeight(edge, D3DATA.edges);
+
     // if there were more edges than expected
     if (updatedEdges.length > 1) {
       throw Error("EdgeUpdate found duplicate IDs");
     }
+
     UDATA.SetAppState("D3DATA", D3DATA);
   });
 

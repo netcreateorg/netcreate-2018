@@ -49,11 +49,19 @@
                       by the EdgeEditor to determine whether it should
                       display the edge nodes as targets or sources.
 
+  ## STATES
 
-    ## TECHNICAL DESCRIPTION
+      dbIsLocked
+                      If someone else has selected the edge for editing,
+                      this flag will cause the dbIsLockedMessage
+                      to be displayed.  This is only checked when
+                      the user clicks "Edit".
 
 
-    ## TESTING
+  ## TECHNICAL DESCRIPTION
+
+
+  ## TESTING
 
 
     Displaying Current Edge(s)
@@ -218,6 +226,7 @@ class EdgeEditor extends UNISYS.Component {
             id:        ''
         },
         isLocked:        true,       // User has not logged in, don't allow edge edit
+        dbIsLocked:      false,      // Server Database is locked because someone else is editing
         isEditable:      false,      // Form is in an edtiable state
         isExpanded:      false,      // Show EdgeEditor Component in Summary view vs Expanded view
         sourceIsEditable:false,      // Source ndoe field is only editable when source is not parent
@@ -236,6 +245,7 @@ class EdgeEditor extends UNISYS.Component {
       this.onButtonClick          = this.onButtonClick.bind(this);
       this.onDeleteButtonClick    = this.onDeleteButtonClick.bind(this);
       this.onEditButtonClick      = this.onEditButtonClick.bind(this);
+      this.requestEdit = this.requestEdit.bind(this);
       this.onSwapSourceAndTarget  = this.onSwapSourceAndTarget.bind(this);
       this.onChangeSource         = this.onChangeSource.bind(this);
       this.onChangeTarget         = this.onChangeTarget.bind(this);
@@ -304,6 +314,7 @@ class EdgeEditor extends UNISYS.Component {
         },
         isEditable:           false,
         isExpanded:           false,      // Summary view vs Expanded view
+        dbIsLocked:           false,
         sourceIsEditable:     false,      // Source ndoe field is only editable when source is not parent
         hasValidSource:       false,      // Used by SwapSourceAndTarget and the Change Source button
         targetIsEditable:     false,      // Target ndoe field is only editable when target is not parent
@@ -313,7 +324,7 @@ class EdgeEditor extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ populate formdata from D3DATA
 /*/ loadSourceAndTarget () {
-  if (DBG) console.log('EdgeEditor.loadSourceAndTarget!')
+      if (DBG) console.log('EdgeEditor.loadSourceAndTarget!')
 
       let edgeID = this.props.edgeID || '';
       // Clean Data
@@ -327,6 +338,7 @@ class EdgeEditor extends UNISYS.Component {
         throw 'EdgeEditor: Passed edgeID'+edgeID+'not found!';
       }
       let edge = edges[0];
+      if (DBG) console.log('EdgeEditor.loadSourceAndTarget: Loading edge', edge);
 
       let sourceNode, sourceNodes, targetNode, targetNodes;
 
@@ -365,6 +377,8 @@ class EdgeEditor extends UNISYS.Component {
           isEditable:           true
         });
 
+        this.AppCall('EDGEEDIT_LOCK', { edgeID: this.props.edgeID });
+
       } else {
 
         // LOAD EXISTING EDGE
@@ -402,7 +416,8 @@ class EdgeEditor extends UNISYS.Component {
           isNewEdge:    false
         },
         sourceNode: sourceNode,
-        targetNode: targetNode
+        targetNode: targetNode,
+        dbIsLocked: false
       })
     }
 
@@ -415,16 +430,24 @@ class EdgeEditor extends UNISYS.Component {
     When a node is selected via the AutoComplete field, the SELECTION state is updated.
     So EdgeEditor needs to listen to the SELECTION state in order to
     know the target node has been selected.
+    SELECTION is also triggered when the network updates an edge.
 /*/ handleSelection ( data ) {
       if (DBG) console.log('EdgeEditor',this.props.edgeID,'got SELECTION data',data);
 
-      // If edge is not being edited, ignore the selection
-      if (!this.state.isEditable &&
-          !(this.state.sourceIsEditable || this.state.targetIsEditable) ) return;
+
+      // If we're one of the edges that have been updated, and we're not currently being edited,
+      // then update the data.
+      // If we're not currently being edited, then if edges have been updated, update self
+      let updatedEdge = data.edges.find((edge) => { return edge.id === this.state.formData.id; });
+      if (!this.state.isEditable && updatedEdge!==undefined) {
+        if (DBG) console.log('EdgeEditor: Updating edges with', updatedEdge);
+        this.loadSourceAndTarget();
+        return;
+      }
 
       // Technically we probably ought to also check to make sure we're the current
-      // activeAutoCompleteId, but we wouldn't be edtiable if we weren't.
-      if (data.nodes && data.nodes.length>0) {
+      // activeAutoCompleteId, but we wouldn't be editable if we weren't.
+      if (this.state.isEditable && data.nodes && data.nodes.length > 0) {
         // A node was selected, so load it
 
           let node = data.nodes[0];
@@ -455,7 +478,7 @@ class EdgeEditor extends UNISYS.Component {
           // TARGET
           if (DBG) console.log('EdgeEditor.handleSelection:',this.props.edgeID,'setting target node to',node);
 
-          // Set targetNpde state
+          // Set targetNode state
           this.setState({
             targetNode: node
           });
@@ -498,15 +521,12 @@ class EdgeEditor extends UNISYS.Component {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Someone externally has selected an edge for editing.
-    Usually someone has clicked a button in the EdgeList to edit an edge
+    Usually someone has clicked a button in the EdgeTable to edit an edge
 /*/ handleEdgeEdit ( data ) {
       if (DBG) console.log('EdgeEditor',this.state.formData.id,': got state EDGE_EDIT',data,'formData is',this.state.formData);
 
       if (this.state.formData.id === data.edgeID) {
-        this.setState({
-          isExpanded: true,
-          isEditable: true
-        });
+        this.requestEdit();
       }
 
     } // handleEdgeEdit
@@ -537,7 +557,18 @@ class EdgeEditor extends UNISYS.Component {
         if (this.state.isEditable) {
           this.loadSourceAndTarget();
           this.setState({ isEditable: false, targetIsEditable: false });
+          this.AppCall('EDGEEDIT_UNLOCK', { edgeID: this.props.edgeID });
           this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
+          // unlock
+          this.NetCall('SRV_DBUNLOCKEDGEE', { edgeID: this.state.formData.id })
+            .then((data) => {
+              if (data.NOP) {
+                if (DBG) console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
+              } else if (data.unlocked) {
+                if (DBG) console.log(`SERVER SAYS: unlock success! you have released Edge ${data.edgeID}`);
+                this.setState({ dbIsLocked: false });
+              }
+            });
         }
       } else {
         // expand, but don't set the autocomplete field, since we're not editing
@@ -548,12 +579,13 @@ class EdgeEditor extends UNISYS.Component {
 /*/
 /*/ onDeleteButtonClick () {
       this.clearForm();
+      this.AppCall('EDGEEDIT_UNLOCK', { edgeID: this.props.edgeID }); // inform NodeSelector
       this.AppCall('DB_UPDATE',{edgeID:this.props.edgeID});
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onEditButtonClick () {
-      this.setState({ isEditable: true });
+      this.requestEdit(this.state.formData.id);
 
       // Don't allow editing of the source or target fields.
       // If you want to change the edge, delete this one and create a new one.
@@ -564,6 +596,30 @@ class EdgeEditor extends UNISYS.Component {
       //   // The NodeSelector node is the target.  Allow editing the source.
       //   UDATA.LocalCall('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'source', searchString: this.state.sourceNode.label});
       // }
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ requestEdit() {
+      let edgeID = this.state.formData.id;
+      if (edgeID && edgeID!=='' && !isNaN(edgeID) && (typeof edgeID ==="number")) {
+        this.NetCall('SRV_DBLOCKEDGE', { edgeID: edgeID })
+          .then((data) => {
+            if (data.NOP) {
+              // Edge is locked, can't edit
+              if (DBG) console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
+              this.setState({ dbIsLocked: true });
+            } else if (data.locked) {
+              if (DBG) console.log(`SERVER SAYS: lock success! you can edit Edge ${data.edgeID}`);
+              if (DBG) console.log(`SERVER SAYS: unlock the edge after successful DBUPDATE`);
+              this.setState({
+                isEditable: true,
+                isExpanded: true,
+                dbIsLocked: false
+              });
+              this.AppCall('EDGEEDIT_LOCK', { edgeID: this.props.edgeID }); // inform NodeSelector
+            }
+          });
+      }
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -662,11 +718,24 @@ class EdgeEditor extends UNISYS.Component {
       }
       if (DBG) console.group('EdgeEntry.onSubmit submitting',edge)
 
+      this.AppCall('EDGEEDIT_UNLOCK', { edgeID: this.props.edgeID }); // inform NodeSelector
       // pass currentAutoComplete back to nodeselector
       this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
       this.setState({ isEditable: false, sourceIsEditable: false, targetIsEditable: false });
-      this.AppCall('DB_UPDATE',{ edge });
-    } // onSubmit
+      this.AppCall('DB_UPDATE', { edge })
+        .then(() => {
+          this.NetCall('SRV_DBUNLOCKEDGE', { edgeID: edge.id })
+            .then((data) => {
+              if (data.NOP) {
+                if (DBG) console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
+              } else if (data.unlocked) {
+                if (DBG) console.log(`SERVER SAYS: unlock success! you have released Edge ${data.edgeID}`);
+                this.setState({ dbIsLocked: false });
+              }
+            });
+        });
+
+  } // onSubmit
 
 
 
@@ -806,7 +875,7 @@ class EdgeEditor extends UNISYS.Component {
                 <Button outline size="sm"
                   hidden={this.state.isLocked || this.state.isEditable}
                   onClick={this.onEditButtonClick}
-                >{this.state.isEditable?"Add New Edge":"Edit Edge"}</Button>&nbsp;
+                >{this.state.isEditable ? "Add New Edge" : "Edit Edge"}</Button>&nbsp;
                 <Button size="sm"
                   outline={this.state.isEditable}
                   onClick={this.onButtonClick}
@@ -815,6 +884,7 @@ class EdgeEditor extends UNISYS.Component {
                   hidden={!this.state.isEditable}
                   disabled={ !(this.state.isEditable && this.state.hasValidTarget) }
                 >Save</Button>
+                <p hidden={!this.state.dbIsLocked} className="small text-danger">{edgePrompts.edgeIsLockedMessage}</p>
               </FormGroup>
             </Form>
           </div>

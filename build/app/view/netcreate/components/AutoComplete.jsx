@@ -169,6 +169,7 @@ class AutoComplete extends UNISYS.Component {
       this.onSuggestionSelected        = this.onSuggestionSelected.bind(this);
       this.onSuggestionHighlighted     = this.onSuggestionHighlighted.bind(this);
       this.shouldRenderSuggestions     = this.shouldRenderSuggestions.bind(this);
+      this.onBlur                      = this.onBlur.bind(this);
 
       // NOTE: do this AFTER you have used bind() on the class method
       // otherwise the call will fail due to missing 'this' context
@@ -330,6 +331,13 @@ class AutoComplete extends UNISYS.Component {
 /*/ shouldRenderSuggestions (value) {
       return this.state.mode===MODE_ACTIVE;
     }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ The AutoComplete field has lost focus.
+    Check to see if it references a valid node, if so, select it
+/*/ onBlur (value) {
+      // User selected an existing node in the suggestion list
+      this.AppCall('SOURCE_SEARCH_AND_SELECT', { searchString: this.state.value } );
+    }
 
 /// REACT LIFECYCLE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -358,7 +366,8 @@ class AutoComplete extends UNISYS.Component {
       const inputProps = {
         placeholder : "Type node name...",
         value       : value,
-        onChange    : this.onInputChange
+        onChange    : this.onInputChange,
+        onBlur      : this.onBlur
       };
       let jsx;
 
