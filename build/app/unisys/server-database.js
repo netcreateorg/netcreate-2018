@@ -65,6 +65,7 @@ DB.InitializeDatabase = function(options = {}) {
     m_locked_nodes = new Set();
     EDGES = m_db.getCollection("edges");
     if (EDGES === null) EDGES = m_db.addCollection("edges");
+    m_locked_edges = new Set();
 
     // initialize unique set manager
     m_dupe_set = new Set();
@@ -215,7 +216,45 @@ function m_IsInvalidNode ( nodeID ) {
 function m_MakeLockError( info ) {
   return { NOP:`ERR`, INFO:info };
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DB.PKT_RequestLockEdge = function (pkt) {
+  let { edgeID } = pkt.Data();
+  let errcode = m_IsInvalidEdge(edgeID);
+  if (errcode) return errcode;
+  // check if edge is already locked
+  if (m_locked_edges.has(edgeID)) return m_MakeLockError(`edgeID ${edgeID} is already locked`);
+  // SUCCESS
+  // single matching edge exists and is not yet locked, so lock it
+  m_locked_edges.add(edgeID);
+  return { edgeID, locked: true };
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DB.PKT_RequestUnlockEdge = function (pkt) {
+  let { edgeID } = pkt.Data();
+  let errcode = m_IsInvalidEdge(edgeID);
+  if (errcode) return errcode;
+  // check that edge is already locked
+  if (m_locked_edges.has(edgeID)) {
+    m_locked_edges.delete(edgeID);
+    return { edgeID, unlocked: true };
+  }
+  // this is an error because nodeID wasn't in the lock table
+  return m_MakeLockError(`edgeID ${edgeID} was not locked so can't unlock`);
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_IsInvalidEdge(edgeID) {
+  if (!edgeID) return m_MakeLockError(`undefined edgeID`);
+  edgeID = Number.parseInt(edgeID, 10);
+  if (isNaN(edgeID)) return m_MakeLockError(`edgeID was not a number`);
+  if (edgeID < 0) return m_MakeLockError(`edgeID ${edgeID} must be positive integer`);
+  if (edgeID > m_max_edgeID) return m_MakeLockError(`edgeID ${edgeID} is out of range`);
+  // find if the node exists
+  let matches = EDGES.find({ id: edgeID });
+  if (matches.length === 0) return m_MakeLockError(`edgeID ${edgeID} not found`);
+  if (matches.length > 1) return m_MakeLockError(`edgeID ${edgeID} matches multiple entries...critical error!`);
+  // no retval is no error!
+  return undefined;
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_Update = function(pkt) {
   let { node, edge, nodeID, replacementNodeID, edgeID } = pkt.Data();
