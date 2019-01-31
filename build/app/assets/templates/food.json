@@ -10,11 +10,12 @@
                   "///  * `sourceNodeIsLockedMessage` is used in NodeSelector                              ///",
                   "///  * `edgeIsLockedMessage` is used in EdgeEditor                                      ///",
                   "/// The rest of the definitions are there as placeholders for future functionality      ///"
-  ],
+                ],
 
-  "name":        "Tacitus",
+  "name":        "IDAH Food Networks",
 
-  "description": "Tacitus with all genders included in a single Person node type",
+  "description": "Spring 2019 IDAH Network Analysis template to support Intro to Network Analysis and ",
+
 
 
   "nodePrompts": {
@@ -39,26 +40,26 @@
                   {
                     "id":    "person",
                     "label": "Person",
-                    "color": "#aabaf2"
+                    "color": "#66CCFF"
                   },
                   {
                     "id":    "group",
-                    "label": "Group",
+                    "label": "Department",
                     "color": "#3399FF"
                   },
                   {
                     "id":    "place",
-                    "label": "Place",
+                    "label": "Campus Building",
                     "color": "#00FF00"
                   },
                   {
                     "id":    "thing",
-                    "label": "Thing",
+                    "label": "Restaurant",
                     "color": "#FF0000"
                   },
                   {
                     "id":    "event",
-                    "label": "Event",
+                    "label": "Grocery Store",
                     "color": "#009999"
                   }
                 ]
@@ -69,13 +70,13 @@
       "hidden": false
     },
     "notes": {
-                "label": "Significance",
-                "help":  "Add some details.",
+                "label": "Latitude",
+                "help":  "Add a decimal-degree latitude",
                 "hidden": false
               },
     "info":  {
-                "label": "Geocode or Date",
-                "help":  "Use latitude/longitude or a date mm/dd/yyy",
+                "label": "Longitude",
+                "help":  "Add a decimal-degree longitude",
                 "hidden": true
               },
     "delete": {
@@ -102,28 +103,24 @@
                       "label": ""
                     },
                     {
-                      "id":    "peaceful",
-                      "label": "has peaceful, familial or conversational interaction with"
+                      "id":    "acquainted",
+                      "label": "is acquainted with"
                     },
                     {
-                      "id":    "martial",
-                      "label": "has martial or adversarial interaction with"
+                      "id":    "works",
+                      "label": "works in"
                     },
                     {
-                      "id":    "writes",
-                      "label": "sends written communication to"
+                      "id":    "location",
+                      "label": "is located at"
                     },
                     {
-                      "id":    "member",
-                      "label": "is a group member of"
+                      "id":    "meal",
+                      "label": "eats at"
                     },
                     {
-                      "id":    "participate",
-                      "label": "participates in"
-                    },
-                    {
-                      "id":    "visit",
-                      "label": "makes visit to"
+                      "id":    "grocery",
+                      "label": "shops at"
                     }
                   ]
                 },
@@ -133,7 +130,7 @@
                   "hidden": false
                 },
     "notes":    {
-                  "label": "Signficance",
+                  "label": "Notes",
                   "help":  "",
                   "hidden": false
                 },

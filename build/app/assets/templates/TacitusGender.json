@@ -10,11 +10,12 @@
                   "///  * `sourceNodeIsLockedMessage` is used in NodeSelector                              ///",
                   "///  * `edgeIsLockedMessage` is used in EdgeEditor                                      ///",
                   "/// The rest of the definitions are there as placeholders for future functionality      ///"
-  ],
+                ],
 
-  "name":        "Tacitus",
+  "name":        "TacitusGender",
 
-  "description": "Tacitus with all genders included in a single Person node type",
+  "description": "Tacitus with people divided by gender.",
+
 
 
   "nodePrompts": {
@@ -37,9 +38,14 @@
                     "color":    "#EEEEEE"
                   },
                   {
-                    "id":    "person",
-                    "label": "Person",
+                    "id":    "man",
+                    "label": "Man",
                     "color": "#aabaf2"
+                  },
+                  {
+                    "id":    "woman",
+                    "label": "Woman",
+                    "color": "#dfc2df"
                   },
                   {
                     "id":    "group",

@@ -10,11 +10,12 @@
                   "///  * `sourceNodeIsLockedMessage` is used in NodeSelector                              ///",
                   "///  * `edgeIsLockedMessage` is used in EdgeEditor                                      ///",
                   "/// The rest of the definitions are there as placeholders for future functionality      ///"
-  ],
+                ],
 
-  "name":        "Tacitus",
+  "name":        "IDAH Food Networks",
 
-  "description": "Tacitus with all genders included in a single Person node type",
+  "description": "Spring 2019 IDAH Network Analysis template to support Intro to Network Analysis and ",
+
 
 
   "nodePrompts": {
@@ -37,31 +38,26 @@
                     "color":    "#EEEEEE"
                   },
                   {
-                    "id":    "person",
-                    "label": "Person",
-                    "color": "#aabaf2"
+                    "id":    "object",
+                    "label": "Object",
+                    "color": "#d55e00"
+                  },
+                  {
+                    "id":    "type",
+                    "label": "Type of Object",
+                    "color": "#0072b2"
+                  },
+                  {
+                    "id":    "history",
+                    "label": "Type of History",
+                    "color": "#009e73"
                   },
                   {
                     "id":    "group",
-                    "label": "Group",
-                    "color": "#3399FF"
-                  },
-                  {
-                    "id":    "place",
-                    "label": "Place",
-                    "color": "#00FF00"
-                  },
-                  {
-                    "id":    "thing",
-                    "label": "Thing",
-                    "color": "#FF0000"
-                  },
-                  {
-                    "id":    "event",
-                    "label": "Event",
-                    "color": "#009999"
+                    "label": "Class Group",
+                    "color": "#f0e442"
                   }
-                ]
+                 ]
              },
     "degrees": {
       "label": "Degrees",
@@ -69,13 +65,13 @@
       "hidden": false
     },
     "notes": {
-                "label": "Significance",
-                "help":  "Add some details.",
-                "hidden": false
+                "label": "Latitude",
+                "help":  "Add a decimal-degree latitude",
+                "hidden": true
               },
     "info":  {
-                "label": "Geocode or Date",
-                "help":  "Use latitude/longitude or a date mm/dd/yyy",
+                "label": "Longitude",
+                "help":  "Add a decimal-degree longitude",
                 "hidden": true
               },
     "delete": {
@@ -102,28 +98,12 @@
                       "label": ""
                     },
                     {
-                      "id":    "peaceful",
-                      "label": "has peaceful, familial or conversational interaction with"
+                      "id":    "connected",
+                      "label": "is connected to"
                     },
                     {
-                      "id":    "martial",
-                      "label": "has martial or adversarial interaction with"
-                    },
-                    {
-                      "id":    "writes",
-                      "label": "sends written communication to"
-                    },
-                    {
-                      "id":    "member",
-                      "label": "is a group member of"
-                    },
-                    {
-                      "id":    "participate",
-                      "label": "participates in"
-                    },
-                    {
-                      "id":    "visit",
-                      "label": "makes visit to"
+                      "id":    "works",
+                      "label": "works in"
                     }
                   ]
                 },
@@ -133,9 +113,9 @@
                   "hidden": false
                 },
     "notes":    {
-                  "label": "Signficance",
+                  "label": "Notes",
                   "help":  "",
-                  "hidden": false
+                  "hidden": true
                 },
     "info":     {
                   "label": "Approximate Date of Interaction",
@@ -145,7 +125,7 @@
     "citation": {
                   "label": "Citation",
                   "help":  "Enter Chapter number.",
-                  "hidden": false
+                  "hidden": true
                 }
   }
 

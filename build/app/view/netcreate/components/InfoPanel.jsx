@@ -144,7 +144,7 @@ class InfoPanel extends UNISYS.Component {
             <NavItem>
               <NavLink
                 className={classnames({ active: this.state.activeTab === '1' })}
-                onClick={() => { this.toggle('1'); }}
+                onClick={() => { this.toggle('1'); ga('send', { hitType: 'event', eventCategory: 'Tab', eventAction: 'Graph', eventLabel: '' + window.location  }); } }
               >
                 Graph
                         </NavLink>
@@ -152,7 +152,7 @@ class InfoPanel extends UNISYS.Component {
             <NavItem>
               <NavLink
                 className={classnames({ active: this.state.activeTab === '2' })}
-                onClick={() => { this.toggle('2'); }}
+                onClick={() => { this.toggle('2'); ga('send', { hitType: 'event', eventCategory: 'Tab', eventAction: 'Nodes Table', eventLabel: '' + window.location }); }}
               >
                 Nodes Table
                         </NavLink>
@@ -160,7 +160,7 @@ class InfoPanel extends UNISYS.Component {
             <NavItem>
               <NavLink
                 className={classnames({ active: this.state.activeTab === '3' })}
-                onClick={() => { this.toggle('3'); }}
+                onClick={() => { this.toggle('3'); ga('send', { hitType: 'event', eventCategory: 'Tab', eventAction: 'Edges Table', eventLabel: '' + window.location  }); }}
               >
                 Edges Table
                         </NavLink>
@@ -168,7 +168,7 @@ class InfoPanel extends UNISYS.Component {
             <NavItem>
               <NavLink
                 className={classnames({ active: this.state.activeTab === '4' })}
-                onClick={() => { this.toggle('4'); }}
+                onClick={() => { this.toggle('4'); ga('send', { hitType: 'event', eventCategory: 'Tab', eventAction: 'Vocabulary', eventLabel: '' + window.location  }); }}
               >
                 Vocabulary
                         </NavLink>
@@ -176,7 +176,7 @@ class InfoPanel extends UNISYS.Component {
             <NavItem>
               <NavLink
                 className={classnames({ active: this.state.activeTab === '5' })}
-                onClick={() => { this.toggle('5'); }}
+                onClick={() => { this.toggle('5'); ga('send', { hitType: 'event', eventCategory: 'Tab', eventAction: 'Help', eventLabel: '' + window.location  }); }}
               >
                 Help
                         </NavLink>

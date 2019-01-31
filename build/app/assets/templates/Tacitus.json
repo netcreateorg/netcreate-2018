@@ -10,7 +10,7 @@
                   "///  * `sourceNodeIsLockedMessage` is used in NodeSelector                              ///",
                   "///  * `edgeIsLockedMessage` is used in EdgeEditor                                      ///",
                   "/// The rest of the definitions are there as placeholders for future functionality      ///"
-  ],
+                ],
 
   "name":        "Tacitus",
 
