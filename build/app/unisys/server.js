@@ -104,6 +104,19 @@ var UNISYS = {};
         return UDB.PKT_RequestUnlockEdge(pkt);
       });
 
+      UNET.HandleMessage('SRV_DBUNLOCKALLNODES', function (pkt) {
+        if (DBG) console.log(PR, sprint_message(pkt));
+        return UDB.PKT_RequestUnlockAllNodes(pkt);
+      });
+      UNET.HandleMessage('SRV_DBUNLOCKALLEDGES', function (pkt) {
+        if (DBG) console.log(PR, sprint_message(pkt));
+        return UDB.PKT_RequestUnlockAllEdges(pkt);
+      });
+      UNET.HandleMessage('SRV_DBUNLOCKALL', function (pkt) {
+        if (DBG) console.log(PR, sprint_message(pkt));
+        return UDB.PKT_RequestUnlockAll(pkt);
+      });
+
       UNET.HandleMessage('SRV_DBGETEDGEID', function (pkt) {
         if (DBG) console.log(PR,sprint_message(pkt));
         return UDB.PKT_GetNewEdgeID(pkt);

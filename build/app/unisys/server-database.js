@@ -256,6 +256,20 @@ function m_IsInvalidEdge(edgeID) {
   return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DB.PKT_RequestUnlockAllNodes = function (pkt) {
+  m_locked_nodes = new Set();
+  return { unlocked: true };
+}
+DB.PKT_RequestUnlockAllEdges = function (pkt) {
+  m_locked_edges = new Set();
+  return { unlocked: true };
+}
+DB.PKT_RequestUnlockAll = function (pkt) {
+  m_locked_nodes = new Set();
+  m_locked_edges = new Set();
+  return { unlocked: true };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_Update = function(pkt) {
   let { node, edge, nodeID, replacementNodeID, edgeID } = pkt.Data();
   let retval = {};
