@@ -434,7 +434,6 @@ class EdgeEditor extends UNISYS.Component {
 /*/ handleSelection ( data ) {
       if (DBG) console.log('EdgeEditor',this.props.edgeID,'got SELECTION data',data);
 
-  
       // If we're one of the edges that have been updated, and we're not currently being edited,
       // then update the data.
       // If we're not currently being edited, then if edges have been updated, update self
@@ -901,6 +900,22 @@ class EdgeEditor extends UNISYS.Component {
       if (DBG) console.log('EdgeEditor.componentDidMount!');
       this.loadSourceAndTarget();
       this.onStateChange_SESSION(this.AppState('SESSION'));
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Release the lock if we're unmounting
+/*/ componentWillUnmount() {
+      if (DBG) console.log('EdgeEditor.componentWillUnMount!');
+      if (this.state.isEditable) {
+        this.NetCall('SRV_DBUNLOCKEDGE', { edgeID: this.state.formData.id })
+          .then((data) => {
+            if (data.NOP) {
+              if (DBG) console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
+            } else if (data.unlocked) {
+              if (DBG) console.log(`SERVER SAYS: unlock success! you have released Edge ${data.edgeID}`);
+              this.setState({ dbIsLocked: false });
+            }
+          });
+      }
     }
 } // class EdgeEditor
 
