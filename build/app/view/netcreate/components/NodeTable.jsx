@@ -188,7 +188,11 @@ countEdges() {
       // values when returned in event.target.value.  So we have to convert
       // it here.
       let nodeID = parseInt( event.target.value );
-      UDATA.LocalCall('SOURCE_SELECT',{ nodeIDs: [nodeID] });
+      UDATA.LocalCall('SOURCE_SELECT',{ nodeIDs: [nodeID] })
+      .then(() => {
+        if (DBG) console.error('NodeTable: Calling NODE_EDIT', nodeID);
+        UDATA.LocalCall('NODE_EDIT', { nodeID: nodeID });
+      });
 
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
