@@ -261,11 +261,9 @@ class EdgeEditor extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ SESSION is called by SessionShell when the ID changes
       set system-wide. data: { classId, projId, hashedId, groupId, isValid }
-  /*/ this.OnAppStateChange('SESSION',this.onStateChange_SESSION);
+  /*/ this.OnAppStateChange('SESSION', this.onStateChange_SESSION);
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      this.OnAppStateChange('SELECTION',(data) => {
-        this.handleSelection(data);
-      });
+      this.OnAppStateChange('SELECTION', this.handleSelection);
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       UDATA.HandleMessage('EDGE_SELECT',(data) => {
         this.handleEdgeSelection(data);
@@ -276,9 +274,7 @@ class EdgeEditor extends UNISYS.Component {
       });
 
       // Template handler
-      this.OnAppStateChange('TEMPLATE',(data) => {
-        this.setState({edgePrompts: data.edgePrompts});
-      });
+      this.OnAppStateChange('TEMPLATE', this.setTemplate);
 
     } // constructor
 
@@ -320,6 +316,10 @@ class EdgeEditor extends UNISYS.Component {
         targetIsEditable:     false,      // Target ndoe field is only editable when target is not parent
         hasValidTarget:       false       // Used by SwapSourceAndTarget and the Change Target button
       });
+  }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    setTemplate (data) {
+      this.setState({ edgePrompts: data.edgePrompts });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ populate formdata from D3DATA
@@ -916,6 +916,11 @@ class EdgeEditor extends UNISYS.Component {
             }
           });
       }
+      // deregister ACTIVEAUTOMPLETE when component unmounts
+      // otherwise state updates trigger a setState on unmounted component error
+      this.AppStateChangeOff('SESSION', this.onStateChange_SESSION);
+      this.AppStateChangeOff('SELECTION', this.handleSelection);
+      this.AppStateChangeOff('TEMPLATE', this.setTemplate);
     }
 } // class EdgeEditor
 
