@@ -270,8 +270,8 @@ class EdgeTable extends UNISYS.Component {
       let styles = `thead, tbody { display: block; }
                     thead { position: relative; }
                     tbody { overflow: auto; }
-                    .edgetable td:nth-child(1), .edgetable th:nth-child(1) {width: 2em; min-width: 2em;}
-                    .edgetable td:nth-child(2), .edgetable th:nth-child(2) {width: 2em; min-width: 2em;}
+                    .edgetable td:nth-child(1), .edgetable th:nth-child(1) {width: 3em; min-width: 3em;}
+                    .edgetable td:nth-child(2), .edgetable th:nth-child(2) {width: 3em; min-width: 3em;}
                     .edgetable td:nth-child(3), .edgetable th:nth-child(3) {width: 4em; min-width: 4em;}
                     .edgetable td:nth-child(4), .edgetable th:nth-child(4) {width: 6em; min-width: 6em;}
                     .edgetable td:nth-child(5), .edgetable th:nth-child(5) {width: 14em; min-width: 14em;}

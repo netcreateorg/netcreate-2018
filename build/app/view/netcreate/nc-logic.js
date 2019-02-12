@@ -1033,6 +1033,28 @@ JSCLI.AddFunction(function ncPushDatabase(jsonFile) {
   }
 );
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Command: Unlock the database.  Used to recover from error conditions where
+    a node or edge is inadvertently left locked.
+/*/
+JSCLI.AddFunction(
+  function ncUnlockAll() {
+    UDATA.NetCall('SRV_DBUNLOCKALL', {});
+    return "Unlocking all nodes and edges in the database.";
+  }
+);
+JSCLI.AddFunction(
+  function ncUnlockAllNodes() {
+    UDATA.NetCall('SRV_DBUNLOCKALLNODES', {});
+    return "Unlocking all nodes in the database.";
+  }
+);
+JSCLI.AddFunction(
+  function ncUnlockAllEdges() {
+    UDATA.NetCall('SRV_DBUNLOCKALLEDGES', {});
+    return "Unlocking all edges in the database.";
+  }
+);
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Command: Token Generator
 /*/
 JSCLI.AddFunction(function ncMakeTokens(clsId, projId, numGroups) {
@@ -1044,7 +1066,7 @@ JSCLI.AddFunction(function ncMakeTokens(clsId, projId, numGroups) {
   if (clsId.length > 12) return "classId arg1 should be 12 chars or less";
   if (projId.length > 12) return "classId arg1 should be 12 chars or less";
   if (!Number.isInteger(numGroups)) return "numGroups arg3 must be integer";
-  if (numGroups < 1) return "numGroups arg3 must be positive integeger";
+  if (numGroups < 1) return "numGroups arg3 must be positive integer";
   // let's do this!
   let out = `\nTOKEN LIST for class '${clsId}' project '${projId}'\n\n`;
   let pad = String(numGroups).length;
