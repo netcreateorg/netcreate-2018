@@ -434,17 +434,19 @@ class EdgeEditor extends UNISYS.Component {
 /*/ handleSelection ( data ) {
       if (DBG) console.log('EdgeEditor',this.props.edgeID,'got SELECTION data',data);
 
-
       // If we're one of the edges that have been updated, and we're not currently being edited,
       // then update the data.
       // If we're not currently being edited, then if edges have been updated, update self
-      let updatedEdge = data.edges.find((edge) => { return edge.id === this.state.formData.id; });
-      if (!this.state.isEditable && updatedEdge!==undefined) {
-        if (DBG) console.log('EdgeEditor: Updating edges with', updatedEdge);
-        this.loadSourceAndTarget();
-        return;
+      if (data.edges !== undefined) {
+        let updatedEdge = data.edges.find((edge) => { return edge.id === this.state.formData.id; });
+        if (!this.state.isEditable && updatedEdge !== undefined) {
+          if (DBG) console.log('EdgeEditor: Updating edges with', updatedEdge);
+          this.loadSourceAndTarget();
+          return;
+        }
       }
 
+      // We're being edited, and the updated node is either our source or target
       // Technically we probably ought to also check to make sure we're the current
       // activeAutoCompleteId, but we wouldn't be editable if we weren't.
       if (this.state.isEditable && data.nodes && data.nodes.length > 0) {
@@ -898,6 +900,22 @@ class EdgeEditor extends UNISYS.Component {
       if (DBG) console.log('EdgeEditor.componentDidMount!');
       this.loadSourceAndTarget();
       this.onStateChange_SESSION(this.AppState('SESSION'));
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Release the lock if we're unmounting
+/*/ componentWillUnmount() {
+      if (DBG) console.log('EdgeEditor.componentWillUnMount!');
+      if (this.state.isEditable) {
+        this.NetCall('SRV_DBUNLOCKEDGE', { edgeID: this.state.formData.id })
+          .then((data) => {
+            if (data.NOP) {
+              if (DBG) console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
+            } else if (data.unlocked) {
+              if (DBG) console.log(`SERVER SAYS: unlock success! you have released Edge ${data.edgeID}`);
+              this.setState({ dbIsLocked: false });
+            }
+          });
+      }
     }
 } // class EdgeEditor
 
