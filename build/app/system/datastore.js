@@ -146,7 +146,7 @@ DSTOR.PromiseJSONFile = function(jsonFile) {
       D3DATA = Object.assign(D3DATA, JSON.parse(data));
       resolve(D3DATA);
     });
-    xobj.open("GET", `data/${jsonFile}`, true);
+    xobj.open("GET", `${jsonFile}`, true);
     xobj.send();
   });
   return promise;

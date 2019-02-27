@@ -143,7 +143,8 @@ const SEARCH_COLOR = "#008800";
 const SOURCE_COLOR = "#0000DD";
 const TARGET_COLOR = "#FF0000";
 
-const TEMPLATE_URL = "../templates/netcreate.json";
+const DATASET = window.NC_CONFIG.dataset || "netcreate";
+const TEMPLATE_URL = `templates/${DATASET}.json`;
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -172,7 +173,7 @@ MOD.Hook("LOADASSETS", () => {
     }
     // don't use cache, but instead try loading standalone files
     console.warn(PR,"STANDALONE MODE: 'LOADASSETS' is using files (USE_CACHE=false)");
-    let p1 = DATASTORE.PromiseJSONFile("../data/standalone-db.json")
+    let p1 = DATASTORE.PromiseJSONFile("data/standalone-db.json")
     .then(data => {
       m_ConvertData(data);
       m_RecalculateAllEdgeWeights(data);
