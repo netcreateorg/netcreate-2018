@@ -774,7 +774,7 @@ class EdgeEditor extends UNISYS.Component {
               <FormText><b>EDGE {formData.id}</b></FormText>
               <FormGroup row>
                 <Col sm={3}>
-                  <Label for="source" className="small text-muted">Source</Label>
+                  <Label for="source" className="small text-muted">{edgePrompts.source.label}</Label>
                 </Col>
                 <Col sm={9}>
                   <AutoComplete
@@ -794,7 +794,7 @@ class EdgeEditor extends UNISYS.Component {
               </FormGroup>
               <FormGroup row hidden={edgePrompts.type.hidden}>
                 <Col sm={3}>
-                  <Label for="relationship" className="small text-muted">Type</Label>
+                  <Label for="relationship" className="small text-muted">{edgePrompts.type.label}</Label>
                 </Col>
                 <Col sm={9}>
                   <Input type="select" name="relationship" id="relationship"
@@ -810,7 +810,7 @@ class EdgeEditor extends UNISYS.Component {
               </FormGroup>
               <FormGroup row>
                 <Col sm={3}>
-                  <Label for="nodeLabel" className="small text-muted">Target</Label>
+                  <Label for="nodeLabel" className="small text-muted">{edgePrompts.target.label}</Label>
                 </Col>
                 <Col sm={9}>
                   <AutoComplete
