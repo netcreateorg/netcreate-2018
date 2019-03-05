@@ -46,13 +46,7 @@ DB.InitializeDatabase = function (options = {}) {
   // dataset can be a file name or a relative path (folder/file) with no extension
   options.dataset = 'fol/junk';  // FIXME should be options.datatset = NC_LOGIC.dataset; ???
 
-  // validate dataset name
-  let regex = /^([A-z0-9-_+./])*$/; // Allow _ - + . /, so nested pathways are allowed
-  if (!regex.test(options.dataset)) {
-    console.error(PR, `Trying to initialize database with bad dataset name: ${options.dataset}`);
-  }
-
-  let db_file = RUNTIMEPATH + options.dataset +".loki";
+  let db_file = m_GetValidDBFilePath(options.dataset);
   FS.ensureDirSync(PATH.dirname(db_file));
   if (!FS.existsSync(db_file)) {
     console.log(PR, `NO EXISTING DATABASE ${db_file}, so creating BLANK DATABASE...`);
@@ -458,8 +452,11 @@ DB.FilterEdgeLog = function(edge) {
 /*/
 DB.WriteJSON = function (filePath) {
   // FIXME: This should read NC_LOGIC.dataset
-  let db_file = m_options ? m_options.db_file : 'fol/junk';  // FIXME should be options.datatset = NC_LOGIC.dataset; ???
-    
+  let dataset = 'fol/junk';
+
+  // Ideally we should use m_otions value, but in standlone mode,
+  // m_options might not be defined.
+  let db_file = m_options ? m_options.db_file : m_GetValidDBFilePath(dataset);
   let db = new Loki(db_file,{
       autoload: true,
       autoloadCallback: () => {
@@ -514,6 +511,17 @@ function m_CleanID(prompt, id) {
     id = int;
   }
   return id;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// utility function for getting a valid file path
+function m_GetValidDBFilePath(dataset) {
+  // validate dataset name
+  let regex = /^([A-z0-9-_+./])*$/; // Allow _ - + . /, so nested pathways are allowed
+  if (!regex.test(dataset)) {
+    console.error(PR, `Trying to initialize database with bad dataset name: ${dataset}`);
+  }
+
+  return RUNTIMEPATH + dataset + ".loki";
 }
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
