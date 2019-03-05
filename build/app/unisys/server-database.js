@@ -18,7 +18,6 @@ const SESSION = require("../unisys/common-session");
 const LOGGER = require("../unisys/server-logger");
 const PROMPTS = require("../system/util/prompts");
 const PR = PROMPTS.Pad("ServerDB");
-const DB_FILE = "./runtime/netcreate.loki";
 const DB_CLONEMASTER = "blank.loki";
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
@@ -39,21 +38,29 @@ let DB = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Initialize the database
 /*/
-DB.InitializeDatabase = function(options = {}) {
-  FS.ensureDirSync(PATH.dirname(DB_FILE));
-  if (!FS.existsSync(DB_FILE)) {
-    console.log(PR, `NO EXISTING DATABASE ${DB_FILE}, so creating BLANK DATABASE...`);
+DB.InitializeDatabase = function (options = { project: 'fol/junk' }) {
+  // validate project name
+  let regex = /^([A-z0-9-_+./])*$/; // Allow _ - + . /, so nested pathways are allowed
+  if (!regex.test(options.project)) {
+    console.error(PR, `Trying to initialize database with bad project name: ${options.project}`);
+  }
+
+  let db_file = "./runtime/"+options.project+".loki";
+  FS.ensureDirSync(PATH.dirname(db_file));
+  if (!FS.existsSync(db_file)) {
+    console.log(PR, `NO EXISTING DATABASE ${db_file}, so creating BLANK DATABASE...`);
   }
   let ropt = {
     autoload: true,
     autoloadCallback: f_DatabaseInitialize,
     autosave: true,
     autosaveCallback: f_AutosaveStatus,
-    autosaveInterval: 4000 // save every four seconds
+    autosaveInterval: 4000, // save every four seconds
   };
   ropt = Object.assign(ropt, options);
-  m_db = new Loki(DB_FILE, ropt);
+  m_db = new Loki(db_file, ropt);
   m_options = ropt;
+  m_options.db_file = db_file;        // store for use by DB.WriteJSON
 
   // callback on load
   function f_DatabaseInitialize() {
@@ -431,7 +438,7 @@ DB.FilterEdgeLog = function(edge) {
     creates the path if it doesn't exist
 /*/
 DB.WriteJSON = function( filePath ) {
-  let db = new Loki(DB_FILE,{
+  let db = new Loki(m_options.db_file,{
       autoload: true,
       autoloadCallback: () => {
         if (typeof filePath==='string') {
