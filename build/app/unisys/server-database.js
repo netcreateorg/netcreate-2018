@@ -42,17 +42,17 @@ let DB = {};
 /*/
 DB.InitializeDatabase = function (options = {}) {
 
-  // FIXME: Hard code project for now.  This should be read via `npm run dev "project"` parameter
-  // project can be a file name or a relative path (folder/file) with no extension
-  options.project = 'fol/junk';
+  // FIXME Hard code NC_LOGIC.dataset for now.  This should be read via `NC_LOGIC.dataset` parameter
+  // dataset can be a file name or a relative path (folder/file) with no extension
+  options.dataset = 'fol/junk';  // FIXME should be options.datatset = NC_LOGIC.dataset; ???
 
-  // validate project name
+  // validate dataset name
   let regex = /^([A-z0-9-_+./])*$/; // Allow _ - + . /, so nested pathways are allowed
-  if (!regex.test(options.project)) {
-    console.error(PR, `Trying to initialize database with bad project name: ${options.project}`);
+  if (!regex.test(options.dataset)) {
+    console.error(PR, `Trying to initialize database with bad dataset name: ${options.dataset}`);
   }
 
-  let db_file = RUNTIMEPATH+options.project+".loki";
+  let db_file = RUNTIMEPATH + options.dataset +".loki";
   FS.ensureDirSync(PATH.dirname(db_file));
   if (!FS.existsSync(db_file)) {
     console.log(PR, `NO EXISTING DATABASE ${db_file}, so creating BLANK DATABASE...`);
@@ -133,7 +133,7 @@ DB.InitializeDatabase = function (options = {}) {
     m_db.saveDatabase();
 
     // LOAD TEMPLATE  - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    let templatePath = RUNTIMEPATH + m_options.project + ".template";
+    let templatePath = RUNTIMEPATH + m_options.dataset + ".template";
     FS.ensureDirSync(PATH.dirname(templatePath));
     // Does the template exist?
     if (!FS.existsSync(templatePath)) {
@@ -456,8 +456,11 @@ DB.FilterEdgeLog = function(edge) {
 /*/ called by brunch to generate an up-to-date JSON file to path.
     creates the path if it doesn't exist
 /*/
-DB.WriteJSON = function( filePath ) {
-  let db = new Loki(m_options.db_file,{
+DB.WriteJSON = function (filePath) {
+  // FIXME: This should read NC_LOGIC.dataset
+  let db_file = m_options ? m_options.db_file : 'fol/junk';  // FIXME should be options.datatset = NC_LOGIC.dataset; ???
+    
+  let db = new Loki(db_file,{
       autoload: true,
       autoloadCallback: () => {
         if (typeof filePath==='string') {
