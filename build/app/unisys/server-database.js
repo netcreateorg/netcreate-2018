@@ -18,6 +18,7 @@ const SESSION = require("../unisys/common-session");
 const LOGGER = require("../unisys/server-logger");
 const PROMPTS = require("../system/util/prompts");
 const PR = PROMPTS.Pad("ServerDB");
+const RUNTIMEPATH = './runtime/';
 const DB_CLONEMASTER = "blank.loki";
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
@@ -31,6 +32,7 @@ let NODES; // loki "nodes" collection
 let EDGES; // loki "edges" collection
 let m_locked_nodes;
 let m_locked_edges;
+let TEMPLATE;
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -38,14 +40,19 @@ let DB = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Initialize the database
 /*/
-DB.InitializeDatabase = function (options = { project: 'fol/junk' }) {
+DB.InitializeDatabase = function (options = {}) {
+
+  // FIXME: Hard code project for now.  This should be read via `npm run dev "project"` parameter
+  // project can be a file name or a relative path (folder/file) with no extension
+  options.project = 'fol/junk';
+
   // validate project name
   let regex = /^([A-z0-9-_+./])*$/; // Allow _ - + . /, so nested pathways are allowed
   if (!regex.test(options.project)) {
     console.error(PR, `Trying to initialize database with bad project name: ${options.project}`);
   }
 
-  let db_file = "./runtime/"+options.project+".loki";
+  let db_file = RUNTIMEPATH+options.project+".loki";
   FS.ensureDirSync(PATH.dirname(db_file));
   if (!FS.existsSync(db_file)) {
     console.log(PR, `NO EXISTING DATABASE ${db_file}, so creating BLANK DATABASE...`);
@@ -125,7 +132,19 @@ DB.InitializeDatabase = function (options = { project: 'fol/junk' }) {
     console.log(PR,`DATABASE LOADED! m_max_nodeID '${m_max_nodeID}', m_max_edgeID '${m_max_edgeID}'`);
     m_db.saveDatabase();
 
-    if (typeof m_options.onLoadComplete==='function') {
+    // LOAD TEMPLATE  - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    let templatePath = RUNTIMEPATH + m_options.project + ".template";
+    FS.ensureDirSync(PATH.dirname(templatePath));
+    // Does the template exist?
+    if (!FS.existsSync(templatePath)) {
+      console.log(PR, `NO EXISTING TEMPLATE ${templatePath}, so cloning default TEMPLATE...`);
+      FS.copySync(RUNTIMEPATH+'_default.template', templatePath);
+    }
+    // Now load it
+    TEMPLATE = FS.readJsonSync(templatePath);
+
+    // Call complete callback
+    if (typeof m_options.onLoadComplete === 'function') {
       m_options.onLoadComplete();
     }
   } // end f_DatabaseInitialize
@@ -147,7 +166,7 @@ DB.PKT_GetDatabase = function(pkt) {
   let edges = EDGES.chain().data({ removeMeta: true });
   if (DBG) console.log(PR,`PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${edges.length} edges)`);
   LOGGER.Write(pkt.Info(), `getdatabase`);
-  return { nodes, edges };
+  return { d3data: { nodes, edges }, template: TEMPLATE };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: reset database from scratch

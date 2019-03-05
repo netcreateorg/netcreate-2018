@@ -194,21 +194,15 @@ MOD.Hook("LOADASSETS", () => {
   let p1 = DATASTORE.PromiseD3Data()
   .then(data => {
     if (DBG) console.log(PR, "DATASTORE returned data", data);
-    m_ConvertData(data);
-    m_RecalculateAllEdgeWeights(data);
-    UDATA.SetAppState("D3DATA", data);
+    m_ConvertData(data.d3data);
+    m_RecalculateAllEdgeWeights(data.d3data);
+    UDATA.SetAppState("D3DATA", data.d3data);
     // Save off local reference because we don't have D3DATA AppStateChange handler
-    D3DATA = data;
-  });
-  // load Template data and return it as a promise
-  // so that react render is called only after the template is loaded
-  let p2 = DATASTORE.PromiseJSONFile(TEMPLATE_URL)
-  .then(data => {
-    if (DBG) console.log(PR, "DATASTORE returned json", data);
-    TEMPLATE = data;
+    D3DATA = data.d3data;
+    TEMPLATE = data.template;
     UDATA.SetAppState("TEMPLATE", TEMPLATE);
   });
-  return Promise.all([p1, p2]);
+  return Promise.all([p1]);
 }); // loadassets
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
