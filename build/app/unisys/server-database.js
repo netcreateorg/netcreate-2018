@@ -21,6 +21,7 @@ const PR = PROMPTS.Pad("ServerDB");
 const RUNTIMEPATH = './runtime/';
 const TEMPLATEPATH = './app/assets/templates/';
 const DB_CLONEMASTER = "blank.loki";
+const NC_CONFIG = require("../assets/netcreate-config");
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -43,15 +44,13 @@ let DB = {};
 /*/
 DB.InitializeDatabase = function (options = {}) {
 
-  // FIXME Hard code NC_LOGIC.dataset for now.  This should be read via `NC_LOGIC.dataset` parameter
-  // dataset can be a file name or a relative path (folder/file) with no extension
-  options.dataset = 'fol/junk';  // FIXME should be options.datatset = NC_LOGIC.dataset; ???
-
-  let db_file = m_GetValidDBFilePath(options.dataset);
+  let dataset = NC_CONFIG.dataset;
+  let db_file = m_GetValidDBFilePath(dataset);
   FS.ensureDirSync(PATH.dirname(db_file));
   if (!FS.existsSync(db_file)) {
     console.log(PR, `NO EXISTING DATABASE ${db_file}, so creating BLANK DATABASE...`);
   }
+  console.log(PR, `LOADING DATABASE ${db_file}`);
   let ropt = {
     autoload: true,
     autoloadCallback: f_DatabaseInitialize,
@@ -128,13 +127,14 @@ DB.InitializeDatabase = function (options = {}) {
     m_db.saveDatabase();
 
     // LOAD TEMPLATE  - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    let templatePath = RUNTIMEPATH + m_options.dataset + ".template";
+    let templatePath = RUNTIMEPATH + NC_CONFIG.dataset + ".template";
     FS.ensureDirSync(PATH.dirname(templatePath));
     // Does the template exist?
     if (!FS.existsSync(templatePath)) {
-      console.log(PR, `NO EXISTING TEMPLATE ${templatePath}, so cloning default TEMPLATE...`);
+      console.log(PR, `NO EXISTING TEMPLATE ${templatePath}, so cloning default template...`);
       FS.copySync(TEMPLATEPATH+'_default.template', templatePath);
     }
+    console.log(PR, `LOADING TEMPLATE ${templatePath}`);
     // Now load it
     TEMPLATE = FS.readJsonSync(templatePath);
 
@@ -451,9 +451,8 @@ DB.FilterEdgeLog = function(edge) {
 /*/ called by brunch to generate an up-to-date JSON file to path.
     creates the path if it doesn't exist
 /*/
-DB.WriteJSON = function (filePath) {
-  // FIXME: This should read NC_LOGIC.dataset
-  let dataset = 'fol/junk';
+DB.WriteDbJSON = function (filePath) {
+  let dataset = NC_CONFIG.dataset;
 
   // Ideally we should use m_otions value, but in standlone mode,
   // m_options might not be defined.
@@ -473,13 +472,29 @@ DB.WriteJSON = function (filePath) {
           FS.ensureDirSync(PATH.dirname( filePath ));
           if (DBG) console.log(PR,`writing file ${filePath}`);
           FS.writeFileSync( filePath, json );
-          console.log(PR,`*** WROTE JSON DATABASE`);
+          console.log(PR, `*** WROTE JSON DATABASE ${filePath}`);
         } else {
           console.log(PR,`ERR path ${filePath} must be a pathname`);
         }
       }
     }
   );
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ called by brunch to generate an up-to-date Template file to path.
+    creates the path if it doesn't exist
+/*/
+DB.WriteTemplateJSON = function (filePath) {
+  console.log('writeTempalteJSON Called!');
+  let templatePath = RUNTIMEPATH + NC_CONFIG.dataset + ".template";
+  FS.ensureDirSync(PATH.dirname(templatePath));
+  // Does the template exist?
+  if (!FS.existsSync(templatePath)) {
+    console.error(PR, `ERR could not find template ${templatePath}`);
+  } else {
+    FS.copySync(templatePath, filePath, { overwrite: true, errorOnExist: true });
+    console.log(PR, `*** COPIED TEMPLATE ${templatePath} to ${filePath}`);
+  }
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

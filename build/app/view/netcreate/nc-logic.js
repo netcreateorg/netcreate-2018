@@ -197,10 +197,10 @@ MOD.Hook("LOADASSETS", () => {
     m_ConvertData(data.d3data);
     m_RecalculateAllEdgeWeights(data.d3data);
     UDATA.SetAppState("D3DATA", data.d3data);
+    UDATA.SetAppState("TEMPLATE", data.template);
     // Save off local reference because we don't have D3DATA AppStateChange handler
     D3DATA = data.d3data;
     TEMPLATE = data.template;
-    UDATA.SetAppState("TEMPLATE", TEMPLATE);
   });
   return Promise.all([p1]);
 }); // loadassets

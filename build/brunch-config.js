@@ -129,7 +129,9 @@ module.exports = {
         hooks: {
           preCompile() {
             // save json of database to public/data
-            UDB.WriteJSON(`${__dirname}/public/data/standalone-db.json`);
+            UDB.WriteDbJSON(`${__dirname}/public/data/standalone-db.json`);
+            // save json of template to public/data
+            UDB.WriteTemplateJSON(`${__dirname}/public/data/standalone-db.template`);
           },
           onCompile() {
             console.log(`\n*** STANDALONE PACKAGE has been BUILT`);
@@ -149,7 +151,9 @@ module.exports = {
         hooks: {
           preCompile() {
             // save json of database to public/data
-            UDB.WriteJSON(`${__dirname}/public/data/standalone-db.json`);
+            UDB.WriteDbJSON(`${__dirname}/public/data/standalone-db.json`);
+            // save json of template to public/data
+            UDB.WriteTemplateJSON(`${__dirname}/public/data/standalone-db.template`);
           },
           onCompile() {
             console.log(`\n*** STANDALONE PACKAGE DEBUG MODE`);
