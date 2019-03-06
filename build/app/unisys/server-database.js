@@ -19,6 +19,7 @@ const LOGGER = require("../unisys/server-logger");
 const PROMPTS = require("../system/util/prompts");
 const PR = PROMPTS.Pad("ServerDB");
 const RUNTIMEPATH = './runtime/';
+const TEMPLATEPATH = './app/assets/templates/';
 const DB_CLONEMASTER = "blank.loki";
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
@@ -132,7 +133,7 @@ DB.InitializeDatabase = function (options = {}) {
     // Does the template exist?
     if (!FS.existsSync(templatePath)) {
       console.log(PR, `NO EXISTING TEMPLATE ${templatePath}, so cloning default TEMPLATE...`);
-      FS.copySync(RUNTIMEPATH+'_default.template', templatePath);
+      FS.copySync(TEMPLATEPATH+'_default.template', templatePath);
     }
     // Now load it
     TEMPLATE = FS.readJsonSync(templatePath);
