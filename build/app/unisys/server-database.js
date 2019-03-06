@@ -491,7 +491,7 @@ DB.WriteTemplateJSON = function (filePath) {
   if (!FS.existsSync(templatePath)) {
     console.error(PR, `ERR could not find template ${templatePath}`);
   } else {
-    FS.copySync(templatePath, filePath, { overwrite: true, errorOnExist: true });
+    FS.copySync(templatePath, filePath);
     console.log(PR, `*** COPIED TEMPLATE ${templatePath} to ${filePath}`);
   }
 };
