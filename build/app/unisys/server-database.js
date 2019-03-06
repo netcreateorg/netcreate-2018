@@ -485,7 +485,6 @@ DB.WriteDbJSON = function (filePath) {
     creates the path if it doesn't exist
 /*/
 DB.WriteTemplateJSON = function (filePath) {
-  console.log('writeTempalteJSON Called!');
   let templatePath = RUNTIMEPATH + NC_CONFIG.dataset + ".template";
   FS.ensureDirSync(PATH.dirname(templatePath));
   // Does the template exist?
