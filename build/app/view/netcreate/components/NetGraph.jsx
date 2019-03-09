@@ -103,7 +103,7 @@ class NetGraph extends UNISYS.Component {
             <Button outline onClick={this.onZoomOut} style={{ width: '35px' }}>-</Button>
           </div>
           <div style={{ position: 'absolute', bottom: '40px', marginLeft: '10px', marginBottom: '15px',fontSize: '10px' }}>
-            <span style={{ marginRight: '2em' }}></span>KEY:
+            <div style={{ display: 'inline-block', paddingRight: '2em' }}>KEY:</div>
             {nodeTypes.map((type, i) => (
               <div key={i} style={{ display:'inline-block', paddingRight:'2em', lineHeight:'10px' }}>
                 <div style={{ display:'inline-block',width:'10px',height:'8px',backgroundColor:type.color }}></div>
