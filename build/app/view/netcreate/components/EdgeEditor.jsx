@@ -753,7 +753,10 @@ class EdgeEditor extends UNISYS.Component {
 /*/ render () {
       const { edgeID, parentNodeLabel } = this.props;
       const { formData, sourceNode, targetNode, edgePrompts } = this.state;
-      const me = <span style={{color:"rgba(0,0,0,0.2)",fontStyle:"italic"}}>this node</span>;
+      const me = <span style={{ color: "rgba(0,0,0,0.2)", fontStyle: "italic" }}>this node</span>;
+      // special override to allow editing an edge that has the same parent node for both source and target
+      let sameSourceAndTarget = (sourceNode.label === this.props.parentNodeLabel) &&
+        (targetNode.label === this.props.parentNodeLabel);
       return (
         <div>
 
@@ -816,13 +819,16 @@ class EdgeEditor extends UNISYS.Component {
                   <AutoComplete
                     identifier={'edge'+edgeID+'target'}
                     disabledValue={targetNode.label}
-                    inactiveMode={parentNodeLabel===targetNode.label ? 'static' : 'disabled'}
+                    inactiveMode={ ( parentNodeLabel===targetNode.label && !sameSourceAndTarget ) ? 'static' : 'disabled'}
                     shouldIgnoreSelection={!this.state.targetIsEditable}
                   />
                   <Button outline size="sm" className="float-right"
                     hidden={ !(this.state.isEditable &&
                                this.state.hasValidTarget &&
-                               (targetNode.label!==this.props.parentNodeLabel)) }
+                               ( (targetNode.label !== this.props.parentNodeLabel) ||
+                                 sameSourceAndTarget )
+                              )
+                            }
                     onClick={this.onChangeTarget}
                     title="Select a different target node"
                   >Change Target</Button>
