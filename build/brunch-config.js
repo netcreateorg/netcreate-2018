@@ -128,8 +128,11 @@ module.exports = {
         },
         hooks: {
           preCompile() {
+            // These files will eventually be copied over to public by brunch
             // save json of database to public/data
-            UDB.WriteJSON(`${__dirname}/public/data/standalone-db.json`);
+            UDB.WriteDbJSON(`${__dirname}/app/assets/data/standalone-db.json`);
+            // save json of template to public/data
+            UDB.WriteTemplateJSON(`${__dirname}/app/assets/data/standalone-template.json`);
           },
           onCompile() {
             console.log(`\n*** STANDALONE PACKAGE has been BUILT`);
@@ -148,8 +151,11 @@ module.exports = {
         },
         hooks: {
           preCompile() {
+            // These files will eventually be copied over to public by brunch
             // save json of database to public/data
-            UDB.WriteJSON(`${__dirname}/public/data/standalone-db.json`);
+            UDB.WriteDbJSON(`${__dirname}/app/assets/data/standalone-db.json`);
+            // save json of template to public/data
+            UDB.WriteTemplateJSON(`${__dirname}/app/assets/data/standalone-template.json`);
           },
           onCompile() {
             console.log(`\n*** STANDALONE PACKAGE DEBUG MODE`);

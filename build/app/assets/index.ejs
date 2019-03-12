@@ -23,7 +23,11 @@
 				min-height: 100%
 			}
 		</style>
+		<script src="netcreate-config.js"> 
+		// auto generated netcreate config script
+		</script>
 		<script>
+			// NC_UNISYS are network parameters
 			if (window.NC_UNISYS) {
 				let err  = `**FATAL ERROR** NC_UNISYS already initialized.\n\n`;
 				err += `Take a screen shot with your phone and report the error!`
@@ -45,6 +49,7 @@
 					uport    : '<%=uport%>'
 				}
 			};
+			//
 			window.NC_DBG = null; // {} or null
 			if (window.NC_DBG) {
 				Object.assign(window.NC_DBG, {

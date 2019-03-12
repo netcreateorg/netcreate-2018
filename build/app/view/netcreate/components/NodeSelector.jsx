@@ -799,7 +799,7 @@ class NodeSelector extends UNISYS.Component {
             <FormText><b>NODE {this.state.formData.id||''}</b></FormText>
             <FormGroup row>
               <Col sm={3}>
-                <Label for="nodeLabel" className="small text-muted">Label</Label>
+                <Label for="nodeLabel" className="small text-muted">{nodePrompts.label.label}</Label>
               </Col>
               <Col sm={9}>
                 <AutoComplete
@@ -821,7 +821,7 @@ class NodeSelector extends UNISYS.Component {
             </div>
             <FormGroup row hidden={nodePrompts.type.hidden}>
               <Col sm={3}>
-                <Label for="type" className="small text-muted">Type</Label>
+                <Label for="type" className="small text-muted">{nodePrompts.type.label}</Label>
               </Col>
               <Col sm={9}>
                 <Input type="select" name="type" id="typeSelect"
@@ -849,7 +849,7 @@ class NodeSelector extends UNISYS.Component {
             </FormGroup>
             <FormGroup row hidden={nodePrompts.info.hidden}>
               <Col sm={3}>
-                <Label for="info" className="small text-muted">Geocode or Date</Label>
+                <Label for="info" className="small text-muted">{nodePrompts.info.label}</Label>
               </Col>
               <Col sm={9}>
                 <Input type="text" name="info" id="info"

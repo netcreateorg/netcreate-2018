@@ -18,8 +18,10 @@ const SESSION = require("../unisys/common-session");
 const LOGGER = require("../unisys/server-logger");
 const PROMPTS = require("../system/util/prompts");
 const PR = PROMPTS.Pad("ServerDB");
-const DB_FILE = "./runtime/netcreate.loki";
+const RUNTIMEPATH = './runtime/';
+const TEMPLATEPATH = './app/assets/templates/';
 const DB_CLONEMASTER = "blank.loki";
+const NC_CONFIG = require("../assets/netcreate-config");
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -32,6 +34,7 @@ let NODES; // loki "nodes" collection
 let EDGES; // loki "edges" collection
 let m_locked_nodes;
 let m_locked_edges;
+let TEMPLATE;
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -39,21 +42,26 @@ let DB = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Initialize the database
 /*/
-DB.InitializeDatabase = function(options = {}) {
-  FS.ensureDirSync(PATH.dirname(DB_FILE));
-  if (!FS.existsSync(DB_FILE)) {
-    console.log(PR, `NO EXISTING DATABASE ${DB_FILE}, so creating BLANK DATABASE...`);
+DB.InitializeDatabase = function (options = {}) {
+
+  let dataset = NC_CONFIG.dataset;
+  let db_file = m_GetValidDBFilePath(dataset);
+  FS.ensureDirSync(PATH.dirname(db_file));
+  if (!FS.existsSync(db_file)) {
+    console.log(PR, `NO EXISTING DATABASE ${db_file}, so creating BLANK DATABASE...`);
   }
+  console.log(PR, `LOADING DATABASE ${db_file}`);
   let ropt = {
     autoload: true,
     autoloadCallback: f_DatabaseInitialize,
     autosave: true,
     autosaveCallback: f_AutosaveStatus,
-    autosaveInterval: 4000 // save every four seconds
+    autosaveInterval: 4000, // save every four seconds
   };
   ropt = Object.assign(ropt, options);
-  m_db = new Loki(DB_FILE, ropt);
+  m_db = new Loki(db_file, ropt);
   m_options = ropt;
+  m_options.db_file = db_file;        // store for use by DB.WriteJSON
 
   // callback on load
   function f_DatabaseInitialize() {
@@ -118,7 +126,20 @@ DB.InitializeDatabase = function(options = {}) {
     console.log(PR,`DATABASE LOADED! m_max_nodeID '${m_max_nodeID}', m_max_edgeID '${m_max_edgeID}'`);
     m_db.saveDatabase();
 
-    if (typeof m_options.onLoadComplete==='function') {
+    // LOAD TEMPLATE  - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    let templatePath = RUNTIMEPATH + NC_CONFIG.dataset + ".template";
+    FS.ensureDirSync(PATH.dirname(templatePath));
+    // Does the template exist?
+    if (!FS.existsSync(templatePath)) {
+      console.log(PR, `NO EXISTING TEMPLATE ${templatePath}, so cloning default template...`);
+      FS.copySync(TEMPLATEPATH+'_default.template', templatePath);
+    }
+    console.log(PR, `LOADING TEMPLATE ${templatePath}`);
+    // Now load it
+    TEMPLATE = FS.readJsonSync(templatePath);
+
+    // Call complete callback
+    if (typeof m_options.onLoadComplete === 'function') {
       m_options.onLoadComplete();
     }
   } // end f_DatabaseInitialize
@@ -140,7 +161,7 @@ DB.PKT_GetDatabase = function(pkt) {
   let edges = EDGES.chain().data({ removeMeta: true });
   if (DBG) console.log(PR,`PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${edges.length} edges)`);
   LOGGER.Write(pkt.Info(), `getdatabase`);
-  return { nodes, edges };
+  return { d3data: { nodes, edges }, template: TEMPLATE };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: reset database from scratch
@@ -430,8 +451,13 @@ DB.FilterEdgeLog = function(edge) {
 /*/ called by brunch to generate an up-to-date JSON file to path.
     creates the path if it doesn't exist
 /*/
-DB.WriteJSON = function( filePath ) {
-  let db = new Loki(DB_FILE,{
+DB.WriteDbJSON = function (filePath) {
+  let dataset = NC_CONFIG.dataset;
+
+  // Ideally we should use m_otions value, but in standlone mode,
+  // m_options might not be defined.
+  let db_file = m_options ? m_options.db_file : m_GetValidDBFilePath(dataset);
+  let db = new Loki(db_file,{
       autoload: true,
       autoloadCallback: () => {
         if (typeof filePath==='string') {
@@ -446,13 +472,28 @@ DB.WriteJSON = function( filePath ) {
           FS.ensureDirSync(PATH.dirname( filePath ));
           if (DBG) console.log(PR,`writing file ${filePath}`);
           FS.writeFileSync( filePath, json );
-          console.log(PR,`*** WROTE JSON DATABASE`);
+          console.log(PR, `*** WROTE JSON DATABASE ${filePath}`);
         } else {
           console.log(PR,`ERR path ${filePath} must be a pathname`);
         }
       }
     }
   );
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ called by brunch to generate an up-to-date Template file to path.
+    creates the path if it doesn't exist
+/*/
+DB.WriteTemplateJSON = function (filePath) {
+  let templatePath = RUNTIMEPATH + NC_CONFIG.dataset + ".template";
+  FS.ensureDirSync(PATH.dirname(templatePath));
+  // Does the template exist?
+  if (!FS.existsSync(templatePath)) {
+    console.error(PR, `ERR could not find template ${templatePath}`);
+  } else {
+    FS.copySync(templatePath, filePath);
+    console.log(PR, `*** COPIED TEMPLATE ${templatePath} to ${filePath}`);
+  }
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -485,6 +526,17 @@ function m_CleanID(prompt, id) {
     id = int;
   }
   return id;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// utility function for getting a valid file path
+function m_GetValidDBFilePath(dataset) {
+  // validate dataset name
+  let regex = /^([A-z0-9-_+./])*$/; // Allow _ - + . /, so nested pathways are allowed
+  if (!regex.test(dataset)) {
+    console.error(PR, `Trying to initialize database with bad dataset name: ${dataset}`);
+  }
+
+  return RUNTIMEPATH + dataset + ".loki";
 }
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////

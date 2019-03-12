@@ -143,7 +143,8 @@ const SEARCH_COLOR = "#008800";
 const SOURCE_COLOR = "#0000DD";
 const TARGET_COLOR = "#FF0000";
 
-const TEMPLATE_URL = "../templates/netcreate.json";
+const DATASET = window.NC_CONFIG.dataset || "netcreate";
+const TEMPLATE_URL = `templates/${DATASET}.json`;
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -172,7 +173,7 @@ MOD.Hook("LOADASSETS", () => {
     }
     // don't use cache, but instead try loading standalone files
     console.warn(PR,"STANDALONE MODE: 'LOADASSETS' is using files (USE_CACHE=false)");
-    let p1 = DATASTORE.PromiseJSONFile("../data/standalone-db.json")
+    let p1 = DATASTORE.PromiseJSONFile("data/standalone-db.json")
     .then(data => {
       m_ConvertData(data);
       m_RecalculateAllEdgeWeights(data);
@@ -181,7 +182,7 @@ MOD.Hook("LOADASSETS", () => {
       D3DATA = data;
     });
     // load template
-    let p2 = DATASTORE.PromiseJSONFile(TEMPLATE_URL)
+    let p2 = DATASTORE.PromiseJSONFile("data/standalone-template.json")
     .then(data => {
       TEMPLATE = data;
       UDATA.SetAppState("TEMPLATE", TEMPLATE);
@@ -193,21 +194,15 @@ MOD.Hook("LOADASSETS", () => {
   let p1 = DATASTORE.PromiseD3Data()
   .then(data => {
     if (DBG) console.log(PR, "DATASTORE returned data", data);
-    m_ConvertData(data);
-    m_RecalculateAllEdgeWeights(data);
-    UDATA.SetAppState("D3DATA", data);
+    m_ConvertData(data.d3data);
+    m_RecalculateAllEdgeWeights(data.d3data);
+    UDATA.SetAppState("D3DATA", data.d3data);
+    UDATA.SetAppState("TEMPLATE", data.template);
     // Save off local reference because we don't have D3DATA AppStateChange handler
-    D3DATA = data;
+    D3DATA = data.d3data;
+    TEMPLATE = data.template;
   });
-  // load Template data and return it as a promise
-  // so that react render is called only after the template is loaded
-  let p2 = DATASTORE.PromiseJSONFile(TEMPLATE_URL)
-  .then(data => {
-    if (DBG) console.log(PR, "DATASTORE returned json", data);
-    TEMPLATE = data;
-    UDATA.SetAppState("TEMPLATE", TEMPLATE);
-  });
-  return Promise.all([p1, p2]);
+  return Promise.all([p1]);
 }); // loadassets
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
