@@ -232,7 +232,8 @@ class EdgeEditor extends UNISYS.Component {
         sourceIsEditable:false,      // Source ndoe field is only editable when source is not parent
         hasValidSource:  false,      // Used by SwapSourceAndTarget and the Change Source button
         targetIsEditable:false,      // Target ndoe field is only editable when target is not parent
-        hasValidTarget:  false       // Used by SwapSourceAndTarget and the Change Target button
+        hasValidTarget:  false,      // Used by SwapSourceAndTarget and the Change Target button
+        placeholder:     undefined
       };
 
       /// Initialize UNISYS DATA LINK for REACT
@@ -653,22 +654,26 @@ class EdgeEditor extends UNISYS.Component {
 /*/ onChangeSource () {
       this.setState({
         sourceIsEditable: true,
-        hasValidSource: false
+        hasValidSource: false,
+        placeholder: this.state.sourceNode.label
       });
       this.AppCall('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'source'});
       // Whenever we set the autocomplete to source, we have to update the label
-      this.AppCall('SOURCE_SEARCH', { searchString: this.state.sourceNode.label });
+      // Clear the AutoComplete field so that onBlur does not select the same node
+      this.AppCall('SOURCE_SEARCH', { searchString: '' });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onChangeTarget () {
       this.setState({
         targetIsEditable: true,
-        hasValidTarget: false
+        hasValidTarget: false,
+        placeholder: this.state.targetNode.label
       });
       this.AppCall('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'target'});
       // Whenever we set the autocomplete to target, we have to update the label
-      this.AppCall('SOURCE_SEARCH', { searchString: this.state.targetNode.label });
+      // Clear the AutoComplete field so that onBlur does not select the same node
+      this.AppCall('SOURCE_SEARCH', { searchString: '' });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -753,7 +758,10 @@ class EdgeEditor extends UNISYS.Component {
 /*/ render () {
       const { edgeID, parentNodeLabel } = this.props;
       const { formData, sourceNode, targetNode, edgePrompts } = this.state;
-      const me = <span style={{color:"rgba(0,0,0,0.2)",fontStyle:"italic"}}>this node</span>;
+      const me = <span style={{ color: "rgba(0,0,0,0.2)", fontStyle: "italic" }}>this node</span>;
+      // special override to allow editing an edge that has the same parent node for both source and target
+      let sameSourceAndTarget = (sourceNode.label === this.props.parentNodeLabel) &&
+        (targetNode.label === this.props.parentNodeLabel);
       return (
         <div>
 
@@ -782,6 +790,7 @@ class EdgeEditor extends UNISYS.Component {
                     disabledValue={sourceNode.label}
                     inactiveMode={parentNodeLabel===sourceNode.label ? 'static' : 'disabled'}
                     shouldIgnoreSelection={!this.state.sourceIsEditable}
+                    placeholder={this.state.placeholder}
                   />
                   <Button outline size="sm" className="float-right"
                     hidden={ !(this.state.isEditable &&
@@ -816,13 +825,17 @@ class EdgeEditor extends UNISYS.Component {
                   <AutoComplete
                     identifier={'edge'+edgeID+'target'}
                     disabledValue={targetNode.label}
-                    inactiveMode={parentNodeLabel===targetNode.label ? 'static' : 'disabled'}
+                    inactiveMode={ ( parentNodeLabel===targetNode.label && !sameSourceAndTarget ) ? 'static' : 'disabled'}
                     shouldIgnoreSelection={!this.state.targetIsEditable}
+                    placeholder={this.state.placeholder}
                   />
                   <Button outline size="sm" className="float-right"
                     hidden={ !(this.state.isEditable &&
                                this.state.hasValidTarget &&
-                               (targetNode.label!==this.props.parentNodeLabel)) }
+                               ( (targetNode.label !== this.props.parentNodeLabel) ||
+                                 sameSourceAndTarget )
+                              )
+                            }
                     onClick={this.onChangeTarget}
                     title="Select a different target node"
                   >Change Target</Button>

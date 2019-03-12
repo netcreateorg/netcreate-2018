@@ -336,6 +336,9 @@ class AutoComplete extends UNISYS.Component {
     Check to see if it references a valid node, if so, select it
 /*/ onBlur (value) {
       // User selected an existing node in the suggestion list
+      // or User clicked on d3 graph
+      // or User clicked outside of field
+      if (DBG) console.log('AutoComplete.onBlur',value);
       this.AppCall('SOURCE_SEARCH_AND_SELECT', { searchString: this.state.value } );
     }
 
@@ -364,7 +367,7 @@ class AutoComplete extends UNISYS.Component {
 /*/ render () {
       const { value, suggestions } = this.state;
       const inputProps = {
-        placeholder : "Type node name...",
+        placeholder : this.props.placeholder || 'Type node name...',
         value       : value,
         onChange    : this.onInputChange,
         onBlur      : this.onBlur

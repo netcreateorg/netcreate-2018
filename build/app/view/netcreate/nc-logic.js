@@ -376,10 +376,13 @@ MOD.Hook("INITIALIZE", () => {
 
     if (nodeID) {
       node = m_FindNodeById(nodeID); // Node IDs should be integers, not strings
+      if (DBG) console.log(PR, "SOURCE_SELECT found by nodeID", nodeID, 'node:', node);
     } else if (nodeLabel) {
       node = m_FindMatchingNodesByLabel(nodeLabel).shift();
+      if (DBG) console.log(PR, "SOURCE_SELECT found by nodeLabel", nodeLabel, "node:", node);
     } else {
       // No node selected, so deselect
+      if (DBG) console.log(PR, "SOURCE_SELECT found no node", node);
     }
 
     if (DBG) console.log(PR, "SOURCE_SELECT found", node);
@@ -435,7 +438,7 @@ MOD.Hook("INITIALIZE", () => {
   });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ SOURCE_SEARCH_AND_SELECT first searches for an exact mathcing node
+  /*/ SOURCE_SEARCH_AND_SELECT first searches for an exact matching node
       and if found, selects it.
       This is called by AutoComplete onBlur in case we need to make an
       implicit selection.
@@ -444,6 +447,7 @@ MOD.Hook("INITIALIZE", () => {
     let { searchString } = data;
     let node = m_FindMatchingNodesByLabel(searchString).shift();
     if (node && (node.label === searchString)) {
+      console.log(PR,'SOURCE_SEARCH_AND_SELECT about to trigger SOURCE_SELECT data was',data);
       m_sourceSelect({ nodeIDs: [node.id] });
     }
   });

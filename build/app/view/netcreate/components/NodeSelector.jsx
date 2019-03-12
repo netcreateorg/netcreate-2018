@@ -217,7 +217,10 @@ class NodeSelector extends UNISYS.Component {
         this.state.edges.forEach(edge => {
           if ((edge.source.id === updatedNodeID) || (edge.target.id === updatedNodeID)) needsUpdate = true;
         })
-        if (needsUpdate) UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [currentNodeID] });
+        if (needsUpdate) {
+          if (DBG) console.log('NodeSelector.SOURCE_UPDATE triggering SOURCE_SELECT with', currentNodeID)
+          UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [currentNodeID] });
+        }
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ NODE_EDIT is usually requested by NodeTable.
@@ -364,7 +367,7 @@ class NodeSelector extends UNISYS.Component {
       if ( (activeAutoCompleteId!==thisIdentifier) &&
            (activeAutoCompleteId!=='search')          ) return;
 
-      if (!this.state.isEditable) {
+      if (!this.state.isEditable && !this.state.edgesAreLocked) {
         if (data.nodes && data.nodes.length>0) {
 
           // A node was selected, so load it
@@ -730,6 +733,7 @@ class NodeSelector extends UNISYS.Component {
       isDuplicateNodeLabel: false
     }, () => {
         // Wait for the edit state to clear, then open up the original node
+        if (DBG) console.log('NodeSelector.onEditOriginal triggering SOURCE_SELECT with', duplicateNodeID)
         UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [duplicateNodeID] });
     });
     this.AppCall('AUTOCOMPLETE_SELECT', { id: 'search' });
