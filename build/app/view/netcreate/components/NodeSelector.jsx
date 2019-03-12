@@ -367,7 +367,7 @@ class NodeSelector extends UNISYS.Component {
       if ( (activeAutoCompleteId!==thisIdentifier) &&
            (activeAutoCompleteId!=='search')          ) return;
 
-      if (!this.state.isEditable) {
+      if (!this.state.isEditable && !this.state.edgesAreLocked) {
         if (data.nodes && data.nodes.length>0) {
 
           // A node was selected, so load it

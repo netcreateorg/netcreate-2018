@@ -336,13 +336,10 @@ class AutoComplete extends UNISYS.Component {
     Check to see if it references a valid node, if so, select it
 /*/ onBlur (value) {
       // User selected an existing node in the suggestion list
-      //
-      // 2019-03-08 Disable this feature!
-      // The only time this is currently being called is during an edge edit when the user
-      // first clicks in the source/target field, then changes their mind and selects a node in
-      // the graph.  This ends up overriding the graph click.
-      if (DBG) console.warn('AutoComplete.onBlur has been disabled', value);
-      // this.AppCall('SOURCE_SEARCH_AND_SELECT', { searchString: this.state.value } );
+      // or User clicked on d3 graph
+      // or User clicked outside of field
+      if (DBG) console.log('AutoComplete.onBlur',value);
+      this.AppCall('SOURCE_SEARCH_AND_SELECT', { searchString: this.state.value } );
     }
 
 /// REACT LIFECYCLE /////////////////////////////////////////////////////////
@@ -370,7 +367,7 @@ class AutoComplete extends UNISYS.Component {
 /*/ render () {
       const { value, suggestions } = this.state;
       const inputProps = {
-        placeholder : "Type node name...",
+        placeholder : this.props.placeholder || 'Type node name...',
         value       : value,
         onChange    : this.onInputChange,
         onBlur      : this.onBlur
