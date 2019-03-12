@@ -182,7 +182,7 @@ MOD.Hook("LOADASSETS", () => {
       D3DATA = data;
     });
     // load template
-    let p2 = DATASTORE.PromiseJSONFile("data/standalone-template.template")
+    let p2 = DATASTORE.PromiseJSONFile("data/standalone-template.json")
     .then(data => {
       TEMPLATE = data;
       UDATA.SetAppState("TEMPLATE", TEMPLATE);
