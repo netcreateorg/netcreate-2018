@@ -6,7 +6,7 @@ NetCreate 2018 is a network graph analysis tool for researching reading comprehe
 
 The Wiki has [detailed instructions](https://github.com/daveseah/netcreate-2018/wiki/Installation-Guide). In general, you'll need to install the prerequisite `Git` and `NodeJS` command line utilities to your computer and use a `terminal` program to issue the following commands to install from the Internet:
 
-* `git clone https://github.com/daveseah/netcreate-2018.git`
+* `git clone https://github.com/netcreateorg/netcreate-2018.git`
 * `cd netcreate-2018/build`
 * `git checkout dev`
 * `npm ci`
