@@ -317,12 +317,6 @@ MOD.Hook("INITIALIZE", () => {
         nodes.forEach(node => {
           m_MarkNodeById(node.id, color);
           UNISYS.Log("select node", node.id, node.label);
-          ga('send', {
-            hitType: 'event',
-            eventCategory: 'Node',
-            eventAction: '' + node.label,
-            eventLabel: '' + window.location
-          });
         });
       } else {
         m_UnMarkAllNodes();
