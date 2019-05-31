@@ -240,9 +240,9 @@ countEdges() {
                     .nodetable td:nth-child(1), .nodetable th:nth-child(1) {width: 4em; min-width: 4em;}
                     .nodetable td:nth-child(2), .nodetable th:nth-child(2) {width: 5em; min-width: 5em;}
                     .nodetable td:nth-child(3), .nodetable th:nth-child(3) {width: 10em; min-width: 10em;}
-                    .nodetable td:nth-child(4), .nodetable th:nth-child(4) {width: 4em; min-width: 4em;}
+                    .nodetable td:nth-child(4), .nodetable th:nth-child(4) {width: 10em; min-width: 10em;}
                     .nodetable td:nth-child(5), .nodetable th:nth-child(5) {width: 4em; min-width: 4em;}
-                    .nodetable td:nth-child(6), .nodetable th:nth-child(6) {width: 25em; min-width: 25em;}`
+                    .nodetable td:nth-child(6), .nodetable th:nth-child(6) {width: 40em; min-width: 25em;}`
       return (
         <div style={{backgroundColor:'#eafcff'}}>
           <style>{styles}</style>
