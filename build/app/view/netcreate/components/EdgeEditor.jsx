@@ -772,14 +772,13 @@ class EdgeEditor extends UNISYS.Component {
             style={{backgroundColor:"#a9d3ff",borderColor:'transparent',width:'100%',marginBottom:'3px',textAlign:"left"}}
             onClick={this.onButtonClick}
           >{parentNodeLabel===sourceNode.label ? me : sourceNode.label}
-          &nbsp;&#x2794;&nbsp;
+          &nbsp;<span title={formData.relationship}>&#x2794;</span>&nbsp;
           {parentNodeLabel===targetNode.label ? me : targetNode.label}</Button>
-
           <div className={this.state.isExpanded?'':'d-none'}>
             <Form className="nodeEntry"
                   style={{backgroundColor:"#C9E1FF",minHeight:'300px',padding:'5px',marginBottom:'10px'}}
                   onSubmit={this.onSubmit}>
-              <FormText><b>EDGE {formData.id}</b></FormText>
+              <FormText onClick={this.onButtonClick}><b>EDGE {formData.id}</b></FormText>
               <FormGroup row>
                 <Col sm={3}>
                   <Label for="source" className="small text-muted">{edgePrompts.source.label}</Label>
