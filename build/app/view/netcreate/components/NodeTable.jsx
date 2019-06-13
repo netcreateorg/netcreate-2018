@@ -23,6 +23,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+import MDReactComponent from 'markdown-react-js';
+
 var DBG = false;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
@@ -294,7 +296,7 @@ countEdges() {
                     >{node.label}</a></td>
                 <td hidden={nodePrompts.type.hidden}>{node.attributes["Node_Type"]}</td>
                 <td hidden={nodePrompts.info.hidden}>{node.attributes["Extra Info"]}</td>
-                <td hidden={nodePrompts.notes.hidden}>{node.attributes["Notes"]}</td>
+                <td hidden={nodePrompts.notes.hidden}><MDReactComponent text={node.attributes["Notes"]} onIterate={this.markdownIterate}/></td>
               </tr>
             )}
             </tbody>
@@ -307,7 +309,18 @@ countEdges() {
 /*/ componentDidMount () {
       if (DBG) console.log('NodeTable.componentDidMount!');
     }
+
+markdownIterate(Tag, props, children, level){
+  if (Tag === 'a') {
+    props.target = '_blank';
+    }
+
+  return <Tag {...props}>{children}</Tag>;
+
+}
 } // class NodeTable
+
+
 
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////

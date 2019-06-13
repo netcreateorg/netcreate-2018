@@ -57,7 +57,7 @@
 
       isEditable      If true, form fields are enabled for editing
                       If false, form is readonly
-                      
+
       dbIsLocked
                       If someone else has selected the node for editing,
                       this flag will cause the dbIsLockedMessage
@@ -109,6 +109,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+import { mdReact } from 'markdown-react-js';
+
 const DBG = false;
 const PR  = 'NodeSelector';
 
@@ -127,7 +129,7 @@ const SETTINGS     = require('settings');
 
 const thisIdentifier = 'nodeSelector';   // SELECTION identifier
 
-const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1');
+const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1') || (location.href.includes('admin=true'));
 
 var   UDATA        = null;
 
@@ -647,7 +649,7 @@ class NodeSelector extends UNISYS.Component {
           this.setState({ dbIsLocked: false });
           this.editNode();
         }
-      });    
+      });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/
@@ -845,10 +847,12 @@ class NodeSelector extends UNISYS.Component {
               </Col>
               <Col sm={9}>
                 <Input type="textarea" name="note" id="notesText"
+                  style={{display: this.state.isEditable ? 'block' : 'none'}}
                   value={this.state.formData.notes||''}
                   onChange={this.onNotesChange}
                   readOnly={!this.state.isEditable}
                   />
+                  {this.markdownDisplay(this.state.formData.notes||'')}
               </Col>
             </FormGroup>
             <FormGroup row hidden={nodePrompts.info.hidden}>
@@ -923,6 +927,26 @@ class NodeSelector extends UNISYS.Component {
         </div>
       )
     }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/
+markdownDisplay (text){
+
+  if(!this.state.isEditable)
+      return mdReact({onIterate: this.markdownIterate})(text);
+}
+
+markdownIterate(Tag, props, children, level){
+ if (Tag === 'a') {
+    props.target = '_blank';
+    }
+
+  return <Tag {...props}>{children}</Tag>;
+
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
