@@ -2,6 +2,10 @@
 
 NetCreate 2018 is a network graph analysis tool for researching reading comprehension in the digital humanities classroom. This is a work in progress. See the [NetCreate Wiki](https://github.com/daveseah/netcreate-2018/wiki) for additional documentation.
 
+## CITATION
+
+If you use or refer to Net.Create in a publication, we ask that you cite it. The correct citation is: Craig, K. & Danish, J. (2018). Net.Create. http://www.netcreate.org. Indiana University, IN.
+
 ## QUICK INSTALLATION
 
 The Wiki has [detailed instructions](https://github.com/daveseah/netcreate-2018/wiki/Installation-Guide). In general, you'll need to install the prerequisite `Git` and `NodeJS` command line utilities to your computer and use a `terminal` program to issue the following commands to install from the Internet:
