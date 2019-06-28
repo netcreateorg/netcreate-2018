@@ -46,6 +46,7 @@
     "ip": "^1.1.5",
     "jquery": "^3.3.1",
     "lokijs": "^1.5.5",
+    "markdown-it": "^8.4.2",
     "markdown-react-js": "^1.0.2",
     "minimist": "^1.2.0",
     "popper.js": "^1.14.3",

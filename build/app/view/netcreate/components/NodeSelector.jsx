@@ -934,7 +934,8 @@ class NodeSelector extends UNISYS.Component {
 markdownDisplay (text){
 
   if(!this.state.isEditable)
-      return mdReact({onIterate: this.markdownIterate})(text);
+      return mdReact({onIterate: this.markdownIterate,  markdownOptions:{ typographer: true}
+    })(text);
 }
 
 markdownIterate(Tag, props, children, level){

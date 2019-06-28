@@ -23,6 +23,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+// MD React stuff added bt Joshua ... probably could be placed better
 import MDReactComponent from 'markdown-react-js';
 
 var DBG = false;
@@ -296,7 +297,7 @@ countEdges() {
                     >{node.label}</a></td>
                 <td hidden={nodePrompts.type.hidden}>{node.attributes["Node_Type"]}</td>
                 <td hidden={nodePrompts.info.hidden}>{node.attributes["Extra Info"]}</td>
-                <td hidden={nodePrompts.notes.hidden}><MDReactComponent text={node.attributes["Notes"]} onIterate={this.markdownIterate}/></td>
+                <td hidden={nodePrompts.notes.hidden}><MDReactComponent text={node.attributes["Notes"]} onIterate={this.markdownIterate} markdownOptions={{typographer: true}} /></td>
               </tr>
             )}
             </tbody>
