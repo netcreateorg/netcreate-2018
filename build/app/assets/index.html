@@ -12,8 +12,15 @@
     m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
     })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-132368455-3', 'auto');
-    ga('send', 'pageview');
+
+    // added by Joshua to allow google analytics to be driven by a flag on run
+    const NC_CONFIG = require("../../../assets/netcreate-config");
+    let googlea = NC_CONFIG.googlea;
+    if(googlea != "0"){
+      ga('create', googlea, 'auto');
+      ga('send', 'pageview');
+    }
+
     </script>
     <!-- End Google Analytics -->
     <style>
