@@ -28,6 +28,14 @@ You will be using these commands most frequently:
 * `npm run package` - Make the 'standalone' version! After a NetCreate classroom session, use this command to make a snapshot of the current database and placed in the `netcreate-2018/build/public` directory. You can copy this directory to a webserver for read-only access to the netgraph!
 * `npm run package:debug` - Run/debug the current standalone version from http://localhost:3000
 
+## QUICK-START USER GUIDE
+
+**How to access Net.Create as a client:** After starting the Net.Create server, you'll see a set of command line responses. One of those is labeled "CLIENTS" and has an IP address that clients can paste into their browser window's address field to access the main Net.Create server.
+
+**How to change node/edge types and select a different project:** Two files in the /build/runtime folder hold both data (netcreate.loki) and template (netcreate.template). You can copy and rename these file pairs (i.e. netcreate.template/loki -> mynetwork.template/loki) and then use that to run the server (`./nc.js --dataset=mynetwork`).
+
+**How to edit:** In order to make any additions/changes to the Net.Create database, each client needs an access token entered in the "Login" field in the upper left-hand corner of the Net.Create window. See `ncMakeTokens` below.
+
 ## SUPPORT OPERATIONS
 
 To generate **access keys** for groups, there is a utility accessible from the **javascript console** of a browser that's running the NetCreate app. 
@@ -41,7 +49,9 @@ To **erase the database**, another javascript console command `ncEmptyDatabase()
 
 All **session logs** are stored in `netcreate-2018/build/runtime/logs`.
 
-The **server database** is stored in `netcreate-2018/build/runtime/netcreate.loki`. You can copy this file to archive it.
+The **server database** is stored in `netcreate-2018/build/runtime/netcreate.loki` if you use `npm run dev` to start the server. You can copy this file to back it up, even while the server is running.
+
+The **node/edge templates** are stored in `netcreate-2018/build/runtime/netcreate.template` if you use `npm run dev` to start the server.
 
 
 
