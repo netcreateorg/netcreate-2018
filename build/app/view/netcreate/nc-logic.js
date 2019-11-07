@@ -318,6 +318,7 @@ MOD.Hook("INITIALIZE", () => {
           m_MarkNodeById(node.id, color);
           UNISYS.Log("select node", node.id, node.label);
           let googlea = NC_CONFIG.googlea;
+
           if(googlea != "0"){
             ga('send', {
               hitType: 'event',
