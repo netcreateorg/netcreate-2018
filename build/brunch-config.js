@@ -21,6 +21,7 @@
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+const NC_CONFIG = require("./app/assets/netcreate-config");
 const UDB = require('./app/unisys/server-database');
 
 // CommonJS module format
@@ -130,15 +131,22 @@ module.exports = {
           preCompile() {
             // These files will eventually be copied over to public by brunch
             // save json of database to public/data
+            UDB.WriteDbJSON(`${__dirname}/app/assets/data/${NC_CONFIG.dataset}-db.json`);
             UDB.WriteDbJSON(`${__dirname}/app/assets/data/standalone-db.json`);
+
             // save json of template to public/data
+            UDB.WriteTemplateJSON(`${__dirname}/app/assets/data/${NC_CONFIG.dataset}-template.json`);
             UDB.WriteTemplateJSON(`${__dirname}/app/assets/data/standalone-template.json`);
+
           },
           onCompile() {
             console.log(`\n*** STANDALONE PACKAGE has been BUILT`);
             console.log(`\n    The standalone package is in public/ and run from index.html.`);
             console.log(`    Edit index.html to change the prompts shown in the app.`);
             console.log(`    Upload contents of public/ to a web server to use!\n`);
+            console.log(`    To target a specific database, copy the data/___.json files to the server\n`);
+            console.log(`    And add -dataset=name to the url (before the #)\n`);
+
           }
         }
       },
@@ -153,9 +161,13 @@ module.exports = {
           preCompile() {
             // These files will eventually be copied over to public by brunch
             // save json of database to public/data
+            UDB.WriteDbJSON(`${__dirname}/app/assets/data/${NC_CONFIG.dataset}-db.json`);
             UDB.WriteDbJSON(`${__dirname}/app/assets/data/standalone-db.json`);
+
             // save json of template to public/data
+            UDB.WriteTemplateJSON(`${__dirname}/app/assets/data/${NC_CONFIG.dataset}-template.json`);
             UDB.WriteTemplateJSON(`${__dirname}/app/assets/data/standalone-template.json`);
+
           },
           onCompile() {
             console.log(`\n*** STANDALONE PACKAGE DEBUG MODE`);
