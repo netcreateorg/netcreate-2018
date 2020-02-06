@@ -145,7 +145,11 @@ module.exports = {
             console.log(`    Edit index.html to change the prompts shown in the app.`);
             console.log(`    Upload contents of public/ to a web server to use!\n`);
             console.log(`    To target a specific database, copy the data/___.json files to the server\n`);
-            console.log(`    And add -dataset=name to the url (before the #)\n`);
+            console.log(`    And add ?dataset=name to the url (before the #)\n`);
+            console.log('    For example:\n');
+            console.log('          http://netcreate.org/SampleNetworks/Package/#/\n');
+            console.log('    Becomes:\n');
+            console.log('          http://netcreate.org/SampleNetworks/Package/?dataset=2020-02-06_Tacitus#/\n');
 
           }
         }
