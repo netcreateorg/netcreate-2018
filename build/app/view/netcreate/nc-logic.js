@@ -173,7 +173,13 @@ MOD.Hook("LOADASSETS", () => {
     }
     // don't use cache, but instead try loading standalone files
     console.warn(PR,"STANDALONE MODE: 'LOADASSETS' is using files (USE_CACHE=false)");
-    let p1 = DATASTORE.PromiseJSONFile("data/standalone-db.json")
+
+    // added by Joshua to check for alternative datasets in the folder
+    let urlParams = new URLSearchParams(window.location.search);
+    let dataset = urlParams.get('dataset');
+    if(dataset == null) dataset = "standalone";
+
+    let p1 = DATASTORE.PromiseJSONFile("data/" + dataset + "-db.json")
     .then(data => {
       m_ConvertData(data);
       m_RecalculateAllEdgeWeights(data);
@@ -182,7 +188,7 @@ MOD.Hook("LOADASSETS", () => {
       D3DATA = data;
     });
     // load template
-    let p2 = DATASTORE.PromiseJSONFile("data/standalone-template.json")
+    let p2 = DATASTORE.PromiseJSONFile("data/" + dataset + "-template.json")
     .then(data => {
       TEMPLATE = data;
       UDATA.SetAppState("TEMPLATE", TEMPLATE);
@@ -318,6 +324,7 @@ MOD.Hook("INITIALIZE", () => {
           m_MarkNodeById(node.id, color);
           UNISYS.Log("select node", node.id, node.label);
           let googlea = NC_CONFIG.googlea;
+
           if(googlea != "0"){
             ga('send', {
               hitType: 'event',
