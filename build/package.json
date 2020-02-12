@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "babel-polyfill": "^6.26.0",
-    "bootstrap": "^4.1.2",
+    "bootstrap": "^4.3.1",
     "classnames": "^2.2.6",
     "cookie-parser": "^1.4.3",
     "d3": "^4.13.0",
