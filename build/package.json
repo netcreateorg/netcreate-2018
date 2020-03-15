@@ -48,7 +48,7 @@
     "lokijs": "^1.5.5",
     "markdown-it": "^8.4.2",
     "markdown-react-js": "^1.0.2",
-    "minimist": "^1.2.0",
+    "minimist": "^1.2.2",
     "popper.js": "^1.14.3",
     "react": "^16.4.1",
     "react-autosuggest": "^9.3.4",
