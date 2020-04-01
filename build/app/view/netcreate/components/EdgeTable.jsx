@@ -46,7 +46,7 @@ class EdgeTable extends UNISYS.Component {
         edgePrompts:  this.AppState('TEMPLATE').edgePrompts,
         edges:        [],
         isExpanded:   true,
-        sortkey:      'Citations'
+        sortkey:      'Relationship'
       };
 
       this.onButtonClick            = this.onButtonClick.bind(this);
@@ -171,9 +171,15 @@ class EdgeTable extends UNISYS.Component {
         case 'Notes':
           this.sortByAttribute(edges, 'Notes');
           break;
+        case 'Category':
+          this.sortByAttribute(edges, 'Category');
+          break;
         case 'Citations':
-        default:
           this.sortByAttribute(edges, 'Citations');
+          break;
+        case 'Relationship':
+                  default:
+          this.sortByAttribute(edges, 'Relationship');
           break;
       }
       this.setState({edges});
@@ -308,6 +314,10 @@ class EdgeTable extends UNISYS.Component {
                       disabled={this.state.sortkey==="target"}
                       onClick={()=>this.setSortKey("target")}
                     >{edgePrompts.target.label}</Button></th>
+                <th hidden={edgePrompts.category.hidden}><Button size="sm"
+                      disabled={this.state.sortkey==="Category"}
+                      onClick={()=>this.setSortKey("Category")}
+                    >{edgePrompts.category.label}</Button></th>
                 <th hidden={edgePrompts.citation.hidden}><Button size="sm"
                       disabled={this.state.sortkey==="Citations"}
                       onClick={()=>this.setSortKey("Citations")}
@@ -337,6 +347,7 @@ class EdgeTable extends UNISYS.Component {
                 <td>{edge.attributes["Relationship"]}</td>
                 <td><a href="#" onClick={(e)=>this.selectNode(edge.target.id,e)}
                     >{edge.target.label || edge.target}</a></td>
+                <td hidden={edgePrompts.category.hidden}>{edge.attributes["Category"]}</td>
                 <td hidden={edgePrompts.citation.hidden}>{edge.attributes["Citations"]}</td>
                 <td hidden={edgePrompts.notes.hidden}>{edge.attributes["Notes"]}</td>
                 <td hidden={edgePrompts.info.hidden}>{edge.attributes["Info"]}</td>

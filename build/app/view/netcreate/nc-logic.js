@@ -265,6 +265,8 @@ MOD.Hook("CONFIGURE", () => {
       throw "Missing `edgePrompts.info` info=" + edgePrompts.info;
     if (edgePrompts.citation === undefined)
       throw "Missing `edgePrompts.citation` info=" + edgePrompts.citation;
+    if (edgePrompts.category === undefined)
+      throw "Missing `edgePrompts.category` info=" + edgePrompts.category;
   } catch (error) {
     console.error(
       PR + "Error loading template `",

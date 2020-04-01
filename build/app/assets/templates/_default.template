@@ -146,6 +146,11 @@
                   "label": "Citation",
                   "help":  "Enter Chapter number.",
                   "hidden": false
+                },
+    "category":     {
+                  "label": "Category",
+                  "help":  "",
+                  "hidden": true
                 }
   }
 

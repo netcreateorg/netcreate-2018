@@ -208,6 +208,7 @@ class EdgeEditor extends UNISYS.Component {
           info:         '',
           notes:        '',
           citation:     '',
+          category:     '',
           id:           '',
           isNewEdge:    true
         },
@@ -254,6 +255,7 @@ class EdgeEditor extends UNISYS.Component {
       this.onNotesChange          = this.onNotesChange.bind(this);
       this.onInfoChange           = this.onInfoChange.bind(this);
       this.onCitationChange       = this.onCitationChange.bind(this);
+      this.onCategoryChange       = this.onCategoryChange.bind(this);
       this.onSubmit               = this.onSubmit.bind(this);
 
       // Always make sure class methods are bind()'d before using them
@@ -292,6 +294,7 @@ class EdgeEditor extends UNISYS.Component {
           info:         '',
           notes:        '',
           citation:     '',
+          category:     '',
           id:           '',
           isNewEdge:    true
         },
@@ -368,6 +371,7 @@ class EdgeEditor extends UNISYS.Component {
             Relationship: '',
             Info: '',
             Citations: '',
+            Category: '',
             Notes: ''
           }
         }
@@ -413,6 +417,7 @@ class EdgeEditor extends UNISYS.Component {
           relationship: edge.attributes["Relationship"] || '',   // Make sure there's valid data
           info:         edge.attributes["Info"] || '',
           citation:     edge.attributes["Citations"] || '',
+          category:     edge.attributes["Category"] || '',
           notes:        edge.attributes["Notes"] || '',
           isNewEdge:    false
         },
@@ -698,6 +703,13 @@ class EdgeEditor extends UNISYS.Component {
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
+/*/ onCategoryChange (event) {
+      let formData = this.state.formData;
+      formData.category = event.target.value;
+      this.setState({formData: formData});
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
 /*/ onNotesChange (event) {
       let formData = this.state.formData;
       formData.notes = event.target.value;
@@ -720,6 +732,7 @@ class EdgeEditor extends UNISYS.Component {
           Relationship: formData.relationship,
           Info:         formData.info,
           Citations:    formData.citation,
+          Category:     formData.category,
           Notes:        formData.notes
         }
       }
@@ -779,7 +792,7 @@ class EdgeEditor extends UNISYS.Component {
                   style={{backgroundColor:"#C9E1FF",minHeight:'300px',padding:'5px',marginBottom:'10px'}}
                   onSubmit={this.onSubmit}>
               <FormText onClick={this.onButtonClick}><b>EDGE {formData.id}</b></FormText>
-              <FormGroup row>
+              <FormGroup row title={edgePrompts.source.help}>
                 <Col sm={3}>
                   <Label for="source" className="small text-muted">{edgePrompts.source.label}</Label>
                 </Col>
@@ -800,7 +813,7 @@ class EdgeEditor extends UNISYS.Component {
                   >Change Source</Button>
                 </Col>
               </FormGroup>
-              <FormGroup row hidden={edgePrompts.type.hidden}>
+              <FormGroup row hidden={edgePrompts.type.hidden} title={edgePrompts.type.help}>
                 <Col sm={3}>
                   <Label for="relationship" className="small text-muted">{edgePrompts.type.label}</Label>
                 </Col>
@@ -816,7 +829,7 @@ class EdgeEditor extends UNISYS.Component {
                   </Input>
                 </Col>
               </FormGroup>
-              <FormGroup row>
+              <FormGroup row title={edgePrompts.target.help}>
                 <Col sm={3}>
                   <Label for="nodeLabel" className="small text-muted">{edgePrompts.target.label}</Label>
                 </Col>
@@ -845,7 +858,18 @@ class EdgeEditor extends UNISYS.Component {
                   >&uarr;&darr;</Button>
                 </Col>
               </FormGroup>
-              <FormGroup row hidden={edgePrompts.citation.hidden}>
+              <FormGroup row hidden={edgePrompts.category.hidden} title={edgePrompts.category.help}>
+                <Col sm={3}>
+                  <Label for="category" className="small text-muted">{edgePrompts.category.label}</Label>
+                </Col>
+                <Col sm={9}>
+                  <Input type="text" name="category" id="category"
+                    value={formData.category}
+                    onChange={this.onCategoryChange}
+                    readOnly={!this.state.isEditable}
+                  />
+                </Col>
+              </FormGroup><FormGroup row hidden={edgePrompts.citation.hidden} title={edgePrompts.citation.help}>
                 <Col sm={3}>
                   <Label for="citation" className="small text-muted">{edgePrompts.citation.label}</Label>
                 </Col>
@@ -857,7 +881,7 @@ class EdgeEditor extends UNISYS.Component {
                   />
                 </Col>
               </FormGroup>
-              <FormGroup row hidden={edgePrompts.notes.hidden}>
+              <FormGroup row hidden={edgePrompts.notes.hidden} title={edgePrompts.notes.help}>
                 <Col sm={3}>
                   <Label for="notes" className="small text-muted">{edgePrompts.notes.label}</Label>
                 </Col>
@@ -869,7 +893,7 @@ class EdgeEditor extends UNISYS.Component {
                   />
                 </Col>
               </FormGroup>
-              <FormGroup row hidden={edgePrompts.info.hidden}>
+              <FormGroup row hidden={edgePrompts.info.hidden} title={edgePrompts.info.help}>
                 <Col sm={3}>
                   <Label for="info" className="small text-muted">{edgePrompts.info.label}</Label>
                 </Col>
