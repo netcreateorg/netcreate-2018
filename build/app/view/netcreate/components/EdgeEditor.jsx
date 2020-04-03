@@ -179,6 +179,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+import { mdReact } from 'markdown-react-js';
+
 const DBG = true;
 const PR  = "EdgeEditor";
 
@@ -887,10 +889,12 @@ class EdgeEditor extends UNISYS.Component {
                 </Col>
                 <Col sm={9}>
                   <Input type="textarea" name="notes" id="notes"
+                    style={{display: this.state.isEditable ? 'block' : 'none'}}
                     value={formData.notes}
                     onChange={this.onNotesChange}
                     readOnly={!this.state.isEditable}
                   />
+                  {this.markdownDisplay(this.state.formData.notes||'')}
                 </Col>
               </FormGroup>
               <FormGroup row hidden={edgePrompts.info.hidden} title={edgePrompts.info.help}>
@@ -958,6 +962,23 @@ class EdgeEditor extends UNISYS.Component {
       this.AppStateChangeOff('SELECTION', this.handleSelection);
       this.AppStateChangeOff('TEMPLATE', this.setTemplate);
     }
+
+    markdownDisplay (text){
+
+  if(!this.state.isEditable)
+      return mdReact({onIterate: this.markdownIterate,  markdownOptions:{ typographer: true}
+    })(text);
+}
+
+markdownIterate(Tag, props, children, level){
+ if (Tag === 'a') {
+    props.target = '_blank';
+    }
+
+  return <Tag {...props}>{children}</Tag>;
+
+}
+
 } // class EdgeEditor
 
 
