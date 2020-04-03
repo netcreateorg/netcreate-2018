@@ -899,7 +899,7 @@ class NodeSelector extends UNISYS.Component {
                   invalid={!this.state.isValidReplacementNodeID}
                 />
                 <FormFeedback>Invalid Node ID!</FormFeedback>
-                <Button className="small text-muted btn btn-outline-light" size="sm"
+                <Button className="small btn btn-outline-light" size="sm"
                   onClick={this.onDeleteButtonClick}
                 >Delete</Button>
               </Col>
