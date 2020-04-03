@@ -23,7 +23,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-// MD React stuff added bt Joshua ... probably could be placed better
+// MD React stuff added by Joshua ... probably could be placed better
 import MDReactComponent from 'markdown-react-js';
 
 var DBG = false;
