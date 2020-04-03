@@ -285,8 +285,8 @@ class EdgeTable extends UNISYS.Component {
             onClick={this.onToggleExpanded}
           >{this.state.isExpanded ? "Hide Edge Table" : "Show Edge Table"}</Button>
           <Table hidden={!this.state.isExpanded} hover size="sm"
-                 responsive striped w-auto
-                 className="edgetable"
+                 responsive striped
+                 className="edgetable w-auto"
           >
             <thead>
               <tr>

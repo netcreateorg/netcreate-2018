@@ -71,6 +71,9 @@ class NodeTable extends UNISYS.Component {
         this.setState({nodePrompts: data.nodePrompts});
       });
 
+      alert("here");
+
+
     } // constructor
 
 
@@ -247,8 +250,8 @@ countEdges() {
             onClick={this.onToggleExpanded}
           >{this.state.isExpanded ? "Hide Node Table" : "Show Node Table"}</Button>
           <Table hidden={!this.state.isExpanded} hover size="sm"
-                 responsive striped w-auto
-                 className="nodetable"
+                 responsive striped
+                 className="nodetable w-auto"
           >
             <thead>
               <tr>
