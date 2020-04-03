@@ -71,9 +71,6 @@ class NodeTable extends UNISYS.Component {
         this.setState({nodePrompts: data.nodePrompts});
       });
 
-      alert("here");
-
-
     } // constructor
 
 

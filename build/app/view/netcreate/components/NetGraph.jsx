@@ -80,6 +80,7 @@ class NetGraph extends UNISYS.Component {
       let el = ReactDOM.findDOMNode(this);
       let d3NetGraph = new D3NetGraph(el);
       this.setState({ d3NetGraph });
+
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
