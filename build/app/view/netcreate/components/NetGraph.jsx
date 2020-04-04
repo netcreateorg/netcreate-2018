@@ -108,7 +108,7 @@ class NetGraph extends UNISYS.Component {
             <div style={{ display: 'inline-block', paddingRight: '2em' }}>KEY:</div>
             {nodeTypes.map((type, i) => (
 
-               <div class="tooltipAnchor">
+               <div className="tooltipAnchor">
                     <div key={i} style={{ display:'inline-block', paddingRight:'2em', lineHeight:'10px' }}>                <div style={{ display:'inline-block',width:'10px',height:'8px',backgroundColor:type.color }}></div>
                     &nbsp;{ (type.label==='') ? 'No Type Selected' : type.label }
                   </div>

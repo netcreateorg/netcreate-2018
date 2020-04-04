@@ -863,9 +863,9 @@ class EdgeEditor extends UNISYS.Component {
                 </Col>
                 <span className="tooltiptext">{edgePrompts.target.help}</span>
               </FormGroup>
-              <FormGroup row hidden={edgePrompts.category.hidden} className="tooltipAnchor">
+              <FormGroup row hidden={edgePrompts.category.hidden}>
                 <Col sm={3}>
-                  <Label for="category" className="small text-muted">{edgePrompts.category.label}</Label>
+                  <Label for="category" className="tooltipAnchor small text-muted">{edgePrompts.category.label}(?)<span className="tooltiptext">{edgePrompts.category.help}</span></Label>
                 </Col>
                 <Col sm={9}>
                   <Input type="text" name="category" id="category"
@@ -874,7 +874,6 @@ class EdgeEditor extends UNISYS.Component {
                     readOnly={!this.state.isEditable}
                   />
                 </Col>
-                <span className="tooltiptext">{edgePrompts.category.help}</span>
               </FormGroup><FormGroup row hidden={edgePrompts.citation.hidden} className="tooltipAnchor">
                 <Col sm={3}>
                   <Label for="citation" className="small text-muted">{edgePrompts.citation.label}</Label>

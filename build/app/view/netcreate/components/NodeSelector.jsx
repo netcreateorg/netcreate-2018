@@ -133,7 +133,6 @@ const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1') || (locatio
 
 var   UDATA        = null;
 
-
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
@@ -159,7 +158,8 @@ class NodeSelector extends UNISYS.Component {
         isDuplicateNodeLabel: false,
         duplicateNodeID:   '',
         replacementNodeID: '',
-        isValidReplacementNodeID: true
+        isValidReplacementNodeID: true,
+        hideModal: true
       };
       // Bind functions to this component's object context
       this.clearForm                             = this.clearForm.bind(this);
@@ -178,6 +178,9 @@ class NodeSelector extends UNISYS.Component {
       this.onNewNodeButtonClick                  = this.onNewNodeButtonClick.bind(this);
       this.onDeleteButtonClick                   = this.onDeleteButtonClick.bind(this);
       this.onEditButtonClick                     = this.onEditButtonClick.bind(this);
+      this.onCiteButtonClick                     = this.onCiteButtonClick.bind(this);
+      this.onCloseCiteClick                      = this.onCloseCiteClick.bind(this);
+      this.dateFormatted                         = this.dateFormatted.bind(this);
       this.requestEditNode = this.requestEditNode.bind(this);
       this.editNode = this.editNode.bind(this);
       this.onAddNewEdgeButtonClick               = this.onAddNewEdgeButtonClick.bind(this);
@@ -295,6 +298,7 @@ class NodeSelector extends UNISYS.Component {
         this.setState({ edgesAreLocked: false });
       });
 
+
     } // constructor
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
@@ -317,7 +321,8 @@ class NodeSelector extends UNISYS.Component {
         isDuplicateNodeLabel: false,
         duplicateNodeID:   '',
         replacementNodeID: '',
-        isValidReplacementNodeID: true
+        isValidReplacementNodeID: true,
+        hideModal: true
       });
     } // clearFform
 
@@ -502,7 +507,8 @@ class NodeSelector extends UNISYS.Component {
         },
         dbIsLocked: false,
         isEditable: false,
-        isDuplicateNodeLabel: false
+        isDuplicateNodeLabel: false,
+        hideModal: true
       });
 
       this.validateForm();
@@ -630,6 +636,9 @@ class NodeSelector extends UNISYS.Component {
   onEditButtonClick(event) {
     event.preventDefault();
 
+    // hide the modal window if it is open (probably this can be handled better)
+    this.setState({ hideModal: true });
+
     // nodeID needs to be a Number.  It should have been set in loadFormFromNode
     let nodeID = this.state.formData.id;
     this.requestEditNode(nodeID);
@@ -637,6 +646,37 @@ class NodeSelector extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/
+  /*/
+  onCiteButtonClick(event) {
+    event.preventDefault();
+
+    this.setState({ hideModal: false });
+
+  } // onCiteButtonClick
+
+    onCloseCiteClick (event) {
+    event.preventDefault();
+
+    this.setState({ hideModal: true });
+
+  } //   this.onCloseCiteClick
+
+  dateFormatted (){
+    var today = new Date();
+    var date = (today.getMonth()+1)+"/"+today.getDate()+"/"+ today.getFullYear();
+    var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+    var dateTime = time+' on '+date;
+    return dateTime;
+  }
+
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/
+
+
   requestEditNode(nodeID) {
     this.NetCall('SRV_DBLOCKNODE', { nodeID: nodeID })
       .then((data) => {
@@ -788,11 +828,12 @@ class NodeSelector extends UNISYS.Component {
     } // onSubmit
 
 
+
 /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
 /*/ REACT calls this to receive the component layout and data sources
 /*/ render () {
       let { nodePrompts } = this.state;
-      return (
+        return (
         <div>
           <FormGroup className="text-right" style={{paddingRight:'5px'}}>
             <Button outline size="sm"
@@ -871,7 +912,18 @@ class NodeSelector extends UNISYS.Component {
               </Col>
               <span className="tooltiptext">{nodePrompts.info.help}</span>
             </FormGroup>
+             <div id="citationWindow" hidden={this.state.hideModal}>
+              <div className="modal-content">
+                <span className="close" onClick={this.onCloseCiteClick}>&times;</span>
+                <p>Copy the text below:<br/>
+                  NetCreate Node: {this.state.formData.label} (ID {this.state.formData.id}). {nodePrompts.citation.citation}. Last accessed at {this.dateFormatted()}.</p>
+              </div>
+            </div>
             <FormGroup className="text-right" style={{ paddingRight: '5px' }}>
+              <Button outline size="sm"
+                hidden={this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
+                onClick={this.onCiteButtonClick}
+              >Cite Node</Button>&nbsp;&nbsp;
               <Button outline size="sm"
                 hidden={this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
                 onClick={this.onEditButtonClick}
@@ -928,7 +980,12 @@ class NodeSelector extends UNISYS.Component {
               >Add New Edge</Button>
             </FormGroup>
           </div>
+
+
+
+
         </div>
+
       )
     }
 
@@ -983,7 +1040,6 @@ markdownIterate(Tag, props, children, level){
     }
 
 } // class NodeSelector
-
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
