@@ -30,6 +30,74 @@
 			body {
 				min-height: 100%
 			}
+
+				
+				.tooltipAnchor {
+				  position: relative;
+				  display: inline-block;
+				}
+
+				.tooltipAnchor .tooltiptext {
+				  visibility: hidden;
+				  width: 120px;
+				  background-color: black;
+				  color: #fff;
+				  text-align: center;
+				  border-radius: 6px;
+				  padding: 5px 0;
+				  position: absolute;
+				  z-index: 1;
+				  top: 150%;
+				  left: 50%;
+				  margin-left: -60px;
+				}
+
+				.tooltipAnchor .tooltiptext::after {
+					  content: " ";
+					  position: absolute;
+					  bottom: 100%;  /* At the top of the tooltip */
+					  left: 50%;
+					  margin-left: -5px;
+					  border-width: 5px;
+					  border-style: solid;
+					  border-color: transparent transparent black transparent;
+				}
+
+				.tooltipAnchor:hover .tooltiptext {
+				  visibility: visible;
+				}
+
+				.tooltipAnchor .tooltiptextabove {
+				  visibility: hidden;
+				  width: 120px;
+				  background-color: black;
+				  color: #fff;
+				  text-align: center;
+				  border-radius: 6px;
+				  padding: 5px 0;
+				  position: absolute;
+				  z-index: 1;
+				  bottom: 150%;
+				  left: 50%;
+				  margin-left: -60px;
+				}
+
+				.tooltipAnchor .tooltiptextabove::after {
+				  content: "";
+				  position: absolute;
+				  top: 100%;
+				  left: 50%;
+				  margin-left: -5px;
+				  border-width: 5px;
+				  border-style: solid;
+				  border-color: black transparent transparent transparent;
+				}
+
+
+				.tooltipAnchor:hover .tooltiptextabove {
+				  visibility: visible;
+				}
+				
 		</style>
 			<script>
 			// NC_UNISYS are network parameters

@@ -803,7 +803,7 @@ class NodeSelector extends UNISYS.Component {
           <Form className='nodeEntry' style={{minHeight:'300px',backgroundColor:'#B8EDFF',padding:'5px',marginBottom:'0px'}}
             onSubmit={this.onSubmit}>
             <FormText><b>NODE {this.state.formData.id||''}</b></FormText>
-            <FormGroup row>
+            <FormGroup row className="tooltipAnchor">
               <Col sm={3}>
                 <Label for="nodeLabel" className="small text-muted">{nodePrompts.label.label}</Label>
               </Col>
@@ -821,14 +821,16 @@ class NodeSelector extends UNISYS.Component {
                 <Button size="sm" onClick={this.onEditOriginal}>View Existing</Button>
                 <Button outline size="sm" onClick={this.onCloseDuplicateDialog}>Continue</Button>
               </div>
+               <span className="tooltiptext">{nodePrompts.label.help}</span>
             </FormGroup>
             <div style={{position:'absolute',left:'300px',maxWidth:'300px'}}>
               <NodeDetail/>
             </div>
-            <FormGroup row hidden={nodePrompts.type.hidden}>
+            <FormGroup row hidden={nodePrompts.type.hidden} className="tooltipAnchor">
               <Col sm={3}>
                 <Label for="type" className="small text-muted">{nodePrompts.type.label}</Label>
               </Col>
+               <span className="tooltiptext">{nodePrompts.type.help}</span>
               <Col sm={9}>
                 <Input type="select" name="type" id="typeSelect"
                   value={this.state.formData.type||''}
@@ -841,7 +843,7 @@ class NodeSelector extends UNISYS.Component {
                 </Input>
               </Col>
             </FormGroup>
-            <FormGroup row hidden={nodePrompts.notes.hidden}>
+            <FormGroup row hidden={nodePrompts.notes.hidden} className="tooltipAnchor">
               <Col sm={3}>
                 <Label for="notes" className="small text-muted">{nodePrompts.notes.label}</Label>
               </Col>
@@ -854,8 +856,9 @@ class NodeSelector extends UNISYS.Component {
                   />
                   {this.markdownDisplay(this.state.formData.notes||'')}
               </Col>
+              <span className="tooltiptext">{nodePrompts.notes.help}</span>
             </FormGroup>
-            <FormGroup row hidden={nodePrompts.info.hidden}>
+            <FormGroup row hidden={nodePrompts.info.hidden} className="tooltipAnchor">
               <Col sm={3}>
                 <Label for="info" className="small text-muted">{nodePrompts.info.label}</Label>
               </Col>
@@ -866,6 +869,7 @@ class NodeSelector extends UNISYS.Component {
                   readOnly={!this.state.isEditable}
                   />
               </Col>
+              <span className="tooltiptext">{nodePrompts.info.help}</span>
             </FormGroup>
             <FormGroup className="text-right" style={{ paddingRight: '5px' }}>
               <Button outline size="sm"
