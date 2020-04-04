@@ -921,7 +921,7 @@ class NodeSelector extends UNISYS.Component {
             </div>
             <FormGroup className="text-right" style={{ paddingRight: '5px' }}>
               <Button outline size="sm"
-                hidden={this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
+                hidden={nodePrompts.citation.hidden || this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
                 onClick={this.onCiteButtonClick}
               >Cite Node</Button>&nbsp;&nbsp;
               <Button outline size="sm"
