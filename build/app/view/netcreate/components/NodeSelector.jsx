@@ -141,6 +141,7 @@ class NodeSelector extends UNISYS.Component {
       super(props);
       this.state = {
         nodePrompts:   this.AppState('TEMPLATE').nodePrompts,
+        citationPrompts:   this.AppState('TEMPLATE').citationPrompts,
         formData: {
             label:     '',
             type:      '',
@@ -832,7 +833,7 @@ class NodeSelector extends UNISYS.Component {
 /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
 /*/ REACT calls this to receive the component layout and data sources
 /*/ render () {
-      let { nodePrompts } = this.state;
+      let { nodePrompts, citationPrompts } = this.state;
         return (
         <div>
           <FormGroup className="text-right" style={{paddingRight:'5px'}}>
@@ -916,12 +917,12 @@ class NodeSelector extends UNISYS.Component {
               <div className="modal-content">
                 <span className="close" onClick={this.onCloseCiteClick}>&times;</span>
                 <p>Copy the text below:<br/>
-                  NetCreate Node: {this.state.formData.label} (ID {this.state.formData.id}). {nodePrompts.citation.citation}. Last accessed at {this.dateFormatted()}.</p>
+                  NetCreate {this.AppState('TEMPLATE').name} network, Node: {this.state.formData.label} (ID {this.state.formData.id}). {citationPrompts.citation}. Last accessed at {this.dateFormatted()}.</p>
               </div>
             </div>
             <FormGroup className="text-right" style={{ paddingRight: '5px' }}>
               <Button outline size="sm"
-                hidden={nodePrompts.citation.hidden || this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
+                hidden={citationPrompts.hidden || this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
                 onClick={this.onCiteButtonClick}
               >Cite Node</Button>&nbsp;&nbsp;
               <Button outline size="sm"
