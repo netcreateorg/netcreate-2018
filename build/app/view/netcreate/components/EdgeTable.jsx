@@ -26,6 +26,9 @@
 
 // MD React stuff added bt Joshua ... probably could be placed better
 import MDReactComponent from 'markdown-react-js';
+const mdplugins = {
+  emoji: require('markdown-it-emoji')
+};
 
 var DBG = false;
 
@@ -344,7 +347,7 @@ class EdgeTable extends UNISYS.Component {
                     >{edge.target.label || edge.target}</a></td>
                 <td hidden={edgePrompts.category.hidden}>{edge.attributes["Category"]}</td>
                 <td hidden={edgePrompts.citation.hidden}>{edge.attributes["Citations"]}</td>
-                <td hidden={edgePrompts.notes.hidden}><MDReactComponent text={edge.attributes["Notes"]} onIterate={this.markdownIterate} markdownOptions={{typographer: true}} /></td>
+                <td hidden={edgePrompts.notes.hidden}><MDReactComponent text={edge.attributes["Notes"]} onIterate={this.markdownIterate} markdownOptions={{typographer: true}} plugins={[mdplugins.emoji]}/></td>
                 <td hidden={edgePrompts.info.hidden}>{edge.attributes["Info"]}</td>
               </tr>
             ))}

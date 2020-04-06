@@ -25,6 +25,9 @@
 
 // MD React stuff added by Joshua ... probably could be placed better
 import MDReactComponent from 'markdown-react-js';
+const mdplugins = {
+  emoji: require('markdown-it-emoji')
+};
 
 var DBG = false;
 
@@ -291,7 +294,7 @@ countEdges() {
                     >{node.label}</a></td>
                 <td hidden={nodePrompts.type.hidden}>{node.attributes["Node_Type"]}</td>
                 <td hidden={nodePrompts.info.hidden}>{node.attributes["Extra Info"]}</td>
-                <td hidden={nodePrompts.notes.hidden}><MDReactComponent text={node.attributes["Notes"]} onIterate={this.markdownIterate} markdownOptions={{typographer: true}} /></td>
+                <td hidden={nodePrompts.notes.hidden}><MDReactComponent text={node.attributes["Notes"]} onIterate={this.markdownIterate} markdownOptions={{typographer: true}} plugins={[mdplugins.emoji]}/></td>
               </tr>
             )}
             </tbody>

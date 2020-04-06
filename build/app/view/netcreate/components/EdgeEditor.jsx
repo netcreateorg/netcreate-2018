@@ -180,6 +180,9 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 import { mdReact } from 'markdown-react-js';
+const mdplugins = {
+  emoji: require('markdown-it-emoji')
+};
 
 const DBG = true;
 const PR  = "EdgeEditor";
@@ -972,7 +975,7 @@ class EdgeEditor extends UNISYS.Component {
     markdownDisplay (text){
 
   if(!this.state.isEditable)
-      return mdReact({onIterate: this.markdownIterate,  markdownOptions:{ typographer: true}
+      return mdReact({onIterate: this.markdownIterate,  markdownOptions:{ typographer: true}, plugins: [mdplugins.emoji]
     })(text);
 }
 

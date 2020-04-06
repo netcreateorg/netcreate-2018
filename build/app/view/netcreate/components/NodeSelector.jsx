@@ -110,6 +110,9 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 import { mdReact } from 'markdown-react-js';
+const mdplugins = {
+  emoji: require('markdown-it-emoji')
+};
 
 const DBG = false;
 const PR  = 'NodeSelector';
@@ -996,7 +999,7 @@ class NodeSelector extends UNISYS.Component {
 markdownDisplay (text){
 
   if(!this.state.isEditable)
-      return mdReact({onIterate: this.markdownIterate,  markdownOptions:{ typographer: true}
+      return mdReact({onIterate: this.markdownIterate,  markdownOptions:{ typographer: true}, plugins: [mdplugins.emoji]
     })(text);
 }
 
