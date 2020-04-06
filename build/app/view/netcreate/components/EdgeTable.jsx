@@ -276,7 +276,8 @@ class EdgeTable extends UNISYS.Component {
 /*/ render () {
       let { edgePrompts } = this.state;
       let { tableHeight } = this.props;
-      let styles = `thead { position: relative; }
+      let styles = `thead, tbody { display: block }
+                    thead { position: relative; }
                     tbody { overflow: auto; }`
       return (
         <div style={{backgroundColor:'#f3f3ff'}}>

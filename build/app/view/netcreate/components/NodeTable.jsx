@@ -237,7 +237,7 @@ countEdges() {
 /*/ render () {
       let { nodePrompts } = this.state;
       let { tableHeight } = this.props;
-      let styles = `thead, tbody { }
+      let styles = `thead, tbody { display: block }
                     thead { position: relative; }
                     tbody { overflow: auto; }`
       return (
