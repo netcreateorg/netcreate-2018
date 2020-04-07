@@ -240,11 +240,14 @@ countEdges() {
 /*/ render () {
       let { nodePrompts } = this.state;
       let { tableHeight } = this.props;
-      let styles = `thead, tbody { display: block }
+      let styles = `thead, tbody {  }
                     thead { position: relative; }
-                    tbody { overflow: auto; }`
+                    tbody { overflow: auto; }
+                    `
       return (
-        <div style={{backgroundColor:'#eafcff'}}>
+         <div style={{overflow:'auto',
+                     position:'relative',display: 'block', right:'10px',maxHeight: tableHeight, backgroundColor:'#eafcff'
+             }}>
           <style>{styles}</style>
           <Button size="sm" outline hidden
             onClick={this.onToggleExpanded}

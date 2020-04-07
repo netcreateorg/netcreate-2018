@@ -279,11 +279,14 @@ class EdgeTable extends UNISYS.Component {
 /*/ render () {
       let { edgePrompts } = this.state;
       let { tableHeight } = this.props;
-      let styles = `thead, tbody { display: block }
+      let styles = `
+                    thead, tbody { }
                     thead { position: relative; }
                     tbody { overflow: auto; }`
       return (
-        <div style={{backgroundColor:'#f3f3ff'}}>
+           <div style={{overflow:'auto',
+                     position:'relative',display: 'block', right:'10px',maxHeight: tableHeight, backgroundColor:'#f3f3ff'
+             }}>
           <style>{styles}</style>
           <Button size="sm" outline hidden
             onClick={this.onToggleExpanded}
