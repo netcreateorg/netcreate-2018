@@ -282,7 +282,8 @@ class EdgeTable extends UNISYS.Component {
       let styles = `
                     thead, tbody { }
                     thead { position: relative; }
-                    tbody { overflow: auto; }`
+                    tbody { overflow: auto; }
+`
       return (
            <div style={{overflow:'auto',
                      position:'relative',display: 'block', right:'10px',maxHeight: tableHeight, backgroundColor:'#f3f3ff'
@@ -302,7 +303,7 @@ class EdgeTable extends UNISYS.Component {
                       onClick={()=>this.setSortKey("id")}
                     >ID</Button></th>
                 <th hidden={!DBG}>Size</th>
-                <th></th>
+                <th><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
                 <th><Button size="sm"
                       disabled={this.state.sortkey==="source"}
                       onClick={()=>this.setSortKey("source")}
