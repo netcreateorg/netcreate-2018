@@ -848,9 +848,9 @@ class NodeSelector extends UNISYS.Component {
           <Form className='nodeEntry' style={{minHeight:'300px',backgroundColor:'#B8EDFF',padding:'5px',marginBottom:'0px'}}
             onSubmit={this.onSubmit}>
             <FormText><b>NODE {this.state.formData.id||''}</b></FormText>
-            <FormGroup row className="tooltipAnchor">
+            <FormGroup row>
               <Col sm={3}>
-                <Label for="nodeLabel" className="small text-muted">{nodePrompts.label.label}</Label>
+                <Label for="nodeLabel" className="tooltipAnchor small text-muted"><i class="fas fa-question-circle"></i>{nodePrompts.label.label}<span className="tooltiptext">{nodePrompts.label.help}</span></Label>
               </Col>
               <Col sm={9}>
                 <AutoComplete
@@ -866,16 +866,14 @@ class NodeSelector extends UNISYS.Component {
                 <Button size="sm" onClick={this.onEditOriginal}>View Existing</Button>
                 <Button outline size="sm" onClick={this.onCloseDuplicateDialog}>Continue</Button>
               </div>
-               <span className="tooltiptext">{nodePrompts.label.help}</span>
             </FormGroup>
             <div style={{position:'absolute',left:'300px',maxWidth:'300px'}}>
               <NodeDetail/>
             </div>
-            <FormGroup row hidden={nodePrompts.type.hidden} className="tooltipAnchor">
+            <FormGroup row hidden={nodePrompts.type.hidden}>
               <Col sm={3}>
-                <Label for="type" className="small text-muted">{nodePrompts.type.label}</Label>
+                <Label for="type" className="tooltipAnchor small text-muted"><i class="fas fa-question-circle"></i>{nodePrompts.type.label}<span className="tooltiptext">{nodePrompts.type.help}</span></Label>
               </Col>
-               <span className="tooltiptext">{nodePrompts.type.help}</span>
               <Col sm={9}>
                 <Input type="select" name="type" id="typeSelect"
                   value={this.state.formData.type||''}
@@ -888,9 +886,9 @@ class NodeSelector extends UNISYS.Component {
                 </Input>
               </Col>
             </FormGroup>
-            <FormGroup row hidden={nodePrompts.notes.hidden} className="tooltipAnchor">
+            <FormGroup row hidden={nodePrompts.notes.hidden}>
               <Col sm={3}>
-                <Label for="notes" className="small text-muted">{nodePrompts.notes.label}</Label>
+                <Label for="notes" className="tooltipAnchor small text-muted"><i class="fas fa-question-circle"></i>{nodePrompts.notes.label}<span className="tooltiptext">{nodePrompts.notes.help}</span></Label>
               </Col>
               <Col sm={9}>
                 <Input type="textarea" name="note" id="notesText"
@@ -901,11 +899,10 @@ class NodeSelector extends UNISYS.Component {
                   />
                   {this.markdownDisplay(this.state.formData.notes||'')}
               </Col>
-              <span className="tooltiptext">{nodePrompts.notes.help}</span>
             </FormGroup>
-            <FormGroup row hidden={nodePrompts.info.hidden} className="tooltipAnchor">
+            <FormGroup row hidden={nodePrompts.info.hidden}>
               <Col sm={3}>
-                <Label for="info" className="small text-muted">{nodePrompts.info.label}</Label>
+                <Label for="info" className="tooltipAnchor small text-muted"><i class="fas fa-question-circle"></i>{nodePrompts.info.label}<span className="tooltiptext">{nodePrompts.info.help}</span></Label>
               </Col>
               <Col sm={9}>
                 <Input type="text" name="info" id="info"
@@ -914,7 +911,6 @@ class NodeSelector extends UNISYS.Component {
                   readOnly={!this.state.isEditable}
                   />
               </Col>
-              <span className="tooltiptext">{nodePrompts.info.help}</span>
             </FormGroup>
              <div id="citationWindow" hidden={this.state.hideModal}>
               <div className="modal-content">

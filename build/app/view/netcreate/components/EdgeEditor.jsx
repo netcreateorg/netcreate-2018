@@ -797,9 +797,9 @@ class EdgeEditor extends UNISYS.Component {
                   style={{backgroundColor:"#C9E1FF",minHeight:'300px',padding:'5px',marginBottom:'10px'}}
                   onSubmit={this.onSubmit}>
               <FormText onClick={this.onButtonClick}><b>EDGE {formData.id}</b></FormText>
-              <FormGroup row className="tooltipAnchor">
+              <FormGroup row>
                 <Col sm={3}>
-                  <Label for="source" className="small text-muted">{edgePrompts.source.label}</Label>
+                  <Label for="source" className="tooltipAnchor small text-muted"><i class="fas fa-question-circle"></i>{edgePrompts.source.label}<span className="tooltiptext">{edgePrompts.source.help}</span></Label>
                 </Col>
                 <Col sm={9}>
                   <AutoComplete
@@ -817,11 +817,10 @@ class EdgeEditor extends UNISYS.Component {
                     title="Select a different source node"
                   >Change Source</Button>
                 </Col>
-                <span className="tooltiptext">{edgePrompts.source.help}</span>
               </FormGroup>
-              <FormGroup row hidden={edgePrompts.type.hidden} className="tooltipAnchor">
+              <FormGroup row hidden={edgePrompts.type.hidden}>
                 <Col sm={3}>
-                  <Label for="relationship" className="small text-muted">{edgePrompts.type.label}</Label>
+                  <Label for="relationship" className="tooltipAnchor small text-muted"><i class="fas fa-question-circle"></i>{edgePrompts.type.label}<span className="tooltiptext">{edgePrompts.type.help}</span></Label>
                 </Col>
                 <Col sm={9}>
                   <Input type="select" name="relationship" id="relationship"
@@ -834,11 +833,10 @@ class EdgeEditor extends UNISYS.Component {
                     ))}
                   </Input>
                 </Col>
-                <span className="tooltiptext">{edgePrompts.type.help}</span>
               </FormGroup>
-              <FormGroup row className="tooltipAnchor">
+              <FormGroup row>
                 <Col sm={3}>
-                  <Label for="nodeLabel" className="small text-muted">{edgePrompts.target.label}</Label>
+                  <Label for="nodeLabel" className="tooltipAnchor small text-muted"><i class="fas fa-question-circle"></i>{edgePrompts.target.label}<span className="tooltiptext">{edgePrompts.target.help}</span></Label>
                 </Col>
                 <Col sm={9}>
                   <AutoComplete
@@ -864,11 +862,10 @@ class EdgeEditor extends UNISYS.Component {
                     title="Swap 'Source' and 'Target' nodes"
                   >&uarr;&darr;</Button>
                 </Col>
-                <span className="tooltiptext">{edgePrompts.target.help}</span>
               </FormGroup>
               <FormGroup row hidden={edgePrompts.category.hidden}>
                 <Col sm={3}>
-                  <Label for="category" className="tooltipAnchor small text-muted">{edgePrompts.category.label}(?)<span className="tooltiptext">{edgePrompts.category.help}</span></Label>
+                  <Label for="category" className="tooltipAnchor small text-muted"><i class="fas fa-question-circle"></i>{edgePrompts.category.label}<span className="tooltiptext">{edgePrompts.category.help}</span></Label>
                 </Col>
                 <Col sm={9}>
                   <Input type="text" name="category" id="category"
@@ -877,9 +874,9 @@ class EdgeEditor extends UNISYS.Component {
                     readOnly={!this.state.isEditable}
                   />
                 </Col>
-              </FormGroup><FormGroup row hidden={edgePrompts.citation.hidden} className="tooltipAnchor">
+              </FormGroup><FormGroup row hidden={edgePrompts.citation.hidden}>
                 <Col sm={3}>
-                  <Label for="citation" className="small text-muted">{edgePrompts.citation.label}</Label>
+                  <Label for="citation" className="tooltipAnchor small text-muted"><i class="fas fa-question-circle"></i>{edgePrompts.citation.label}<span className="tooltiptext">{edgePrompts.citation.help}</span></Label>
                 </Col>
                 <Col sm={9}>
                   <Input type="text" name="citation" id="citation"
@@ -888,11 +885,10 @@ class EdgeEditor extends UNISYS.Component {
                     readOnly={!this.state.isEditable}
                   />
                 </Col>
-                <span className="tooltiptext">{edgePrompts.citation.help}</span>
               </FormGroup>
-              <FormGroup row hidden={edgePrompts.notes.hidden} className="tooltipAnchor">
+              <FormGroup row hidden={edgePrompts.notes.hidden}>
                 <Col sm={3}>
-                  <Label for="notes" className="small text-muted">{edgePrompts.notes.label}</Label>
+                  <Label for="notes" className="tooltipAnchor small text-muted"><i class="fas fa-question-circle"></i>{edgePrompts.notes.label}<span className="tooltiptext">{edgePrompts.notes.help}</span></Label>
                 </Col>
                 <Col sm={9}>
                   <Input type="textarea" name="notes" id="notes"
@@ -903,11 +899,10 @@ class EdgeEditor extends UNISYS.Component {
                   />
                   {this.markdownDisplay(this.state.formData.notes||'')}
                 </Col>
-                <span className="tooltiptext">{edgePrompts.notes.help}</span>
               </FormGroup>
-              <FormGroup row hidden={edgePrompts.info.hidden} className="tooltipAnchor">
+              <FormGroup row hidden={edgePrompts.info.hidden}>
                 <Col sm={3}>
-                  <Label for="info" className="small text-muted">{edgePrompts.info.label}</Label>
+                  <Label for="info" className="tooltipAnchor small text-muted"><i class="fas fa-question-circle"></i>{edgePrompts.info.label}<span className="tooltiptext">{edgePrompts.info.help}</span></Label>
                 </Col>
                 <Col sm={9}>
                   <Input type="text" name="info" id="info"
@@ -916,7 +911,6 @@ class EdgeEditor extends UNISYS.Component {
                     readOnly={!this.state.isEditable}
                   />
                 </Col>
-                <span className="tooltiptext">{edgePrompts.info.help}</span>
               </FormGroup>
               <FormGroup className="text-right" style={{paddingRight:'5px'}}>
                 <Button className="small float-left btn btn-outline-light" size="sm"
