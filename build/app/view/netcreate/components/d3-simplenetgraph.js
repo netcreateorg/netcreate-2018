@@ -58,13 +58,13 @@ let m_forceProperties = {   // values for all forces
       },
       charge: {
         enabled: true,
-        strength: -1500,  //-1000, // -20,
+        strength: -1000,  //-1000, // -20, was 1500 - JD
         distanceMin: 20,  //50, // 1,
         distanceMax: 1000 //2000
       },
       collide: {
         enabled: true,
-        strength: 0.7,
+        strength: 0.3, // was .7 - JD
         iterations: 1,
         radius: 4
       },
@@ -213,7 +213,7 @@ class D3NetGraph {
         this._UpdateGraph()
         // updates ignored until this is run restarts the simulation
         // (important if simulation has already slowed down)
-        this.simulation.alpha(1).restart()
+        this.simulation.alpha(.3).restart()  // was 1 - JD
       }
     }
 /*/ This sets up the force properties for the simulation and tick handler.
