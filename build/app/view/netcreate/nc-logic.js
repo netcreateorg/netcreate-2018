@@ -359,10 +359,12 @@ MOD.Hook("INITIALIZE", () => {
       }
     }
     // SEARCH LABEL UPDATE
-    if (searchLabel === "") {
-      m_UnStrokeAllNodes();
-    } else if (searchLabel !== undefined) {
-      m_SetStrokeColorThatMatch(searchLabel, SEARCH_COLOR);
+    if(D3DATA.nodes.length < 100) {
+      if (searchLabel === "") {
+        m_UnStrokeAllNodes();
+      } else if (searchLabel !== undefined) {
+         m_SetStrokeColorThatMatch(searchLabel, SEARCH_COLOR);
+      }
     }
   }); // StateChange SELECTION
 
@@ -469,6 +471,7 @@ MOD.Hook("INITIALIZE", () => {
       selections.  The hilite can be selected via either the label or
       the node id.
   /*/
+ /* ORIGINAL INQUIRIUM CODE
   UDATA.HandleMessage("SOURCE_HILITE", function(data) {
     let { nodeLabel, nodeID, color } = data;
     if (nodeLabel) {
@@ -480,6 +483,27 @@ MOD.Hook("INITIALIZE", () => {
       // Only mark nodes if something is selected
       m_UnMarkAllNodes();
       m_MarkNodeById(nodeID, SOURCE_COLOR);
+    }
+    */
+
+    UDATA.HandleMessage("SOURCE_HILITE", function(data) {
+    let { nodeLabel, nodeID, color } = data;
+    if (nodeLabel) {
+      // Only mark nodes if something is selected
+
+      if(D3DATA.nodes.length < 100)
+      {
+        m_UnMarkAllNodes();
+        m_MarkNodeByLabel(nodeLabel, SOURCE_COLOR);
+      }
+    }
+    if (nodeID) {
+      // Only mark nodes if something is selected
+      if(D3DATA.nodes.length < 100)
+      {
+        m_UnMarkAllNodes();
+        m_MarkNodeById(nodeID, SOURCE_COLOR);
+      }
     }
 
     // NOTE: State is updated in the "MaryNodeBy*" functions above.
@@ -943,7 +967,7 @@ function m_MarkNodeById(id, color) {
   // this.getDeselectedNodeColor(node,color) are not yet implemented
   // to override the properties
   m_SetMatchingNodesByProp({ id }, marked, normal);
-  UDATA.SetAppState("D3DATA", D3DATA);
+  UDATA.SetAppState("D3DATA", D3DATA); // JD had commented out, not sure why?
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Sets the `node.selected` property to `color` so it is hilited on graph
