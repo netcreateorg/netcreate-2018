@@ -104,7 +104,7 @@ class InfoPanel extends UNISYS.Component {
     let top = e.clientY + this.state.draggerMouseOffsetY;
     this.setState({
       tabpanelHeight: (top - this.state.tabpanelTop) + 'px',
-      tableHeight: (top - this.state.tabpanelTop - 95) + 'px',    // Hacked tab button + thead offset
+      tableHeight: (top - this.state.tabpanelTop - 55) + 'px',    // Hacked tab button + thead offset
       draggerTop: top + 'px',
       savedTabpanelHeight: (top - this.state.tabpanelTop) + 'px'  // remember height when switching tabs
     });
