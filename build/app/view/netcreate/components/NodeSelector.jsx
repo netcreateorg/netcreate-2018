@@ -913,13 +913,11 @@ class NodeSelector extends UNISYS.Component {
                   />
               </Col>
             </FormGroup>
-             <div id="citationWindow" hidden={this.state.hideModal}>
-              <div className="modal-content">
+              <div id="citationWindow" hidden={this.state.hideModal} className="modal-content">
                 <span className="close" onClick={this.onCloseCiteClick}>&times;</span>
-                <p>Copy the text below:<br/>
+                <p><em>Copy the text below:</em><br/><br/>
                   NetCreate {this.AppState('TEMPLATE').name} network, Node: {this.state.formData.label} (ID {this.state.formData.id}). {citationPrompts.citation}. Last accessed at {this.dateFormatted()}.</p>
-              </div>
-            </div>
+              </div><br/>
             <FormGroup className="text-right" style={{ paddingRight: '5px' }}>
               <Button outline size="sm"
                 hidden={citationPrompts.hidden || this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
