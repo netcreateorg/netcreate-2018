@@ -1047,7 +1047,10 @@ markdownIterate(Tag, props, children, level){
 
     doUnload(e)
     {
-          this.componentWillUnmount();
+          if(this.state.isEditable)
+          {
+              this.NetCall('SRV_DBUNLOCKNODE', { nodeID: this.state.formData.id });
+          }
 
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
