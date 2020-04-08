@@ -1050,7 +1050,6 @@ markdownIterate(Tag, props, children, level){
           if(this.state.isEditable)
           {
               this.NetCall('SRV_DBUNLOCKNODE', { nodeID: this.state.formData.id });
-              sleep(1000);
           }
 
     }
