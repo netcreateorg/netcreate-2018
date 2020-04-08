@@ -194,6 +194,7 @@ class NodeSelector extends UNISYS.Component {
       this.onSubmit                              = this.onSubmit.bind(this);
       this.checkUnload                           = this.checkUnload.bind(this);
       this.doUnload                              = this.doUnload.bind(this);
+      this.onForceUnlock                         = this.onForceUnlock.bind(this);
 
       // NOTE: assign UDATA handlers AFTER functions have been bind()'ed
       // otherwise they will lose context
@@ -636,6 +637,27 @@ class NodeSelector extends UNISYS.Component {
       replacementNodeID: replacementNodeID
     });
   }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/
+  /*/
+  // this is an admin only function to allow unlocking of locked nodes without having to reload
+  onForceUnlock() {
+    // nodeID needs to be a Number.  It should have been set in loadFormFromNode
+    let nodeID = this.state.formData.id;
+
+    this.NetCall('SRV_DBUNLOCKNODE', { nodeID: this.state.formData.id })
+          .then((data) => {
+            if (data.NOP) {
+              if (DBG) console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
+            } else if (data.unlocked) {
+              if (DBG) console.log(`SERVER SAYS: unlock success! you have released Node ${data.nodeID}`);
+              this.setState({ dbIsLocked: false });
+            }
+          });
+  }
+
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/
   /*/
@@ -929,7 +951,12 @@ class NodeSelector extends UNISYS.Component {
                 hidden={this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
                 onClick={this.onEditButtonClick}
               >Edit Node</Button>
-              <p hidden={!this.state.dbIsLocked} className="small text-danger">{nodePrompts.label.sourceNodeIsLockedMessage}</p>
+              <p hidden={!this.state.dbIsLocked} className="small text-danger">{nodePrompts.label.sourceNodeIsLockedMessage}<br/>
+              <span hidden={!isLocalHost} >If you are absolutely sure this is an error, you can force the unlock:
+              <Button className="small btn btn-outline-light" size="sm"
+                  onClick={this.onForceUnlock}
+                >Force Unlock</Button></span>
+              </p>
               <Button outline size="sm"
                 hidden={!this.state.isEditable}
                 onClick={this.onCancelButtonClick}
