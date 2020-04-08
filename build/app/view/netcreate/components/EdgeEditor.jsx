@@ -262,6 +262,8 @@ class EdgeEditor extends UNISYS.Component {
       this.onCitationChange       = this.onCitationChange.bind(this);
       this.onCategoryChange       = this.onCategoryChange.bind(this);
       this.onSubmit               = this.onSubmit.bind(this);
+      this.checkUnload                           = this.checkUnload.bind(this);
+      this.doUnload                              = this.doUnload.bind(this);
 
       // Always make sure class methods are bind()'d before using them
       // as a handler, otherwise object context is lost
@@ -943,7 +945,26 @@ class EdgeEditor extends UNISYS.Component {
       if (DBG) console.log('EdgeEditor.componentDidMount!');
       this.loadSourceAndTarget();
       this.onStateChange_SESSION(this.AppState('SESSION'));
+
+      window.addEventListener("beforeunload", this.checkUnload);
+      window.addEventListener("unload", this.doUnload);
     }
+
+    checkUnload(e)
+    {
+        if(this.state.isEditable)
+        {
+          (e || window.event).returnValue = null;
+          return null;
+        }
+    }
+
+    doUnload(e)
+    {
+          this.componentWillUnmount();
+
+    }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Release the lock if we're unmounting
 /*/ componentWillUnmount() {

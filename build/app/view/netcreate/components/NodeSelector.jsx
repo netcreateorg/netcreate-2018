@@ -194,6 +194,7 @@ class NodeSelector extends UNISYS.Component {
       this.onSubmit                              = this.onSubmit.bind(this);
       this.checkUnload                           = this.checkUnload.bind(this);
       this.doUnload                              = this.doUnload.bind(this);
+
       // NOTE: assign UDATA handlers AFTER functions have been bind()'ed
       // otherwise they will lose context
 
