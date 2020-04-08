@@ -192,7 +192,8 @@ class NodeSelector extends UNISYS.Component {
       this.onEditOriginal                        = this.onEditOriginal.bind(this);
       this.onCloseDuplicateDialog                = this.onCloseDuplicateDialog.bind(this);
       this.onSubmit                              = this.onSubmit.bind(this);
-
+      this.checkUnload                           = this.checkUnload.bind(this);
+      this.doUnload                              = this.doUnload.bind(this);
       // NOTE: assign UDATA handlers AFTER functions have been bind()'ed
       // otherwise they will lose context
 
@@ -851,7 +852,7 @@ class NodeSelector extends UNISYS.Component {
             <FormGroup row>
               <Col sm={3}>
                 <Label for="nodeLabel" className="tooltipAnchor small text-muted">
-                <i class="fas fa-question-circle"></i>{nodePrompts.label.label}<span className="tooltiptext">{this.helpText(nodePrompts.label)}</span></Label>
+                <i className="fas fa-question-circle"></i>{nodePrompts.label.label}<span className="tooltiptext">{this.helpText(nodePrompts.label)}</span></Label>
               </Col>
               <Col sm={9}>
                 <AutoComplete
@@ -873,7 +874,7 @@ class NodeSelector extends UNISYS.Component {
             </div>
             <FormGroup row hidden={nodePrompts.type.hidden}>
               <Col sm={3}>
-                <Label for="type" className="tooltipAnchor small text-muted"><i class="fas fa-question-circle"></i>{nodePrompts.type.label}<span className="tooltiptext">{this.helpText(nodePrompts.type)}</span></Label>
+                <Label for="type" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{nodePrompts.type.label}<span className="tooltiptext">{this.helpText(nodePrompts.type)}</span></Label>
               </Col>
               <Col sm={9}>
                 <Input type="select" name="type" id="typeSelect"
@@ -889,7 +890,7 @@ class NodeSelector extends UNISYS.Component {
             </FormGroup>
             <FormGroup row hidden={nodePrompts.notes.hidden}>
               <Col sm={3}>
-                <Label for="notes" className="tooltipAnchor small text-muted"><i class="fas fa-question-circle"></i>{nodePrompts.notes.label}<span className="tooltiptext">{this.helpText(nodePrompts.notes)}</span></Label>
+                <Label for="notes" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{nodePrompts.notes.label}<span className="tooltiptext">{this.helpText(nodePrompts.notes)}</span></Label>
               </Col>
               <Col sm={9}>
                 <Input type="textarea" name="note" id="notesText"
@@ -903,7 +904,7 @@ class NodeSelector extends UNISYS.Component {
             </FormGroup>
             <FormGroup row hidden={nodePrompts.info.hidden}>
               <Col sm={3}>
-                <Label for="info" className="tooltipAnchor small text-muted"><i class="fas fa-question-circle"></i>{nodePrompts.info.label}<span className="tooltiptext">{this.helpText(nodePrompts.info)}</span></Label>
+                <Label for="info" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{nodePrompts.info.label}<span className="tooltiptext">{this.helpText(nodePrompts.info)}</span></Label>
               </Col>
               <Col sm={9}>
                 <Input type="text" name="info" id="info"
@@ -1029,6 +1030,24 @@ markdownIterate(Tag, props, children, level){
 /*/ componentDidMount () {
       this.onStateChange_SESSION(this.AppState('SESSION'));
       this.validateForm();
+
+      window.addEventListener("beforeunload", this.checkUnload);
+      window.addEventListener("unload", this.doUnload);
+    }
+
+    checkUnload(e)
+    {
+        if(this.state.isEditable)
+        {
+          (e || window.event).returnValue = null;
+          return null;
+        }
+    }
+
+    doUnload(e)
+    {
+          this.componentWillUnmount();
+
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Release the lock if we're unmounting
