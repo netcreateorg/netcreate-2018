@@ -16,6 +16,10 @@
 
   "description": "Tacitus with all genders included in a single Person node type",
 
+  "citationPrompts":{
+                "citation": "Citation Text",
+                "hidden": false
+    },
 
   "nodePrompts": {
     "label": {
