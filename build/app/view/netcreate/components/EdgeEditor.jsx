@@ -778,6 +778,12 @@ class EdgeEditor extends UNISYS.Component {
 /*/ render () {
       const { edgeID, parentNodeLabel } = this.props;
       const { formData, sourceNode, targetNode, edgePrompts } = this.state;
+      if(edgePrompts.category == undefined) // for backwards compatability
+      {
+        edgePrompts.category = {};
+        edgePrompts.category.label = "";
+        edgePrompts.category.hidden = true;
+      }
       const me = <span style={{ color: "rgba(0,0,0,0.2)", fontStyle: "italic" }}>this node</span>;
       // special override to allow editing an edge that has the same parent node for both source and target
       let sameSourceAndTarget = (sourceNode.label === this.props.parentNodeLabel) &&

@@ -278,6 +278,15 @@ class EdgeTable extends UNISYS.Component {
 /*/
 /*/ render () {
       let { edgePrompts } = this.state;
+
+      if(edgePrompts.category == undefined) // for backwards compatability
+      {
+        edgePrompts.category = {};
+        edgePrompts.category.label = "";
+        edgePrompts.category.hidden = true;
+      }
+
+
       let { tableHeight } = this.props;
       let styles = `
                     thead, tbody { }
