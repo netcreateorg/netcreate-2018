@@ -258,7 +258,7 @@ countEdges() {
           >
             <thead>
               <tr>
-                <th></th>
+                <th><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
                 <th><Button size="sm"
                       disabled={this.state.sortkey === "edgeCount"}
                       onClick={() => this.setSortKey("edgeCount")}
