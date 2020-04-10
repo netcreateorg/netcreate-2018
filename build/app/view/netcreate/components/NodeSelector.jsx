@@ -861,6 +861,11 @@ class NodeSelector extends UNISYS.Component {
 /*/ REACT calls this to receive the component layout and data sources
 /*/ render () {
       let { nodePrompts, citationPrompts } = this.state;
+      if(citationPrompts==undefined)
+      {
+          citationPrompts = {};
+          citationPrompts.hidden = true;
+      }
         return (
         <div>
           <FormGroup className="text-right" style={{paddingRight:'5px'}}>
@@ -944,7 +949,7 @@ class NodeSelector extends UNISYS.Component {
               </div><br/>
             <FormGroup className="text-right" style={{ paddingRight: '5px' }}>
               <Button outline size="sm"
-                hidden={citationPrompts.hidden || this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
+                hidden={ citationPrompts.hidden || (this.state.formData.id==='') }
                 onClick={this.onCiteButtonClick}
               >Cite Node</Button>&nbsp;&nbsp;
               <Button outline size="sm"
