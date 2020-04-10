@@ -359,7 +359,8 @@ MOD.Hook("INITIALIZE", () => {
       }
     }
     // SEARCH LABEL UPDATE
-    if(D3DATA.nodes.length < 100) {
+    if(D3DATA.nodes.length < 100)
+    {
       if (searchLabel === "") {
         m_UnStrokeAllNodes();
       } else if (searchLabel !== undefined) {

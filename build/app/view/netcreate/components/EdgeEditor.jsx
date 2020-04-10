@@ -184,7 +184,7 @@ const mdplugins = {
   emoji: require('markdown-it-emoji')
 };
 
-const DBG = true;
+const DBG = false;
 const PR  = "EdgeEditor";
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
@@ -795,7 +795,7 @@ class EdgeEditor extends UNISYS.Component {
             className={this.state.isExpanded?'d-none':''}
             outline
             size="sm"
-            style={{backgroundColor:"#a9d3ff",borderColor:'transparent',width:'100%',marginBottom:'3px',textAlign:"left"}}
+            style={{backgroundColor:"#a9d3ff",borderColor:'transparent',width:'100%',marginBottom:'3px',textAlign:"left",overflow: "hidden"}}
             onClick={this.onButtonClick}
           >{parentNodeLabel===sourceNode.label ? me : sourceNode.label}
           &nbsp;<span title={formData.relationship}>&#x2794;</span>&nbsp;
@@ -831,7 +831,7 @@ class EdgeEditor extends UNISYS.Component {
                   <Label for="relationship" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.type.label}<span className="tooltiptext">{this.helpText(edgePrompts.type)}</span></Label>
                 </Col>
                 <Col sm={9}>
-                  <Input type="select" name="relationship" id="relationship"
+                  <Input type="select" name="relationship"
                     value={formData.relationship}
                     onChange={this.onRelationshipChange}
                     disabled={!this.state.isEditable}
@@ -876,7 +876,7 @@ class EdgeEditor extends UNISYS.Component {
                   <Label for="category" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.category.label}<span className="tooltiptext">{this.helpText(edgePrompts.category)}</span></Label>
                 </Col>
                 <Col sm={9}>
-                  <Input type="text" name="category" id="category"
+                  <Input type="text" name="category"
                     value={formData.category}
                     onChange={this.onCategoryChange}
                     readOnly={!this.state.isEditable}
@@ -887,7 +887,7 @@ class EdgeEditor extends UNISYS.Component {
                   <Label for="citation" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.citation.label}<span className="tooltiptext">{this.helpText(edgePrompts.citation)}</span></Label>
                 </Col>
                 <Col sm={9}>
-                  <Input type="text" name="citation" id="citation"
+                  <Input type="text" name="citation"
                     value={formData.citation}
                     onChange={this.onCitationChange}
                     readOnly={!this.state.isEditable}
@@ -899,7 +899,7 @@ class EdgeEditor extends UNISYS.Component {
                   <Label for="notes" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.notes.label}<span className="tooltiptext">{this.helpText(edgePrompts.notes)}</span></Label>
                 </Col>
                 <Col sm={9}>
-                  <Input type="textarea" name="notes" id="notes"
+                  <Input type="textarea" name="notes"
                     style={{display: this.state.isEditable ? 'block' : 'none'}}
                     value={formData.notes}
                     onChange={this.onNotesChange}
@@ -913,7 +913,7 @@ class EdgeEditor extends UNISYS.Component {
                   <Label for="info" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.info.label}<span className="tooltiptext">{this.helpText(edgePrompts.info)}</span></Label>
                 </Col>
                 <Col sm={9}>
-                  <Input type="text" name="info" id="info"
+                  <Input type="text" name="info"
                     value={formData.info}
                     onChange={this.onInfoChange}
                     readOnly={!this.state.isEditable}
