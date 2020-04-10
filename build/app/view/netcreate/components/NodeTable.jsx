@@ -52,8 +52,7 @@ class NodeTable extends UNISYS.Component {
         nodes: [],
         edgeCounts: {},         // {nodeID:count,...}
         isExpanded:   true,
-        sortkey:      'label',
-        oldData: undefined,
+        sortkey:      'label'
       };
 
       this.onButtonClick            = this.onButtonClick.bind(this);
@@ -84,13 +83,10 @@ class NodeTable extends UNISYS.Component {
 /*/
 handleDataUpdate(data) {
   if (data && data.nodes) {
-    if(this.state.oldData != data) // temporary kludge because this was killing performance to run over and over without a change
-    {
       this.countEdges();
       this.setState({nodes: data.nodes});
       this.sortTable();
       this.state.oldData = data;
-    }
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
