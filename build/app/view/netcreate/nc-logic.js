@@ -359,7 +359,7 @@ MOD.Hook("INITIALIZE", () => {
       }
     }
     // SEARCH LABEL UPDATE
-    if(D3DATA.nodes.length < 100)
+    if(D3DATA.nodes.length < 250) // JD to speedup processing for large
     {
       if (searchLabel === "") {
         m_UnStrokeAllNodes();
@@ -491,8 +491,7 @@ MOD.Hook("INITIALIZE", () => {
     let { nodeLabel, nodeID, color } = data;
     if (nodeLabel) {
       // Only mark nodes if something is selected
-
-      if(D3DATA.nodes.length < 100)
+      if(D3DATA.nodes.length < 250) // JD to speedup processing for large
       {
         m_UnMarkAllNodes();
         m_MarkNodeByLabel(nodeLabel, SOURCE_COLOR);
@@ -500,7 +499,7 @@ MOD.Hook("INITIALIZE", () => {
     }
     if (nodeID) {
       // Only mark nodes if something is selected
-      if(D3DATA.nodes.length < 100)
+      if(D3DATA.nodes.length < 250) // JD to speedup processing for large
       {
         m_UnMarkAllNodes();
         m_MarkNodeById(nodeID, SOURCE_COLOR);
