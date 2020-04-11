@@ -268,26 +268,26 @@ countEdges() {
           >
             <thead>
               <tr>
-                <th><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
-                <th><Button size="sm"
+                <th width="5%"><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
+                <th width="5%"><Button size="sm"
                       disabled={this.state.sortkey === "edgeCount"}
                       onClick={() => this.setSortKey("edgeCount")}
                     >{nodePrompts.degrees.label}</Button></th>
-                <th><Button size="sm"
+                <th width="15%"><Button size="sm"
                       disabled={this.state.sortkey==="label"}
                       onClick={()=>this.setSortKey("label")}
                     >{nodePrompts.label.label}</Button></th>
-                <th hidden={nodePrompts.type.hidden}>
+                <th width="15%"hidden={nodePrompts.type.hidden}>
                     <Button size="sm"
                       disabled={this.state.sortkey==="type"}
                       onClick={()=>this.setSortKey("type")}
                     >{nodePrompts.type.label}</Button></th>
-                <th hidden={nodePrompts.info.hidden}>
+                <th width="30%"hidden={nodePrompts.info.hidden}>
                     <Button size="sm"
                       disabled={this.state.sortkey==="info"}
                       onClick={()=>this.setSortKey("info")}
                     >{nodePrompts.info.label}</Button></th>
-                <th width="45%" hidden={nodePrompts.notes.hidden}>
+                <th width="30%" hidden={nodePrompts.notes.hidden}>
                     <Button size="sm"
                       disabled={this.state.sortkey==="notes"}
                       onClick={()=>this.setSortKey("notes")}

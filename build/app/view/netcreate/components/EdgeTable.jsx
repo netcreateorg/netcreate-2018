@@ -314,37 +314,37 @@ class EdgeTable extends UNISYS.Component {
           >
             <thead>
               <tr>
-                <th hidden={!DBG}><Button size="sm"
+                <th width="5%" hidden={!DBG}><Button size="sm"
                       disabled={this.state.sortkey==="id"}
                       onClick={()=>this.setSortKey("id")}
                     >ID</Button></th>
                 <th hidden={!DBG}>Size</th>
-                <th><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
-                <th><Button size="sm"
+                <th width="5%"><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
+                <th  width="10%"><Button size="sm"
                       disabled={this.state.sortkey==="source"}
                       onClick={()=>this.setSortKey("source")}
                     >{edgePrompts.source.label}</Button></th>
-                <th><Button size="sm"
+                <th width="10%"><Button size="sm"
                       disabled={this.state.sortkey==="Relationship"}
                       onClick={()=>this.setSortKey("Relationship")}
                     >{edgePrompts.type.label}</Button></th>
-                <th><Button size="sm"
+                <th width="10%"><Button size="sm"
                       disabled={this.state.sortkey==="target"}
                       onClick={()=>this.setSortKey("target")}
                     >{edgePrompts.target.label}</Button></th>
-                <th hidden={edgePrompts.category.hidden}><Button size="sm"
+                <th width="5%" hidden={edgePrompts.category.hidden}><Button size="sm"
                       disabled={this.state.sortkey==="Category"}
                       onClick={()=>this.setSortKey("Category")}
                     >{edgePrompts.category.label}</Button></th>
-                <th hidden={edgePrompts.citation.hidden}><Button size="sm"
+                <th width="5%" hidden={edgePrompts.citation.hidden}><Button size="sm"
                       disabled={this.state.sortkey==="Citations"}
                       onClick={()=>this.setSortKey("Citations")}
                     >{edgePrompts.citation.label}</Button></th>
-                <th hidden={edgePrompts.notes.hidden}><Button size="sm"
+                <th width="20%" hidden={edgePrompts.notes.hidden}><Button size="sm"
                       disabled={this.state.sortkey==="Notes"}
                       onClick={()=>this.setSortKey("Notes")}
                     >{edgePrompts.notes.label}</Button></th>
-                <th hidden={edgePrompts.info.hidden}><Button size="sm"
+                <th  width="20%"hidden={edgePrompts.info.hidden}><Button size="sm"
                       disabled={this.state.sortkey==="Info"}
                       onClick={()=>this.setSortKey("Info")}
                     >{edgePrompts.info.label}</Button></th>
