@@ -82,11 +82,20 @@ class NodeTable extends UNISYS.Component {
 /*/ Handle updated SELECTION
 /*/
 handleDataUpdate(data) {
-  if (data && data.nodes) {
-      this.countEdges();
-      this.setState({nodes: data.nodes});
-      this.sortTable();
-      this.state.oldData = data;
+  if(data.bMarkedNode)
+      {
+        //data.bMarkedNode = false;
+        // counting on the edge table going second, which is sloppy
+        // but we are in a rush, so ... do it that way for now
+      }
+    else
+    {
+    if (data.nodes) {
+        this.countEdges();
+        this.setState({nodes: data.nodes});
+        this.sortTable();
+        this.state.oldData = data;
+      }
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

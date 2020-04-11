@@ -968,7 +968,10 @@ function m_MarkNodeById(id, color) {
   // this.getDeselectedNodeColor(node,color) are not yet implemented
   // to override the properties
   m_SetMatchingNodesByProp({ id }, marked, normal);
-  UDATA.SetAppState("D3DATA", D3DATA); // JD had commented out, not sure why?
+  // Joshua adding so I can ignore on NodeTable update?
+  D3DATA.bMarkedNode = true;
+
+  UDATA.SetAppState("D3DATA", D3DATA); // JD had commented this out because it was triggering a nodetable update that was eating cycles even though nothing had changed
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Sets the `node.selected` property to `color` so it is hilited on graph
@@ -980,6 +983,7 @@ function m_MarkNodeByLabel(label, color) {
   // this.getDeselectedNodeColor(node,color) are not yet implemented
   // to override the properties
   m_SetMatchingNodesByLabel(label, marked, normal);
+
   UDATA.SetAppState("D3DATA", D3DATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
