@@ -31,6 +31,10 @@ const mdplugins = {
 
 var DBG = false;
 
+const SETTINGS     = require('settings');
+const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1') || (location.href.includes('admin=true'));
+
+
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React        = require('react');
@@ -166,6 +170,22 @@ countEdges() {
         });
       }
     }
+
+    /// ---
+    sortByUpdated(nodes)
+    {
+      if (nodes) {
+        return nodes.sort( (a,b) => {
+          let akey = (a.meta.revision > 0 ? a.meta.updated : a.meta.created),
+              bkey = (b.meta.revision > 0 ? b.meta.updated : b.meta.created);
+          if (akey<bkey) return -1;
+          if (akey>bkey) return 1;
+          return 0;
+        });
+      }
+      return undefined;
+
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ If no `sortkey` is passed, the sort will use the existing state.sortkey
 /*/ sortTable ( sortkey=this.state.sortkey) {
@@ -185,6 +205,9 @@ countEdges() {
           break;
         case 'info':
           this.sortByAttribute(nodes, 'Extra Info');
+          break;
+        case 'Updated':
+          this.sortByUpdated(nodes);
           break;
         case 'label':
         default:
@@ -292,6 +315,10 @@ countEdges() {
                       disabled={this.state.sortkey==="notes"}
                       onClick={()=>this.setSortKey("notes")}
                     >{nodePrompts.notes.label}</Button></th>
+                    <th  width="20%"hidden={!isLocalHost}><Button size="sm"
+                      disabled={this.state.sortkey==="Updated"}
+                      onClick={()=>this.setSortKey("Updated")}
+                    >Updated</Button></th>
               </tr>
             </thead>
             <tbody style={{maxHeight: tableHeight}}>
@@ -308,6 +335,7 @@ countEdges() {
                 <td hidden={nodePrompts.type.hidden}>{node.attributes["Node_Type"]}</td>
                 <td hidden={nodePrompts.info.hidden}>{node.attributes["Extra Info"]}</td>
                 <td hidden={nodePrompts.notes.hidden}><MDReactComponent text={node.attributes["Notes"]} onIterate={this.markdownIterate} markdownOptions={{typographer: true}} plugins={[mdplugins.emoji]}/></td>
+                <td hidden={!isLocalHost}>{this.displayUpdated(node)}</td>
               </tr>
             )}
             </tbody>
@@ -329,6 +357,14 @@ markdownIterate(Tag, props, children, level){
   return <Tag {...props}>{children}</Tag>;
 
 }
+
+displayUpdated(nodeEdge)
+  {
+      var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
+      return d.toDateString();
+
+  }
+
 } // class NodeTable
 
 

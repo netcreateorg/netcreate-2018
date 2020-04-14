@@ -157,8 +157,8 @@ DB.InitializeDatabase = function (options = {}) {
     to populate the NODES and EDGES structures.
 /*/
 DB.PKT_GetDatabase = function(pkt) {
-  let nodes = NODES.chain().data({ removeMeta: true });
-  let edges = EDGES.chain().data({ removeMeta: true });
+  let nodes = NODES.chain().data({ removeMeta: false });
+  let edges = EDGES.chain().data({ removeMeta: false });
   if (DBG) console.log(PR,`PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${edges.length} edges)`);
   LOGGER.Write(pkt.Info(), `getdatabase`);
   return { d3data: { nodes, edges }, template: TEMPLATE };

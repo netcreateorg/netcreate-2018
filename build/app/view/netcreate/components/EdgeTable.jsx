@@ -32,6 +32,9 @@ const mdplugins = {
 
 var DBG = false;
 
+const SETTINGS     = require('settings');
+const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1') || (location.href.includes('admin=true'));
+
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React        = require('react');
@@ -161,6 +164,22 @@ class EdgeTable extends UNISYS.Component {
       }
       return undefined;
     }
+
+    /// ---
+    sortByUpdated(edges)
+    {
+      if (edges) {
+        return edges.sort( (a,b) => {
+          let akey = (a.meta.revision > 0 ? a.meta.updated : a.meta.created),
+              bkey = (b.meta.revision > 0 ? b.meta.updated : b.meta.created);
+          if (akey<bkey) return -1;
+          if (akey>bkey) return 1;
+          return 0;
+        });
+      }
+      return undefined;
+
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ If no `sortkey` is passed, the sort will use the existing state.sortkey
 /*/ sortTable ( sortkey=this.state.sortkey) {
@@ -190,8 +209,11 @@ class EdgeTable extends UNISYS.Component {
         case 'Citations':
           this.sortByAttribute(edges, 'Citations');
           break;
+        case 'Updated':
+          this.sortByUpdated(edges);
+          break;
         case 'Relationship':
-                  default:
+        default:
           this.sortByAttribute(edges, 'Relationship');
           break;
       }
@@ -348,6 +370,10 @@ class EdgeTable extends UNISYS.Component {
                       disabled={this.state.sortkey==="Info"}
                       onClick={()=>this.setSortKey("Info")}
                     >{edgePrompts.info.label}</Button></th>
+                <th  width="20%"hidden={!isLocalHost}><Button size="sm"
+                      disabled={this.state.sortkey==="Updated"}
+                      onClick={()=>this.setSortKey("Updated")}
+                    >Updated</Button></th>
               </tr>
             </thead>
             <tbody style={{ maxHeight: tableHeight }}>
@@ -369,6 +395,7 @@ class EdgeTable extends UNISYS.Component {
                 <td hidden={edgePrompts.citation.hidden}>{edge.attributes["Citations"]}</td>
                 <td hidden={edgePrompts.notes.hidden}><MDReactComponent text={edge.attributes["Notes"]} onIterate={this.markdownIterate} markdownOptions={{typographer: true}} plugins={[mdplugins.emoji]}/></td>
                 <td hidden={edgePrompts.info.hidden}>{edge.attributes["Info"]}</td>
+                <td hidden={!isLocalHost}>{this.displayUpdated(edge)}</td>
               </tr>
             ))}
             </tbody>
@@ -390,6 +417,13 @@ class EdgeTable extends UNISYS.Component {
   return <Tag {...props}>{children}</Tag>;
 
 }
+
+  displayUpdated(nodeEdge)
+  {
+      var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
+      return d.toDateString();
+
+  }
 } // class EdgeTable
 
 
