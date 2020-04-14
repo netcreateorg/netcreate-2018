@@ -732,7 +732,7 @@ class NodeSelector extends UNISYS.Component {
     this.AppCall('AUTOCOMPLETE_SELECT',{id:thisIdentifier}).then(()=>{
       // Set AutoComplete field to current data, otherwise, previously canceled label
       // might be displayed
-      this.AppCall('SOURCE_SEARCH', { searchString: formData.label });
+      // this.AppCall('SOURCE_SEARCH', { searchString: formData.label }); // JD removed because I think it is redundant and slowing things down?
     });
     this.setState({ formData });
     this.validateForm();
