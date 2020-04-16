@@ -359,7 +359,7 @@ MOD.Hook("INITIALIZE", () => {
       }
     }
     // SEARCH LABEL UPDATE
-    if(D3DATA.nodes.length < 250) // JD to speedup processing for large
+    if(D3DATA.nodes.length < 150) // JD to speedup processing for large sets
     {
       if (searchLabel === "") {
         m_UnStrokeAllNodes();
