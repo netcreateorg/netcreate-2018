@@ -460,20 +460,30 @@ class NodeSelector extends UNISYS.Component {
       // "Duplicate Node Label" is only a warning, not an error.
       // We want to allow students to enter a duplicate label if necessary
       // This is a case insensitive search
-      let isDuplicateNodeLabel = false;
-      let duplicateNodeID;
-      if (
-        formData.label !== '' &&
-        this.AppState('D3DATA').nodes.find(node => {
-            if ((node.id !== formData.id) &&
-              (node.label.localeCompare(formData.label, 'en', { usage: 'search', sensitivity: 'base' })) === 0) {
+      var isDuplicateNodeLabel = false;
+      var duplicateNodeID = void 0;
+      if (formData.label !== '' && this.AppState('D3DATA').nodes.find(function (node) {
+        if (node.id !== formData.id)
+        {
+
+          if(node.label)
+          {
+            if(node.label.localeCompare(formData.label, 'en', { usage: 'search', sensitivity: 'base' }) === 0)
+            {
               duplicateNodeID = node.id;
               return true;
             }
             return false;
-        })) {
+          }else
+          {
+            console.log("error processing node: " + node.id + " in netc-app.js\n");
+            return false;
+          }
+
+      }})) {
         isDuplicateNodeLabel = true;
       }
+
 
       this.setState({
         formData,
