@@ -206,6 +206,7 @@ class EdgeEditor extends UNISYS.Component {
       super(props);
       this.state = {
         edgePrompts:    this.AppState('TEMPLATE').edgePrompts,
+        citationPrompts:   this.AppState('TEMPLATE').citationPrompts,
         formData: {                 // Holds the state of the form fields
           sourceId:     '',
           targetId:     '',
@@ -239,7 +240,8 @@ class EdgeEditor extends UNISYS.Component {
         hasValidSource:  false,      // Used by SwapSourceAndTarget and the Change Source button
         targetIsEditable:false,      // Target ndoe field is only editable when target is not parent
         hasValidTarget:  false,      // Used by SwapSourceAndTarget and the Change Target button
-        placeholder:     undefined
+        placeholder:     undefined,
+        hideModal: true              // used by the citation window
       };
 
       /// Initialize UNISYS DATA LINK for REACT
@@ -252,6 +254,9 @@ class EdgeEditor extends UNISYS.Component {
       this.onButtonClick          = this.onButtonClick.bind(this);
       this.onDeleteButtonClick    = this.onDeleteButtonClick.bind(this);
       this.onEditButtonClick      = this.onEditButtonClick.bind(this);
+      this.onCiteButtonClick      = this.onCiteButtonClick.bind(this);
+      this.onCloseCiteClick       = this.onCloseCiteClick.bind(this);
+      this.dateFormatted                         = this.dateFormatted.bind(this);
       this.requestEdit = this.requestEdit.bind(this);
       this.onSwapSourceAndTarget  = this.onSwapSourceAndTarget.bind(this);
       this.onChangeSource         = this.onChangeSource.bind(this);
@@ -325,7 +330,9 @@ class EdgeEditor extends UNISYS.Component {
         sourceIsEditable:     false,      // Source ndoe field is only editable when source is not parent
         hasValidSource:       false,      // Used by SwapSourceAndTarget and the Change Source button
         targetIsEditable:     false,      // Target ndoe field is only editable when target is not parent
-        hasValidTarget:       false       // Used by SwapSourceAndTarget and the Change Target button
+        hasValidTarget:       false,      // Used by SwapSourceAndTarget and the Change Target button
+        hideModal: true                   // for the citation window
+
       });
   }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -600,6 +607,8 @@ class EdgeEditor extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onEditButtonClick () {
+      this.setState({ hideModal: true });
+
       this.requestEdit(this.state.formData.id);
 
       // Don't allow editing of the source or target fields.
@@ -612,6 +621,32 @@ class EdgeEditor extends UNISYS.Component {
       //   UDATA.LocalCall('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'source', searchString: this.state.sourceNode.label});
       // }
     }
+
+    /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/
+  /*/
+  onCiteButtonClick(event) {
+    event.preventDefault();
+
+    this.setState({ hideModal: false });
+
+  } // onCiteButtonClick
+
+    onCloseCiteClick (event) {
+    event.preventDefault();
+
+    this.setState({ hideModal: true });
+
+  } //   this.onCloseCiteClick
+
+  dateFormatted (){
+    var today = new Date();
+    var date = (today.getMonth()+1)+"/"+today.getDate()+"/"+ today.getFullYear();
+    var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+    var dateTime = time+' on '+date;
+    return dateTime;
+  }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ requestEdit() {
@@ -777,12 +812,18 @@ class EdgeEditor extends UNISYS.Component {
 /*/
 /*/ render () {
       const { edgeID, parentNodeLabel } = this.props;
-      const { formData, sourceNode, targetNode, edgePrompts } = this.state;
+      const { formData, sourceNode, targetNode, edgePrompts} = this.state;
+      let {citationPrompts} = this.state;
       if(edgePrompts.category == undefined) // for backwards compatability
       {
         edgePrompts.category = {};
         edgePrompts.category.label = "";
         edgePrompts.category.hidden = true;
+      }
+      if(citationPrompts==undefined) // if citationPrompts were lefft out, simply make them hidden
+      {
+          citationPrompts = {};
+          citationPrompts.hidden = true;
       }
       const me = <span style={{ color: "rgba(0,0,0,0.2)", fontStyle: "italic" }}>this node</span>;
       // special override to allow editing an edge that has the same parent node for both source and target
@@ -920,12 +961,21 @@ class EdgeEditor extends UNISYS.Component {
                   />
                 </Col>
               </FormGroup>
+              <div id="citationWindow" hidden={this.state.hideModal} className="modal-content">
+                <span className="close" onClick={this.onCloseCiteClick}>&times;</span>
+                <p><em>Copy the text below:</em><br/><br/>
+                  NetCreate {this.AppState('TEMPLATE').name} network, Edge: {this.state.formData.label} (ID {this.state.formData.id}), from "{sourceNode.label}" to "{targetNode.label}". {citationPrompts.citation}. Last accessed at {this.dateFormatted()}.</p>
+              </div><br/>
               <FormGroup className="text-right" style={{paddingRight:'5px'}}>
                 <Button className="small float-left btn btn-outline-light" size="sm"
                  hidden={this.state.isLocked}
                  onClick={this.onDeleteButtonClick}
                 >Delete</Button>&nbsp;
                 <Button outline size="sm"
+                hidden={ citationPrompts.hidden}
+                onClick={this.onCiteButtonClick}
+              >Cite Edge</Button>&nbsp;&nbsp;
+              <Button outline size="sm"
                   hidden={this.state.isLocked || this.state.isEditable}
                   onClick={this.onEditButtonClick}
                 >{this.state.isEditable ? "Add New Edge" : "Edit Edge"}</Button>&nbsp;
