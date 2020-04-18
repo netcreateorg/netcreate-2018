@@ -361,7 +361,15 @@ markdownIterate(Tag, props, children, level){
 displayUpdated(nodeEdge)
   {
       var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
-      return d.toDateString();
+
+      var year = "" + d.getFullYear();
+      var date = (d.getMonth()+1)+"/"+d.getDate()+"/"+ year.substr(2,4);
+      var time = d.toTimeString().substr(0,5);
+      var dateTime = date+' at '+time;
+      var titleString = "v" + nodeEdge.meta.revision + " by " + nodeEdge._nlog[nodeEdge._nlog.length-1];
+      var tag = <span title={titleString}> {dateTime} </span>;
+
+      return tag;
 
   }
 

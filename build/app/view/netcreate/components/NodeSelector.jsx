@@ -703,8 +703,9 @@ class NodeSelector extends UNISYS.Component {
 
   dateFormatted (){
     var today = new Date();
-    var date = (today.getMonth()+1)+"/"+today.getDate()+"/"+ today.getFullYear();
-    var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+    var year = "" + today.getFullYear();
+    var date = (today.getMonth()+1)+"/"+today.getDate()+"/"+ year.substr(2,4);
+    var time = today.toTimeString().substr(0,5);
     var dateTime = time+' on '+date;
     return dateTime;
   }
