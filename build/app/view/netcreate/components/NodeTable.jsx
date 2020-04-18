@@ -62,7 +62,9 @@ class NodeTable extends UNISYS.Component {
       this.onButtonClick            = this.onButtonClick.bind(this);
       this.onToggleExpanded         = this.onToggleExpanded.bind(this);
       this.setSortKey               = this.setSortKey.bind(this);
+      this.sortSymbol               = this.sortSymbol.bind(this);
 
+      var sortDirection = -1;
 
       /// Initialize UNISYS DATA LINK for REACT
       UDATA = UNISYS.NewDataLink(this);
@@ -98,7 +100,6 @@ handleDataUpdate(data) {
         this.countEdges();
         this.setState({nodes: data.nodes});
         this.sortTable();
-        this.state.oldData = data;
       }
   }
 }
@@ -123,8 +124,8 @@ countEdges() {
         return nodes.sort( (a,b) => {
           let akey = a.id,
               bkey = b.id;
-          if (akey<bkey) return -1;
-          if (akey>bkey) return 1;
+          if (akey<bkey) return -1*this.sortDirection;
+          if (akey>bkey) return 1*this.sortDirection;
           return 0;
         });
       }
@@ -138,8 +139,8 @@ countEdges() {
           let akey = edgeCounts[a.id] || 0,
             bkey = edgeCounts[b.id] || 0;
           // sort descending
-          if (akey > bkey) return -1;
-          if (akey < bkey) return 1;
+          if (akey > bkey) return 1*this.sortDirection;
+          if (akey < bkey) return -1*this.sortDirection;
           return 0;
         });
       }
@@ -151,9 +152,7 @@ countEdges() {
         return nodes.sort( (a,b) => {
           let akey = a.label,
               bkey = b.label;
-          if (akey<bkey) return -1;
-          if (akey>bkey) return 1;
-          return 0;
+          return (akey.localeCompare(bkey)*this.sortDirection);
         });
       }
     }
@@ -164,8 +163,8 @@ countEdges() {
         return nodes.sort( (a,b) => {
           let akey = a.attributes[key],
               bkey = b.attributes[key];
-          if (akey<bkey) return -1;
-          if (akey>bkey) return 1;
+          if (akey<bkey) return -1*this.sortDirection;
+          if (akey>bkey) return 1*this.sortDirection;
           return 0;
         });
       }
@@ -178,8 +177,8 @@ countEdges() {
         return nodes.sort( (a,b) => {
           let akey = (a.meta.revision > 0 ? a.meta.updated : a.meta.created),
               bkey = (b.meta.revision > 0 ? b.meta.updated : b.meta.created);
-          if (akey<bkey) return -1;
-          if (akey>bkey) return 1;
+          if (akey<bkey) return -1*this.sortDirection;
+          if (akey>bkey) return 1*this.sortDirection;
           return 0;
         });
       }
@@ -217,6 +216,15 @@ countEdges() {
       this.setState({nodes: nodes});
     }
 
+    sortSymbol(key)
+    {
+      if(key != this.state.sortkey) // this is not the current sort, so don't show anything
+        return "";
+      else
+        return this.sortDirection==-1?"▼":"▲"; // default to "decreasing" and flip if clicked again
+    }
+
+
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -244,6 +252,12 @@ countEdges() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ setSortKey (key) {
+
+      if(key == this.state.sortkey)
+        this.sortDirection = (-1 * this.sortDirection);// if this was already the key, flip the direction
+      else
+          this.sortDirection = 1;
+
       this.setState({sortkey: key});
       this.sortTable(key);
     }
@@ -277,6 +291,7 @@ countEdges() {
                     thead { position: relative; }
                     tbody { overflow: auto; }
                     `
+
       return (
          <div style={{overflow:'auto',
                      position:'relative',display: 'block', right:'10px',maxHeight: tableHeight, backgroundColor:'#eafcff'
@@ -291,34 +306,28 @@ countEdges() {
           >
             <thead>
               <tr>
-                <th width="5%"><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
-                <th width="5%"><Button size="sm"
-                      disabled={this.state.sortkey === "edgeCount"}
+                <th width="4%"><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
+                <th width="12%"><Button size="sm"
                       onClick={() => this.setSortKey("edgeCount")}
-                    >{nodePrompts.degrees.label}</Button></th>
+                    >{nodePrompts.degrees.label} {this.sortSymbol("edgeCount")}</Button></th>
                 <th width="15%"><Button size="sm"
-                      disabled={this.state.sortkey==="label"}
                       onClick={()=>this.setSortKey("label")}
-                    >{nodePrompts.label.label}</Button></th>
+                    >{nodePrompts.label.label} {this.sortSymbol("label")}</Button></th>
                 <th width="15%"hidden={nodePrompts.type.hidden}>
                     <Button size="sm"
-                      disabled={this.state.sortkey==="type"}
                       onClick={()=>this.setSortKey("type")}
-                    >{nodePrompts.type.label}</Button></th>
-                <th width="30%"hidden={nodePrompts.info.hidden}>
+                    >{nodePrompts.type.label} {this.sortSymbol("type")}</Button></th>
+                <th width="26%"hidden={nodePrompts.info.hidden}>
                     <Button size="sm"
-                      disabled={this.state.sortkey==="info"}
                       onClick={()=>this.setSortKey("info")}
-                    >{nodePrompts.info.label}</Button></th>
-                <th width="30%" hidden={nodePrompts.notes.hidden}>
+                    >{nodePrompts.info.label} {this.sortSymbol("info")}</Button></th>
+                <th width="26%" hidden={nodePrompts.notes.hidden}>
                     <Button size="sm"
-                      disabled={this.state.sortkey==="notes"}
                       onClick={()=>this.setSortKey("notes")}
-                    >{nodePrompts.notes.label}</Button></th>
-                    <th  width="20%"hidden={!isLocalHost}><Button size="sm"
-                      disabled={this.state.sortkey==="Updated"}
+                    >{nodePrompts.notes.label} {this.sortSymbol("notes")}</Button></th>
+                <th  width="20%"hidden={!isLocalHost}><Button size="sm"
                       onClick={()=>this.setSortKey("Updated")}
-                    >Updated</Button></th>
+                    >Updated {this.sortSymbol("Updated")}</Button></th>
               </tr>
             </thead>
             <tbody style={{maxHeight: tableHeight}}>

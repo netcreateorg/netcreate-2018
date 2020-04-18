@@ -64,6 +64,9 @@ class EdgeTable extends UNISYS.Component {
       this.m_FindMatchingEdgeByProp = this.m_FindMatchingEdgeByProp.bind(this);
       this.m_FindEdgeById           = this.m_FindEdgeById.bind(this);
       this.setSortKey               = this.setSortKey.bind(this);
+      this.sortSymbol               = this.sortSymbol.bind(this);
+
+      var sortDirection = -1;
 
 
       /// Initialize UNISYS DATA LINK for REACT
@@ -108,8 +111,8 @@ class EdgeTable extends UNISYS.Component {
         return edges.sort( (a,b) => {
           let akey = a.id,
               bkey = b.id;
-          if (akey<bkey) return -1;
-          if (akey>bkey) return 1;
+          if (akey<bkey) return -1*this.sortDirection;
+          if (akey>bkey) return 1*this.sortDirection;
           return 0;
         });
       }
@@ -122,9 +125,7 @@ class EdgeTable extends UNISYS.Component {
         return edges.sort( (a,b) => {
           let akey = a.source.label,
               bkey = b.source.label;
-          if (akey<bkey) return -1;
-          if (akey>bkey) return 1;
-          return 0;
+          return (akey.localeCompare(bkey)*this.sortDirection);
         });
       }
       return undefined;
@@ -136,9 +137,9 @@ class EdgeTable extends UNISYS.Component {
         return edges.sort( (a,b) => {
           let akey = a.target.label,
               bkey = b.target.label;
-          if (akey<bkey) return -1;
-          if (akey>bkey) return 1;
-          return 0;
+
+          return (akey.localeCompare(bkey)*this.sortDirection);
+
         });
       }
       return undefined;
@@ -150,14 +151,14 @@ class EdgeTable extends UNISYS.Component {
         return edges.sort( (a,b) => {
           let akey = a.attributes[key],
               bkey = b.attributes[key];
-          if (akey<bkey) return -1;
-          if (akey>bkey) return 1;
+          if (akey<bkey) return -1*this.sortDirection;
+          if (akey>bkey) return 1*this.sortDirection;
           if (akey===bkey) {
             // Secondary sort on Source label
             let source_a = a.source.label;
             let source_b = b.source.label;
-            if (source_a<source_b) return -1;
-            if (source_a>source_b) return 1;
+            if (source_a<source_b) return -1*this.sortDirection;
+            if (source_a>source_b) return 1*this.sortDirection;
           }
           return 0;
         });
@@ -172,8 +173,8 @@ class EdgeTable extends UNISYS.Component {
         return edges.sort( (a,b) => {
           let akey = (a.meta.revision > 0 ? a.meta.updated : a.meta.created),
               bkey = (b.meta.revision > 0 ? b.meta.updated : b.meta.created);
-          if (akey<bkey) return -1;
-          if (akey>bkey) return 1;
+          if (akey<bkey) return -1*this.sortDirection;
+          if (akey>bkey) return 1*this.sortDirection;
           return 0;
         });
       }
@@ -220,6 +221,14 @@ class EdgeTable extends UNISYS.Component {
       this.setState({edges});
     }
 
+    sortSymbol(key)
+    {
+      if(key != this.state.sortkey) // this is not the current sort, so don't show anything
+        return "";
+      else
+        return this.sortDirection==-1?"▼":"▲"; // default to "decreasing" and flip if clicked again
+    }
+
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -248,6 +257,12 @@ class EdgeTable extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ setSortKey (key) {
+
+      if(key == this.state.sortkey)
+        this.sortDirection = (-1 * this.sortDirection);// if this was already the key, flip the direction
+      else
+          this.sortDirection = 1;
+
       this.setState({sortkey: key});
       this.sortTable(key);
     }
@@ -337,43 +352,34 @@ class EdgeTable extends UNISYS.Component {
             <thead>
               <tr>
                 <th width="5%" hidden={!DBG}><Button size="sm"
-                      disabled={this.state.sortkey==="id"}
                       onClick={()=>this.setSortKey("id")}
-                    >ID</Button></th>
+                    >ID {this.sortSymbol("id")}</Button></th>
                 <th hidden={!DBG}>Size</th>
                 <th width="5%"><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
                 <th  width="10%"><Button size="sm"
-                      disabled={this.state.sortkey==="source"}
                       onClick={()=>this.setSortKey("source")}
-                    >{edgePrompts.source.label}</Button></th>
+                    >{edgePrompts.source.label} {this.sortSymbol("source")}</Button></th>
                 <th width="10%"><Button size="sm"
-                      disabled={this.state.sortkey==="Relationship"}
                       onClick={()=>this.setSortKey("Relationship")}
-                    >{edgePrompts.type.label}</Button></th>
+                    >{edgePrompts.type.label} {this.sortSymbol("Relationship")}</Button></th>
                 <th width="10%"><Button size="sm"
-                      disabled={this.state.sortkey==="target"}
                       onClick={()=>this.setSortKey("target")}
-                    >{edgePrompts.target.label}</Button></th>
+                    >{edgePrompts.target.label} {this.sortSymbol("target")}</Button></th>
                 <th width="5%" hidden={edgePrompts.category.hidden}><Button size="sm"
-                      disabled={this.state.sortkey==="Category"}
                       onClick={()=>this.setSortKey("Category")}
-                    >{edgePrompts.category.label}</Button></th>
-                <th width="5%" hidden={edgePrompts.citation.hidden}><Button size="sm"
-                      disabled={this.state.sortkey==="Citations"}
+                    >{edgePrompts.category.label} {this.sortSymbol("Category")}</Button></th>
+                <th width="10%" hidden={edgePrompts.citation.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Citations")}
-                    >{edgePrompts.citation.label}</Button></th>
-                <th width="20%" hidden={edgePrompts.notes.hidden}><Button size="sm"
-                      disabled={this.state.sortkey==="Notes"}
+                    >{edgePrompts.citation.label} {this.sortSymbol("Citations")}</Button></th>
+                <th width="17%" hidden={edgePrompts.notes.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Notes")}
-                    >{edgePrompts.notes.label}</Button></th>
-                <th  width="20%"hidden={edgePrompts.info.hidden}><Button size="sm"
-                      disabled={this.state.sortkey==="Info"}
+                    >{edgePrompts.notes.label} {this.sortSymbol("Notes")}</Button></th>
+                <th  width="17%"hidden={edgePrompts.info.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Info")}
-                    >{edgePrompts.info.label}</Button></th>
-                <th  width="20%"hidden={!isLocalHost}><Button size="sm"
-                      disabled={this.state.sortkey==="Updated"}
+                    >{edgePrompts.info.label} {this.sortSymbol("Info")}</Button></th>
+                <th  width="17%"hidden={!isLocalHost}><Button size="sm"
                       onClick={()=>this.setSortKey("Updated")}
-                    >Updated</Button></th>
+                    >Updated {this.sortSymbol("Updated")}</Button></th>
               </tr>
             </thead>
             <tbody style={{ maxHeight: tableHeight }}>
