@@ -66,7 +66,7 @@ class EdgeTable extends UNISYS.Component {
       this.setSortKey               = this.setSortKey.bind(this);
       this.sortSymbol               = this.sortSymbol.bind(this);
 
-      var sortDirection = -1;
+      this.sortDirection = -1;
 
 
       /// Initialize UNISYS DATA LINK for REACT
