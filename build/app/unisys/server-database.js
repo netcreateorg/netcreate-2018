@@ -463,9 +463,9 @@ DB.WriteDbJSON = function (filePath) {
         if (typeof filePath==='string') {
           if (DBG) console.log(PR,`writing { nodes, edges } to '${filePath}'`);
           let nodes = db.getCollection("nodes").chain()
-            .data({ removeMeta: true });
+            .data({ removeMeta: false });
           let edges = db.getCollection("edges").chain()
-            .data({ removeMeta: true });
+            .data({ removeMeta: false });
           let data = { nodes, edges };
           let json = JSON.stringify(data);
           if (DBG) console.log(PR,`ensuring DIR ${PATH.dirname(filePath)}`);
