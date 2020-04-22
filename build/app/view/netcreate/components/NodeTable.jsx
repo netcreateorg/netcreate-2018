@@ -97,6 +97,7 @@ handleDataUpdate(data) {
     else
     {
     if (data.nodes) {
+
         this.countEdges();
         this.setState({nodes: data.nodes});
         this.sortTable();
@@ -291,7 +292,6 @@ countEdges() {
                     thead { position: relative; }
                     tbody { overflow: auto; }
                     `
-
       return (
          <div style={{overflow:'auto',
                      position:'relative',display: 'block', right:'10px',maxHeight: tableHeight, backgroundColor:'#eafcff'
@@ -351,11 +351,22 @@ countEdges() {
           </Table>
         </div>
       );
+
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ componentDidMount () {
       if (DBG) console.log('NodeTable.componentDidMount!');
+    }
+
+
+shouldComponentUpdate(nextProps, nextState) {
+        let bReturn = true;
+
+        if(nextProps.bIgnoreTableUpdates && nextState == this.state)
+          bReturn = false;
+
+        return bReturn;
     }
 
 markdownIterate(Tag, props, children, level){

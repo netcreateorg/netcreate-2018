@@ -71,12 +71,14 @@ class InfoPanel extends UNISYS.Component {
       if ((tab === `1`) ||  (tab === '5')) {
         this.setState({
           tabpanelHeight: '50px', // show only tab buttons
-          hideDragger: true
+          hideDragger: true,
+          bIgnoreTableUpdates: true
         });
       } else {
         this.setState({
           tabpanelHeight: this.state.savedTabpanelHeight,
-          hideDragger: false
+          hideDragger: false,
+          bIgnoreTableUpdates: true
         });
       }
     } else {
@@ -85,7 +87,8 @@ class InfoPanel extends UNISYS.Component {
       this.setState({ activeTab: `1` });
       this.setState({
         tabpanelHeight: '50px', // show only tab buttons
-        hideDragger: true
+        hideDragger: true,
+        bIgnoreTableUpdates: true
       });
     }
   }
@@ -106,10 +109,12 @@ class InfoPanel extends UNISYS.Component {
       tabpanelHeight: (top - this.state.tabpanelTop) + 'px',
       tableHeight: (top - this.state.tabpanelTop - 55) + 'px',    // Hacked tab button + thead offset
       draggerTop: top + 'px',
-      savedTabpanelHeight: (top - this.state.tabpanelTop) + 'px'  // remember height when switching tabs
+      savedTabpanelHeight: (top - this.state.tabpanelTop) + 'px',  // remember height when switching tabs
+      bIgnoreTableUpdates: true
     });
   }
   endDrag() {
+    this.setState({bIgnoreTableUpdates: false})
     document.onmouseup = null;
     document.onmousemove = null;
   }
@@ -130,11 +135,16 @@ class InfoPanel extends UNISYS.Component {
       tabpanelTop: tabpanel.offsetTop
     });
   }
+
+  shouldComponentUpdate(props) {
+    return true;
+  }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/
   /*/
   render() {
-    let { tabpanelHeight, tableHeight, hideDragger, draggerTop } = this.state;
+    let { tabpanelHeight, tableHeight, hideDragger, draggerTop, bIgnoreTableUpdates} = this.state;
+    //send flag in with tableheight
     return (
       <div>
         <div id='tabpanel'
@@ -187,14 +197,14 @@ class InfoPanel extends UNISYS.Component {
             <TabPane tabId="2">
               <Row>
                 <Col sm="12">
-                  <NodeTable tableHeight={tableHeight} />
+                  <NodeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates}/>
                 </Col>
               </Row>
             </TabPane>
             <TabPane tabId="3">
               <Row>
                 <Col sm="12">
-                  <EdgeTable tableHeight={tableHeight} />
+                  <EdgeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates} />
                 </Col>
               </Row>
             </TabPane>

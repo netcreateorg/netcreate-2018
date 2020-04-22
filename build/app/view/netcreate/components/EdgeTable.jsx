@@ -415,6 +415,15 @@ class EdgeTable extends UNISYS.Component {
       if (DBG) console.log('EdgeTable.componentDidMount!');
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        let bReturn = true;
+
+        if(nextProps.bIgnoreTableUpdates && nextState == this.state)
+          bReturn = false;
+
+        return bReturn;
+    }
+
     markdownIterate(Tag, props, children, level){
   if (Tag === 'a') {
     props.target = '_blank';
