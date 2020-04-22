@@ -44,7 +44,7 @@ const { Button, Table }    = ReactStrap;
 const UNISYS   = require('unisys/client');
 var   UDATA    = null;
 
-const PerformanceCutoff = 50; // to only use certain optimizations that impact experience on large data sets
+const PerformanceCutoff = 200; // to only use certain optimizations that impact experience on large data sets
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -401,7 +401,7 @@ class EdgeTable extends UNISYS.Component {
                     >{edge.target.label || edge.target}</a></td>
                 <td hidden={edgePrompts.category.hidden}>{edge.attributes["Category"]}</td>
                 <td hidden={edgePrompts.citation.hidden}>{edge.attributes["Citations"]}</td>
-                <td hidden={edgePrompts.notes.hidden}><MDReactComponent text={edge.attributes["Notes"]} onIterate={this.markdownIterate} markdownOptions={{typographer: true}} plugins={[mdplugins.emoji]}/></td>
+                <td hidden={edgePrompts.notes.hidden}>{edge.attributes["Notes"]}</td>
                 <td hidden={edgePrompts.info.hidden}>{edge.attributes["Info"]}</td>
                 <td hidden={!isLocalHost}>{this.displayUpdated(edge)}</td>
               </tr>
@@ -420,8 +420,9 @@ class EdgeTable extends UNISYS.Component {
     shouldComponentUpdate(nextProps, nextState) {
         let bReturn = true;
 
-        if(this.state.edges.length > PerformanceCutoff && nextProps.bIgnoreTableUpdates && nextState == this.state)
-          bReturn = false;
+        //console.log("this.state.edges.length: " + this.state.edges.length);
+        //if(this.state.edges.length > PerformanceCutoff && nextProps.bIgnoreTableUpdates && nextState == this.state)
+          //bReturn = false;
 
         return bReturn;
     }
