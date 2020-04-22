@@ -34,6 +34,8 @@ var DBG = false;
 const SETTINGS     = require('settings');
 const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1') || (location.href.includes('admin=true'));
 
+const PerformanceCutoff = 50; // to only use certain optimizations that impact experience on large data sets
+
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -363,7 +365,7 @@ countEdges() {
 shouldComponentUpdate(nextProps, nextState) {
         let bReturn = true;
 
-        if(nextProps.bIgnoreTableUpdates && nextState == this.state)
+        if(this.state.nodes.length > PerformanceCutoff && nextProps.bIgnoreTableUpdates && nextState == this.state)
           bReturn = false;
 
         return bReturn;

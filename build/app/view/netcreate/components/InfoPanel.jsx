@@ -31,7 +31,6 @@ const Vocabulary = require('./Vocabulary');
 const NodeTable = require('./NodeTable');
 const EdgeTable = require('./EdgeTable');
 
-
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
@@ -110,7 +109,7 @@ class InfoPanel extends UNISYS.Component {
       tableHeight: (top - this.state.tabpanelTop - 55) + 'px',    // Hacked tab button + thead offset
       draggerTop: top + 'px',
       savedTabpanelHeight: (top - this.state.tabpanelTop) + 'px',  // remember height when switching tabs
-      bIgnoreTableUpdates: true
+      bIgnoreTableUpdates: true // ignore this update at the table level if it is a large data set
     });
   }
   endDrag() {

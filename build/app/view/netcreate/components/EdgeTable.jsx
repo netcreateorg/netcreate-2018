@@ -44,6 +44,8 @@ const { Button, Table }    = ReactStrap;
 const UNISYS   = require('unisys/client');
 var   UDATA    = null;
 
+const PerformanceCutoff = 50; // to only use certain optimizations that impact experience on large data sets
+
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
@@ -418,7 +420,7 @@ class EdgeTable extends UNISYS.Component {
     shouldComponentUpdate(nextProps, nextState) {
         let bReturn = true;
 
-        if(nextProps.bIgnoreTableUpdates && nextState == this.state)
+        if(this.state.edges.length > PerformanceCutoff && nextProps.bIgnoreTableUpdates && nextState == this.state)
           bReturn = false;
 
         return bReturn;
