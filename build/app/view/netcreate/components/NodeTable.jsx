@@ -34,8 +34,6 @@ var DBG = false;
 const SETTINGS     = require('settings');
 const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1') || (location.href.includes('admin=true'));
 
-const PerformanceCutoff = 50; // to only use certain optimizations that impact experience on large data sets
-
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,6 +43,27 @@ const { Button, Table }    = ReactStrap;
 
 const UNISYS   = require('unisys/client');
 var   UDATA    = null;
+
+/// OptMdReact /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// Optimize the MDReact
+// this should be moved to a separate class / file so it isn't redundant to the one in Edge
+// but this is the easiest for now
+// don't re-render the markup unless the text has actually changed
+class OptMdReact extends MDReactComponent {
+  shouldComponentUpdate(np,ns)
+  {
+    let bReturn = true;
+    if(this.text == np.text)
+        bReturn = false;
+    else
+      this.text = np.text;
+
+    return bReturn;
+  }
+
+}
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -345,7 +364,7 @@ countEdges() {
                     >{node.label}</a></td>
                 <td hidden={nodePrompts.type.hidden}>{node.attributes["Node_Type"]}</td>
                 <td hidden={nodePrompts.info.hidden}>{node.attributes["Extra Info"]}</td>
-                <td hidden={nodePrompts.notes.hidden}>{node.attributes["Notes"]}</td>
+                <td hidden={nodePrompts.notes.hidden}><OptMdReact text={node.attributes["Notes"]} onIterate={this.markdownIterate} markdownOptions={{typographer: true}} plugins={[mdplugins.emoji]}/></td>
                 <td hidden={!isLocalHost}>{this.displayUpdated(node)}</td>
               </tr>
             )}
@@ -361,15 +380,6 @@ countEdges() {
       if (DBG) console.log('NodeTable.componentDidMount!');
     }
 
-
-shouldComponentUpdate(nextProps, nextState) {
-        let bReturn = true;
-
-        //if(this.state.nodes.length > PerformanceCutoff && nextProps.bIgnoreTableUpdates && nextState == this.state)
-          //bReturn = false;
-
-        return bReturn;
-    }
 
 markdownIterate(Tag, props, children, level){
   if (Tag === 'a') {

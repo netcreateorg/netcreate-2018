@@ -44,7 +44,26 @@ const { Button, Table }    = ReactStrap;
 const UNISYS   = require('unisys/client');
 var   UDATA    = null;
 
-const PerformanceCutoff = 200; // to only use certain optimizations that impact experience on large data sets
+/// OptMdReact /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// Optimize the MDReact
+// this should be moved to a separate class / file so it isn't redundant to the one in Edge
+// but this is the easiest for now
+// don't re-render the markup unless the text has actually changed
+class OptMdReact extends MDReactComponent {
+  shouldComponentUpdate(np,ns)
+  {
+    let bReturn = true;
+    if(this.text == np.text)
+        bReturn = false;
+    else
+      this.text = np.text;
+
+    return bReturn;
+  }
+
+}
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -367,19 +386,19 @@ class EdgeTable extends UNISYS.Component {
                 <th width="10%"><Button size="sm"
                       onClick={()=>this.setSortKey("target")}
                     >{edgePrompts.target.label} {this.sortSymbol("target")}</Button></th>
-                <th width="5%" hidden={edgePrompts.category.hidden}><Button size="sm"
+                <th width="8%" hidden={edgePrompts.category.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Category")}
                     >{edgePrompts.category.label} {this.sortSymbol("Category")}</Button></th>
                 <th width="10%" hidden={edgePrompts.citation.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Citations")}
                     >{edgePrompts.citation.label} {this.sortSymbol("Citations")}</Button></th>
-                <th width="17%" hidden={edgePrompts.notes.hidden}><Button size="sm"
+                <th width="16%" hidden={edgePrompts.notes.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Notes")}
                     >{edgePrompts.notes.label} {this.sortSymbol("Notes")}</Button></th>
-                <th  width="17%"hidden={edgePrompts.info.hidden}><Button size="sm"
+                <th  width="16%"hidden={edgePrompts.info.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Info")}
                     >{edgePrompts.info.label} {this.sortSymbol("Info")}</Button></th>
-                <th  width="17%"hidden={!isLocalHost}><Button size="sm"
+                <th  width="16%"hidden={!isLocalHost}><Button size="sm"
                       onClick={()=>this.setSortKey("Updated")}
                     >Updated {this.sortSymbol("Updated")}</Button></th>
               </tr>
@@ -401,7 +420,7 @@ class EdgeTable extends UNISYS.Component {
                     >{edge.target.label || edge.target}</a></td>
                 <td hidden={edgePrompts.category.hidden}>{edge.attributes["Category"]}</td>
                 <td hidden={edgePrompts.citation.hidden}>{edge.attributes["Citations"]}</td>
-                <td hidden={edgePrompts.notes.hidden}>{edge.attributes["Notes"]}</td>
+                <td hidden={edgePrompts.notes.hidden}><OptMdReact text={edge.attributes["Notes"]} onIterate={this.markdownIterate} markdownOptions={{typographer: true}} plugins={[mdplugins.emoji]}/></td>
                 <td hidden={edgePrompts.info.hidden}>{edge.attributes["Info"]}</td>
                 <td hidden={!isLocalHost}>{this.displayUpdated(edge)}</td>
               </tr>
@@ -417,15 +436,6 @@ class EdgeTable extends UNISYS.Component {
       if (DBG) console.log('EdgeTable.componentDidMount!');
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        let bReturn = true;
-
-        //console.log("this.state.edges.length: " + this.state.edges.length);
-        //if(this.state.edges.length > PerformanceCutoff && nextProps.bIgnoreTableUpdates && nextState == this.state)
-          //bReturn = false;
-
-        return bReturn;
-    }
 
     markdownIterate(Tag, props, children, level){
   if (Tag === 'a') {
