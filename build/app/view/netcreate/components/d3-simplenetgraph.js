@@ -421,7 +421,7 @@ class D3NetGraph {
       linkElements.enter()
         .insert("line",".node")
         .classed('edge', true)
-        .style('stroke', '#999')
+        .style('stroke', this._UpdateLinkStrokeColor)
         // .style('stroke', 'rgba(0,0,0,0.1)')  // don't use alpha unless we're prepared to handle layering -- reveals unmatching links
         .style('stroke-width', this._UpdateLinkStrokeWidth )
         // old stroke setting
@@ -435,6 +435,7 @@ class D3NetGraph {
       // .merge() updates the visuals whenever the data is updated.
       linkElements.merge(linkElements)
         .classed("selected",  (d) => { return d.selected })
+        .style('stroke', this._UpdateLinkStrokeColor)
         .style('stroke-width', this._UpdateLinkStrokeWidth)
 
       linkElements.exit().remove()
@@ -517,6 +518,14 @@ _UpdateLinkStrokeWidth (edge) {
   } else {
     return 0.175;             // Barely visible if not selected
   }
+}
+
+_UpdateLinkStrokeColor(edge){
+  let COLORMAP = UDATA.AppState('NODECOLORMAP');
+  let color = COLORMAP[edge.attributes.Relationship]
+  return color;
+
+
 }
 
 

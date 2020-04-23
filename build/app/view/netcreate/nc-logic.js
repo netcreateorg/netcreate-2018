@@ -277,11 +277,20 @@ MOD.Hook("CONFIGURE", () => {
   }
 
   // REVIEW: Load ColorMap in d3?  or elsewhere?  does it need its own state?
+  // Joshua added Edges in here ... it should either be renamed or kept separate
+  // but this was a proof of concept. Probably they should be kept separate in case
+  // someone ever chooses to use the same label twice, but ...
   try {
     let nodeColorMap = {};
     TEMPLATE.nodePrompts.type.options.forEach(o => {
       nodeColorMap[o.label] = o.color;
     });
+
+    let defaultEdgeColor = TEMPLATE.edgePrompts.color || "#999" ; //for backwards compatability
+    TEMPLATE.edgePrompts.type.options.forEach(o => {
+      nodeColorMap[o.label] = o.color || defaultEdgeColor;
+    });
+
     UDATA.SetAppState("NODECOLORMAP", nodeColorMap);
   } catch (error) {
     console.error(
