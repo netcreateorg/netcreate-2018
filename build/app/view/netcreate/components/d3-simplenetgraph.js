@@ -59,7 +59,7 @@ let m_forceProperties = {   // values for all forces
       charge: {
         enabled: true,
         strength: -1000,  //-1000, // -20, was 1500 - JD
-        distanceMin: 20,  //50, // 1,
+        distanceMin: 20,  //20, 50, // 1,
         distanceMax: 1000 //2000
       },
       collide: {
@@ -80,7 +80,7 @@ let m_forceProperties = {   // values for all forces
       },
       link: {
         enabled: true,
-        distance: 60, // 30,
+        distance: 100, // 60, 30,
         iterations: 2 // 1
       }
     }; // m_forceProperties
@@ -268,6 +268,7 @@ class D3NetGraph {
       let linkElements = this.zoomWrapper.selectAll(".edge")
         .data(this.data.edges, (d) => { return d.id }); // fn returns the calculated key for the data object
 
+
       // TELL D3 HOW TO HANDLE NEW NODE DATA
       // the d3.selection.enter() method sets the operational scope for
       // subsequent calls
@@ -303,6 +304,7 @@ class D3NetGraph {
               let radius = this.data.edges.reduce((acc,ed)=>{
                 return (ed.source===d.id || ed.target===d.id) ? acc+1 : acc;
               },1);
+
               d.weight = radius
               d.size   = radius // save the calculated size
               return this.defaultSize + (this.defaultSize * d.weight / 2)
@@ -391,6 +393,7 @@ class D3NetGraph {
               let radius = this.data.edges.reduce((acc,ed)=>{
                 return (ed.source.id===d.id || ed.target.id===d.id) ? acc+1 : acc
               },1);
+
               d.weight = radius
               d.size = radius // save the calculated size
               return this.defaultSize + (this.defaultSize * d.weight / 2)
