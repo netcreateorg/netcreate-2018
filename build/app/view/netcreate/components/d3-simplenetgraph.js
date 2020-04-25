@@ -80,7 +80,7 @@ let m_forceProperties = {   // values for all forces
       },
       link: {
         enabled: true,
-        distance: 100, // 60, 30,
+        distance: 130, // 60, 30,
         iterations: 2 // 1
       }
     }; // m_forceProperties

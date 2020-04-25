@@ -256,8 +256,8 @@ class EdgeEditor extends UNISYS.Component {
       this.onEditButtonClick      = this.onEditButtonClick.bind(this);
       this.onCiteButtonClick      = this.onCiteButtonClick.bind(this);
       this.onCloseCiteClick       = this.onCloseCiteClick.bind(this);
-      this.dateFormatted                         = this.dateFormatted.bind(this);
-      this.requestEdit = this.requestEdit.bind(this);
+      this.dateFormatted          = this.dateFormatted.bind(this);
+      this.requestEdit            = this.requestEdit.bind(this);
       this.onSwapSourceAndTarget  = this.onSwapSourceAndTarget.bind(this);
       this.onChangeSource         = this.onChangeSource.bind(this);
       this.onChangeTarget         = this.onChangeTarget.bind(this);
@@ -652,13 +652,16 @@ class EdgeEditor extends UNISYS.Component {
 /*/
 /*/ requestEdit() {
       let edgeID = this.state.formData.id;
-      if (edgeID && edgeID!=='' && !isNaN(edgeID) && (typeof edgeID ==="number")) {
+      if (edgeID && edgeID!=='' && !isNaN(edgeID) && (typeof edgeID ==="number") && !this.state.isEditable) {
         this.NetCall('SRV_DBLOCKEDGE', { edgeID: edgeID })
           .then((data) => {
             if (data.NOP) {
               // Edge is locked, can't edit
               if (DBG) console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
-              this.setState({ dbIsLocked: true });
+              this.setState({
+                dbIsLocked: true,
+                isExpanded: true
+              });
             } else if (data.locked) {
               if (DBG) console.log(`SERVER SAYS: lock success! you can edit Edge ${data.edgeID}`);
               if (DBG) console.log(`SERVER SAYS: unlock the edge after successful DBUPDATE`);
@@ -1020,7 +1023,7 @@ class EdgeEditor extends UNISYS.Component {
     {
           if(this.state.isEditable)
           {
-              this.NetCall('SRV_DBUNLOCKNODE', { nodeID: this.state.formData.id });
+            this.NetCall('SRV_DBUNLOCKEDGE', { edgeID: this.state.formData.id })
           }
     }
 

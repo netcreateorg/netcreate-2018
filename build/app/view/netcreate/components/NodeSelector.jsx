@@ -185,8 +185,8 @@ class NodeSelector extends UNISYS.Component {
       this.onCiteButtonClick                     = this.onCiteButtonClick.bind(this);
       this.onCloseCiteClick                      = this.onCloseCiteClick.bind(this);
       this.dateFormatted                         = this.dateFormatted.bind(this);
-      this.requestEditNode = this.requestEditNode.bind(this);
-      this.editNode = this.editNode.bind(this);
+      this.requestEditNode                       = this.requestEditNode.bind(this);
+      this.editNode                              = this.editNode.bind(this);
       this.onAddNewEdgeButtonClick               = this.onAddNewEdgeButtonClick.bind(this);
       this.onCancelButtonClick                   = this.onCancelButtonClick.bind(this);
       this.onEditOriginal                        = this.onEditOriginal.bind(this);
