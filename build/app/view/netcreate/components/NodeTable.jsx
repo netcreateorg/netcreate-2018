@@ -364,7 +364,7 @@ countEdges() {
                     >{node.label}</a></td>
                 <td hidden={nodePrompts.type.hidden}>{node.attributes["Node_Type"]}</td>
                 <td hidden={nodePrompts.info.hidden}>{node.attributes["Extra Info"]}</td>
-                <td hidden={nodePrompts.notes.hidden}><OptMdReact text={node.attributes["Notes"]} onIterate={this.markdownIterate} markdownOptions={{typographer: true}} plugins={[mdplugins.emoji]}/></td>
+                <td hidden={nodePrompts.notes.hidden}><OptMdReact text={node.attributes["Notes"]} onIterate={this.markdownIterate} markdownOptions={{typographer: true, linkify: true}} plugins={[mdplugins.emoji]}/></td>
                 <td hidden={!isLocalHost}>{this.displayUpdated(node)}</td>
               </tr>
             )}

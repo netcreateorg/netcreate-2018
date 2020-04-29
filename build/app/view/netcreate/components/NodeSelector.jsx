@@ -1054,7 +1054,7 @@ helpText(obj)
 markdownDisplay (text){
 
   if(!this.state.isEditable)
-      return mdReact({onIterate: this.markdownIterate,  markdownOptions:{ typographer: true}, plugins: [mdplugins.emoji]
+      return mdReact({onIterate: this.markdownIterate,  markdownOptions:{ typographer: true, linkify: true}, plugins: [mdplugins.emoji]
     })(text);
 }
 

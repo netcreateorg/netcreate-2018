@@ -420,7 +420,7 @@ class EdgeTable extends UNISYS.Component {
                     >{edge.target.label || edge.target}</a></td>
                 <td hidden={edgePrompts.category.hidden}>{edge.attributes["Category"]}</td>
                 <td hidden={edgePrompts.citation.hidden}>{edge.attributes["Citations"]}</td>
-                <td hidden={edgePrompts.notes.hidden}><OptMdReact text={edge.attributes["Notes"]} onIterate={this.markdownIterate} markdownOptions={{typographer: true}} plugins={[mdplugins.emoji]}/></td>
+                <td hidden={edgePrompts.notes.hidden}><OptMdReact text={edge.attributes["Notes"]} onIterate={this.markdownIterate} markdownOptions={{typographer: true, linkify: true}} plugins={[mdplugins.emoji]}/></td>
                 <td hidden={edgePrompts.info.hidden}>{edge.attributes["Info"]}</td>
                 <td hidden={!isLocalHost}>{this.displayUpdated(edge)}</td>
               </tr>
