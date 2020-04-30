@@ -44,7 +44,7 @@
     "fs-extra": "^6.0.1",
     "hashids": "^1.1.4",
     "ip": "^1.1.5",
-    "jquery": "^3.3.1",
+    "jquery": "^3.5.0",
     "lokijs": "^1.5.5",
     "markdown-it": "^8.4.2",
     "markdown-react-js": "^1.0.2",
