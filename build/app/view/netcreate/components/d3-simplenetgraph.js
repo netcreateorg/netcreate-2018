@@ -91,7 +91,7 @@ let m_forceProperties = {   // values for all forces
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class D3NetGraph {
 
-    constructor ( rootElement ) {
+    constructor ( rootElement, nodePrompts ) {
 
       this.rootElement  = rootElement;
       this.d3svg        = {};
@@ -103,6 +103,10 @@ class D3NetGraph {
       this.clickFn      = {};
 
       this.defaultSize  = 5;
+
+      // Joshua added for the tooltips
+      this.nodePrompts = nodePrompts;
+
 
       /// Initialize UNISYS DATA LINK for REACT
       UDATA = UNISYS.NewDataLink(this);
@@ -331,9 +335,12 @@ class D3NetGraph {
           .text((d) => { return d.label });
 
       // enter node: also append a 'title' tag
+      // we should move this to our tooltip functions, but it works for now
       elementG
         .append("title") // node tooltip
-          .text((d) => { return d.label; });
+          .text((d) => {
+            return this.tooltipForNode(d);
+        });
 
       /*/ TRICKY D3 CODE CONCEPTS AHEAD
 
@@ -415,6 +422,11 @@ class D3NetGraph {
           })
           .text((d) => { return d.label });  // in case text is updated
 
+      nodeElements.merge(nodeElements)
+        .selectAll("title") // node tooltip
+          .text((d) => {
+            return this.tooltipForNode(d);
+        });
       // TELL D3 what to do when a data node goes away
       nodeElements.exit().remove()
 
@@ -449,6 +461,29 @@ class D3NetGraph {
       this.simulation.force("link").links(this.data.edges)
 
     }
+
+tooltipForNode(d)
+{
+    let titleText =  "";
+    // Add Label
+      if(this.nodePrompts.label.includeInGraphTooltip)
+        titleText += this.nodePrompts.label.label + ": " + d.label + "\n";
+    // Add type
+      if(this.nodePrompts.type.includeInGraphTooltip)
+        titleText += this.nodePrompts.type.label + ": " + d.attributes.Node_Type + "\n";
+    // Add degrees
+      if(this.nodePrompts.degrees.includeInGraphTooltip)
+        titleText += this.nodePrompts.degrees.label + ": " + d.weight + "\n";
+    // Add notes
+      if(this.nodePrompts.notes.includeInGraphTooltip)
+        titleText += this.nodePrompts.notes.label + ": " + d.attributes.Notes + "\n";
+    // Add info
+      if(this.nodePrompts.info.includeInGraphTooltip)
+        titleText += this.nodePrompts.info.label + ": " + d.attributes["Extra Info"] + "\n";
+    //this.nodePrompts.label.label + ": " + d.label + "\nType: " + d.type + "\n" + d.attributes["Notes"];
+    return titleText;
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Apply new force properties
     Call this on construct and if forceProperties have changed.

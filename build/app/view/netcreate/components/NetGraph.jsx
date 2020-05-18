@@ -78,7 +78,7 @@ class NetGraph extends UNISYS.Component {
 /*/ componentDidMount () {
       // D3NetGraph Constructor
       let el = ReactDOM.findDOMNode(this);
-      let d3NetGraph = new D3NetGraph(el);
+      let d3NetGraph = new D3NetGraph(el, this.AppState('TEMPLATE').nodePrompts);
       this.setState({ d3NetGraph });
 
     }
