@@ -466,24 +466,34 @@ class D3NetGraph {
 tooltipForNode(d)
 {
     let titleText =  "";
-    // Add Label
-      if(this.nodePrompts.label.includeInGraphTooltip)
-        titleText += this.nodePrompts.label.label + ": " + d.label + "\n";
-    // Add type
-      if(this.nodePrompts.type.includeInGraphTooltip)
-        titleText += this.nodePrompts.type.label + ": " + d.attributes.Node_Type + "\n";
-    // Add degrees
-      if(this.nodePrompts.degrees.includeInGraphTooltip)
-        titleText += this.nodePrompts.degrees.label + ": " + d.weight + "\n";
-    // Add notes
-      if(this.nodePrompts.notes.includeInGraphTooltip)
-        titleText += this.nodePrompts.notes.label + ": " + d.attributes.Notes + "\n";
-    // Add info
-      if(this.nodePrompts.info.includeInGraphTooltip)
-        titleText += this.nodePrompts.info.label + ": " + d.attributes["Extra Info"] + "\n";
-    // Add updated info
-      if(this.nodePrompts.updated.includeInGraphTooltip)
-        titleText += this.nodePrompts.updated.label + ": " + this.displayUpdated(d);
+    if(this.nodePrompts.label.includeInGraphTooltip != undefined)
+    {
+        // Add Label
+          if(this.nodePrompts.label.includeInGraphTooltip)
+            titleText += this.nodePrompts.label.label + ": " + d.label + "\n";
+        // Add type
+          if(this.nodePrompts.type.includeInGraphTooltip)
+            titleText += this.nodePrompts.type.label + ": " + d.attributes.Node_Type + "\n";
+        // Add degrees
+          if(this.nodePrompts.degrees.includeInGraphTooltip)
+            titleText += this.nodePrompts.degrees.label + ": " + d.weight + "\n";
+        // Add notes
+          if(this.nodePrompts.notes.includeInGraphTooltip)
+            titleText += this.nodePrompts.notes.label + ": " + d.attributes.Notes + "\n";
+        // Add info
+          if(this.nodePrompts.info.includeInGraphTooltip)
+            titleText += this.nodePrompts.info.label + ": " + d.attributes["Extra Info"] + "\n";
+        // Add updated info
+          if(this.nodePrompts.updated.includeInGraphTooltip)
+            titleText += this.nodePrompts.updated.label + ": " + this.displayUpdated(d);
+    }
+    else
+    {
+
+       // For backwards compatability
+       titleText += this.nodePrompts.label.label + ": " + d.label + "\n";
+
+    }
     return titleText;
 }
 
