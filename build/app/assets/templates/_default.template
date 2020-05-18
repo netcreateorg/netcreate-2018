@@ -25,6 +25,7 @@
     "label": {
                 "label":    "Label",
                 "help":     "A short title for the node",
+                "includeInGraphTooltip":  true,
                 "duplicateWarning": "You’re entering a duplicate node.  Do you want to View the Existing node, or Continue creating?",
                 "sourceNodeIsLockedMessage": "This node is currently being edited by someone else, please try again later.",
                 "_cmt4":    "/// `Label` is always required and cannot be hidden"
@@ -32,6 +33,7 @@
     "type":  {
                 "label":    "Type",
                 "help":     "Multiple people are a 'Group'",
+                "includeInGraphTooltip":  true,
                 "hidden":   false,
                 "options": [
                   {
@@ -70,17 +72,25 @@
     "degrees": {
       "label": "Degrees",
       "help": "Number of edges.",
+      "includeInGraphTooltip":  true,
       "hidden": false
     },
     "notes": {
                 "label": "Significance",
                 "help":  "Add some details.",
+                "includeInGraphTooltip":  true,
                 "hidden": false
               },
     "info":  {
                 "label": "Geocode or Date",
                 "help":  "Use latitude/longitude or a date mm/dd/yyy",
+                "includeInGraphTooltip":  true,
                 "hidden": true
+              },
+    "updated":{
+                "label": "Last update",
+                "includeInGraphTooltip": true,
+                "_cmt4": "//updated is included in the edge tables if in admin mode, and in the graph tooltip  if indicated here. Probably those should be more consistent."
               },
     "delete": {
       "hidden": false
