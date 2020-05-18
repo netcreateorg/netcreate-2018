@@ -462,6 +462,7 @@ class D3NetGraph {
 
     }
 
+// added by Joshua to generate the text, based on the template, for the tooltip on the node
 tooltipForNode(d)
 {
     let titleText =  "";
@@ -480,8 +481,22 @@ tooltipForNode(d)
     // Add info
       if(this.nodePrompts.info.includeInGraphTooltip)
         titleText += this.nodePrompts.info.label + ": " + d.attributes["Extra Info"] + "\n";
-    //this.nodePrompts.label.label + ": " + d.label + "\nType: " + d.type + "\n" + d.attributes["Notes"];
+    // Add updated info
+      if(this.nodePrompts.updated.includeInGraphTooltip)
+        titleText += this.nodePrompts.updated.label + ": " + this.displayUpdated(d);
     return titleText;
+}
+
+displayUpdated(nodeEdge)
+{
+      var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
+
+      var year = "" + d.getFullYear();
+      var date = (d.getMonth()+1)+"/"+d.getDate()+"/"+ year.substr(2,4);
+      var time = d.toTimeString().substr(0,5);
+      var dateTime = date+' at '+time + " by " + nodeEdge._nlog[nodeEdge._nlog.length-1];
+
+      return dateTime;
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
