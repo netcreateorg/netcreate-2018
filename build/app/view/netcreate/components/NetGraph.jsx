@@ -78,8 +78,9 @@ class NetGraph extends UNISYS.Component {
 /*/ componentDidMount () {
       // D3NetGraph Constructor
       let el = ReactDOM.findDOMNode(this);
-      let d3NetGraph = new D3NetGraph(el);
+      let d3NetGraph = new D3NetGraph(el, this.AppState('TEMPLATE').nodePrompts);
       this.setState({ d3NetGraph });
+
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -96,19 +97,25 @@ class NetGraph extends UNISYS.Component {
       let nodeTypes = this.AppState('TEMPLATE').nodePrompts.type.options;
       return (
         <div style={{ height: '100%' }}>
-          <div><span style={{ fontSize: '9px' }}>NETGRAPH</span></div>
+          <div><span style={{ fontSize: '9px' }}>NETGRAPH for {this.AppState('TEMPLATE').name}</span></div>
           <div style={{ position: 'absolute', right: '10px', width: '50px', zIndex:1001 }}>
             <Button outline onClick={this.onZoomIn} style={{width:'35px'}}>+</Button>&nbsp;
             <Button outline onClick={this.onZoomReset} style={{ width: '35px' }}>&bull;</Button>&nbsp;
             <Button outline onClick={this.onZoomOut} style={{ width: '35px' }}>-</Button>
           </div>
           <div style={{ position: 'absolute', bottom: '40px', marginLeft: '10px', marginBottom: '15px',fontSize: '10px' }}>
+
             <div style={{ display: 'inline-block', paddingRight: '2em' }}>KEY:</div>
             {nodeTypes.map((type, i) => (
-              <div key={i} title={ (type.help != undefined) ? type.help : type.label} style={{ display:'inline-block', paddingRight:'2em', lineHeight:'10px' }}>                <div style={{ display:'inline-block',width:'10px',height:'8px',backgroundColor:type.color }}></div>
-                &nbsp;{ (type.label==='') ? 'No Type Selected' : type.label }
-              </div>
+
+               <div className="tooltipAnchor">
+                    <div key={i} style={{ display:'inline-block', paddingRight:'2em', lineHeight:'10px' }}>                <div style={{ display:'inline-block',width:'10px',height:'8px',backgroundColor:type.color }}></div>
+                    &nbsp;{ (type.label==='') ? 'No Type Selected' : type.label }
+                  </div>
+                   <span className="tooltiptextabove">{ (type.label==='') ? 'No Type Selected' : ((type.help != undefined) ? type.help : type.label) }</span>
+                </div>
             ))}
+
           </div>
         </div>
       )

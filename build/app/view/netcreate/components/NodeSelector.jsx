@@ -110,6 +110,9 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 import { mdReact } from 'markdown-react-js';
+const mdplugins = {
+  emoji: require('markdown-it-emoji')
+};
 
 const DBG = false;
 const PR  = 'NodeSelector';
@@ -133,7 +136,6 @@ const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1') || (locatio
 
 var   UDATA        = null;
 
-
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
@@ -142,6 +144,7 @@ class NodeSelector extends UNISYS.Component {
       super(props);
       this.state = {
         nodePrompts:   this.AppState('TEMPLATE').nodePrompts,
+        citationPrompts:   this.AppState('TEMPLATE').citationPrompts,
         formData: {
             label:     '',
             type:      '',
@@ -159,7 +162,8 @@ class NodeSelector extends UNISYS.Component {
         isDuplicateNodeLabel: false,
         duplicateNodeID:   '',
         replacementNodeID: '',
-        isValidReplacementNodeID: true
+        isValidReplacementNodeID: true,
+        hideModal: true
       };
       // Bind functions to this component's object context
       this.clearForm                             = this.clearForm.bind(this);
@@ -178,13 +182,19 @@ class NodeSelector extends UNISYS.Component {
       this.onNewNodeButtonClick                  = this.onNewNodeButtonClick.bind(this);
       this.onDeleteButtonClick                   = this.onDeleteButtonClick.bind(this);
       this.onEditButtonClick                     = this.onEditButtonClick.bind(this);
-      this.requestEditNode = this.requestEditNode.bind(this);
-      this.editNode = this.editNode.bind(this);
+      this.onCiteButtonClick                     = this.onCiteButtonClick.bind(this);
+      this.onCloseCiteClick                      = this.onCloseCiteClick.bind(this);
+      this.dateFormatted                         = this.dateFormatted.bind(this);
+      this.requestEditNode                       = this.requestEditNode.bind(this);
+      this.editNode                              = this.editNode.bind(this);
       this.onAddNewEdgeButtonClick               = this.onAddNewEdgeButtonClick.bind(this);
       this.onCancelButtonClick                   = this.onCancelButtonClick.bind(this);
       this.onEditOriginal                        = this.onEditOriginal.bind(this);
       this.onCloseDuplicateDialog                = this.onCloseDuplicateDialog.bind(this);
       this.onSubmit                              = this.onSubmit.bind(this);
+      this.checkUnload                           = this.checkUnload.bind(this);
+      this.doUnload                              = this.doUnload.bind(this);
+      this.onForceUnlock                         = this.onForceUnlock.bind(this);
 
       // NOTE: assign UDATA handlers AFTER functions have been bind()'ed
       // otherwise they will lose context
@@ -295,6 +305,7 @@ class NodeSelector extends UNISYS.Component {
         this.setState({ edgesAreLocked: false });
       });
 
+
     } // constructor
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
@@ -317,7 +328,8 @@ class NodeSelector extends UNISYS.Component {
         isDuplicateNodeLabel: false,
         duplicateNodeID:   '',
         replacementNodeID: '',
-        isValidReplacementNodeID: true
+        isValidReplacementNodeID: true,
+        hideModal: true
       });
     } // clearFform
 
@@ -448,20 +460,30 @@ class NodeSelector extends UNISYS.Component {
       // "Duplicate Node Label" is only a warning, not an error.
       // We want to allow students to enter a duplicate label if necessary
       // This is a case insensitive search
-      let isDuplicateNodeLabel = false;
-      let duplicateNodeID;
-      if (
-        formData.label !== '' &&
-        this.AppState('D3DATA').nodes.find(node => {
-            if ((node.id !== formData.id) &&
-              (node.label.localeCompare(formData.label, 'en', { usage: 'search', sensitivity: 'base' })) === 0) {
+      var isDuplicateNodeLabel = false;
+      var duplicateNodeID = void 0;
+      if (formData.label !== '' && this.AppState('D3DATA').nodes.find(function (node) {
+        if (node.id !== formData.id)
+        {
+
+          if(node.label)
+          {
+            if(node.label.localeCompare(formData.label, 'en', { usage: 'search', sensitivity: 'base' }) === 0)
+            {
               duplicateNodeID = node.id;
               return true;
             }
             return false;
-        })) {
+          }else
+          {
+            console.log("error processing node: " + node.id + " in netc-app.js\n");
+            return false;
+          }
+
+      }})) {
         isDuplicateNodeLabel = true;
       }
+
 
       this.setState({
         formData,
@@ -502,7 +524,8 @@ class NodeSelector extends UNISYS.Component {
         },
         dbIsLocked: false,
         isEditable: false,
-        isDuplicateNodeLabel: false
+        isDuplicateNodeLabel: false,
+        hideModal: true
       });
 
       this.validateForm();
@@ -624,11 +647,35 @@ class NodeSelector extends UNISYS.Component {
       replacementNodeID: replacementNodeID
     });
   }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/
+  /*/
+  // this is an admin only function to allow unlocking of locked nodes without having to reload
+  onForceUnlock() {
+    // nodeID needs to be a Number.  It should have been set in loadFormFromNode
+    let nodeID = this.state.formData.id;
+
+    this.NetCall('SRV_DBUNLOCKNODE', { nodeID: this.state.formData.id })
+          .then((data) => {
+            if (data.NOP) {
+              if (DBG) console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
+            } else if (data.unlocked) {
+              if (DBG) console.log(`SERVER SAYS: unlock success! you have released Node ${data.nodeID}`);
+              this.setState({ dbIsLocked: false });
+            }
+          });
+  }
+
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/
   /*/
   onEditButtonClick(event) {
     event.preventDefault();
+
+    // hide the modal window if it is open (probably this can be handled better)
+    this.setState({ hideModal: true });
 
     // nodeID needs to be a Number.  It should have been set in loadFormFromNode
     let nodeID = this.state.formData.id;
@@ -637,6 +684,38 @@ class NodeSelector extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/
+  /*/
+  onCiteButtonClick(event) {
+    event.preventDefault();
+
+    this.setState({ hideModal: false });
+
+  } // onCiteButtonClick
+
+    onCloseCiteClick (event) {
+    event.preventDefault();
+
+    this.setState({ hideModal: true });
+
+  } //   this.onCloseCiteClick
+
+  dateFormatted (){
+    var today = new Date();
+    var year = "" + today.getFullYear();
+    var date = (today.getMonth()+1)+"/"+today.getDate()+"/"+ year.substr(2,4);
+    var time = today.toTimeString().substr(0,5);
+    var dateTime = time+' on '+date;
+    return dateTime;
+  }
+
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/
+
+
   requestEditNode(nodeID) {
     this.NetCall('SRV_DBLOCKNODE', { nodeID: nodeID })
       .then((data) => {
@@ -664,7 +743,7 @@ class NodeSelector extends UNISYS.Component {
     this.AppCall('AUTOCOMPLETE_SELECT',{id:thisIdentifier}).then(()=>{
       // Set AutoComplete field to current data, otherwise, previously canceled label
       // might be displayed
-      this.AppCall('SOURCE_SEARCH', { searchString: formData.label });
+      // this.AppCall('SOURCE_SEARCH', { searchString: formData.label }); // JD removed because I think it is redundant and slowing things down?
     });
     this.setState({ formData });
     this.validateForm();
@@ -788,11 +867,17 @@ class NodeSelector extends UNISYS.Component {
     } // onSubmit
 
 
+
 /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
 /*/ REACT calls this to receive the component layout and data sources
 /*/ render () {
-      let { nodePrompts } = this.state;
-      return (
+      let { nodePrompts, citationPrompts } = this.state;
+      if(citationPrompts==undefined)
+      {
+          citationPrompts = {};
+          citationPrompts.hidden = true;
+      }
+        return (
         <div>
           <FormGroup className="text-right" style={{paddingRight:'5px'}}>
             <Button outline size="sm"
@@ -805,7 +890,8 @@ class NodeSelector extends UNISYS.Component {
             <FormText><b>NODE {this.state.formData.id||''}</b></FormText>
             <FormGroup row>
               <Col sm={3}>
-                <Label for="nodeLabel" className="small text-muted">{nodePrompts.label.label}</Label>
+                <Label for="nodeLabel" className="tooltipAnchor small text-muted">
+                <i className="fas fa-question-circle"></i>{nodePrompts.label.label}<span className="tooltiptext">{this.helpText(nodePrompts.label)}</span></Label>
               </Col>
               <Col sm={9}>
                 <AutoComplete
@@ -827,7 +913,7 @@ class NodeSelector extends UNISYS.Component {
             </div>
             <FormGroup row hidden={nodePrompts.type.hidden}>
               <Col sm={3}>
-                <Label for="type" className="small text-muted">{nodePrompts.type.label}</Label>
+                <Label for="type" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{nodePrompts.type.label}<span className="tooltiptext">{this.helpText(nodePrompts.type)}</span></Label>
               </Col>
               <Col sm={9}>
                 <Input type="select" name="type" id="typeSelect"
@@ -843,7 +929,7 @@ class NodeSelector extends UNISYS.Component {
             </FormGroup>
             <FormGroup row hidden={nodePrompts.notes.hidden}>
               <Col sm={3}>
-                <Label for="notes" className="small text-muted">{nodePrompts.notes.label}</Label>
+                <Label for="notes" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{nodePrompts.notes.label}<span className="tooltiptext">{this.helpText(nodePrompts.notes)}</span></Label>
               </Col>
               <Col sm={9}>
                 <Input type="textarea" name="note" id="notesText"
@@ -857,7 +943,7 @@ class NodeSelector extends UNISYS.Component {
             </FormGroup>
             <FormGroup row hidden={nodePrompts.info.hidden}>
               <Col sm={3}>
-                <Label for="info" className="small text-muted">{nodePrompts.info.label}</Label>
+                <Label for="info" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{nodePrompts.info.label}<span className="tooltiptext">{this.helpText(nodePrompts.info)}</span></Label>
               </Col>
               <Col sm={9}>
                 <Input type="text" name="info" id="info"
@@ -867,12 +953,26 @@ class NodeSelector extends UNISYS.Component {
                   />
               </Col>
             </FormGroup>
+              <div id="citationWindow" hidden={this.state.hideModal} className="modal-content">
+                <span className="close" onClick={this.onCloseCiteClick}>&times;</span>
+                <p><em>Copy the text below:</em><br/><br/>
+                  NetCreate {this.AppState('TEMPLATE').name} network, Node: {this.state.formData.label} (ID {this.state.formData.id}). {citationPrompts.citation}. Last accessed at {this.dateFormatted()}.</p>
+              </div><br/>
             <FormGroup className="text-right" style={{ paddingRight: '5px' }}>
+              <Button outline size="sm"
+                hidden={ citationPrompts.hidden || (this.state.formData.id==='') }
+                onClick={this.onCiteButtonClick}
+              >Cite Node</Button>&nbsp;&nbsp;
               <Button outline size="sm"
                 hidden={this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
                 onClick={this.onEditButtonClick}
               >Edit Node</Button>
-              <p hidden={!this.state.dbIsLocked} className="small text-danger">{nodePrompts.label.sourceNodeIsLockedMessage}</p>
+              <p hidden={!this.state.dbIsLocked} className="small text-danger">{nodePrompts.label.sourceNodeIsLockedMessage}<br/>
+              <span hidden={!isLocalHost} >If you are absolutely sure this is an error, you can force the unlock:
+              <Button className="small btn btn-outline-light" size="sm"
+                  onClick={this.onForceUnlock}
+                >Force Unlock</Button></span>
+              </p>
               <Button outline size="sm"
                 hidden={!this.state.isEditable}
                 onClick={this.onCancelButtonClick}
@@ -899,7 +999,7 @@ class NodeSelector extends UNISYS.Component {
                   invalid={!this.state.isValidReplacementNodeID}
                 />
                 <FormFeedback>Invalid Node ID!</FormFeedback>
-                <Button className="small text-muted btn btn-outline-light" size="sm"
+                <Button className="small btn btn-outline-light" size="sm"
                   onClick={this.onDeleteButtonClick}
                 >Delete</Button>
               </Col>
@@ -924,9 +1024,29 @@ class NodeSelector extends UNISYS.Component {
               >Add New Edge</Button>
             </FormGroup>
           </div>
+
+
+
+
         </div>
+
       )
     }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/
+
+helpText(obj)
+{
+  var text = "";
+
+  if(obj.help == undefined || obj.help == "")
+    text = obj.label;
+  else
+    text = obj.help;
+  return text;
+}
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -934,7 +1054,7 @@ class NodeSelector extends UNISYS.Component {
 markdownDisplay (text){
 
   if(!this.state.isEditable)
-      return mdReact({onIterate: this.markdownIterate,  markdownOptions:{ typographer: true}
+      return mdReact({onIterate: this.markdownIterate,  markdownOptions:{ typographer: true, linkify: true}, plugins: [mdplugins.emoji]
     })(text);
 }
 
@@ -954,6 +1074,27 @@ markdownIterate(Tag, props, children, level){
 /*/ componentDidMount () {
       this.onStateChange_SESSION(this.AppState('SESSION'));
       this.validateForm();
+
+      window.addEventListener("beforeunload", this.checkUnload);
+      window.addEventListener("unload", this.doUnload);
+    }
+
+    checkUnload(e)
+    {
+        if(this.state.isEditable)
+        {
+          (e || window.event).returnValue = null;
+          return null;
+        }
+    }
+
+    doUnload(e)
+    {
+          if(this.state.isEditable)
+          {
+              this.NetCall('SRV_DBUNLOCKNODE', { nodeID: this.state.formData.id });
+          }
+
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Release the lock if we're unmounting
@@ -979,7 +1120,6 @@ markdownIterate(Tag, props, children, level){
     }
 
 } // class NodeSelector
-
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

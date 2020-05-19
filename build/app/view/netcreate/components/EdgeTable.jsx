@@ -24,7 +24,16 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+// MD React stuff added bt Joshua ... probably could be placed better
+import MDReactComponent from 'markdown-react-js';
+const mdplugins = {
+  emoji: require('markdown-it-emoji')
+};
+
 var DBG = false;
+
+const SETTINGS     = require('settings');
+const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1') || (location.href.includes('admin=true'));
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -34,6 +43,27 @@ const { Button, Table }    = ReactStrap;
 
 const UNISYS   = require('unisys/client');
 var   UDATA    = null;
+
+/// OptMdReact /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// Optimize the MDReact
+// this should be moved to a separate class / file so it isn't redundant to the one in Edge
+// but this is the easiest for now
+// don't re-render the markup unless the text has actually changed
+class OptMdReact extends MDReactComponent {
+  shouldComponentUpdate(np,ns)
+  {
+    let bReturn = true;
+    if(this.text == np.text)
+        bReturn = false;
+    else
+      this.text = np.text;
+
+    return bReturn;
+  }
+
+}
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,7 +76,7 @@ class EdgeTable extends UNISYS.Component {
         edgePrompts:  this.AppState('TEMPLATE').edgePrompts,
         edges:        [],
         isExpanded:   true,
-        sortkey:      'Citations'
+        sortkey:      'Relationship'
       };
 
       this.onButtonClick            = this.onButtonClick.bind(this);
@@ -55,6 +85,9 @@ class EdgeTable extends UNISYS.Component {
       this.m_FindMatchingEdgeByProp = this.m_FindMatchingEdgeByProp.bind(this);
       this.m_FindEdgeById           = this.m_FindEdgeById.bind(this);
       this.setSortKey               = this.setSortKey.bind(this);
+      this.sortSymbol               = this.sortSymbol.bind(this);
+
+      this.sortDirection = -1;
 
 
       /// Initialize UNISYS DATA LINK for REACT
@@ -77,11 +110,18 @@ class EdgeTable extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle updated SELECTION
 /*/ handleDataUpdate ( data ) {
-      if (data && data.edges) {
+      if(data.bMarkedNode)
+      {
+          data.bMarkedNode = false;
+      }
+      else
+      {
+        if (data && data.edges) {
         this.setState({edges: data.edges});
         this.sortTable();
       }
     }
+  }
 
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
@@ -92,8 +132,8 @@ class EdgeTable extends UNISYS.Component {
         return edges.sort( (a,b) => {
           let akey = a.id,
               bkey = b.id;
-          if (akey<bkey) return -1;
-          if (akey>bkey) return 1;
+          if (akey<bkey) return -1*this.sortDirection;
+          if (akey>bkey) return 1*this.sortDirection;
           return 0;
         });
       }
@@ -106,9 +146,7 @@ class EdgeTable extends UNISYS.Component {
         return edges.sort( (a,b) => {
           let akey = a.source.label,
               bkey = b.source.label;
-          if (akey<bkey) return -1;
-          if (akey>bkey) return 1;
-          return 0;
+          return (akey.localeCompare(bkey)*this.sortDirection);
         });
       }
       return undefined;
@@ -120,9 +158,9 @@ class EdgeTable extends UNISYS.Component {
         return edges.sort( (a,b) => {
           let akey = a.target.label,
               bkey = b.target.label;
-          if (akey<bkey) return -1;
-          if (akey>bkey) return 1;
-          return 0;
+
+          return (akey.localeCompare(bkey)*this.sortDirection);
+
         });
       }
       return undefined;
@@ -134,19 +172,35 @@ class EdgeTable extends UNISYS.Component {
         return edges.sort( (a,b) => {
           let akey = a.attributes[key],
               bkey = b.attributes[key];
-          if (akey<bkey) return -1;
-          if (akey>bkey) return 1;
+          if (akey<bkey) return -1*this.sortDirection;
+          if (akey>bkey) return 1*this.sortDirection;
           if (akey===bkey) {
             // Secondary sort on Source label
             let source_a = a.source.label;
             let source_b = b.source.label;
-            if (source_a<source_b) return -1;
-            if (source_a>source_b) return 1;
+            if (source_a<source_b) return -1*this.sortDirection;
+            if (source_a>source_b) return 1*this.sortDirection;
           }
           return 0;
         });
       }
       return undefined;
+    }
+
+    /// ---
+    sortByUpdated(edges)
+    {
+      if (edges) {
+        return edges.sort( (a,b) => {
+          let akey = (a.meta.revision > 0 ? a.meta.updated : a.meta.created),
+              bkey = (b.meta.revision > 0 ? b.meta.updated : b.meta.created);
+          if (akey<bkey) return -1*this.sortDirection;
+          if (akey>bkey) return 1*this.sortDirection;
+          return 0;
+        });
+      }
+      return undefined;
+
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ If no `sortkey` is passed, the sort will use the existing state.sortkey
@@ -171,12 +225,29 @@ class EdgeTable extends UNISYS.Component {
         case 'Notes':
           this.sortByAttribute(edges, 'Notes');
           break;
+        case 'Category':
+          this.sortByAttribute(edges, 'Category');
+          break;
         case 'Citations':
-        default:
           this.sortByAttribute(edges, 'Citations');
+          break;
+        case 'Updated':
+          this.sortByUpdated(edges);
+          break;
+        case 'Relationship':
+        default:
+          this.sortByAttribute(edges, 'Relationship');
           break;
       }
       this.setState({edges});
+    }
+
+    sortSymbol(key)
+    {
+      if(key != this.state.sortkey) // this is not the current sort, so don't show anything
+        return "";
+      else
+        return this.sortDirection==-1?"▼":"▲"; // default to "decreasing" and flip if clicked again
     }
 
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
@@ -207,6 +278,12 @@ class EdgeTable extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ setSortKey (key) {
+
+      if(key == this.state.sortkey)
+        this.sortDirection = (-1 * this.sortDirection);// if this was already the key, flip the direction
+      else
+          this.sortDirection = 1;
+
       this.setState({sortkey: key});
       this.sortTable(key);
     }
@@ -266,60 +343,64 @@ class EdgeTable extends UNISYS.Component {
 /*/
 /*/ render () {
       let { edgePrompts } = this.state;
+
+      if(edgePrompts.category == undefined) // for backwards compatability
+      {
+        edgePrompts.category = {};
+        edgePrompts.category.label = "";
+        edgePrompts.category.hidden = true;
+      }
+
+
       let { tableHeight } = this.props;
-      let styles = `thead, tbody { display: block; }
+      let styles = `
+                    thead, tbody { }
                     thead { position: relative; }
                     tbody { overflow: auto; }
-                    .edgetable td:nth-child(1), .edgetable th:nth-child(1) {width: 4em; min-width: 4em;}
-                    .edgetable td:nth-child(2), .edgetable th:nth-child(2) {width: 10em; min-width: 10em;}
-                    .edgetable td:nth-child(3), .edgetable th:nth-child(3) {width: 4em; min-width: 4em;}
-                    .edgetable td:nth-child(4), .edgetable th:nth-child(4) {width: 10em; min-width: 10em;}
-                    .edgetable td:nth-child(5), .edgetable th:nth-child(5) {width: 10em; min-width: 10em;}
-                    .edgetable td:nth-child(6), .edgetable th:nth-child(6) {width: 10em; min-width: 10em;}
-                    .edgetable td:nth-child(7), .edgetable th:nth-child(7) {width: 6em; min-width: 6em;}
-                    .edgetable td:nth-child(8), .edgetable th:nth-child(8) {width: 30em; min-width: 20em; }`
+`
       return (
-        <div style={{backgroundColor:'#f3f3ff'}}>
+           <div style={{overflow:'auto',
+                     position:'relative',display: 'block', right:'10px',maxHeight: tableHeight, backgroundColor:'#f3f3ff'
+             }}>
           <style>{styles}</style>
           <Button size="sm" outline hidden
             onClick={this.onToggleExpanded}
           >{this.state.isExpanded ? "Hide Edge Table" : "Show Edge Table"}</Button>
           <Table hidden={!this.state.isExpanded} hover size="sm"
                  responsive striped
-                 className="edgetable"
+                 className="edgetable w-auto"
           >
             <thead>
               <tr>
-                <th hidden={!DBG}><Button size="sm"
-                      disabled={this.state.sortkey==="id"}
+                <th width="5%" hidden={!DBG}><Button size="sm"
                       onClick={()=>this.setSortKey("id")}
-                    >ID</Button></th>
+                    >ID {this.sortSymbol("id")}</Button></th>
                 <th hidden={!DBG}>Size</th>
-                <th></th>
-                <th><Button size="sm"
-                      disabled={this.state.sortkey==="source"}
+                <th width="5%"><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
+                <th  width="10%"><Button size="sm"
                       onClick={()=>this.setSortKey("source")}
-                    >{edgePrompts.source.label}</Button></th>
-                <th><Button size="sm"
-                      disabled={this.state.sortkey==="Relationship"}
+                    >{edgePrompts.source.label} {this.sortSymbol("source")}</Button></th>
+                <th width="10%"><Button size="sm"
                       onClick={()=>this.setSortKey("Relationship")}
-                    >{edgePrompts.type.label}</Button></th>
-                <th><Button size="sm"
-                      disabled={this.state.sortkey==="target"}
+                    >{edgePrompts.type.label} {this.sortSymbol("Relationship")}</Button></th>
+                <th width="10%"><Button size="sm"
                       onClick={()=>this.setSortKey("target")}
-                    >{edgePrompts.target.label}</Button></th>
-                <th hidden={edgePrompts.citation.hidden}><Button size="sm"
-                      disabled={this.state.sortkey==="Citations"}
+                    >{edgePrompts.target.label} {this.sortSymbol("target")}</Button></th>
+                <th width="8%" hidden={edgePrompts.category.hidden}><Button size="sm"
+                      onClick={()=>this.setSortKey("Category")}
+                    >{edgePrompts.category.label} {this.sortSymbol("Category")}</Button></th>
+                <th width="10%" hidden={edgePrompts.citation.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Citations")}
-                    >{edgePrompts.citation.label}</Button></th>
-                <th hidden={edgePrompts.notes.hidden}><Button size="sm"
-                      disabled={this.state.sortkey==="Notes"}
+                    >{edgePrompts.citation.label} {this.sortSymbol("Citations")}</Button></th>
+                <th width="16%" hidden={edgePrompts.notes.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Notes")}
-                    >{edgePrompts.notes.label}</Button></th>
-                <th hidden={edgePrompts.info.hidden}><Button size="sm"
-                      disabled={this.state.sortkey==="Info"}
+                    >{edgePrompts.notes.label} {this.sortSymbol("Notes")}</Button></th>
+                <th  width="16%"hidden={edgePrompts.info.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Info")}
-                    >{edgePrompts.info.label}</Button></th>
+                    >{edgePrompts.info.label} {this.sortSymbol("Info")}</Button></th>
+                <th  width="16%"hidden={!isLocalHost}><Button size="sm"
+                      onClick={()=>this.setSortKey("Updated")}
+                    >Updated {this.sortSymbol("Updated")}</Button></th>
               </tr>
             </thead>
             <tbody style={{ maxHeight: tableHeight }}>
@@ -337,9 +418,11 @@ class EdgeTable extends UNISYS.Component {
                 <td>{edge.attributes["Relationship"]}</td>
                 <td><a href="#" onClick={(e)=>this.selectNode(edge.target.id,e)}
                     >{edge.target.label || edge.target}</a></td>
+                <td hidden={edgePrompts.category.hidden}>{edge.attributes["Category"]}</td>
                 <td hidden={edgePrompts.citation.hidden}>{edge.attributes["Citations"]}</td>
-                <td hidden={edgePrompts.notes.hidden}>{edge.attributes["Notes"]}</td>
+                <td hidden={edgePrompts.notes.hidden}><OptMdReact text={edge.attributes["Notes"]} onIterate={this.markdownIterate} markdownOptions={{typographer: true, linkify: true}} plugins={[mdplugins.emoji]}/></td>
                 <td hidden={edgePrompts.info.hidden}>{edge.attributes["Info"]}</td>
+                <td hidden={!isLocalHost}>{this.displayUpdated(edge)}</td>
               </tr>
             ))}
             </tbody>
@@ -352,6 +435,30 @@ class EdgeTable extends UNISYS.Component {
 /*/ componentDidMount () {
       if (DBG) console.log('EdgeTable.componentDidMount!');
     }
+
+
+    markdownIterate(Tag, props, children, level){
+  if (Tag === 'a') {
+    props.target = '_blank';
+    }
+
+  return <Tag {...props}>{children}</Tag>;
+
+}
+
+  displayUpdated(nodeEdge)
+  {
+      var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
+
+      var year = "" + d.getFullYear();
+      var date = (d.getMonth()+1)+"/"+d.getDate()+"/"+ year.substr(2,4);
+      var time = d.toTimeString().substr(0,5);
+      var dateTime = date+' at '+time;
+      var titleString = "v" + nodeEdge.meta.revision + " by " + nodeEdge._elog[nodeEdge._elog.length-1];
+      var tag = <span title={titleString}> {dateTime} </span>;
+
+      return tag;
+  }
 } // class EdgeTable
 
 

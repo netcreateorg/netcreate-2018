@@ -265,6 +265,8 @@ MOD.Hook("CONFIGURE", () => {
       throw "Missing `edgePrompts.info` info=" + edgePrompts.info;
     if (edgePrompts.citation === undefined)
       throw "Missing `edgePrompts.citation` info=" + edgePrompts.citation;
+    if (edgePrompts.category === undefined)
+      throw "Missing `edgePrompts.category` info=" + edgePrompts.category;
   } catch (error) {
     console.error(
       PR + "Error loading template `",
@@ -275,11 +277,20 @@ MOD.Hook("CONFIGURE", () => {
   }
 
   // REVIEW: Load ColorMap in d3?  or elsewhere?  does it need its own state?
+  // Joshua added Edges in here ... it should either be renamed or kept separate
+  // but this was a proof of concept. Probably they should be kept separate in case
+  // someone ever chooses to use the same label twice, but ...
   try {
     let nodeColorMap = {};
     TEMPLATE.nodePrompts.type.options.forEach(o => {
       nodeColorMap[o.label] = o.color;
     });
+
+    let defaultEdgeColor = TEMPLATE.edgePrompts.color || "#999" ; //for backwards compatability
+    TEMPLATE.edgePrompts.type.options.forEach(o => {
+      nodeColorMap[o.label] = o.color || defaultEdgeColor;
+    });
+
     UDATA.SetAppState("NODECOLORMAP", nodeColorMap);
   } catch (error) {
     console.error(
@@ -357,10 +368,13 @@ MOD.Hook("INITIALIZE", () => {
       }
     }
     // SEARCH LABEL UPDATE
-    if (searchLabel === "") {
-      m_UnStrokeAllNodes();
-    } else if (searchLabel !== undefined) {
-      m_SetStrokeColorThatMatch(searchLabel, SEARCH_COLOR);
+    if(D3DATA.nodes.length < 150) // JD to speedup processing for large sets
+    {
+      if (searchLabel === "") {
+        m_UnStrokeAllNodes();
+      } else if (searchLabel !== undefined) {
+         m_SetStrokeColorThatMatch(searchLabel, SEARCH_COLOR);
+      }
     }
   }); // StateChange SELECTION
 
@@ -467,6 +481,7 @@ MOD.Hook("INITIALIZE", () => {
       selections.  The hilite can be selected via either the label or
       the node id.
   /*/
+ /* ORIGINAL INQUIRIUM CODE
   UDATA.HandleMessage("SOURCE_HILITE", function(data) {
     let { nodeLabel, nodeID, color } = data;
     if (nodeLabel) {
@@ -478,6 +493,26 @@ MOD.Hook("INITIALIZE", () => {
       // Only mark nodes if something is selected
       m_UnMarkAllNodes();
       m_MarkNodeById(nodeID, SOURCE_COLOR);
+    }
+    */
+
+    UDATA.HandleMessage("SOURCE_HILITE", function(data) {
+    let { nodeLabel, nodeID, color } = data;
+    if (nodeLabel) {
+      // Only mark nodes if something is selected
+      if(D3DATA.nodes.length < 250) // JD to speedup processing for large
+      {
+        m_UnMarkAllNodes();
+        m_MarkNodeByLabel(nodeLabel, SOURCE_COLOR);
+      }
+    }
+    if (nodeID) {
+      // Only mark nodes if something is selected
+      if(D3DATA.nodes.length < 250) // JD to speedup processing for large
+      {
+        m_UnMarkAllNodes();
+        m_MarkNodeById(nodeID, SOURCE_COLOR);
+      }
     }
 
     // NOTE: State is updated in the "MaryNodeBy*" functions above.
@@ -941,7 +976,10 @@ function m_MarkNodeById(id, color) {
   // this.getDeselectedNodeColor(node,color) are not yet implemented
   // to override the properties
   m_SetMatchingNodesByProp({ id }, marked, normal);
-  UDATA.SetAppState("D3DATA", D3DATA);
+  // Joshua adding so I can ignore on NodeTable update?
+  D3DATA.bMarkedNode = true;
+
+  UDATA.SetAppState("D3DATA", D3DATA); // JD had commented this out because it was triggering a nodetable update that was eating cycles even though nothing had changed
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Sets the `node.selected` property to `color` so it is hilited on graph
@@ -953,6 +991,7 @@ function m_MarkNodeByLabel(label, color) {
   // this.getDeselectedNodeColor(node,color) are not yet implemented
   // to override the properties
   m_SetMatchingNodesByLabel(label, marked, normal);
+
   UDATA.SetAppState("D3DATA", D3DATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

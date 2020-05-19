@@ -6,7 +6,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = true;
+const DBG = false;
 
 /// SYSTEM-WIDE LANGUAGE EXTENSIONS ///////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
