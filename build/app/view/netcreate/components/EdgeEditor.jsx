@@ -179,7 +179,12 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = true;
+import { mdReact } from 'markdown-react-js';
+const mdplugins = {
+  emoji: require('markdown-it-emoji')
+};
+
+const DBG = false;
 const PR  = "EdgeEditor";
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
@@ -201,6 +206,7 @@ class EdgeEditor extends UNISYS.Component {
       super(props);
       this.state = {
         edgePrompts:    this.AppState('TEMPLATE').edgePrompts,
+        citationPrompts:   this.AppState('TEMPLATE').citationPrompts,
         formData: {                 // Holds the state of the form fields
           sourceId:     '',
           targetId:     '',
@@ -208,6 +214,7 @@ class EdgeEditor extends UNISYS.Component {
           info:         '',
           notes:        '',
           citation:     '',
+          category:     '',
           id:           '',
           isNewEdge:    true
         },
@@ -233,7 +240,8 @@ class EdgeEditor extends UNISYS.Component {
         hasValidSource:  false,      // Used by SwapSourceAndTarget and the Change Source button
         targetIsEditable:false,      // Target ndoe field is only editable when target is not parent
         hasValidTarget:  false,      // Used by SwapSourceAndTarget and the Change Target button
-        placeholder:     undefined
+        placeholder:     undefined,
+        hideModal: true              // used by the citation window
       };
 
       /// Initialize UNISYS DATA LINK for REACT
@@ -246,7 +254,10 @@ class EdgeEditor extends UNISYS.Component {
       this.onButtonClick          = this.onButtonClick.bind(this);
       this.onDeleteButtonClick    = this.onDeleteButtonClick.bind(this);
       this.onEditButtonClick      = this.onEditButtonClick.bind(this);
-      this.requestEdit = this.requestEdit.bind(this);
+      this.onCiteButtonClick      = this.onCiteButtonClick.bind(this);
+      this.onCloseCiteClick       = this.onCloseCiteClick.bind(this);
+      this.dateFormatted          = this.dateFormatted.bind(this);
+      this.requestEdit            = this.requestEdit.bind(this);
       this.onSwapSourceAndTarget  = this.onSwapSourceAndTarget.bind(this);
       this.onChangeSource         = this.onChangeSource.bind(this);
       this.onChangeTarget         = this.onChangeTarget.bind(this);
@@ -254,7 +265,10 @@ class EdgeEditor extends UNISYS.Component {
       this.onNotesChange          = this.onNotesChange.bind(this);
       this.onInfoChange           = this.onInfoChange.bind(this);
       this.onCitationChange       = this.onCitationChange.bind(this);
+      this.onCategoryChange       = this.onCategoryChange.bind(this);
       this.onSubmit               = this.onSubmit.bind(this);
+      this.checkUnload                           = this.checkUnload.bind(this);
+      this.doUnload                              = this.doUnload.bind(this);
 
       // Always make sure class methods are bind()'d before using them
       // as a handler, otherwise object context is lost
@@ -292,6 +306,7 @@ class EdgeEditor extends UNISYS.Component {
           info:         '',
           notes:        '',
           citation:     '',
+          category:     '',
           id:           '',
           isNewEdge:    true
         },
@@ -315,7 +330,9 @@ class EdgeEditor extends UNISYS.Component {
         sourceIsEditable:     false,      // Source ndoe field is only editable when source is not parent
         hasValidSource:       false,      // Used by SwapSourceAndTarget and the Change Source button
         targetIsEditable:     false,      // Target ndoe field is only editable when target is not parent
-        hasValidTarget:       false       // Used by SwapSourceAndTarget and the Change Target button
+        hasValidTarget:       false,      // Used by SwapSourceAndTarget and the Change Target button
+        hideModal: true                   // for the citation window
+
       });
   }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -368,6 +385,7 @@ class EdgeEditor extends UNISYS.Component {
             Relationship: '',
             Info: '',
             Citations: '',
+            Category: '',
             Notes: ''
           }
         }
@@ -413,6 +431,7 @@ class EdgeEditor extends UNISYS.Component {
           relationship: edge.attributes["Relationship"] || '',   // Make sure there's valid data
           info:         edge.attributes["Info"] || '',
           citation:     edge.attributes["Citations"] || '',
+          category:     edge.attributes["Category"] || '',
           notes:        edge.attributes["Notes"] || '',
           isNewEdge:    false
         },
@@ -588,6 +607,8 @@ class EdgeEditor extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onEditButtonClick () {
+      this.setState({ hideModal: true });
+
       this.requestEdit(this.state.formData.id);
 
       // Don't allow editing of the source or target fields.
@@ -600,17 +621,47 @@ class EdgeEditor extends UNISYS.Component {
       //   UDATA.LocalCall('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'source', searchString: this.state.sourceNode.label});
       // }
     }
+
+    /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/
+  /*/
+  onCiteButtonClick(event) {
+    event.preventDefault();
+
+    this.setState({ hideModal: false });
+
+  } // onCiteButtonClick
+
+    onCloseCiteClick (event) {
+    event.preventDefault();
+
+    this.setState({ hideModal: true });
+
+  } //   this.onCloseCiteClick
+
+  dateFormatted (){
+    var today = new Date();
+    var year = "" + today.getFullYear();
+    var date = (today.getMonth()+1)+"/"+today.getDate()+"/"+ year.substr(2,4);
+    var time = today.toTimeString().substr(0,5);
+    var dateTime = time+' on '+date;
+    return dateTime;
+  }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ requestEdit() {
       let edgeID = this.state.formData.id;
-      if (edgeID && edgeID!=='' && !isNaN(edgeID) && (typeof edgeID ==="number")) {
+      if (edgeID && edgeID!=='' && !isNaN(edgeID) && (typeof edgeID ==="number") && !this.state.isEditable) {
         this.NetCall('SRV_DBLOCKEDGE', { edgeID: edgeID })
           .then((data) => {
             if (data.NOP) {
               // Edge is locked, can't edit
               if (DBG) console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
-              this.setState({ dbIsLocked: true });
+              this.setState({
+                dbIsLocked: true,
+                isExpanded: true
+              });
             } else if (data.locked) {
               if (DBG) console.log(`SERVER SAYS: lock success! you can edit Edge ${data.edgeID}`);
               if (DBG) console.log(`SERVER SAYS: unlock the edge after successful DBUPDATE`);
@@ -698,6 +749,13 @@ class EdgeEditor extends UNISYS.Component {
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
+/*/ onCategoryChange (event) {
+      let formData = this.state.formData;
+      formData.category = event.target.value;
+      this.setState({formData: formData});
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
 /*/ onNotesChange (event) {
       let formData = this.state.formData;
       formData.notes = event.target.value;
@@ -720,6 +778,7 @@ class EdgeEditor extends UNISYS.Component {
           Relationship: formData.relationship,
           Info:         formData.info,
           Citations:    formData.citation,
+          Category:     formData.category,
           Notes:        formData.notes
         }
       }
@@ -757,7 +816,19 @@ class EdgeEditor extends UNISYS.Component {
 /*/
 /*/ render () {
       const { edgeID, parentNodeLabel } = this.props;
-      const { formData, sourceNode, targetNode, edgePrompts } = this.state;
+      const { formData, sourceNode, targetNode, edgePrompts} = this.state;
+      let {citationPrompts} = this.state;
+      if(edgePrompts.category == undefined) // for backwards compatability
+      {
+        edgePrompts.category = {};
+        edgePrompts.category.label = "";
+        edgePrompts.category.hidden = true;
+      }
+      if(citationPrompts==undefined) // if citationPrompts were lefft out, simply make them hidden
+      {
+          citationPrompts = {};
+          citationPrompts.hidden = true;
+      }
       const me = <span style={{ color: "rgba(0,0,0,0.2)", fontStyle: "italic" }}>this node</span>;
       // special override to allow editing an edge that has the same parent node for both source and target
       let sameSourceAndTarget = (sourceNode.label === this.props.parentNodeLabel) &&
@@ -769,20 +840,19 @@ class EdgeEditor extends UNISYS.Component {
             className={this.state.isExpanded?'d-none':''}
             outline
             size="sm"
-            style={{backgroundColor:"#a9d3ff",borderColor:'transparent',width:'100%',marginBottom:'3px',textAlign:"left"}}
+            style={{backgroundColor:"#a9d3ff",borderColor:'transparent',width:'100%',marginBottom:'3px',textAlign:"left",overflow: "hidden"}}
             onClick={this.onButtonClick}
           >{parentNodeLabel===sourceNode.label ? me : sourceNode.label}
-          &nbsp;&#x2794;&nbsp;
+          &nbsp;<span title={formData.relationship}>&#x2794;</span>&nbsp;
           {parentNodeLabel===targetNode.label ? me : targetNode.label}</Button>
-
           <div className={this.state.isExpanded?'':'d-none'}>
             <Form className="nodeEntry"
                   style={{backgroundColor:"#C9E1FF",minHeight:'300px',padding:'5px',marginBottom:'10px'}}
                   onSubmit={this.onSubmit}>
-              <FormText><b>EDGE {formData.id}</b></FormText>
+              <FormText onClick={this.onButtonClick}><b>EDGE {formData.id}</b></FormText>
               <FormGroup row>
                 <Col sm={3}>
-                  <Label for="source" className="small text-muted">{edgePrompts.source.label}</Label>
+                  <Label for="source" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.source.label}<span className="tooltiptext">{this.helpText(edgePrompts.source)}</span></Label>
                 </Col>
                 <Col sm={9}>
                   <AutoComplete
@@ -803,10 +873,10 @@ class EdgeEditor extends UNISYS.Component {
               </FormGroup>
               <FormGroup row hidden={edgePrompts.type.hidden}>
                 <Col sm={3}>
-                  <Label for="relationship" className="small text-muted">{edgePrompts.type.label}</Label>
+                  <Label for="relationship" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.type.label}<span className="tooltiptext">{this.helpText(edgePrompts.type)}</span></Label>
                 </Col>
                 <Col sm={9}>
-                  <Input type="select" name="relationship" id="relationship"
+                  <Input type="select" name="relationship"
                     value={formData.relationship}
                     onChange={this.onRelationshipChange}
                     disabled={!this.state.isEditable}
@@ -819,7 +889,7 @@ class EdgeEditor extends UNISYS.Component {
               </FormGroup>
               <FormGroup row>
                 <Col sm={3}>
-                  <Label for="nodeLabel" className="small text-muted">{edgePrompts.target.label}</Label>
+                  <Label for="nodeLabel" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.target.label}<span className="tooltiptext">{this.helpText(edgePrompts.target)}</span></Label>
                 </Col>
                 <Col sm={9}>
                   <AutoComplete
@@ -846,12 +916,23 @@ class EdgeEditor extends UNISYS.Component {
                   >&uarr;&darr;</Button>
                 </Col>
               </FormGroup>
-              <FormGroup row hidden={edgePrompts.citation.hidden}>
+              <FormGroup row hidden={edgePrompts.category.hidden}>
                 <Col sm={3}>
-                  <Label for="citation" className="small text-muted">{edgePrompts.citation.label}</Label>
+                  <Label for="category" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.category.label}<span className="tooltiptext">{this.helpText(edgePrompts.category)}</span></Label>
                 </Col>
                 <Col sm={9}>
-                  <Input type="text" name="citation" id="citation"
+                  <Input type="text" name="category"
+                    value={formData.category}
+                    onChange={this.onCategoryChange}
+                    readOnly={!this.state.isEditable}
+                  />
+                </Col>
+              </FormGroup><FormGroup row hidden={edgePrompts.citation.hidden}>
+                <Col sm={3}>
+                  <Label for="citation" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.citation.label}<span className="tooltiptext">{this.helpText(edgePrompts.citation)}</span></Label>
+                </Col>
+                <Col sm={9}>
+                  <Input type="text" name="citation"
                     value={formData.citation}
                     onChange={this.onCitationChange}
                     readOnly={!this.state.isEditable}
@@ -860,34 +941,45 @@ class EdgeEditor extends UNISYS.Component {
               </FormGroup>
               <FormGroup row hidden={edgePrompts.notes.hidden}>
                 <Col sm={3}>
-                  <Label for="notes" className="small text-muted">{edgePrompts.notes.label}</Label>
+                  <Label for="notes" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.notes.label}<span className="tooltiptext">{this.helpText(edgePrompts.notes)}</span></Label>
                 </Col>
                 <Col sm={9}>
-                  <Input type="textarea" name="notes" id="notes"
+                  <Input type="textarea" name="notes"
+                    style={{display: this.state.isEditable ? 'block' : 'none'}}
                     value={formData.notes}
                     onChange={this.onNotesChange}
                     readOnly={!this.state.isEditable}
                   />
+                  {this.markdownDisplay(this.state.formData.notes||'')}
                 </Col>
               </FormGroup>
               <FormGroup row hidden={edgePrompts.info.hidden}>
                 <Col sm={3}>
-                  <Label for="info" className="small text-muted">{edgePrompts.info.label}</Label>
+                  <Label for="info" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.info.label}<span className="tooltiptext">{this.helpText(edgePrompts.info)}</span></Label>
                 </Col>
                 <Col sm={9}>
-                  <Input type="text" name="info" id="info"
+                  <Input type="text" name="info"
                     value={formData.info}
                     onChange={this.onInfoChange}
                     readOnly={!this.state.isEditable}
                   />
                 </Col>
               </FormGroup>
+              <div id="citationWindow" hidden={this.state.hideModal} className="modal-content">
+                <span className="close" onClick={this.onCloseCiteClick}>&times;</span>
+                <p><em>Copy the text below:</em><br/><br/>
+                  NetCreate {this.AppState('TEMPLATE').name} network, Edge: {this.state.formData.label} (ID {this.state.formData.id}), from "{sourceNode.label}" to "{targetNode.label}". {citationPrompts.citation}. Last accessed at {this.dateFormatted()}.</p>
+              </div><br/>
               <FormGroup className="text-right" style={{paddingRight:'5px'}}>
-                <Button className="small text-muted float-left btn btn-outline-light" size="sm"
+                <Button className="small float-left btn btn-outline-light" size="sm"
                  hidden={this.state.isLocked}
                  onClick={this.onDeleteButtonClick}
                 >Delete</Button>&nbsp;
                 <Button outline size="sm"
+                hidden={ citationPrompts.hidden}
+                onClick={this.onCiteButtonClick}
+              >Cite Edge</Button>&nbsp;&nbsp;
+              <Button outline size="sm"
                   hidden={this.state.isLocked || this.state.isEditable}
                   onClick={this.onEditButtonClick}
                 >{this.state.isEditable ? "Add New Edge" : "Edit Edge"}</Button>&nbsp;
@@ -913,7 +1005,28 @@ class EdgeEditor extends UNISYS.Component {
       if (DBG) console.log('EdgeEditor.componentDidMount!');
       this.loadSourceAndTarget();
       this.onStateChange_SESSION(this.AppState('SESSION'));
+
+      window.addEventListener("beforeunload", this.checkUnload);
+      window.addEventListener("unload", this.doUnload);
     }
+
+    checkUnload(e)
+    {
+        if(this.state.isEditable)
+        {
+          (e || window.event).returnValue = null;
+          return null;
+        }
+    }
+
+    doUnload(e)
+    {
+          if(this.state.isEditable)
+          {
+            this.NetCall('SRV_DBUNLOCKEDGE', { edgeID: this.state.formData.id })
+          }
+    }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Release the lock if we're unmounting
 /*/ componentWillUnmount() {
@@ -935,6 +1048,39 @@ class EdgeEditor extends UNISYS.Component {
       this.AppStateChangeOff('SELECTION', this.handleSelection);
       this.AppStateChangeOff('TEMPLATE', this.setTemplate);
     }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/
+
+helpText(obj)
+{
+  var text = "";
+
+  if(obj.help == undefined || obj.help == "")
+    text = obj.label;
+  else
+    text = obj.help;
+  return text;
+}
+
+
+    markdownDisplay (text){
+
+  if(!this.state.isEditable)
+      return mdReact({onIterate: this.markdownIterate,  markdownOptions:{ typographer: true, linkify: true}, plugins: [mdplugins.emoji]
+    })(text);
+}
+
+markdownIterate(Tag, props, children, level){
+ if (Tag === 'a') {
+    props.target = '_blank';
+    }
+
+  return <Tag {...props}>{children}</Tag>;
+
+}
+
 } // class EdgeEditor
 
 

@@ -58,13 +58,13 @@ let m_forceProperties = {   // values for all forces
       },
       charge: {
         enabled: true,
-        strength: -1500,  //-1000, // -20,
-        distanceMin: 20,  //50, // 1,
+        strength: -1000,  //-1000, // -20, was 1500 - JD
+        distanceMin: 20,  //20, 50, // 1,
         distanceMax: 1000 //2000
       },
       collide: {
         enabled: true,
-        strength: 0.7,
+        strength: 0.3, // was .7 - JD
         iterations: 1,
         radius: 4
       },
@@ -80,7 +80,7 @@ let m_forceProperties = {   // values for all forces
       },
       link: {
         enabled: true,
-        distance: 60, // 30,
+        distance: 130, // 60, 30,
         iterations: 2 // 1
       }
     }; // m_forceProperties
@@ -91,7 +91,7 @@ let m_forceProperties = {   // values for all forces
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class D3NetGraph {
 
-    constructor ( rootElement ) {
+    constructor ( rootElement, nodePrompts ) {
 
       this.rootElement  = rootElement;
       this.d3svg        = {};
@@ -103,6 +103,10 @@ class D3NetGraph {
       this.clickFn      = {};
 
       this.defaultSize  = 5;
+
+      // Joshua added for the tooltips
+      this.nodePrompts = nodePrompts;
+
 
       /// Initialize UNISYS DATA LINK for REACT
       UDATA = UNISYS.NewDataLink(this);
@@ -213,7 +217,7 @@ class D3NetGraph {
         this._UpdateGraph()
         // updates ignored until this is run restarts the simulation
         // (important if simulation has already slowed down)
-        this.simulation.alpha(1).restart()
+        this.simulation.alpha(.3).restart()  // was 1 - JD
       }
     }
 /*/ This sets up the force properties for the simulation and tick handler.
@@ -268,6 +272,7 @@ class D3NetGraph {
       let linkElements = this.zoomWrapper.selectAll(".edge")
         .data(this.data.edges, (d) => { return d.id }); // fn returns the calculated key for the data object
 
+
       // TELL D3 HOW TO HANDLE NEW NODE DATA
       // the d3.selection.enter() method sets the operational scope for
       // subsequent calls
@@ -303,6 +308,7 @@ class D3NetGraph {
               let radius = this.data.edges.reduce((acc,ed)=>{
                 return (ed.source===d.id || ed.target===d.id) ? acc+1 : acc;
               },1);
+
               d.weight = radius
               d.size   = radius // save the calculated size
               return this.defaultSize + (this.defaultSize * d.weight / 2)
@@ -329,9 +335,12 @@ class D3NetGraph {
           .text((d) => { return d.label });
 
       // enter node: also append a 'title' tag
+      // we should move this to our tooltip functions, but it works for now
       elementG
         .append("title") // node tooltip
-          .text((d) => { return d.label; });
+          .text((d) => {
+            return this.tooltipForNode(d);
+        });
 
       /*/ TRICKY D3 CODE CONCEPTS AHEAD
 
@@ -391,6 +400,7 @@ class D3NetGraph {
               let radius = this.data.edges.reduce((acc,ed)=>{
                 return (ed.source.id===d.id || ed.target.id===d.id) ? acc+1 : acc
               },1);
+
               d.weight = radius
               d.size = radius // save the calculated size
               return this.defaultSize + (this.defaultSize * d.weight / 2)
@@ -412,6 +422,11 @@ class D3NetGraph {
           })
           .text((d) => { return d.label });  // in case text is updated
 
+      nodeElements.merge(nodeElements)
+        .selectAll("title") // node tooltip
+          .text((d) => {
+            return this.tooltipForNode(d);
+        });
       // TELL D3 what to do when a data node goes away
       nodeElements.exit().remove()
 
@@ -421,7 +436,7 @@ class D3NetGraph {
       linkElements.enter()
         .insert("line",".node")
         .classed('edge', true)
-        .style('stroke', '#999')
+        .style('stroke', this._UpdateLinkStrokeColor)
         // .style('stroke', 'rgba(0,0,0,0.1)')  // don't use alpha unless we're prepared to handle layering -- reveals unmatching links
         .style('stroke-width', this._UpdateLinkStrokeWidth )
         // old stroke setting
@@ -435,6 +450,7 @@ class D3NetGraph {
       // .merge() updates the visuals whenever the data is updated.
       linkElements.merge(linkElements)
         .classed("selected",  (d) => { return d.selected })
+        .style('stroke', this._UpdateLinkStrokeColor)
         .style('stroke-width', this._UpdateLinkStrokeWidth)
 
       linkElements.exit().remove()
@@ -445,6 +461,54 @@ class D3NetGraph {
       this.simulation.force("link").links(this.data.edges)
 
     }
+
+// added by Joshua to generate the text, based on the template, for the tooltip on the node
+tooltipForNode(d)
+{
+    let titleText =  "";
+    if(this.nodePrompts.label.includeInGraphTooltip != undefined)
+    {
+        // Add Label
+          if(this.nodePrompts.label.includeInGraphTooltip)
+            titleText += this.nodePrompts.label.label + ": " + d.label + "\n";
+        // Add type
+          if(this.nodePrompts.type.includeInGraphTooltip)
+            titleText += this.nodePrompts.type.label + ": " + d.attributes.Node_Type + "\n";
+        // Add degrees
+          if(this.nodePrompts.degrees.includeInGraphTooltip)
+            titleText += this.nodePrompts.degrees.label + ": " + d.weight + "\n";
+        // Add notes
+          if(this.nodePrompts.notes.includeInGraphTooltip)
+            titleText += this.nodePrompts.notes.label + ": " + d.attributes.Notes + "\n";
+        // Add info
+          if(this.nodePrompts.info.includeInGraphTooltip)
+            titleText += this.nodePrompts.info.label + ": " + d.attributes["Extra Info"] + "\n";
+        // Add updated info
+          if(this.nodePrompts.updated.includeInGraphTooltip)
+            titleText += this.nodePrompts.updated.label + ": " + this.displayUpdated(d);
+    }
+    else
+    {
+
+       // For backwards compatability
+       titleText += this.nodePrompts.label.label + ": " + d.label + "\n";
+
+    }
+    return titleText;
+}
+
+displayUpdated(nodeEdge)
+{
+      var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
+
+      var year = "" + d.getFullYear();
+      var date = (d.getMonth()+1)+"/"+d.getDate()+"/"+ year.substr(2,4);
+      var time = d.toTimeString().substr(0,5);
+      var dateTime = date+' at '+time + " by " + nodeEdge._nlog[nodeEdge._nlog.length-1];
+
+      return dateTime;
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Apply new force properties
     Call this on construct and if forceProperties have changed.
@@ -517,6 +581,14 @@ _UpdateLinkStrokeWidth (edge) {
   } else {
     return 0.175;             // Barely visible if not selected
   }
+}
+
+_UpdateLinkStrokeColor(edge){
+  let COLORMAP = UDATA.AppState('NODECOLORMAP');
+  let color = COLORMAP[edge.attributes.Relationship]
+  return color;
+
+
 }
 
 

@@ -23,7 +23,17 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+// MD React stuff added by Joshua ... probably could be placed better
+import MDReactComponent from 'markdown-react-js';
+const mdplugins = {
+  emoji: require('markdown-it-emoji')
+};
+
 var DBG = false;
+
+const SETTINGS     = require('settings');
+const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1') || (location.href.includes('admin=true'));
+
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,6 +43,27 @@ const { Button, Table }    = ReactStrap;
 
 const UNISYS   = require('unisys/client');
 var   UDATA    = null;
+
+/// OptMdReact /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// Optimize the MDReact
+// this should be moved to a separate class / file so it isn't redundant to the one in Edge
+// but this is the easiest for now
+// don't re-render the markup unless the text has actually changed
+class OptMdReact extends MDReactComponent {
+  shouldComponentUpdate(np,ns)
+  {
+    let bReturn = true;
+    if(this.text == np.text)
+        bReturn = false;
+    else
+      this.text = np.text;
+
+    return bReturn;
+  }
+
+}
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -52,7 +83,9 @@ class NodeTable extends UNISYS.Component {
       this.onButtonClick            = this.onButtonClick.bind(this);
       this.onToggleExpanded         = this.onToggleExpanded.bind(this);
       this.setSortKey               = this.setSortKey.bind(this);
+      this.sortSymbol               = this.sortSymbol.bind(this);
 
+      this.sortDirection = -1;
 
       /// Initialize UNISYS DATA LINK for REACT
       UDATA = UNISYS.NewDataLink(this);
@@ -76,10 +109,20 @@ class NodeTable extends UNISYS.Component {
 /*/ Handle updated SELECTION
 /*/
 handleDataUpdate(data) {
-  if (data && data.nodes) {
-    this.countEdges();
-    this.setState({nodes: data.nodes});
-    this.sortTable();
+  if(data.bMarkedNode)
+      {
+        //data.bMarkedNode = false;
+        // counting on the edge table going second, which is sloppy
+        // but we are in a rush, so ... do it that way for now
+      }
+    else
+    {
+    if (data.nodes) {
+
+        this.countEdges();
+        this.setState({nodes: data.nodes});
+        this.sortTable();
+      }
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -103,8 +146,8 @@ countEdges() {
         return nodes.sort( (a,b) => {
           let akey = a.id,
               bkey = b.id;
-          if (akey<bkey) return -1;
-          if (akey>bkey) return 1;
+          if (akey<bkey) return -1*this.sortDirection;
+          if (akey>bkey) return 1*this.sortDirection;
           return 0;
         });
       }
@@ -118,8 +161,8 @@ countEdges() {
           let akey = edgeCounts[a.id] || 0,
             bkey = edgeCounts[b.id] || 0;
           // sort descending
-          if (akey > bkey) return -1;
-          if (akey < bkey) return 1;
+          if (akey > bkey) return 1*this.sortDirection;
+          if (akey < bkey) return -1*this.sortDirection;
           return 0;
         });
       }
@@ -131,9 +174,7 @@ countEdges() {
         return nodes.sort( (a,b) => {
           let akey = a.label,
               bkey = b.label;
-          if (akey<bkey) return -1;
-          if (akey>bkey) return 1;
-          return 0;
+          return (akey.localeCompare(bkey)*this.sortDirection);
         });
       }
     }
@@ -144,11 +185,27 @@ countEdges() {
         return nodes.sort( (a,b) => {
           let akey = a.attributes[key],
               bkey = b.attributes[key];
-          if (akey<bkey) return -1;
-          if (akey>bkey) return 1;
+          if (akey<bkey) return -1*this.sortDirection;
+          if (akey>bkey) return 1*this.sortDirection;
           return 0;
         });
       }
+    }
+
+    /// ---
+    sortByUpdated(nodes)
+    {
+      if (nodes) {
+        return nodes.sort( (a,b) => {
+          let akey = (a.meta.revision > 0 ? a.meta.updated : a.meta.created),
+              bkey = (b.meta.revision > 0 ? b.meta.updated : b.meta.created);
+          if (akey<bkey) return -1*this.sortDirection;
+          if (akey>bkey) return 1*this.sortDirection;
+          return 0;
+        });
+      }
+      return undefined;
+
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ If no `sortkey` is passed, the sort will use the existing state.sortkey
@@ -170,6 +227,9 @@ countEdges() {
         case 'info':
           this.sortByAttribute(nodes, 'Extra Info');
           break;
+        case 'Updated':
+          this.sortByUpdated(nodes);
+          break;
         case 'label':
         default:
           this.sortByLabel(nodes);
@@ -177,6 +237,15 @@ countEdges() {
       }
       this.setState({nodes: nodes});
     }
+
+    sortSymbol(key)
+    {
+      if(key != this.state.sortkey) // this is not the current sort, so don't show anything
+        return "";
+      else
+        return this.sortDirection==-1?"▼":"▲"; // default to "decreasing" and flip if clicked again
+    }
+
 
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -205,6 +274,12 @@ countEdges() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ setSortKey (key) {
+
+      if(key == this.state.sortkey)
+        this.sortDirection = (-1 * this.sortDirection);// if this was already the key, flip the direction
+      else
+          this.sortDirection = 1;
+
       this.setState({sortkey: key});
       this.sortTable(key);
     }
@@ -234,51 +309,46 @@ countEdges() {
 /*/ render () {
       let { nodePrompts } = this.state;
       let { tableHeight } = this.props;
-      let styles = `thead, tbody { display: block; }
+      let styles = `thead, tbody {  }
                     thead { position: relative; }
                     tbody { overflow: auto; }
-                    .nodetable td:nth-child(1), .nodetable th:nth-child(1) {width: 4em; min-width: 4em;}
-                    .nodetable td:nth-child(2), .nodetable th:nth-child(2) {width: 5em; min-width: 5em;}
-                    .nodetable td:nth-child(3), .nodetable th:nth-child(3) {width: 10em; min-width: 10em;}
-                    .nodetable td:nth-child(4), .nodetable th:nth-child(4) {width: 4em; min-width: 4em;}
-                    .nodetable td:nth-child(5), .nodetable th:nth-child(5) {width: 4em; min-width: 4em;}
-                    .nodetable td:nth-child(6), .nodetable th:nth-child(6) {width: 25em; min-width: 25em;}`
+                    `
       return (
-        <div style={{backgroundColor:'#eafcff'}}>
+         <div style={{overflow:'auto',
+                     position:'relative',display: 'block', right:'10px',maxHeight: tableHeight, backgroundColor:'#eafcff'
+             }}>
           <style>{styles}</style>
           <Button size="sm" outline hidden
             onClick={this.onToggleExpanded}
           >{this.state.isExpanded ? "Hide Node Table" : "Show Node Table"}</Button>
           <Table hidden={!this.state.isExpanded} hover size="sm"
                  responsive striped
-                 className="nodetable"
+                 className="nodetable w-auto"
           >
             <thead>
               <tr>
-                <th></th>
-                <th><Button size="sm"
-                      disabled={this.state.sortkey === "edgeCount"}
+                <th width="4%"><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
+                <th width="12%"><Button size="sm"
                       onClick={() => this.setSortKey("edgeCount")}
-                    >{nodePrompts.degrees.label}</Button></th>
-                <th><Button size="sm"
-                      disabled={this.state.sortkey==="label"}
+                    >{nodePrompts.degrees.label} {this.sortSymbol("edgeCount")}</Button></th>
+                <th width="15%"><Button size="sm"
                       onClick={()=>this.setSortKey("label")}
-                    >{nodePrompts.label.label}</Button></th>
-                <th hidden={nodePrompts.type.hidden}>
+                    >{nodePrompts.label.label} {this.sortSymbol("label")}</Button></th>
+                <th width="15%"hidden={nodePrompts.type.hidden}>
                     <Button size="sm"
-                      disabled={this.state.sortkey==="type"}
                       onClick={()=>this.setSortKey("type")}
-                    >{nodePrompts.type.label}</Button></th>
-                <th hidden={nodePrompts.info.hidden}>
+                    >{nodePrompts.type.label} {this.sortSymbol("type")}</Button></th>
+                <th width="26%"hidden={nodePrompts.info.hidden}>
                     <Button size="sm"
-                      disabled={this.state.sortkey==="info"}
                       onClick={()=>this.setSortKey("info")}
-                    >{nodePrompts.info.label}</Button></th>
-                <th width="45%" hidden={nodePrompts.notes.hidden}>
+                    >{nodePrompts.info.label} {this.sortSymbol("info")}</Button></th>
+                <th width="26%" hidden={nodePrompts.notes.hidden}>
                     <Button size="sm"
-                      disabled={this.state.sortkey==="notes"}
                       onClick={()=>this.setSortKey("notes")}
-                    >{nodePrompts.notes.label}</Button></th>
+                    >{nodePrompts.notes.label} {this.sortSymbol("notes")}</Button></th>
+                <th  width="20%"hidden={!isLocalHost}><Button size="sm"
+                      onClick={()=>this.setSortKey("Updated")}
+                    >Updated {this.sortSymbol("Updated")}</Button></th>
               </tr>
             </thead>
             <tbody style={{maxHeight: tableHeight}}>
@@ -294,20 +364,50 @@ countEdges() {
                     >{node.label}</a></td>
                 <td hidden={nodePrompts.type.hidden}>{node.attributes["Node_Type"]}</td>
                 <td hidden={nodePrompts.info.hidden}>{node.attributes["Extra Info"]}</td>
-                <td hidden={nodePrompts.notes.hidden}>{node.attributes["Notes"]}</td>
+                <td hidden={nodePrompts.notes.hidden}><OptMdReact text={node.attributes["Notes"]} onIterate={this.markdownIterate} markdownOptions={{typographer: true, linkify: true}} plugins={[mdplugins.emoji]}/></td>
+                <td hidden={!isLocalHost}>{this.displayUpdated(node)}</td>
               </tr>
             )}
             </tbody>
           </Table>
         </div>
       );
+
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ componentDidMount () {
       if (DBG) console.log('NodeTable.componentDidMount!');
     }
+
+
+markdownIterate(Tag, props, children, level){
+  if (Tag === 'a') {
+    props.target = '_blank';
+    }
+
+  return <Tag {...props}>{children}</Tag>;
+
+}
+
+displayUpdated(nodeEdge)
+  {
+      var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
+
+      var year = "" + d.getFullYear();
+      var date = (d.getMonth()+1)+"/"+d.getDate()+"/"+ year.substr(2,4);
+      var time = d.toTimeString().substr(0,5);
+      var dateTime = date+' at '+time;
+      var titleString = "v" + nodeEdge.meta.revision + " by " + nodeEdge._nlog[nodeEdge._nlog.length-1];
+      var tag = <span title={titleString}> {dateTime} </span>;
+
+      return tag;
+
+  }
+
 } // class NodeTable
+
+
 
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////

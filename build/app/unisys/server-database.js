@@ -157,8 +157,8 @@ DB.InitializeDatabase = function (options = {}) {
     to populate the NODES and EDGES structures.
 /*/
 DB.PKT_GetDatabase = function(pkt) {
-  let nodes = NODES.chain().data({ removeMeta: true });
-  let edges = EDGES.chain().data({ removeMeta: true });
+  let nodes = NODES.chain().data({ removeMeta: false });
+  let edges = EDGES.chain().data({ removeMeta: false });
   if (DBG) console.log(PR,`PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${edges.length} edges)`);
   LOGGER.Write(pkt.Info(), `getdatabase`);
   return { d3data: { nodes, edges }, template: TEMPLATE };
@@ -463,9 +463,9 @@ DB.WriteDbJSON = function (filePath) {
         if (typeof filePath==='string') {
           if (DBG) console.log(PR,`writing { nodes, edges } to '${filePath}'`);
           let nodes = db.getCollection("nodes").chain()
-            .data({ removeMeta: true });
+            .data({ removeMeta: false });
           let edges = db.getCollection("edges").chain()
-            .data({ removeMeta: true });
+            .data({ removeMeta: false });
           let data = { nodes, edges };
           let json = JSON.stringify(data);
           if (DBG) console.log(PR,`ensuring DIR ${PATH.dirname(filePath)}`);

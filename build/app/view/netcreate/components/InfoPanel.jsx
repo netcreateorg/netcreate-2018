@@ -13,8 +13,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-var DBG = true;
-
+var DBG = false;
 
 /// UNISYS INITIALIZE REQUIRES for REACT ROOT /////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -31,7 +30,6 @@ const Help = require('./Help');
 const Vocabulary = require('./Vocabulary');
 const NodeTable = require('./NodeTable');
 const EdgeTable = require('./EdgeTable');
-
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -72,12 +70,14 @@ class InfoPanel extends UNISYS.Component {
       if ((tab === `1`) ||  (tab === '5')) {
         this.setState({
           tabpanelHeight: '50px', // show only tab buttons
-          hideDragger: true
+          hideDragger: true,
+          bIgnoreTableUpdates: true
         });
       } else {
         this.setState({
           tabpanelHeight: this.state.savedTabpanelHeight,
-          hideDragger: false
+          hideDragger: false,
+          bIgnoreTableUpdates: true
         });
       }
     } else {
@@ -86,7 +86,8 @@ class InfoPanel extends UNISYS.Component {
       this.setState({ activeTab: `1` });
       this.setState({
         tabpanelHeight: '50px', // show only tab buttons
-        hideDragger: true
+        hideDragger: true,
+        bIgnoreTableUpdates: true
       });
     }
   }
@@ -105,12 +106,14 @@ class InfoPanel extends UNISYS.Component {
     let top = e.clientY + this.state.draggerMouseOffsetY;
     this.setState({
       tabpanelHeight: (top - this.state.tabpanelTop) + 'px',
-      tableHeight: (top - this.state.tabpanelTop - 95) + 'px',    // Hacked tab button + thead offset
+      tableHeight: (top - this.state.tabpanelTop - 55) + 'px',    // Hacked tab button + thead offset
       draggerTop: top + 'px',
-      savedTabpanelHeight: (top - this.state.tabpanelTop) + 'px'  // remember height when switching tabs
+      savedTabpanelHeight: (top - this.state.tabpanelTop) + 'px',  // remember height when switching tabs
+      bIgnoreTableUpdates: true // ignore this update at the table level if it is a large data set
     });
   }
   endDrag() {
+    this.setState({bIgnoreTableUpdates: false})
     document.onmouseup = null;
     document.onmousemove = null;
   }
@@ -131,11 +134,16 @@ class InfoPanel extends UNISYS.Component {
       tabpanelTop: tabpanel.offsetTop
     });
   }
+
+  shouldComponentUpdate(props) {
+    return true;
+  }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/
   /*/
   render() {
-    let { tabpanelHeight, tableHeight, hideDragger, draggerTop } = this.state;
+    let { tabpanelHeight, tableHeight, hideDragger, draggerTop, bIgnoreTableUpdates} = this.state;
+    //send flag in with tableheight
     return (
       <div>
         <div id='tabpanel'
@@ -144,7 +152,7 @@ class InfoPanel extends UNISYS.Component {
             <NavItem>
               <NavLink
                 className={classnames({ active: this.state.activeTab === '1' })}
-                onClick={() => { this.toggle('1'); ga('send', { hitType: 'event', eventCategory: 'Tab', eventAction: 'Graph', eventLabel: '' + window.location  }); } }
+                onClick={() => { this.toggle('1'); this.sendGA('Graph', window.location); } }
               >
                 Graph
                         </NavLink>
@@ -152,7 +160,7 @@ class InfoPanel extends UNISYS.Component {
             <NavItem>
               <NavLink
                 className={classnames({ active: this.state.activeTab === '2' })}
-                onClick={() => { this.toggle('2'); ga('send', { hitType: 'event', eventCategory: 'Tab', eventAction: 'Nodes Table', eventLabel: '' + window.location }); }}
+                onClick={() => { this.toggle('2'); this.sendGA('Nodes Table', window.location); }}
               >
                 Nodes Table
                         </NavLink>
@@ -160,7 +168,7 @@ class InfoPanel extends UNISYS.Component {
             <NavItem>
               <NavLink
                 className={classnames({ active: this.state.activeTab === '3' })}
-                onClick={() => { this.toggle('3'); ga('send', { hitType: 'event', eventCategory: 'Tab', eventAction: 'Edges Table', eventLabel: '' + window.location  }); }}
+                onClick={() => { this.toggle('3'); this.sendGA('Edges Table', window.location); }}
               >
                 Edges Table
                         </NavLink>
@@ -168,7 +176,7 @@ class InfoPanel extends UNISYS.Component {
             <NavItem>
               <NavLink
                 className={classnames({ active: this.state.activeTab === '4' })}
-                onClick={() => { this.toggle('4'); ga('send', { hitType: 'event', eventCategory: 'Tab', eventAction: 'Vocabulary', eventLabel: '' + window.location  }); }}
+                onClick={() => { this.toggle('4'); this.sendGA('Vocabulary', window.location); }}
               >
                 Vocabulary
                         </NavLink>
@@ -176,7 +184,7 @@ class InfoPanel extends UNISYS.Component {
             <NavItem>
               <NavLink
                 className={classnames({ active: this.state.activeTab === '5' })}
-                onClick={() => { this.toggle('5'); ga('send', { hitType: 'event', eventCategory: 'Tab', eventAction: 'Help', eventLabel: '' + window.location  }); }}
+                onClick={() => { this.toggle('5'); this.sendGA('Help', window.location); }}
               >
                 Help
                         </NavLink>
@@ -188,14 +196,14 @@ class InfoPanel extends UNISYS.Component {
             <TabPane tabId="2">
               <Row>
                 <Col sm="12">
-                  <NodeTable tableHeight={tableHeight} />
+                  <NodeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates}/>
                 </Col>
               </Row>
             </TabPane>
             <TabPane tabId="3">
               <Row>
                 <Col sm="12">
-                  <EdgeTable tableHeight={tableHeight} />
+                  <EdgeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates} />
                 </Col>
               </Row>
             </TabPane>
@@ -227,6 +235,14 @@ class InfoPanel extends UNISYS.Component {
 
       </div>
     );
+  }
+
+  sendGA(actionType, url){
+
+          let googlea = NC_CONFIG.googlea;
+          if(googlea != "0"){
+            ga('send', { hitType: 'event', eventCategory: 'Tab', eventAction: actionType, eventLabel: '' + url  });
+          }
   }
 
 } // class InfoPanel

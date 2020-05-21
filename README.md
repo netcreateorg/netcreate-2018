@@ -2,11 +2,15 @@
 
 NetCreate 2018 is a network graph analysis tool for researching reading comprehension in the digital humanities classroom. This is a work in progress. See the [NetCreate Wiki](https://github.com/daveseah/netcreate-2018/wiki) for additional documentation.
 
+## CITATION
+
+If you use or refer to Net.Create in a publication, we ask that you cite it. The correct citation is: Craig, K. & Danish, J. (2018). Net.Create. http://www.netcreate.org. Indiana University, IN.
+
 ## QUICK INSTALLATION
 
 The Wiki has [detailed instructions](https://github.com/daveseah/netcreate-2018/wiki/Installation-Guide). In general, you'll need to install the prerequisite `Git` and `NodeJS` command line utilities to your computer and use a `terminal` program to issue the following commands to install from the Internet:
 
-* `git clone https://github.com/daveseah/netcreate-2018.git`
+* `git clone https://github.com/netcreateorg/netcreate-2018.git`
 * `cd netcreate-2018/build`
 * `git checkout dev`
 * `npm ci`
@@ -19,10 +23,18 @@ Once you have NetCreate installed, make sure you are in the `netcreate-2018/buil
 
 You will be using these commands most frequently:
 
-* `npm run dev` - Run the NetCreate Server in developer mode. This is the mode that most people use the most. The terminal will print status and instructions on how to connect to the NetCreate Server with the Chrome browser.
+* `npm run dev` - Run the NetCreate Server in developer mode. This is the mode that most people use the most. The terminal will print status and instructions on how to connect to the NetCreate Server with the Chrome browser. An optional command (`./nc.js --dataset=projectname`) can create/load a specific database and template file. See the User Guide for more information.
 * `npm run log` - While NetCreate is running, use another terminal window to print the contents of the current **session log**. You can use this to monitor the activity of the running server.
 * `npm run package` - Make the 'standalone' version! After a NetCreate classroom session, use this command to make a snapshot of the current database and placed in the `netcreate-2018/build/public` directory. You can copy this directory to a webserver for read-only access to the netgraph!
 * `npm run package:debug` - Run/debug the current standalone version from http://localhost:3000
+
+## QUICK-START USER GUIDE
+
+**How to access Net.Create as a client:** After starting the Net.Create server, you'll see a set of command line responses. One of those is labeled "CLIENTS" and has an IP address that clients can paste into their browser window's address field to access the main Net.Create server.
+
+**How to add/change node/edge entries in Net.Create:** Net.Create defaults to a view-only state. In order to make any additions/changes to the Net.Create database, each client needs an access token entered in the "Login" field in the upper left-hand corner of the Net.Create window. See `ncMakeTokens` below in "Support Operations".
+
+**How to change node/edge types and select a different project:** Two files in the /build/runtime folder hold both data (netcreate.loki) and template (netcreate.template). You can copy and rename these file pairs (i.e. netcreate.template/loki -> mynetwork.template/loki) and then use that to run the server (`./nc.js --dataset=mynetwork`).
 
 ## SUPPORT OPERATIONS
 
@@ -37,7 +49,9 @@ To **erase the database**, another javascript console command `ncEmptyDatabase()
 
 All **session logs** are stored in `netcreate-2018/build/runtime/logs`.
 
-The **server database** is stored in `netcreate-2018/build/runtime/netcreate.loki`. You can copy this file to archive it.
+The **server database** is stored in `netcreate-2018/build/runtime/netcreate.loki` if you use `npm run dev` to start the server. You can copy this file to back it up, even while the server is running.
+
+The **node/edge templates** are stored in `netcreate-2018/build/runtime/netcreate.template` if you use `npm run dev` to start the server.
 
 
 
