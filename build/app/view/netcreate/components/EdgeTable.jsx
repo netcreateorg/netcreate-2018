@@ -454,7 +454,9 @@ class EdgeTable extends UNISYS.Component {
       var date = (d.getMonth()+1)+"/"+d.getDate()+"/"+ year.substr(2,4);
       var time = d.toTimeString().substr(0,5);
       var dateTime = date+' at '+time;
-      var titleString = "v" + nodeEdge.meta.revision + " by " + nodeEdge._elog[nodeEdge._elog.length-1];
+      var titleString = "v" + nodeEdge.meta.revision;
+      if(nodeEdge._nlog)
+        titleString += " by " + nodeEdge._nlog[nodeEdge._nlog.length-1];
       var tag = <span title={titleString}> {dateTime} </span>;
 
       return tag;
