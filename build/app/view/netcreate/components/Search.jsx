@@ -70,10 +70,8 @@ class Search extends UNISYS.Component {
 /*/ render () {
       return (
         <FormGroup row>
-          <Col sm={3}>
+          <Col>
             <Label className="small text-muted">Type to search or add a node:</Label>
-          </Col>
-          <Col sm={9}>
             <AutoComplete
               identifier={thisIdentifier}
               disabledValue={this.state.searchString}
