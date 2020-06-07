@@ -831,18 +831,30 @@ class EdgeEditor extends UNISYS.Component {
       // special override to allow editing an edge that has the same parent node for both source and target
       let sameSourceAndTarget = (sourceNode.label === this.props.parentNodeLabel) &&
         (targetNode.label === this.props.parentNodeLabel);
+
+      // Optimize Edge Loading
+      // If not expanded, just show the button
+      // Only bother to render the whole EdgeEditor if the Edge is being edited
+      // This speeds up render times by almost 2 seconds
+      if (!this.state.isExpanded) {
+        return (
+          <div>
+            <Button
+              outline
+              size="sm"
+              style={{ backgroundColor: "#a9d3ff", borderColor: 'transparent', width: '100%', marginBottom: '3px', textAlign: "left", overflow: "hidden" }}
+              onClick={this.onButtonClick}
+            >{parentNodeLabel === sourceNode.label ? me : sourceNode.label}
+              &nbsp;<span title={formData.relationship}>&#x2794;</span>&nbsp;
+              {parentNodeLabel === targetNode.label ? me : targetNode.label}
+            </Button>
+          </div>
+        );
+      }
+
       return (
         <div>
 
-          <Button
-            className={this.state.isExpanded?'d-none':''}
-            outline
-            size="sm"
-            style={{backgroundColor:"#a9d3ff",borderColor:'transparent',width:'100%',marginBottom:'3px',textAlign:"left",overflow: "hidden"}}
-            onClick={this.onButtonClick}
-          >{parentNodeLabel===sourceNode.label ? me : sourceNode.label}
-          &nbsp;<span title={formData.relationship}>&#x2794;</span>&nbsp;
-          {parentNodeLabel===targetNode.label ? me : targetNode.label}</Button>
           <div className={this.state.isExpanded?'':'d-none'}>
             <Form className="nodeEntry"
                   style={{backgroundColor:"#C9E1FF",minHeight:'300px',padding:'5px',marginBottom:'10px'}}
