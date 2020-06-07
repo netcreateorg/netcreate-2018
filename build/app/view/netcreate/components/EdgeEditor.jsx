@@ -267,8 +267,8 @@ class EdgeEditor extends UNISYS.Component {
       this.onCitationChange       = this.onCitationChange.bind(this);
       this.onCategoryChange       = this.onCategoryChange.bind(this);
       this.onSubmit               = this.onSubmit.bind(this);
-      this.checkUnload                           = this.checkUnload.bind(this);
-      this.doUnload                              = this.doUnload.bind(this);
+      this.checkUnload            = this.checkUnload.bind(this);
+      this.doUnload               = this.doUnload.bind(this);
 
       // Always make sure class methods are bind()'d before using them
       // as a handler, otherwise object context is lost
@@ -639,9 +639,9 @@ class EdgeEditor extends UNISYS.Component {
 
   } //   this.onCloseCiteClick
 
-  dateFormatted (){
+  dateFormatted () {
     var today = new Date();
-    var year = "" + today.getFullYear();
+    var year = String(today.getFullYear());
     var date = (today.getMonth()+1)+"/"+today.getDate()+"/"+ year.substr(2,4);
     var time = today.toTimeString().substr(0,5);
     var dateTime = time+' on '+date;
@@ -818,16 +818,14 @@ class EdgeEditor extends UNISYS.Component {
       const { edgeID, parentNodeLabel } = this.props;
       const { formData, sourceNode, targetNode, edgePrompts} = this.state;
       let {citationPrompts} = this.state;
-      if(edgePrompts.category == undefined) // for backwards compatability
-      {
+      if (edgePrompts.category === undefined) { // for backwards compatability
         edgePrompts.category = {};
         edgePrompts.category.label = "";
         edgePrompts.category.hidden = true;
       }
-      if(citationPrompts==undefined) // if citationPrompts were lefft out, simply make them hidden
-      {
-          citationPrompts = {};
-          citationPrompts.hidden = true;
+      if (citationPrompts === undefined) { // if citationPrompts were left out, simply make them hidden
+        citationPrompts = {};
+        citationPrompts.hidden = true;
       }
       const me = <span style={{ color: "rgba(0,0,0,0.2)", fontStyle: "italic" }}>this node</span>;
       // special override to allow editing an edge that has the same parent node for both source and target
@@ -1010,21 +1008,17 @@ class EdgeEditor extends UNISYS.Component {
       window.addEventListener("unload", this.doUnload);
     }
 
-    checkUnload(e)
-    {
-        if(this.state.isEditable)
-        {
-          (e || window.event).returnValue = null;
-          return null;
-        }
+    checkUnload(e) {
+      if (this.state.isEditable) {
+        (e || window.event).returnValue = null;
+        return null;
+      }
     }
 
-    doUnload(e)
-    {
-          if(this.state.isEditable)
-          {
-            this.NetCall('SRV_DBUNLOCKEDGE', { edgeID: this.state.formData.id })
-          }
+    doUnload(e) {
+      if (this.state.isEditable) {
+        this.NetCall('SRV_DBUNLOCKEDGE', { edgeID: this.state.formData.id })
+      }
     }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1053,33 +1047,30 @@ class EdgeEditor extends UNISYS.Component {
 /*/
 /*/
 
-helpText(obj)
-{
-  var text = "";
-
-  if(obj.help == undefined || obj.help == "")
-    text = obj.label;
-  else
-    text = obj.help;
-  return text;
-}
-
-
-    markdownDisplay (text){
-
-  if(!this.state.isEditable)
-      return mdReact({onIterate: this.markdownIterate,  markdownOptions:{ typographer: true, linkify: true}, plugins: [mdplugins.emoji]
-    })(text);
-}
-
-markdownIterate(Tag, props, children, level){
- if (Tag === 'a') {
-    props.target = '_blank';
+    helpText(obj) {
+      var text = "";
+      if (obj.help === undefined || obj.help === "") text = obj.label;
+      else text = obj.help;
+      return text;
     }
 
-  return <Tag {...props}>{children}</Tag>;
 
-}
+    markdownDisplay (text) {
+      if (!this.state.isEditable) {
+        return mdReact({
+          onIterate: this.markdownIterate,
+          markdownOptions: { typographer: true, linkify: true },
+          plugins: [mdplugins.emoji]
+        })(text);
+      }
+    }
+
+    markdownIterate(Tag, props, children, level) {
+      if (Tag === 'a') {
+        props.target = '_blank';
+      }
+      return <Tag {...props}>{children}</Tag>;
+    }
 
 } // class EdgeEditor
 
