@@ -373,8 +373,6 @@ class EdgeEditor extends UNISYS.Component {
         // We don't know what target the user is going to pick yet, so just display a
         // placeholder for now, otherwise, the render will choke on an invalid targetNode.
         targetNodes = [{label:'pick one...'}];
-        // set this autoComplete field as current
-        this.AppCall('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'target'});
         // Define `edge` so it can be loaded later during setState.
         edge = {
           id: edgeID,
@@ -394,6 +392,10 @@ class EdgeEditor extends UNISYS.Component {
           isExpanded:           true,
           targetIsEditable:     true,
           isEditable:           true
+        }, () => {
+            // AUTOCOMPLETE mode needs to be set AFTER the edit state has already been set
+            // otherwise, the <AutoComplete> component may not have even been defined in the collapsed view.
+            this.AppCall('AUTOCOMPLETE_SELECT', { id: 'edge' + this.props.edgeID + 'target' });
         });
 
         this.AppCall('EDGEEDIT_LOCK', { edgeID: this.props.edgeID });
