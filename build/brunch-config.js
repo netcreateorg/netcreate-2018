@@ -76,7 +76,7 @@ module.exports = {
   It should return an object with a close() method (as ExpressJS app does)
 /*/ server: {
       // viewing url is http://localhost:3000
-      port   : 3000
+      port   : parseInt(NC_CONFIG.port)
     },
 
 /// NPM INTEGRATION ///////////////////////////////////////////////////////////
