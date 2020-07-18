@@ -23,6 +23,8 @@ shell.echo(`
 
     1. Setting dataset to ${dataset}...`);
 
+
+// dataset
 if (dataset === undefined || dataset === '') {
   shell.echo(`
     **** ERROR: NO DATASET DEFINED ****
@@ -38,14 +40,21 @@ if (dataset === undefined || dataset === '') {
   shell.exit();
 }
 
-if (googlea === undefined || googlea === '') {
-  shell.echo(`    2. Google Analytics will not be used. Use the flag --googlea=XXXX to load google analyics for ID XXXX.`
-  );
-  googlea=0;
-}
-else{
 
-  shell.echo(`    2. Using Google Analyics with:` + googlea + ". If you want to disable google analytics, leave this flag off or set to 0.");
+// google analytics
+if (googlea === undefined || googlea === '') {
+  shell.echo(`
+    2. Google Analytics will not be used.
+        Use the flag --googlea=XXXX to load google analyics for ID XXXX.
+  `);
+  googlea=0;
+} else {
+  shell.echo(`
+    2. Using Google Analyics with:${googlea}.
+        If you want to disable google analytics, leave this flag off or set to 0.
+  `);
+}
+
 }
 
 let script = `
