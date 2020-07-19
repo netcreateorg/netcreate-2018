@@ -104,8 +104,6 @@ module.exports = (config, callback) => {
       // setup prompts
       console.log(PR);
       console.log(PR,DP,'GO TO ONE OF THESE URLS in CHROME WEB BROWSER',DP);
-      console.log(PR,DP,'MAINAPP - http://localhost:'+config.port);
-      console.log(PR,DP,'CLIENTS - http://'+IP.address()+':'+config.port);
       console.log(PR, DP, 'MAINAPP - http://localhost:' + config.port);
 
       let ipOverride = NC_CONFIG.ip;
