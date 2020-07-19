@@ -75,7 +75,7 @@ module.exports = {
   a callback function that is invoked when the server is done initializing.
   It should return an object with a close() method (as ExpressJS app does)
 /*/ server: {
-      // viewing url is http://localhost:3000
+      // viewing url is http://localhost:3000 by default, unless overridden by nc.js
       port   : parseInt(NC_CONFIG.port)
     },
 
