@@ -33,7 +33,8 @@ module.exports = (config, callback) => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ This happens early because we need to inject UNISYS connection parameters
   into index.ejs
-/*/ let unetOptions = UNISYS.InitializeNetwork();
+/*/ let nc_options = { port: NC_CONFIG.netport };
+    let unetOptions = UNISYS.InitializeNetwork( nc_options );
 
 /// CONFIGURE EXPRESS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
