@@ -46,14 +46,14 @@ if (dataset === undefined || dataset === '') {
 if (googlea === undefined || googlea === '') {
   shell.echo(`
     2. Google Analytics will not be used.
-        Use the flag --googlea=XXXX to load google analyics for ID XXXX.
-  `);
+       Use the flag --googlea=XXXX to load google analyics for ID XXXX.`
+  );
   googlea=0;
 } else {
   shell.echo(`
     2. Using Google Analyics with:${googlea}.
-        If you want to disable google analytics, leave this flag off or set to 0.
-  `);
+       If you want to disable google analytics, leave this flag off or set to 0.`
+  );
 }
 
 
@@ -63,8 +63,8 @@ if (port === undefined || port === '') {
 }
 shell.echo(`
     3. Setting port to ${port}
-        Use './nc.js --port=xxxx' to define a diferent port.\n
-`);
+       Use './nc.js --port=xxxx' to define a different port.`
+);
 
 
 let script = `
