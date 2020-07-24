@@ -226,10 +226,10 @@ class SessionShell extends UNISYS.Component {
     if (this.state.isValid) {
       // force a page URL change
       if (BRUTAL_REDIRECT) {
-        const redirect = `/#/edit/${this.state.token}`;
+        const redirect = `./#/edit/${this.state.token}`;
         window.location=redirect;
       } else {
-        const redirect = `/edit/${this.state.token}`
+        const redirect = `./edit/${this.state.token}`
         this.props.history.push(redirect);
       }
     }
