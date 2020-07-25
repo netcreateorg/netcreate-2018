@@ -174,7 +174,7 @@ class SessionShell extends UNISYS.Component {
     // login after a ForceReload. This is a bit hacky and the app would benefit
     // from not relying on forced reloads. See handleChange().
     let token = this.props.match.params.token;
-    let decoded = SESSION.DecodeToken(token) || {};
+    let decoded = SESSION.DecodeToken(token, window.NC_CONFIG.dataset) || {};
     this.SetAppState("SESSION", decoded);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -203,7 +203,7 @@ class SessionShell extends UNISYS.Component {
     let token = this.props.match.params.token;
     if (!token) return this.renderLogin();
     // try to decode token
-    let decoded = SESSION.DecodeToken(token);
+    let decoded = SESSION.DecodeToken(token, window.NC_CONFIG.dataset);
     if (decoded.isValid) {
       return this.renderLoggedIn(decoded);
     } else {
@@ -215,7 +215,7 @@ class SessionShell extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   handleChange(event) {
     let token = event.target.value;
-    let decoded = SESSION.DecodeToken(token);
+    let decoded = SESSION.DecodeToken(token, window.NC_CONFIG.dataset);
     let { classId, projId, hashedId, subId, groupId } = decoded;
     this.setState(decoded);
   }

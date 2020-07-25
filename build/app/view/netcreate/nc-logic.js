@@ -1105,12 +1105,14 @@ JSCLI.AddFunction(
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Command: Token Generator
 /*/
-JSCLI.AddFunction(function ncMakeTokens(clsId, projId, numGroups) {
+JSCLI.AddFunction(function ncMakeTokens(clsId, projId, dataset, numGroups) {
   // type checking
   if (typeof clsId !== "string")
-    return "args: str classId, str projId, int numGroups";
+    return "args: str classId, str projId, str dataset, int numGroups";
   if (typeof projId !== "string")
-    return "args: str classId, str projId, int numGroups";
+    return "args: str classId, str projId, str dataset, int numGroups";
+  if (typeof dataset !== "string")
+    return "args: str classId, str projId, str dataset, int numGroups";
   if (clsId.length > 12) return "classId arg1 should be 12 chars or less";
   if (projId.length > 12) return "classId arg1 should be 12 chars or less";
   if (!Number.isInteger(numGroups)) return "numGroups arg3 must be integer";
@@ -1121,7 +1123,7 @@ JSCLI.AddFunction(function ncMakeTokens(clsId, projId, numGroups) {
   for (let i = 1; i <= numGroups; i++) {
     let id = String(i);
     id = id.padStart(pad, "0");
-    out += `group ${id}\t${SESSION.MakeToken(clsId, projId, i)}\n`;
+    out += `group ${id}\t${SESSION.MakeToken(clsId, projId, i, dataset)}\n`;
   }
   if (window && window.location) {
     let ubits = new URL(window.location);
