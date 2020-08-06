@@ -578,20 +578,37 @@ class EdgeEditor extends UNISYS.Component {
 
         // If we were editing, then revert and exit
         if (this.state.isEditable) {
-          this.loadSourceAndTarget();
+          const D3DATA = this.AppState('D3DATA');
+
           this.setState({ isEditable: false, targetIsEditable: false });
+          // Return focus of autocomplete to Search field.
+          this.AppCall('AUTOCOMPLETE_SELECT', { id: 'search' });
+          // Tell parent node to exit out of edge edit mode
           this.AppCall('EDGEEDIT_UNLOCK', { edgeID: this.props.edgeID });
-          this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
-          // unlock
-          this.NetCall('SRV_DBUNLOCKEDGE', { edgeID: this.state.formData.id })
-            .then((data) => {
-              if (data.NOP) {
-                if (DBG) console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
-              } else if (data.unlocked) {
-                if (DBG) console.log(`SERVER SAYS: unlock success! you have released Edge ${data.edgeID}`);
-                this.setState({ dbIsLocked: false });
-              }
-            });
+
+          // Cancel edit existing or cancel edit new?
+          let originalEdge = D3DATA.edges.filter(edge => parseInt(edge.id) === this.props.edgeID)[0];
+          if (originalEdge === undefined) {
+            // user abandoned editing a new node that was never saved
+            const parentNode = D3DATA.nodes.find(node => node.label === this.props.parentNodeLabel);
+            if (!parentNode) throw `No parent node found for ${this.props.parentNodeLabel} while trying to cancel edit.  This should not happen!`;
+            UDATA.LocalCall('EDGE_NEW_CANCEL', { nodeID: parentNode.id });
+            this.clearForm();
+          } else {
+            // User is abandoning edits to an existing edge.
+            // restore original edge
+            this.loadSourceAndTarget();
+            // unlock
+            this.NetCall('SRV_DBUNLOCKEDGE', { edgeID: this.state.formData.id })
+              .then((data) => {
+                if (data.NOP) {
+                  if (DBG) console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
+                } else if (data.unlocked) {
+                  if (DBG) console.log(`SERVER SAYS: unlock success! you have released Edge ${data.edgeID}`);
+                  this.setState({ dbIsLocked: false });
+                }
+              });
+          }
         }
       } else {
         // expand, but don't set the autocomplete field, since we're not editing

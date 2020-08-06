@@ -288,6 +288,32 @@ class NodeSelector extends UNISYS.Component {
         }
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Handler for canceling a new edge
+      Called by EdgeEditor
+      Normally we would just use SOURCE_SELECT to reload the node.
+      There are two issues with just using SOURCE_SELECT:
+      1. This special handler is necessary because the newly added edge
+         component is not affected by updates to this.state.edges.  Its key
+         is not in the this.state.edges array, so it is not properly cleared
+         even if we use SOURCE_SELECT to reset the node.
+      2. In order for `handleSelection` to properly reload all the edges,
+         two states have to be cleared first: this node needs to NOT be
+         the ACTIVEAUTOCOMPLETE field, and this node's edges need to be
+         EDGEEDIT_UNLOCKed.  The problem is that these states are set
+         asynchronously, so `handleSelection` ends up getting called
+         before the states are updated.
+      To fix this, we use setState's callback to trigger the reload.
+  /*/
+      UDATA.HandleMessage("EDGE_NEW_CANCEL", data => {
+        if (data.nodeID === this.state.formData.id) {
+          this.setState({ edgesAreLocked: false }, () => {
+            // Do this in callback, otherwise, edges are not unlocked
+            // and the source_select never triggers an update
+            UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [this.state.formData.id] });
+          });
+        }
+      });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // This handler is not necessary because SELECTION event clears the form
       // UDATA.HandleMessage("NODE_DELETE", (data) => {
       // });
