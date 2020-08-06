@@ -58,6 +58,9 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
       constructor () {
         super();
         UNISYS.ForceReloadOnNavigation();
+        this.state = {
+          isConnected: true
+        };
         this.OnDOMReady(()=>{
           if (DBG) console.log(PR,'OnDOMReady');
         });
@@ -72,6 +75,9 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
         });
         this.OnRun(()=>{
           if (DBG) console.log(PR,'OnRun');
+        });
+        this.OnDisconnect(()=>{
+          this.setState({ isConnected: false });
         });
       }
 
@@ -92,6 +98,12 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
   /*/ render() {
         return (
           <div>
+            <div hidden={this.state.isConnected} style={{ width:'100%',height:'100%',position:'fixed',backgroundColor:'rgba(0,0,0,0.5',display:'flex',flexDirection:'column',justifyContent:'space-evenly',zIndex:'3000'}}>
+              <div style={{color:'#fff',width:'100%',textAlign:'center'}}>
+                <h1>Server Disconnected</h1>
+                <p>Please contact your administrator to restart the graph.</p>
+              </div>
+            </div>
             <div style={{display:'flex', flexFlow:'row nowrap',
                 width:'100%', height:'100vh',overflow:'hidden'}}>
               <div id="left" style={{backgroundColor:'#EEE',flex:'1 1 25%',maxWidth:'400px',padding:'10px',overflow:'scroll',marginTop:'38px'}}>
