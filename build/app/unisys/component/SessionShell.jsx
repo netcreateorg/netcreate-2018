@@ -66,6 +66,17 @@ const LABEL_STYLE = {
   marginBottom: "0.15rem",
   marginTop: "0.15rem"
 };
+/// Move login to navbar
+const NAV_LOGIN_STYLE = {
+  position: 'fixed',
+  top: '5px',
+  right: '20px',
+  zIndex: '2000'
+};
+const NAV_LOGIN_FEEDBACK_STYLE = {
+  position: "absolute",
+  right: "210px"
+};
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -100,21 +111,35 @@ class SessionShell extends UNISYS.Component {
       let gid = `\u00A0${decoded.groupId}`;
       let subid = decoded.subId ? `USER\u00A0${decoded.subId}` : "";
       return (
-        <FormGroup row style={GROUP_STYLE}>
-          <Col sm={3}>
-            <Label style={LABEL_STYLE} className="small">
-              GROUP{gid}
-              <br />
-              {subid}
-            </Label>
-          </Col>
-          <Col sm={9} className="text-right">
-            <Label style={LABEL_STYLE} className="small">
-              {classproj}-<strong>{decoded.hashedId}</strong>
-            </Label>
-          </Col>
-        </FormGroup>
+        <div row style={NAV_LOGIN_STYLE}>
+          <Label style={LABEL_STYLE} className="small">
+            GROUP{gid}:&nbsp;
+            <br />
+            {subid}
+          </Label>
+          <Label style={LABEL_STYLE} className="small">
+            {classproj}-<strong>{decoded.hashedId}</strong>
+          </Label>
+        </div>
       );
+
+      // Old Form above NodeSelector
+      // return (
+      //   <FormGroup row style={GROUP_STYLE} style={{position:'fixed',top:'5px',right:'5px',zIndex:'2000'}}>
+      //     <Col sm={3}>
+      //       <Label style={LABEL_STYLE} className="small">
+      //         GROUP{gid}
+      //         <br />
+      //         {subid}
+      //       </Label>
+      //     </Col>
+      //     <Col sm={9} className="text-right">
+      //       <Label style={LABEL_STYLE} className="small">
+      //         {classproj}-<strong>{decoded.hashedId}</strong>
+      //       </Label>
+      //     </Col>
+      //   </FormGroup>
+      // );
     } else {
       return <p>ERROR:renderLoggedIn didn't get valid decoded object</p>;
     }
@@ -126,16 +151,16 @@ class SessionShell extends UNISYS.Component {
     let { token, classId, projId, groupId, subId, hashedId, isValid } = this.state;
     if (token) token = token.toUpperCase();
     let formFeedback, tip, input;
-    tip = "type group ID";
-    if (classId) tip = "scanning for valid code...";
-    if (projId) tip = "waiting for valid code...";
-    if (groupId) tip = "waiting for extra ID...";
+    tip = "Type group ID";
+    if (classId) tip = "Scanning for valid code...";
+    if (projId) tip = "Waiting for valid code...";
+    if (groupId) tip = "Waiting for extra ID...";
     if (hashedId) {
       if (hashedId.length >= 3) {
         if (!groupId) tip = `'${token}' is an invalid code`;
         else {
-          if (subId) tip = `login in as GROUP ${groupId} ${subId}`;
-          else tip = `login as GROUP ${groupId} or add -ID<num>`;
+          if (subId) tip = `Login in as GROUP ${groupId} ${subId}`;
+          else tip = `Login as GROUP ${groupId} or add -ID<num>`;
         }
       }
     }
@@ -143,29 +168,42 @@ class SessionShell extends UNISYS.Component {
       if (subId===0) {
         tip = `e.g. ${classId}-${projId}-${hashedId} followed by -ID<num>`;
         input = <Input invalid name="sessionToken" id="sessionToken" bsSize="sm" style={INPUT_STYLE} className="text-right" placeholder="CLASSID-PROJID-CODE" onChange={this.handleChange} />
-        formFeedback = <FormFeedback className="text-right"><small>{tip}</small></FormFeedback>
+        formFeedback = <FormFeedback style={NAV_LOGIN_FEEDBACK_STYLE} className="text-right"><small>{tip}</small></FormFeedback>
       } else {
         input = <Input valid name="sessionToken" id="sessionToken" bsSize="sm" style={INPUT_STYLE} className="text-right" placeholder="CLASSID-PROJID-CODE" onChange={this.handleChange} />
-        formFeedback = <FormFeedback valid className="text-right"><small>{tip}</small></FormFeedback>
+        formFeedback = <FormFeedback valid style={NAV_LOGIN_FEEDBACK_STYLE} className="text-right"><small>{tip}</small></FormFeedback>
       }
     } else {
         input = <Input invalid name="sessionToken" id="sessionToken" bsSize="sm" style={INPUT_STYLE} className="text-right" placeholder="CLASSID-PROJID-CODE" onChange={this.handleChange} />
-        formFeedback = <FormFeedback className="text-right"><small>{tip}</small></FormFeedback>
+        formFeedback = <FormFeedback style={NAV_LOGIN_FEEDBACK_STYLE} className="text-right"><small>{tip}</small></FormFeedback>
     }
 
     return (
-      <Form onSubmit={this.onSubmit}>
+      <Form onSubmit={this.onSubmit} style={NAV_LOGIN_STYLE}>
       <FormGroup row>
-        <Col>
         <InputGroup>
           <InputGroupAddon addonType="prepend"><Button style={{fontSize:'10px'}} color="secondary" size="sm" disabled={!isValid} onSubmit={this.onSubmit}>LOGIN</Button></InputGroupAddon>
           {input}
           {formFeedback}
         </InputGroup>
-        </Col>
       </FormGroup>
       </Form>
     );
+
+    // Old Form above NodeSelector
+    // return (
+    //   <Form onSubmit={this.onSubmit} style={{position:'fixed',top:'5px',right:'5px',zIndex:'2000'}}>
+    //   <FormGroup row>
+    //     <Col>
+    //       <InputGroup>
+    //         {formFeedback}
+    //         <InputGroupAddon addonType="prepend"><Button style={{fontSize:'10px'}} color="secondary" size="sm" disabled={!isValid} onSubmit={this.onSubmit}>LOGIN</Button></InputGroupAddon>
+    //         {input}
+    //       </InputGroup>
+    //     </Col>
+    //   </FormGroup>
+    //   </Form>
+    // );
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   componentWillMount() {
