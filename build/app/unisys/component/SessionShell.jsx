@@ -69,7 +69,7 @@ const LABEL_STYLE = {
 /// Move login to navbar
 const NAV_LOGIN_STYLE = {
   position: 'fixed',
-  top: '5px',
+  top: '7px',
   right: '20px',
   zIndex: '2000'
 };
