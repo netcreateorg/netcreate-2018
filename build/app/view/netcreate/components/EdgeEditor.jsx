@@ -251,7 +251,7 @@ class EdgeEditor extends UNISYS.Component {
       this.handleEdgeSelection    = this.handleEdgeSelection.bind(this);
       this.handleEdgeEdit         = this.handleEdgeEdit.bind(this);
       this.onStateChange_SESSION  = this.onStateChange_SESSION.bind(this);
-      this.onButtonClick          = this.onButtonClick.bind(this);
+      this.onEdgeClick            = this.onEdgeClick.bind(this);
       this.onDeleteButtonClick    = this.onDeleteButtonClick.bind(this);
       this.onEditButtonClick      = this.onEditButtonClick.bind(this);
       this.onCiteButtonClick      = this.onCiteButtonClick.bind(this);
@@ -570,8 +570,7 @@ class EdgeEditor extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Expand if the edge is collapsed.
     Cancel editing if the edge is expanded.
-/*/ onButtonClick () {
-      // REVIEW: Rename Cancel or Expand?
+/*/ onEdgeClick () {
       // Cancel/Close
       if (this.state.isExpanded) {
         // collapse
@@ -845,7 +844,7 @@ class EdgeEditor extends UNISYS.Component {
               outline
               size="sm"
               style={{ backgroundColor: "#a9d3ff", borderColor: 'transparent', width: '100%', marginBottom: '3px', textAlign: "left", overflow: "hidden" }}
-              onClick={this.onButtonClick}
+              onClick={this.onEdgeClick}
             >{parentNodeLabel === sourceNode.label ? me : sourceNode.label}
               &nbsp;<span title={formData.relationship}>&#x2794;</span>&nbsp;
               {parentNodeLabel === targetNode.label ? me : targetNode.label}
@@ -861,7 +860,7 @@ class EdgeEditor extends UNISYS.Component {
             <Form className="nodeEntry"
                   style={{backgroundColor:"#C9E1FF",minHeight:'300px',padding:'5px',marginBottom:'10px'}}
                   onSubmit={this.onSubmit}>
-              <FormText onClick={this.onButtonClick}><b>EDGE {formData.id}</b></FormText>
+              <FormText onClick={this.onEdgeClick}><b>EDGE {formData.id}</b></FormText>
               <FormGroup row>
                 <Col sm={3}>
                   <Label for="source" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.source.label}<span className="tooltiptext">{this.helpText(edgePrompts.source)}</span></Label>
@@ -997,7 +996,7 @@ class EdgeEditor extends UNISYS.Component {
                 >{this.state.isEditable ? "Add New Edge" : "Edit Edge"}</Button>&nbsp;
                 <Button size="sm"
                   outline={this.state.isEditable}
-                  onClick={this.onButtonClick}
+                  onClick={this.onEdgeClick}
                 >{this.state.isEditable?'Cancel':'Close'}</Button>&nbsp;
                 <Button color="primary" size="sm"
                   hidden={!this.state.isEditable}
