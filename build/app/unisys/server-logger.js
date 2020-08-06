@@ -56,8 +56,8 @@ FSE.ensureDir(dir, function (err) {
 /*/	function LogLine ( ...args ) {
 		if (!fs_log) return;
 
-		var out = str_TimeStamp()+' ';
-    out += NC_CONFIG.dataset+' ';
+		var out = str_TimeStamp()+LOG_DELIMITER;
+    out += NC_CONFIG.dataset+LOG_DELIMITER;
 		var c = args.length;
     // arguments are delimited
 		if (c) {
