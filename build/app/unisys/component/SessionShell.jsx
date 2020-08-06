@@ -111,7 +111,7 @@ class SessionShell extends UNISYS.Component {
       let gid = `\u00A0${decoded.groupId}`;
       let subid = decoded.subId ? `USER\u00A0${decoded.subId}` : "";
       return (
-        <div row style={NAV_LOGIN_STYLE}>
+        <div style={NAV_LOGIN_STYLE}>
           <Label style={LABEL_STYLE} className="small">
             GROUP{gid}:&nbsp;
             <br />
