@@ -193,7 +193,6 @@ class AppShell extends UNISYS.Component {
                   <NavItem>
                     <NavLink to="/d3forcedemo" tag={RRNavLink} replace>D3 ForceDemo</NavLink>
                   </NavItem>
-              */ }
                   <UncontrolledDropdown direction="right" nav size="sm">
                     <DropdownToggle>
                       Extras
@@ -219,6 +218,7 @@ class AppShell extends UNISYS.Component {
                       </DropdownItem>
                     </DropdownMenu>
                   </UncontrolledDropdown>
+              */ }
                 </Nav>
               </Collapse>
           </Navbar>
