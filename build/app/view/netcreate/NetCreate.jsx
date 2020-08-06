@@ -106,7 +106,7 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
               <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 60%', padding:'10px',marginTop:'56px'}}>
                 <InfoPanel/>
                 <NetGraph/>
-                <div style={{fontSize:'10px',position:'absolute',left:'0px',bottom:'0px',zIndex:'1500',color:'#aaa',backgroundColor:'#eee',padding:'5px 10px'}}>Please contact Professor
+                <div style={{fontSize:'10px',position:'fixed',left:'0px',bottom:'0px',right:'0px',zIndex:'1500',color:'#aaa',backgroundColor:'#eee',padding:'5px 10px'}}>Please contact Professor
                 Kalani Craig, Institute for Digital Arts & Humanities at
                 (812) 856-5721 (BH) or
                 craigkl@indiana.edu with questions or concerns and/or to
