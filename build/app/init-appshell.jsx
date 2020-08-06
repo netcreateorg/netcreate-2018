@@ -183,8 +183,8 @@ class AppShell extends UNISYS.Component {
       /// return component with matching routed view
       return (
         <div style={{display:'flex', flexFlow:'column nowrap', width:'100%', height:'100vh'}}>
-          <Navbar fixed="top" light expand="md" style={{ backgroundColor:'#f0f0f0', padding:'8px 10px'}}>
-            <NavbarBrand href="#" style={{padding:'0'}}><img src='images/netcreate-logo.svg' height='36px'/></NavbarBrand>
+          <Navbar fixed="top" light expand="md" style={{ backgroundColor:'#f0f0f0', padding:'4px 10px'}}>
+            <NavbarBrand href="#" style={{padding:'0'}}><img src='images/netcreate-logo.svg' height='26px'/></NavbarBrand>
             <NavbarToggler onClick={this.toggle} />
               <Collapse isOpen={this.state.isOpen} navbar>
               {/*/ (1) add navigation links here /*/}
@@ -194,7 +194,7 @@ class AppShell extends UNISYS.Component {
                     <NavLink to="/d3forcedemo" tag={RRNavLink} replace>D3 ForceDemo</NavLink>
                   </NavItem>
               */ }
-                  <UncontrolledDropdown direction="right" nav>
+                  <UncontrolledDropdown direction="right" nav size="sm">
                     <DropdownToggle>
                       Extras
                     </DropdownToggle>

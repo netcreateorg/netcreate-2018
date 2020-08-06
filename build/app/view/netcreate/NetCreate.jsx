@@ -94,7 +94,7 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
           <div>
             <div style={{display:'flex', flexFlow:'row nowrap',
                 width:'100%', height:'100vh',overflow:'hidden'}}>
-              <div id="left" style={{backgroundColor:'#EEE',flex:'1 1 25%',maxWidth:'400px',padding:'10px',overflow:'scroll',marginTop:'56px'}}>
+              <div id="left" style={{backgroundColor:'#EEE',flex:'1 1 25%',maxWidth:'400px',padding:'10px',overflow:'scroll',marginTop:'39px'}}>
                 <div style={{display:'flex',flexFlow:'column nowrap'}}>
                   <Route path='/edit/:token' exact={true} component={SessionShell}/>
                   <Route path='/edit' exact={true} component={SessionShell}/>
@@ -103,7 +103,7 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
                   <NodeSelector/>
                 </div>
               </div>
-              <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 60%', padding:'10px',marginTop:'56px'}}>
+              <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 60%', padding:'10px',marginTop:'39px'}}>
                 <InfoPanel/>
                 <NetGraph/>
                 <div style={{fontSize:'10px',position:'fixed',left:'0px',bottom:'0px',right:'0px',zIndex:'1500',color:'#aaa',backgroundColor:'#eee',padding:'5px 10px'}}>Please contact Professor
