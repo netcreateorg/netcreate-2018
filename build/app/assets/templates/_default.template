@@ -1,6 +1,9 @@
 {
 
   "_comments":  [ "/// NetCreate Template File ///",
+                  "/// IMPORTANT: As of 8/7/2020, the following funcationality is available:               ///",
+                  "///  * `"requireLogin": true` will require users to login to view graphs.  If the      ///",
+                  "///     parameter is `false` or missing, graphs are public, and login is not required   ///",
                   "/// IMPORTANT: As of 1/31/2019, the following functionality is available:               ///",
                   "///  * `label` parameter for each field may be customized                               ///",
                   "///  * `hidden` parameter may be used to hide fields                                    ///",
@@ -12,9 +15,11 @@
                   "/// The rest of the definitions are there as placeholders for future functionality      ///"
   ],
 
-  "name":        "Tacitus",
+  "name":        "Blank",
 
-  "description": "Tacitus with all genders included in a single Person node type",
+  "description": "This graph left intentionally blank for serving static files.",
+
+  "requireLogin": true,
 
   "citationPrompts":{
                 "citation": "Citation Text",

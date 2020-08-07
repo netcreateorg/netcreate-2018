@@ -59,7 +59,9 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
         super();
         UNISYS.ForceReloadOnNavigation();
         this.state = {
-          isConnected: true
+          isConnected: true,
+          isLoggedIn: false,
+          requireLogin: this.AppState('TEMPLATE').requireLogin
         };
         this.OnDOMReady(()=>{
           if (DBG) console.log(PR,'OnDOMReady');
@@ -79,9 +81,17 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
         this.OnDisconnect(()=>{
           this.setState({ isConnected: false });
         });
+        this.onStateChange_SESSION = this.onStateChange_SESSION.bind(this);
+        this.OnAppStateChange('SESSION',this.onStateChange_SESSION);
       }
 
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ SESSION is called by SessionSHell when the ID changes
+      Show or hide netgraph depending on template settings.
+  /*/ onStateChange_SESSION( decoded ) {
+        this.setState({ isLoggedIn: decoded.isValid });
+      }
 
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
@@ -93,9 +103,17 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
         let dragger = document.getElementById('dragger');
         dragger.onmousedown = this.handleMouseDown;
       }
+
+      componentWillUnmount() {
+        this.AppStateChangeOff('SESSION',this.onStateChange_SESSION);
+      }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Define the component structure of the web application
   /*/ render() {
+    const { isLoggedIn } = this.state;
+        let hideGraph = false;
+        if (this.state.requireLogin && !isLoggedIn) hideGraph = true;
         return (
           <div>
             <div hidden={this.state.isConnected} style={{ width:'100%',height:'100%',position:'fixed',backgroundColor:'rgba(0,0,0,0.5',display:'flex',flexDirection:'column',justifyContent:'space-evenly',zIndex:'3000'}}>
@@ -104,13 +122,13 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
                 <p>Please contact your administrator to restart the graph.</p>
               </div>
             </div>
-            <div style={{display:'flex', flexFlow:'row nowrap',
+            <Route path='/edit/:token' exact={true} component={SessionShell}/>
+            <Route path='/edit' exact={true} component={SessionShell}/>
+            <Route path='/' exact={true} component={SessionShell}/>
+            <div hidden={hideGraph} style={{display:'flex', flexFlow:'row nowrap',
                 width:'100%', height:'100vh',overflow:'hidden'}}>
               <div id="left" style={{backgroundColor:'#EEE',flex:'1 1 25%',maxWidth:'400px',padding:'10px',overflow:'scroll',marginTop:'38px'}}>
                 <div style={{display:'flex',flexFlow:'column nowrap'}}>
-                  <Route path='/edit/:token' exact={true} component={SessionShell}/>
-                  <Route path='/edit' exact={true} component={SessionShell}/>
-                  <Route path='/' exact={true} component={SessionShell}/>
                   <Search/>
                   <NodeSelector/>
                 </div>

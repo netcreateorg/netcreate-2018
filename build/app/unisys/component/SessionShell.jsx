@@ -26,7 +26,28 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
     It then uses Unisys.SetAppState to set "SESSION" to the decoded value.
     if a groupId is detected, then it forces a redirect.
 
-    TODO: if an invalid URL is entered, should reset
+
+    A change in logged in status can come from four places:
+
+    1. User has typed in login field.
+       => This is handled by `handleChange()`
+    2. User has hit the "Login" submit button.
+       => This is handled by `onSubmit()`
+    3. User has entered a full URL for the first time
+       => This is handled by `componentWillMount()`
+    4. User has changed an existing URL
+       => This does not trigger `compomentWillMount()`
+          so it needs special handling.
+       Changing the url does trigger:
+       * render()
+          render is triggered because the props for the token
+          passed by the Route change.
+          And render does detect the correct login state.
+          However, if this represents a change in login state,
+          the change in state needs to be broadcast.
+       * componentDidUpdate()
+          componentDidUpdate checks for the change in loggedinIn
+          status and sends an AppStateChanged event as needed.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -87,17 +108,16 @@ class SessionShell extends UNISYS.Component {
     this.renderLoggedIn = this.renderLoggedIn.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
-    this.state = {
+    this.state = {   // `state` tracks the login input field
       token: null,
       classId: null,
       projId: null,
       hashedId: null,
       subId: null,
       groupId: null,
-      subId: null,
       isValid: false
     };
-
+    this.previousIsValid = false; // to track changes in loggedIn status
   }
 
   /// ROUTE RENDER FUNCTIONS ////////////////////////////////////////////////////
@@ -211,13 +231,20 @@ class SessionShell extends UNISYS.Component {
     // to a valid token string AFTER the changeHandler() detected a valid
     // login after a ForceReload. This is a bit hacky and the app would benefit
     // from not relying on forced reloads. See handleChange().
+    //
+    // This is only called with the initial page load.
+    // Subsequent changes to the URL (e.g. changing token directly in the url)
+    // do not result in a second componentWillMount call.  These are handled
+    // by the componentDidUpdate() call.
     let token = this.props.match.params.token;
     let decoded = SESSION.DecodeToken(token, window.NC_CONFIG.dataset) || {};
     this.SetAppState("SESSION", decoded);
+    this.previousIsValid = decoded.isValid;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Main Render Function
-/*/ render() {
+  /*/
+  render() {
     // FUN FACTS
     // this.state set in constructor
     // this.props.history, location, match added by withRouter(AppShell)
@@ -237,15 +264,34 @@ class SessionShell extends UNISYS.Component {
         </FormGroup>
       );
     }
-    // no token so just render login
+
     let token = this.props.match.params.token;
+
+    // no token so just render login
     if (!token) return this.renderLogin();
+
     // try to decode token
     let decoded = SESSION.DecodeToken(token, window.NC_CONFIG.dataset);
     if (decoded.isValid) {
       return this.renderLoggedIn(decoded);
     } else {
       return this.renderLogin(token);
+    }
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  componentDidUpdate(prevProps) {
+    // SIDE EFFECT
+    // Check for changes in logged in status and
+    // trigger AppStateChange if necessary
+
+    // Read token from props (because they are not saved in state)
+    // We have to decode again here because we're using props directly
+    let token = this.props.match.params.token;
+    if (!token) return; // don't bother to check if this was a result of changes from the form
+    let decoded = SESSION.DecodeToken(token, window.NC_CONFIG.dataset);
+    if (decoded.isValid !== this.previousIsValid) {
+      this.SetAppState("SESSION", decoded);
+      this.previousIsValid = decoded.isValid;
     }
   }
 
