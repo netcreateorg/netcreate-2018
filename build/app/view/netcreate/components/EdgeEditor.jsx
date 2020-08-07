@@ -619,6 +619,7 @@ class EdgeEditor extends UNISYS.Component {
 /*/
 /*/ onDeleteButtonClick () {
       this.clearForm();
+      this.AppCall('AUTOCOMPLETE_SELECT', { id: 'search' });
       this.AppCall('EDGEEDIT_UNLOCK', { edgeID: this.props.edgeID }); // inform NodeSelector
       this.AppCall('DB_UPDATE',{edgeID:this.props.edgeID});
     }
