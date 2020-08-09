@@ -4,8 +4,10 @@
 
   InfoPanel shows a tab panel for selecting:
   * hiding (showing the Graph)
+  * Filters
   * Nodes Table
   * Edges Table
+  * Vocabulary
   * Help
 
   The panel itself can be resized vertically.
@@ -26,10 +28,11 @@ const ReactStrap = require('reactstrap');
 const { TabContent, TabPane, Nav, NavItem, NavLink, Row, Col, Button } = ReactStrap;
 const classnames = require('classnames');
 
-const Help = require('./Help');
-const Vocabulary = require('./Vocabulary');
+const FiltersPanel = require('./filter/FiltersPanel');
 const NodeTable = require('./NodeTable');
 const EdgeTable = require('./EdgeTable');
+const Vocabulary = require('./Vocabulary');
+const Help = require('./Help');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -67,7 +70,7 @@ class InfoPanel extends UNISYS.Component {
     window.event.stopPropagation();
     if (this.state.activeTab !== tab) {
       this.setState({ activeTab: tab });
-      if ((tab === `1`) ||  (tab === '5')) {
+      if ((tab === `1`) || (tab === '6')) { // graph or help
         this.setState({
           tabpanelHeight: '50px', // show only tab buttons
           hideDragger: true,
@@ -155,39 +158,47 @@ class InfoPanel extends UNISYS.Component {
                 onClick={() => { this.toggle('1'); this.sendGA('Graph', window.location); } }
               >
                 Graph
-                        </NavLink>
+              </NavLink>
             </NavItem>
             <NavItem>
               <NavLink
                 className={classnames({ active: this.state.activeTab === '2' })}
-                onClick={() => { this.toggle('2'); this.sendGA('Nodes Table', window.location); }}
+                onClick={() => { this.toggle('2'); this.sendGA('Filter', window.location); }}
               >
-                Nodes Table
-                        </NavLink>
+                Filters
+              </NavLink>
             </NavItem>
             <NavItem>
               <NavLink
                 className={classnames({ active: this.state.activeTab === '3' })}
-                onClick={() => { this.toggle('3'); this.sendGA('Edges Table', window.location); }}
+                onClick={() => { this.toggle('3'); this.sendGA('Nodes Table', window.location); }}
               >
-                Edges Table
-                        </NavLink>
+                Nodes Table
+              </NavLink>
             </NavItem>
             <NavItem>
               <NavLink
                 className={classnames({ active: this.state.activeTab === '4' })}
-                onClick={() => { this.toggle('4'); this.sendGA('Vocabulary', window.location); }}
+                onClick={() => { this.toggle('4'); this.sendGA('Edges Table', window.location); }}
               >
-                Vocabulary
-                        </NavLink>
+                Edges Table
+              </NavLink>
             </NavItem>
             <NavItem>
               <NavLink
                 className={classnames({ active: this.state.activeTab === '5' })}
-                onClick={() => { this.toggle('5'); this.sendGA('Help', window.location); }}
+                onClick={() => { this.toggle('5'); this.sendGA('Vocabulary', window.location); }}
+              >
+                Vocabulary
+              </NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink
+                className={classnames({ active: this.state.activeTab === '6' })}
+                onClick={() => { this.toggle('6'); this.sendGA('Help', window.location); }}
               >
                 Help
-                        </NavLink>
+              </NavLink>
             </NavItem>
           </Nav>
           <TabContent activeTab={this.state.activeTab} >
@@ -196,25 +207,32 @@ class InfoPanel extends UNISYS.Component {
             <TabPane tabId="2">
               <Row>
                 <Col sm="12">
-                  <NodeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates}/>
+                  <FiltersPanel tableHeight={tableHeight} />
                 </Col>
               </Row>
             </TabPane>
             <TabPane tabId="3">
               <Row>
                 <Col sm="12">
-                  <EdgeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates} />
+                  <NodeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates}/>
                 </Col>
               </Row>
             </TabPane>
             <TabPane tabId="4">
               <Row>
                 <Col sm="12">
-                  <Vocabulary tableHeight={tableHeight} />
+                  <EdgeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates} />
                 </Col>
               </Row>
             </TabPane>
             <TabPane tabId="5">
+              <Row>
+                <Col sm="12">
+                  <Vocabulary tableHeight={tableHeight} />
+                </Col>
+              </Row>
+            </TabPane>
+            <TabPane tabId="6">
               <Row>
                 <Col sm="12">
                   <Help />
