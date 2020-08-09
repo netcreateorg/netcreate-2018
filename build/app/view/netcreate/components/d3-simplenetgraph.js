@@ -571,7 +571,7 @@ displayUpdated(nodeEdge)
     Used by linElements.enter() and linkElements.merge()
     and mouseover events.
 /*/
-_UpdateLinkStrokeWidth (edge) {
+_UpdateLinkStrokeWidth(edge) {
   if (edge.selected ||
     (edge.source.id === mouseoverNodeId) ||
     (edge.target.id === mouseoverNodeId) ||
@@ -583,12 +583,10 @@ _UpdateLinkStrokeWidth (edge) {
   }
 }
 
-_UpdateLinkStrokeColor(edge){
+_UpdateLinkStrokeColor(edge) {
   let COLORMAP = UDATA.AppState('NODECOLORMAP');
   let color = COLORMAP[edge.attributes.Relationship]
   return color;
-
-
 }
 
 
