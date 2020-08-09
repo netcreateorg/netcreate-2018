@@ -668,6 +668,14 @@ MOD.Hook("INITIALIZE", () => {
   UDATA.HandleMessage("AUTOCOMPLETE_SELECT", function(data) {
     m_HandleAutoCompleteSelect(data);
   });
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ FILTER is called by FiltersPanel when user has updated filter.
+  /*/
+  UDATA.HandleMessage("FILTER", function(data) {
+    m_HandleFilter(data);
+  });
+
 }); // end UNISYS_INIT
 
 function m_HandleAutoCompleteSelect(data) {
@@ -675,6 +683,21 @@ function m_HandleAutoCompleteSelect(data) {
   UDATA.SetAppState("ACTIVEAUTOCOMPLETE", {
     activeAutoCompleteId: data.id
   });
+}
+
+/**
+ *
+ * @param {object} filter {name, type, value}
+ *
+ */
+function m_HandleFilter(filter) {
+  console.log('HandleFilter!', filter);
+
+  // Filter Nodes and Edges
+  let marked = { isFilteredOut: true };
+  let normal = { isFilteredOut: false };
+  m_SetMatchingByNodeLabel(filter.value, marked, normal);
+  UDATA.SetAppState("D3DATA", D3DATA);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -843,6 +866,61 @@ function m_SetMatchingNodesByLabel(str = "", yes = {}, no = {}) {
   });
   return returnMatches;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Set nodes & EDGES that PARTIALLY match 'str' to 'yes' props.
+    All others nodes are set to 'no' props. Return matches.
+    Optionally resets all the NON matching nodes as well.
+
+    Edges are matched if they link to the node.
+/*/
+function m_SetMatchingByNodeLabel(str = "", yes = {}, no = {}) {
+  let returnMatches = [];
+  str = u_EscapeRegexChars(str.trim());
+  if (str === "") return undefined;
+  const regex = new RegExp(/*'^'+*/ str, "i");
+  // First find the nodes
+  D3DATA.nodes.forEach(node => {
+    if (regex.test(node.label)) {
+      for (let key in yes) node[key] = yes[key];
+      returnMatches.push(node);
+    } else {
+      for (let key in no) node[key] = no[key];
+    }
+  });
+  // Then hide all related edges
+  m_SetMatchingEdgesByNodes(returnMatches, yes, no);
+  return returnMatches;
+}
+
+/**
+ * Set edges that link to any node in nodeIDs to 'yes' props.
+ * All others nodes are set to 'no' props. Return matches.
+ *
+ * We set look for ALL nodes at once otherwise, one node can unset
+ * antoher node.
+ *
+ * This is a specialized function because edges need to be matched
+ * against both source and target.
+ *
+ * @param {Array} nodes Array of node objects
+ * @param {Object} yes e.g. marked = { isFilteredOut: true };
+ * @param {Object} no e.g. normal = { isFilteredOut: false };
+ */
+function m_SetMatchingEdgesByNodes(nodes, yes = {}, no = {}) {
+  const nodeIDs = nodes.map(node => node.id);
+  let returnMatches = [];
+  D3DATA.edges.forEach(edge => {
+    if ( nodeIDs.includes(edge.source.id) || nodeIDs.includes(edge.target.id) ) {
+      for (let key in yes) edge[key] = yes[key];
+      returnMatches.push(edge);
+    } else {
+      for (let key in no) edge[key] = no[key];
+    }
+  });
+  return returnMatches;
+}
+
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Update props of exact matching nodes, returns matches
     Optionally resets all the NON matching nodes as well
