@@ -687,17 +687,39 @@ function m_HandleAutoCompleteSelect(data) {
 
 /**
  *
- * @param {object} filter {name, type, value}
+ * @param {object} data {action, filter}
  *
  */
-function m_HandleFilter(filter) {
-  console.log('HandleFilter!', filter);
+function m_HandleFilter(data) {
+  console.log('HandleFilter!', data);
+
+  if (data.action === undefined) throw "m_HandleFilter called without action";
+
+  switch (data.action) {
+    case 'clear':
+      m_ClearFilters();
+      break;
+    case 'filter-nodes':
+    default:
+      m_FilterNodes(data.filter.value);
+      break;
+  }
 
   // Filter Nodes and Edges
-  let marked = { isFilteredOut: true };
-  let normal = { isFilteredOut: false };
-  m_SetMatchingByNodeLabel(filter.value, marked, normal);
+  // hard coding filter by node for now.
+
   UDATA.SetAppState("D3DATA", D3DATA);
+}
+
+function m_FilterNodes(nodeLabelSnippet) {
+  const marked = { isFilteredOut: true };
+  const normal = { isFilteredOut: false };
+  m_SetMatchingByNodeLabel(nodeLabelSnippet, marked, normal);
+}
+function m_ClearFilters() {
+  const props = { isFilteredOut: false };
+  m_SetAllObjs(D3DATA.nodes, props);
+  m_SetAllObjs(D3DATA.edges, props);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

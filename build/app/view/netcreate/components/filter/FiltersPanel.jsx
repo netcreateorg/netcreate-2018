@@ -71,14 +71,17 @@ class FiltersPanel extends UNISYS.Component {
     console.log('filters is', filterGroups)
 
     this.OnFilterChange = this.OnFilterChange.bind(this);
+    this.OnClearBtnClick = this.OnClearBtnClick.bind(this);
 
      /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
   } // constructor
 
-  OnFilterChange (filter) {
+  OnFilterChange(filter) {
     console.log('onFilterChange', filter);
-    UDATA.LocalCall('FILTER', filter);
+    UDATA.LocalCall('FILTER', { action: 'filter-nodes', filter });
+  }
+
   OnClearBtnClick() {
     UDATA.LocalCall('FILTER', {action: 'clear'});
   }
