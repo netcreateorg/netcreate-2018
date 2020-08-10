@@ -65,8 +65,10 @@ function m_HandleFilter(data) {
     case FILTER.ACTIONS.FILTER_EDGES:
       break;
     case FILTER.ACTIONS.FILTER_NODES:
-    default:
       m_FilterNodes(data.filter);
+      break;
+    default:
+      throw `Unknown filter action ${data.action}`;
       break;
   }
   UDATA.SetAppState("D3DATA", D3DATA);
@@ -87,6 +89,9 @@ function m_FilterNodes(filter) {
   switch (filter.operator) {
     case FILTER.STRING_OPERATORS.CONTAINS:
       m_SetMatchingNodesKey(filter.key, filter.value, marked, normal);
+      break;
+    case FILTER.STRING_OPERATORS.NOT_CONTAINS:
+      m_SetMatchingNodesKey(filter.key, filter.value, marked, normal, false);
       break;
     default:
       throw `Unknown filter operator ${filter.operator}`;
@@ -115,6 +120,8 @@ function m_ClearFilters() {
  * All others nodes are set to 'no' props. Return matches.
  * Optionally resets all the NON matching nodes as well.
  *
+ * If matched, we set `isFiltered` flag to true.
+ *
  * Edges are matched if they link to the node.
  *
  * @param {String} keyToSet The template key of the node parameter we want to set,
@@ -122,20 +129,20 @@ function m_ClearFilters() {
  * @param {String} str The string to search for
  * @param {Object} yes e.g. marked = { isFilteredOut: true };
  * @param {Object} no e.g. normal = { isFilteredOut: false };
+ * @param {Bool} contains regex text contains or not contains
  */
 const HACKMAP = {
   type: "Node_Type",
   info: "Extra Info",
   notes: "Notes"
 }
-function m_SetMatchingNodesKey(keyToSet, str = "", yes = {}, no = {}) {
+function m_SetMatchingNodesKey(keyToSet, str = "", yes = {}, no = {}, contains = true) {
   let returnMatches = [];
   str = NCLOGIC.EscapeRegexChars(str.trim());
   if (str === "") return undefined;
   const regex = new RegExp(/*'^'+*/ str, "i");
   // First find the nodes
   D3DATA.nodes.forEach(node => {
-
     let nodeField = node[keyToSet];
 
     // HACK
@@ -148,8 +155,14 @@ function m_SetMatchingNodesKey(keyToSet, str = "", yes = {}, no = {}) {
       nodeField = node.attributes[HACKMAP[keyToSet]];
     }
 
-    // Regular Test
-    if (regex.test(nodeField)) {
+    let matches;
+    if (contains) {
+      matches = !regex.test(nodeField);
+    } else {
+      matches = regex.test(nodeField);
+    }
+
+    if (matches) {
       for (let key in yes) node[key] = yes[key];
       returnMatches.push(node);
     } else {
