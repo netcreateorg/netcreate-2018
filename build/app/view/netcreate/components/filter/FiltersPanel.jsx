@@ -36,6 +36,8 @@ class FiltersPanel extends UNISYS.Component {
   OnFilterChange (filter) {
     console.log('onFilterChange', filter);
     UDATA.LocalCall('FILTER', filter);
+  OnClearBtnClick() {
+    UDATA.LocalCall('FILTER', {action: 'clear'});
   }
 
   render() {
@@ -44,6 +46,7 @@ class FiltersPanel extends UNISYS.Component {
       <div className="filterPanel"
             style={{overflow:'auto',position:'relative',display:'block',left:'10px',right:'10px',maxHeight:tableHeight}}>
         <StringFilter filter={filterData} onChangeHandler={this.OnFilterChange} />
+        <Button size="sm" onClick={this.OnClearBtnClick}>Clear Filters</Button>
       </div>
     )
   }
