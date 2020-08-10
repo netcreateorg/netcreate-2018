@@ -39,7 +39,6 @@ const DBG = false;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-import FILTER from './components/filter/FilterEnums';
 const SETTINGS = require("settings");
 const UNISYS = require("unisys/client");
 const JSCLI = require("system/util/jscli");
@@ -670,55 +669,18 @@ MOD.Hook("INITIALIZE", () => {
     m_HandleAutoCompleteSelect(data);
   });
 
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ FILTER is called by FiltersPanel when user has updated filter.
-  /*/
-  UDATA.HandleMessage("FILTER", function(data) {
-    m_HandleFilter(data);
-  });
-
 }); // end UNISYS_INIT
+
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ INIT HANDLERS
+/*/
 
 function m_HandleAutoCompleteSelect(data) {
   if (DBG) console.log("ACL: Setting activeAutoCompleteId to", data.id);
   UDATA.SetAppState("ACTIVEAUTOCOMPLETE", {
     activeAutoCompleteId: data.id
   });
-}
-
-/**
- *
- * @param {object} data {action, filter}
- *
- */
-function m_HandleFilter(data) {
-  console.log('HandleFilter!', data);
-
-  if (data.action === undefined) throw "m_HandleFilter called without action";
-
-  switch (data.action) {
-    case FILTER.ACTIONS.CLEAR:
-      m_ClearFilters();
-      break;
-    case FILTER.ACTIONS.FILTER_EDGES:
-      break;
-    case FILTER.ACTIONS.FILTER_NODES:
-    default:
-      m_FilterNodes(data.filter.value);
-      break;
-  }
-  UDATA.SetAppState("D3DATA", D3DATA);
-}
-
-function m_FilterNodes(nodeLabelSnippet) {
-  const marked = { isFilteredOut: true };
-  const normal = { isFilteredOut: false };
-  m_SetMatchingByNodeLabel(nodeLabelSnippet, marked, normal);
-}
-function m_ClearFilters() {
-  const props = { isFilteredOut: false };
-  m_SetAllObjs(D3DATA.nodes, props);
-  m_SetAllObjs(D3DATA.edges, props);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -827,6 +789,7 @@ function m_SetAllObjs(obj_list, all = {}) {
     for (let key in all) obj[key] = all[key];
   });
 }
+MOD.SetAllObj = m_SetAllObjs; // Expose for filter-logic.js
 
 /// NODE HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -887,59 +850,7 @@ function m_SetMatchingNodesByLabel(str = "", yes = {}, no = {}) {
   });
   return returnMatches;
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Set nodes & EDGES that PARTIALLY match 'str' to 'yes' props.
-    All others nodes are set to 'no' props. Return matches.
-    Optionally resets all the NON matching nodes as well.
 
-    Edges are matched if they link to the node.
-/*/
-function m_SetMatchingByNodeLabel(str = "", yes = {}, no = {}) {
-  let returnMatches = [];
-  str = u_EscapeRegexChars(str.trim());
-  if (str === "") return undefined;
-  const regex = new RegExp(/*'^'+*/ str, "i");
-  // First find the nodes
-  D3DATA.nodes.forEach(node => {
-    if (regex.test(node.label)) {
-      for (let key in yes) node[key] = yes[key];
-      returnMatches.push(node);
-    } else {
-      for (let key in no) node[key] = no[key];
-    }
-  });
-  // Then hide all related edges
-  m_SetMatchingEdgesByNodes(returnMatches, yes, no);
-  return returnMatches;
-}
-
-/**
- * Set edges that link to any node in nodeIDs to 'yes' props.
- * All others nodes are set to 'no' props. Return matches.
- *
- * We set look for ALL nodes at once otherwise, one node can unset
- * antoher node.
- *
- * This is a specialized function because edges need to be matched
- * against both source and target.
- *
- * @param {Array} nodes Array of node objects
- * @param {Object} yes e.g. marked = { isFilteredOut: true };
- * @param {Object} no e.g. normal = { isFilteredOut: false };
- */
-function m_SetMatchingEdgesByNodes(nodes, yes = {}, no = {}) {
-  const nodeIDs = nodes.map(node => node.id);
-  let returnMatches = [];
-  D3DATA.edges.forEach(edge => {
-    if ( nodeIDs.includes(edge.source.id) || nodeIDs.includes(edge.target.id) ) {
-      for (let key in yes) edge[key] = yes[key];
-      returnMatches.push(edge);
-    } else {
-      for (let key in no) edge[key] = no[key];
-    }
-  });
-  return returnMatches;
-}
 
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1025,6 +936,7 @@ const REGEX_REGEXCHARS = /[.*+?^${}()|[\]\\]/g;
 function u_EscapeRegexChars(string) {
   return string.replace(REGEX_REGEXCHARS, "\\$&"); // $& means the whole matched string
 }
+MOD.EscapeRegexChars = u_EscapeRegexChars; // Expose for filter-logic.js
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Convert all IDs to integers
     Node and Edge IDs should be integers.
