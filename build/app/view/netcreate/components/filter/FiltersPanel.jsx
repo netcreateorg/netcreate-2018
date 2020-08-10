@@ -3,7 +3,7 @@ import React from 'react';
 import StringFilter from './StringFilter';
 const ReactStrap = require('reactstrap');
 
-const { Input, Label } = ReactStrap;
+const { Button, Input, Label } = ReactStrap;
 
 const UNISYS = require('unisys/client');
 var UDATA  = null;
@@ -14,12 +14,55 @@ var UDATA  = null;
 // class FiltersPanel extends React.Component {
 
 // Dummy Data
-const filterData = {
-  id: '1',
-  name: 'Label',
-  type: 'contains',
-  value: 'tacitus'
-};
+// const filterData = {
+//   id: '1',
+//   name: 'Label',
+//   type: 'contains',
+//   value: 'tacitus'
+// };
+const filtersDefs = [
+  {
+    label: "Nodes",
+    filters: [
+      {
+        id: '1',
+        name: 'Label',
+        type: 'contains',
+        value: 'tacitus'
+      },
+      {
+        id: '2',
+        name: 'Type',
+        type: 'not-contains',
+        value: 'person'
+      }
+    ]
+  },
+  {
+    label: "Edges",
+    filters: [
+      {
+        id: '1',
+        name: 'Source',
+        type: 'contains',
+        value: 'tacitus'
+      },
+      {
+        id: '2',
+        name: 'Type',
+        type: 'not-contains',
+        value: 'is related to'
+      },
+      {
+        id: '3',
+        name: 'Target',
+        type: 'contains',
+        value: 'Rome'
+      }
+    ]
+  }
+];
+
 
 class FiltersPanel extends UNISYS.Component {
   constructor({ filterGroups, onFiltersChange, tableHeight }) {
@@ -44,8 +87,18 @@ class FiltersPanel extends UNISYS.Component {
     const { tableHeight } = this.props;
     return (
       <div className="filterPanel"
-            style={{overflow:'auto',position:'relative',display:'block',left:'10px',right:'10px',maxHeight:tableHeight}}>
-        <StringFilter filter={filterData} onChangeHandler={this.OnFilterChange} />
+        style={{
+          overflow: 'auto', position: 'relative', display: 'block',
+          maxHeight: tableHeight,
+          backgroundColor:'rgba(0,0,0,0.1)'
+        }}>
+        <div style={{ display: 'flex' }}>
+          {filtersDefs.map(def => <FilterGroup
+            label={def.label}
+            filters={def.filters}
+            onFiltersChange={this.OnFilterChange}
+          />)}
+        </div>
         <Button size="sm" onClick={this.OnClearBtnClick}>Clear Filters</Button>
       </div>
     )
