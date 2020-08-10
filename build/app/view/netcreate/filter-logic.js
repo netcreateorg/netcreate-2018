@@ -110,20 +110,46 @@ function m_ClearFilters() {
 
 /// NODE HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Set nodes & EDGES that PARTIALLY match 'str' to 'yes' props.
-    All others nodes are set to 'no' props. Return matches.
-    Optionally resets all the NON matching nodes as well.
-
-    Edges are matched if they link to the node.
-/*/
-function m_SetMatchingByNodeLabel(str = "", yes = {}, no = {}) {
+/**
+ * Set nodes & EDGES that PARTIALLY match 'str' to 'yes' props.
+ * All others nodes are set to 'no' props. Return matches.
+ * Optionally resets all the NON matching nodes as well.
+ *
+ * Edges are matched if they link to the node.
+ *
+ * @param {String} keyToSet The template key of the node parameter we want to set,
+ *                          e.g. "label"
+ * @param {String} str The string to search for
+ * @param {Object} yes e.g. marked = { isFilteredOut: true };
+ * @param {Object} no e.g. normal = { isFilteredOut: false };
+ */
+const HACKMAP = {
+  type: "Node_Type",
+  info: "Extra Info",
+  notes: "Notes"
+}
+function m_SetMatchingNodesKey(keyToSet, str = "", yes = {}, no = {}) {
   let returnMatches = [];
   str = NCLOGIC.EscapeRegexChars(str.trim());
   if (str === "") return undefined;
   const regex = new RegExp(/*'^'+*/ str, "i");
   // First find the nodes
   D3DATA.nodes.forEach(node => {
-    if (regex.test(node.label)) {
+
+    let nodeField = node[keyToSet];
+
+    // HACK
+    // The old data model has secondary keys stuffed
+    // into an `attributes` object.  This is a
+    // holdover from the original pre-netcreate
+    // data import.  If we ever change the data format
+    // this HACKMAP should be removed.
+    if (['type', 'info', 'notes'].includes(keyToSet)) {
+      nodeField = node.attributes[HACKMAP[keyToSet]];
+    }
+
+    // Regular Test
+    if (regex.test(nodeField)) {
       for (let key in yes) node[key] = yes[key];
       returnMatches.push(node);
     } else {
