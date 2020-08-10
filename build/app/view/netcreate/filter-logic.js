@@ -50,7 +50,7 @@ MOD.Hook("INITIALIZE", () => {
 
 /**
  *
- * @param {object} data {action, filter}
+ * @param {Object} data {action, filter}
  *
  */
 function m_HandleFilter(data) {
@@ -66,17 +66,37 @@ function m_HandleFilter(data) {
       break;
     case FILTER.ACTIONS.FILTER_NODES:
     default:
-      m_FilterNodes(data.filter.value);
+      m_FilterNodes(data.filter);
       break;
   }
   UDATA.SetAppState("D3DATA", D3DATA);
 }
 
-function m_FilterNodes(nodeLabelSnippet) {
+/**
+ *
+ * @param {Object} filter {id, key, operator, value}
+ */
+function m_FilterNodes(filter) {
+  if ((filter.key === undefined) ||
+    (filter.operator === undefined) ||
+    (filter.value === undefined)) throw `Bad filter ${filter}`;
+
   const marked = { isFilteredOut: true };
   const normal = { isFilteredOut: false };
-  m_SetMatchingByNodeLabel(nodeLabelSnippet, marked, normal);
+
+  switch (filter.operator) {
+    case FILTER.STRING_OPERATORS.CONTAINS:
+      m_SetMatchingNodesKey(filter.key, filter.value, marked, normal);
+      break;
+    default:
+      throw `Unknown filter operator ${filter.operator}`;
+      break;
+  }
+
 }
+
+
+
 function m_ClearFilters() {
   const props = { isFilteredOut: false };
   NCLOGIC.SetAllObjs(D3DATA.nodes, props);
@@ -116,7 +136,7 @@ function m_SetMatchingByNodeLabel(str = "", yes = {}, no = {}) {
 }
 
 /**
- * Set edges that link to any node in nodeIDs to 'yes' props.
+ * Set edges that link to any node in nodes to 'yes' props.
  * All others nodes are set to 'no' props. Return matches.
  *
  * We set look for ALL nodes at once otherwise, one node can unset
