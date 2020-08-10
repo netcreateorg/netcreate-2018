@@ -1,10 +1,11 @@
-import FilterGroup from './FilterGroup';
 import FILTER from './FilterEnums';
+import FilterGroup from './FilterGroup';
 import React from 'react';
 import StringFilter from './StringFilter';
 const ReactStrap = require('reactstrap');
 
 const { Button, Input, Label } = ReactStrap;
+
 
 const UNISYS = require('unisys/client');
 var UDATA  = null;
@@ -27,15 +28,24 @@ const filtersDefs = [
     filters: [
       {
         id: '1',
-        name: 'Label',
-        type: 'contains',
+        key: 'label',
+        keylabel: 'Label',
+        operator: 'contains',
         value: 'tacitus'
       },
       {
         id: '2',
-        name: 'Type',
-        type: 'not-contains',
+        key: 'type',
+        keylabel: 'Type',
+        operator: 'contains',
         value: 'person'
+      },
+      {
+        id: '3',
+        key: 'notes',
+        keylabel: 'Significance',
+        operator: 'contains',
+        value: 'xxx'
       }
     ]
   },
@@ -44,20 +54,23 @@ const filtersDefs = [
     filters: [
       {
         id: '1',
-        name: 'Source',
-        type: 'contains',
+        key: 'source',
+        keylabel: 'Source',
+        operator: 'contains',
         value: 'tacitus'
       },
       {
         id: '2',
-        name: 'Type',
-        type: 'not-contains',
+        key: 'type',
+        keylabel: 'Type',
+        operator: 'not-contains',
         value: 'is related to'
       },
       {
         id: '3',
-        name: 'Target',
-        type: 'contains',
+        key: 'target',
+        keylabel: 'Target',
+        operator: 'contains',
         value: 'Rome'
       }
     ]
