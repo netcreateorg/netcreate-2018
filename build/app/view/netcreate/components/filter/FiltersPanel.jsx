@@ -1,4 +1,5 @@
 import FilterGroup from './FilterGroup';
+import FILTER from './FilterEnums';
 import React from 'react';
 import StringFilter from './StringFilter';
 const ReactStrap = require('reactstrap');
@@ -79,11 +80,11 @@ class FiltersPanel extends UNISYS.Component {
 
   OnFilterChange(filter) {
     console.log('onFilterChange', filter);
-    UDATA.LocalCall('FILTER', { action: 'filter-nodes', filter });
+    UDATA.LocalCall('FILTER', { action: FILTER.ACTIONS.FILTER_NODES , filter });
   }
 
   OnClearBtnClick() {
-    UDATA.LocalCall('FILTER', {action: 'clear'});
+    UDATA.LocalCall('FILTER', {action: FILTER.ACTIONS.CLEAR });
   }
 
   render() {

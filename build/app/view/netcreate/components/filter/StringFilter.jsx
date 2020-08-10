@@ -1,6 +1,7 @@
+import FILTER from './FilterEnums';
 import React from 'react';
 const ReactStrap = require('reactstrap');
-const { Input, Label } = ReactStrap;
+const { Form, FormGroup, Input, Label } = ReactStrap;
 
 export default function StringFilter({ filter: { id, name, type, value }, onChangeHandler }) {
 
@@ -16,20 +17,21 @@ export default function StringFilter({ filter: { id, name, type, value }, onChan
     onChangeHandler(result);
   }
 
-  const options = [
-    { value: "empty", label: "--"},
-    { value: "contains", label: "contains"},
-    { value: "not-contains", label: "does not contain"},
+  const OPERATORS = [
+    { value: FILTER.STRING_OPERATORS.EMPTY, label: "--"},
+    { value: FILTER.STRING_OPERATORS.CONTAINS, label: "contains"},
+    { value: FILTER.STRING_OPERATORS.NOT_CONTAINS, label: "does not contain"},
   ]
 
   return (
-    <div className="filter-item" id={id}>
-      <Label>{name}:&nbsp;
-        <Input id={`filterType-${id}`} type="select" value={type} onChange={HandleChangeLocal}>
-          {options.map(option => <option value={option.value} key={`${id}${option.value}`}>{option.label}</option>)}
+    <Form inline className="filter-item" id={id}>
+      <FormGroup>
+        <Label size="sm" style={{width:`5em`,justifyContent:'flex-end'}}>{name}&nbsp;</Label>
+        <Input id={`filterType-${id}`} type="select" value={type} onChange={HandleChangeLocal} bsSize="sm">
+          {OPERATORS.map(op => <option value={op.value} key={`${id}${op.value}`} size="sm">{op.label}</option>)}
         </Input>
-        <Input id={`filterValue-${id}`} type="text" value={value} onChange={HandleChangeLocal}/>
-      </Label>
-    </div>
+        <Input id={`filterValue-${id}`} type="text" value={value} onChange={HandleChangeLocal} bsSize="sm"/>
+      </FormGroup>
+    </Form>
   );
 }

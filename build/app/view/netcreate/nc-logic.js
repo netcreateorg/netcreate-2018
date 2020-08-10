@@ -39,6 +39,7 @@ const DBG = false;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+import FILTER from './components/filter/FilterEnums';
 const SETTINGS = require("settings");
 const UNISYS = require("unisys/client");
 const JSCLI = require("system/util/jscli");
@@ -696,18 +697,16 @@ function m_HandleFilter(data) {
   if (data.action === undefined) throw "m_HandleFilter called without action";
 
   switch (data.action) {
-    case 'clear':
+    case FILTER.ACTIONS.CLEAR:
       m_ClearFilters();
       break;
-    case 'filter-nodes':
+    case FILTER.ACTIONS.FILTER_EDGES:
+      break;
+    case FILTER.ACTIONS.FILTER_NODES:
     default:
       m_FilterNodes(data.filter.value);
       break;
   }
-
-  // Filter Nodes and Edges
-  // hard coding filter by node for now.
-
   UDATA.SetAppState("D3DATA", D3DATA);
 }
 
