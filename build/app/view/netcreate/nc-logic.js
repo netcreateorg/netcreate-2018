@@ -789,7 +789,7 @@ function m_SetAllObjs(obj_list, all = {}) {
     for (let key in all) obj[key] = all[key];
   });
 }
-MOD.SetAllObj = m_SetAllObjs; // Expose for filter-logic.js
+MOD.SetAllObjs = m_SetAllObjs; // Expose for filter-logic.js
 
 /// NODE HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

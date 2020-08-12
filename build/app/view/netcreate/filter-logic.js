@@ -2,6 +2,12 @@
 
   FILTER LOGIC
 
+
+  FILTERDEFS = {
+    nodes: { ...filters },
+    edges: { ...filters }
+  }
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const DBG = false;
@@ -17,7 +23,6 @@ var MOD = UNISYS.NewModule(module.id);
 var UDATA = UNISYS.NewDataLink(MOD);
 
 /// APP STATE/DATA STRUCTURES /////////////////////////////////////////////////
-var D3DATA = null; // see above for description
 var TEMPLATE = null; // template definition for prompts
 const PROMPTS = require("system/util/prompts");
 const NCLOGIC = require("./nc-logic");
@@ -33,11 +38,25 @@ const TEMPLATE_URL = `templates/${DATASET}.json`;
 /*/ lifecycle INITIALIZE handler
 /*/
 MOD.Hook("INITIALIZE", () => {
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ FILTER_SET is called by StringFilter when user has updated filter.
+  /*/
+  UDATA.HandleMessage("FILTER_SET", data => {
+    m_HandleFilterSet(data);
+  })
+
+  // is this the right listner?
+  UDATA.OnAppStateChange("FILTERDEFS", data => {
+    console.error('OnAppStateChange: FILTER', data);
+    m_HandleFilterDefsUpdate(data);
+  });
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ FILTER is called by FiltersPanel when user has updated filter.
+      This triggers the actual filtering.
   /*/
-  UDATA.HandleMessage("FILTER", function(data) {
-    D3DATA = UDATA.AppState("D3DATA"); // 8/10/20 REVIEW: Is this the best way to get current data?
+  UDATA.HandleMessage("FILTER", data => {
     m_HandleFilter(data);
   });
 
@@ -50,22 +69,84 @@ MOD.Hook("INITIALIZE", () => {
 
 /**
  *
+ * @param {Object} data {defs}
+ */
+function m_HandleFilterDefsUpdate(data) {
+  m_ApplyFilters(data);
+}
+
+/**
+ * Define an individual filter
+ * @param {Object} data {group, filter}
+ */
+function m_HandleFilterSet(data) {
+  console.error('received', data);
+
+  const FILTERDEFS = UDATA.AppState("FILTERDEFS").defs; // already an object
+  console.error('FILTERDEFS is', FILTERDEFS);
+
+  // assume node for now
+  // should be checking data.group to determine which set to use
+  let nodeFilters = FILTERDEFS[0].filters;
+
+  // set it
+  const index = nodeFilters.findIndex(f => f.id === data.filter.id);
+  nodeFilters.splice(index, 1, data.filter);
+  FILTERDEFS[0].filters = nodeFilters;
+
+  console.log('FILTERDEFS spliced is now', FILTERDEFS); // already an object
+  UDATA.SetAppState("FILTERDEFS", { defs: FILTERDEFS });
+  // UDATA.LocalCall('FILTERDEFS_UPDATED', FILTERDEFS);
+}
+
+/**
+ * Walk down the list of filters and apply them all
+ */
+function m_ApplyFilters(data) {
+  // HACK
+  // just grab the first filter for now while we figure
+  // out how to handle the whole round trip
+  // eventually need to apply ALL filters
+  // data.defs[0] = nodes
+  // data.defs[0][0] = first filter
+  // const filter = data.defs[0].filters[0];
+  // m_HandleFilter({
+  //   action: FILTER.ACTIONS.FILTER_NODES,
+  //   filter
+  // });
+
+  // hack in selection for now
+  const nodeFilters = data.defs[0].filters;
+  const edgeFilters = data.defs[1].filters;
+
+  nodeFilters.forEach(filter => {
+    m_HandleFilter({ action: FILTER.ACTIONS.FILTER_NODES, filter})
+  })
+  edgeFilters.forEach(filter => {
+    m_HandleFilter({ action: FILTER.ACTIONS.FILTER_EDGES, filter})
+  })
+}
+
+/**
+ *
  * @param {Object} data {action, filter}
  *
  */
 function m_HandleFilter(data) {
-  console.log('HandleFilter!', data);
-
+  console.log('m_HandleFilter!', data);
+  const D3DATA = UDATA.AppState("D3DATA");
   if (data.action === undefined) throw "m_HandleFilter called without action";
 
   switch (data.action) {
     case FILTER.ACTIONS.CLEAR:
-      m_ClearFilters();
-      break;
-    case FILTER.ACTIONS.FILTER_EDGES:
+      m_ClearFilters(D3DATA.nodes);
+      m_ClearFilters(D3DATA.edges);
       break;
     case FILTER.ACTIONS.FILTER_NODES:
       m_FilterNodes(data.filter);
+      break;
+    case FILTER.ACTIONS.FILTER_EDGES:
+      m_FilterEdges(data.filter);
       break;
     default:
       throw `Unknown filter action ${data.action}`;
@@ -79,12 +160,16 @@ function m_HandleFilter(data) {
  * @param {Object} filter {id, key, operator, value}
  */
 function m_FilterNodes(filter) {
+  console.log('...m_FilterNodes', filter);
   if ((filter.key === undefined) ||
     (filter.operator === undefined) ||
-    (filter.value === undefined)) throw `Bad filter ${filter}`;
+    (filter.value === undefined)) return; // nothing to filter
 
   const marked = { isFilteredOut: true };
   const normal = { isFilteredOut: false };
+
+  // FIXME
+  // If value is cleared, how do we clear the search?
 
   switch (filter.operator) {
     case FILTER.STRING_OPERATORS.CONTAINS:
@@ -92,6 +177,39 @@ function m_FilterNodes(filter) {
       break;
     case FILTER.STRING_OPERATORS.NOT_CONTAINS:
       m_SetMatchingNodesKey(filter.key, filter.value, marked, normal, false);
+      break;
+    case FILTER.STRING_OPERATORS.NO_OP:
+      // ignore
+      break;
+    default:
+      throw `Unknown filter operator ${filter.operator}`;
+      break;
+  }
+
+}
+
+/**
+ *
+ * @param {Object} filter {id, key, operator, value}
+ */
+function m_FilterEdges(filter) {
+  console.log('m_FilterEdges', filter);
+  if ((filter.key === undefined) ||
+    (filter.operator === undefined) ||
+    (filter.value === undefined)) return; // nothing to filter
+
+  const marked = { isFilteredOut: true };
+  const normal = { isFilteredOut: false };
+
+  switch (filter.operator) {
+    case FILTER.STRING_OPERATORS.CONTAINS:
+      // m_SetMatchingNodesKey(filter.key, filter.value, marked, normal);
+      break;
+    case FILTER.STRING_OPERATORS.NOT_CONTAINS:
+      // m_SetMatchingNodesKey(filter.key, filter.value, marked, normal, false);
+      break;
+    case FILTER.STRING_OPERATORS.NO_OP:
+      // ignore
       break;
     default:
       throw `Unknown filter operator ${filter.operator}`;
@@ -101,11 +219,10 @@ function m_FilterNodes(filter) {
 }
 
 
-
-function m_ClearFilters() {
+function m_ClearFilters(arr) {
+  console.log('Clearing Filters!!!!')
   const props = { isFilteredOut: false };
-  NCLOGIC.SetAllObjs(D3DATA.nodes, props);
-  NCLOGIC.SetAllObjs(D3DATA.edges, props);
+  NCLOGIC.SetAllObjs(arr, props);
 }
 
 
@@ -137,9 +254,10 @@ const HACKMAP = {
   notes: "Notes"
 }
 function m_SetMatchingNodesKey(keyToSet, str = "", yes = {}, no = {}, contains = true) {
+  const D3DATA = UDATA.AppState("D3DATA"); // 8/10/20 REVIEW: Is this the best way to get current data?
   let returnMatches = [];
   str = NCLOGIC.EscapeRegexChars(str.trim());
-  if (str === "") return undefined;
+
   const regex = new RegExp(/*'^'+*/ str, "i");
   // First find the nodes
   D3DATA.nodes.forEach(node => {
@@ -156,16 +274,21 @@ function m_SetMatchingNodesKey(keyToSet, str = "", yes = {}, no = {}, contains =
     }
 
     let matches;
-    if (contains) {
+    if (str === "") {
+      // empty string doesn't match anything
+      matches = false;
+    } else if (contains) {
       matches = !regex.test(nodeField);
     } else {
       matches = regex.test(nodeField);
     }
 
     if (matches) {
+      console.log('......filtering out', node.label);
       for (let key in yes) node[key] = yes[key];
       returnMatches.push(node);
     } else {
+      console.log('......unfiltering', node.label);
       for (let key in no) node[key] = no[key];
     }
   });
@@ -191,6 +314,7 @@ function m_SetMatchingNodesKey(keyToSet, str = "", yes = {}, no = {}, contains =
 function m_SetMatchingEdgesByNodes(nodes, yes = {}, no = {}) {
   const nodeIDs = nodes.map(node => node.id);
   let returnMatches = [];
+  const D3DATA = UDATA.AppState("D3DATA");
   D3DATA.edges.forEach(edge => {
     if ( nodeIDs.includes(edge.source.id) || nodeIDs.includes(edge.target.id) ) {
       for (let key in yes) edge[key] = yes[key];
