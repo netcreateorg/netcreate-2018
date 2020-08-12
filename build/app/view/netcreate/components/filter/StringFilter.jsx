@@ -15,7 +15,6 @@ export default function StringFilter({
 }) {
 
   const OPERATORS = [
-    { value: FILTER.STRING_OPERATORS.EMPTY, label: "--"},
     { value: FILTER.STRING_OPERATORS.CONTAINS, label: "contains"},
     { value: FILTER.STRING_OPERATORS.NOT_CONTAINS, label: "does not contain"},
   ]
@@ -30,6 +29,7 @@ export default function StringFilter({
     // result +=':' + filterType + ':' + filterValue;
     let result = { key, operator: filterType, value: filterValue };
     onChangeHandler(result);
+  { value: FILTER.STRING_OPERATORS.NO_OP, label: "--"},
   }
 
   return (
