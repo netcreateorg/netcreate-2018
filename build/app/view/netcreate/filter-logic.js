@@ -32,6 +32,15 @@ const NCLOGIC = require("./nc-logic");
 const DATASET = window.NC_CONFIG.dataset || "netcreate";
 const TEMPLATE_URL = `templates/${DATASET}.json`;
 
+const FILTER_MARKED = { isFilteredOut: true };
+const FILTER_NORMAL = { isFilteredOut: false };
+
+// Map to convert old 'attributes' data formats
+const HACKMAP = {
+  type: "Node_Type",
+  info: "Extra Info",
+  notes: "Notes"
+}
 
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -42,14 +51,14 @@ MOD.Hook("INITIALIZE", () => {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ FILTER_SET is called by StringFilter when user has updated filter.
   /*/
-  UDATA.HandleMessage("FILTER_SET", data => {
-    m_HandleFilterSet(data);
+  UDATA.HandleMessage("FILTER_DEFINE", data => {
+    m_FilterDefine(data);
   })
 
-  // is this the right listner?
   UDATA.OnAppStateChange("FILTERDEFS", data => {
     console.error('OnAppStateChange: FILTER', data);
-    m_HandleFilterDefsUpdate(data);
+    // The filter defs have been updated, so apply the filters.
+    m_FiltersApply(data);
   });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -57,52 +66,275 @@ MOD.Hook("INITIALIZE", () => {
       This triggers the actual filtering.
   /*/
   UDATA.HandleMessage("FILTER", data => {
-    m_HandleFilter(data);
+    m_FilterApply(data);
   });
 
 }); // end UNISYS_INIT
 
 
+/// UDATA HANDLERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ INIT HANDLERS
-/*/
-
-/**
- *
- * @param {Object} data {defs}
- */
-function m_HandleFilterDefsUpdate(data) {
-  m_ApplyFilters(data);
-}
 
 /**
  * Define an individual filter
  * @param {Object} data {group, filter}
  */
-function m_HandleFilterSet(data) {
-  console.error('received', data);
+function m_FilterDefine(data) {
+  console.error('FILTER_DEFINE received', data);
 
   const FILTERDEFS = UDATA.AppState("FILTERDEFS").defs; // already an object
   console.error('FILTERDEFS is', FILTERDEFS);
 
-  // assume node for now
-  // should be checking data.group to determine which set to use
-  let nodeFilters = FILTERDEFS[0].filters;
 
-  // set it
-  const index = nodeFilters.findIndex(f => f.id === data.filter.id);
-  nodeFilters.splice(index, 1, data.filter);
-  FILTERDEFS[0].filters = nodeFilters;
+  // HACK map to array for now
+  // FILTERDEFS should probably use object, not array
+  if (data.group === "node") {
+    let nodeFilters = FILTERDEFS[0].filters;
+    const index = nodeFilters.findIndex(f => f.id === data.filter.id);
+    nodeFilters.splice(index, 1, data.filter);
+    FILTERDEFS[0].filters = nodeFilters;
+  } else if (data.group === "edge") {
+    let edgeFilters = FILTERDEFS[1].filters;
+    const index = edgeFilters.findIndex(f => f.id === data.filter.id);
+    edgeFilters.splice(index, 1, data.filter);
+    FILTERDEFS[1].filters = edgeFilters;
+  } else {
+    throw `FILTER_DEFINE called with unknown group: ${data.group}`;
+  }
 
   console.log('FILTERDEFS spliced is now', FILTERDEFS); // already an object
   UDATA.SetAppState("FILTERDEFS", { defs: FILTERDEFS });
-  // UDATA.LocalCall('FILTERDEFS_UPDATED', FILTERDEFS);
 }
 
 /**
  * Walk down the list of filters and apply them all
+ * @param {Object} data A UDATA pkt {defs}
  */
-function m_ApplyFilters(data) {
+function m_FiltersApply(data) {
+  const FDATA = data.defs;
+
+  // hack in selection for now
+  // we should update the data.defs to use objects
+  // rather than an array?
+  const nodeFilters = FDATA[0].filters;
+  const edgeFilters = FDATA[1].filters;
+
+  m_FiltersApplyToNodes(nodeFilters);
+  m_FiltersApplyToEdges(edgeFilters);
+}
+
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ NODE FILTERS
+/*/
+
+/**
+ * Side effect:
+ *   D3DATA.nodes are updated with `isFilteredOut` flags.
+ *
+ * @param {Array} filters
+ */
+function m_FiltersApplyToNodes(filters) {
+  // console.log('m_FiltersApplyNodes', filters);
+  const D3DATA = UDATA.AppState("D3DATA");
+  D3DATA.nodes.forEach(node => {
+    m_FiltersApplyToNode(node, filters);
+  });
+  UDATA.SetAppState("D3DATA", D3DATA);
+}
+
+function m_FiltersApplyToNode(node, filters) {
+  // console.log('m_FiltersApplyToNode', node, filters);
+  let all_no_op = true;
+  let matched = true;
+  // implicit AND.  ALL filters must return true.
+  filters.forEach(filter => {
+    if (filter.operator === FILTER.STRING_OPERATORS.NO_OP) return; // skip no_op
+    all_no_op = false;
+    if (!m_IsNodeMatchedByFilter(node, filter)) {
+      matched = false;
+    }
+  });
+  if (all_no_op) {
+    node.isFilteredOut = false;  // no filters, revert
+  } else {
+    // node is filtered out if it fails any filter tests
+    node.isFilteredOut = !matched;
+  }
+}
+
+function m_IsNodeMatchedByFilter(node, filter) {
+  // console.log('...m_IsNodeMatchedByFilter', filter);
+  if ((filter.key === undefined) ||
+    (filter.operator === undefined) ||
+    (filter.value === undefined)) {
+    // console.log('......nothing to filter match = false');
+    return false; // nothing to filter
+  }
+
+  let nodeStr;
+  // HACK
+  // The old data model has secondary keys stuffed
+  // into an `attributes` object.  This is a
+  // holdover from the original pre-netcreate
+  // data import.  If we ever change the data format
+  // this HACKMAP should be removed.
+  if (['type', 'info', 'notes'].includes(filter.key)) {
+    nodeStr = node.attributes[HACKMAP[filter.key]];
+  } else {
+    nodeStr = node[filter.key];
+  }
+  switch (filter.operator) {
+    case FILTER.STRING_OPERATORS.CONTAINS:
+      return m_MatchString(filter.value, nodeStr, true);
+      break;
+    case FILTER.STRING_OPERATORS.NOT_CONTAINS:
+      return m_MatchString(filter.value, nodeStr, false);
+      break;
+    default:
+      throw `Unknown filter operator ${filter.operator}`;
+      break;
+  }
+}
+
+function m_MatchString(pin, haystack, contains = true) {
+  pin = NCLOGIC.EscapeRegexChars(pin.trim());
+  const regex = new RegExp(/*'^'+*/ pin, "i");
+  let matches;
+  if (pin === "") {
+    // empty string matches everything
+    matches = true;
+  } else if (contains) {
+    matches = regex.test(haystack);
+  } else {
+    matches = !regex.test(haystack);
+  }
+  console.log('######looking for pin', pin, 'in ', haystack, ' MATCHES:', matches);
+  return matches;
+}
+
+
+
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ EDGE FILTERS
+/*/
+
+function m_FiltersApplyToEdges(filters) {
+  console.log('m_FiltersApplyToEdges', filters);
+  const D3DATA = UDATA.AppState("D3DATA");
+  D3DATA.edges.forEach(edge => {
+    m_FiltersApplyToEdge(edge, filters);
+  });
+  UDATA.SetAppState("D3DATA", D3DATA);
+}
+
+function m_FiltersApplyToEdge(edge, filters) {
+  console.log('m_FiltersApplyToEdge', edge, filters);
+
+  // regardless of filter definition,
+  // hide edge if any attached node is filtered out.
+  if (edge.source.isFilteredOut || edge.target.isFilteredOut) {
+    console.error('...edge source or target is filtered out',edge.source,edge.target)
+    edge.isFilteredOut = true;  // no filters, revert
+    return;
+  }
+
+  console.log('...edge source or target is still visible');
+
+  let all_no_op = true;
+  let matched = true;
+  // implicit AND.  ALL filters must return true.
+  filters.forEach(filter => {
+    if (filter.operator === FILTER.STRING_OPERATORS.NO_OP) return; // skip no_op
+    all_no_op = false;
+    if (!m_IsEdgeMatchedByFilter(edge, filter)) {
+      console.error('NO MATCH!');
+      matched = false;
+    }
+  });
+  if (all_no_op) {
+    edge.isFilteredOut = false;  // no filters, revert
+  } else {
+    // edge is filtered out if it fails any filter tests
+    edge.isFilteredOut = !matched;
+  }
+}
+
+function m_IsEdgeMatchedByFilter(edge, filter) {
+  console.log('...m_IsEdgeMatchedByFilter', edge[filter.key], filter.value);
+  if ((filter.key === undefined) ||
+    (filter.operator === undefined) ||
+    (filter.value === undefined)) {
+    console.log('......nothing to filter match = false');
+    return false; // nothing to filter
+  }
+
+  // edges require special handling because `source` and `target`
+  // point to node data, not simple strings.
+  let edgeStr;
+  switch (filter.key) {
+    case FILTER.KEY.SOURCE:
+      edgeStr = edge.source.label;
+      break;
+    case FILTER.KEY.TARGET:
+      edgeStr = edge.target.label;
+      break;
+    default:
+      edgeStr = edge[filter.key];
+      break;
+  }
+  switch (filter.operator) {
+    case FILTER.STRING_OPERATORS.CONTAINS:
+      return m_MatchString(filter.value, edgeStr, true);
+      break;
+    case FILTER.STRING_OPERATORS.NOT_CONTAINS:
+      return m_MatchString(filter.value, edgeStr, false);
+      break;
+    default:
+      throw `Unknown filter operator ${filter.operator}`;
+      break;
+  }
+}
+
+  // if any attached node is filtered, then don't show self.
+
+
+// Handle Clear request: FILTERS_CLEAR?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/// FIRST PASS FILTERING //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+///
+///  DEPRECATED!!!!
+///
+///  This approach applied filtering filter by filter.
+///  Instead we need to apply all filters at once?
+
+/**
+ * Walk down the list of filters and apply them all
+ * @param {Object} data A UDATA pkt {defs}
+ */
+function xm_FiltersApply(data) {
   // HACK
   // just grab the first filter for now while we figure
   // out how to handle the whole round trip
@@ -116,23 +348,28 @@ function m_ApplyFilters(data) {
   // });
 
   // hack in selection for now
+  // we should update the data.defs to use objects
+  // rather than an array?
   const nodeFilters = data.defs[0].filters;
   const edgeFilters = data.defs[1].filters;
 
   nodeFilters.forEach(filter => {
-    m_HandleFilter({ action: FILTER.ACTIONS.FILTER_NODES, filter})
+    m_FilterApply({ action: FILTER.ACTIONS.FILTER_NODES, filter})
   })
   edgeFilters.forEach(filter => {
-    m_HandleFilter({ action: FILTER.ACTIONS.FILTER_EDGES, filter})
+    m_FilterApply({ action: FILTER.ACTIONS.FILTER_EDGES, filter})
   })
 }
 
 /**
- *
+ * Apply a specific group of filters
+ * This is triggered by:
+ * 1. AppState "FILTER" request, or
+ * 2. AppState "FILTERDEFS" update
  * @param {Object} data {action, filter}
  *
  */
-function m_HandleFilter(data) {
+function m_FilterApply(data) {
   console.log('m_HandleFilter!', data);
   const D3DATA = UDATA.AppState("D3DATA");
   if (data.action === undefined) throw "m_HandleFilter called without action";
@@ -248,11 +485,6 @@ function m_ClearFilters(arr) {
  * @param {Object} no e.g. normal = { isFilteredOut: false };
  * @param {Bool} contains regex text contains or not contains
  */
-const HACKMAP = {
-  type: "Node_Type",
-  info: "Extra Info",
-  notes: "Notes"
-}
 function m_SetMatchingNodesKey(keyToSet, str = "", yes = {}, no = {}, contains = true) {
   const D3DATA = UDATA.AppState("D3DATA"); // 8/10/20 REVIEW: Is this the best way to get current data?
   let returnMatches = [];

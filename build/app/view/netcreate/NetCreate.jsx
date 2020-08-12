@@ -49,7 +49,7 @@ const Search       = require('./components/Search');
 const NodeSelector = require('./components/NodeSelector');
 const InfoPanel    = require('./components/InfoPanel');
 const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
-
+const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
