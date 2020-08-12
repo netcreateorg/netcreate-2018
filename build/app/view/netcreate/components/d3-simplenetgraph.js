@@ -411,6 +411,8 @@ class D3NetGraph {
               d.size = radius // save the calculated size
               return this.defaultSize + (this.defaultSize * d.weight / 2)
           })
+          .transition()
+          .duration(500)
           .style("opacity", d => {
             // console.log(d);
             return d.isFilteredOut ? 0 : 1.0
@@ -431,6 +433,8 @@ class D3NetGraph {
             return undefined; // don't set font weight
           })
           .text((d) => { return d.label }) // in case text is updated
+          .transition()
+          .duration(500)
           .style("opacity", d => {
             return d.isFilteredOut ? 0 : 1.0
           });
@@ -468,6 +472,8 @@ class D3NetGraph {
         .classed("selected",  (d) => { return d.selected })
         .style('stroke', this._UpdateLinkStrokeColor)
         .style('stroke-width', this._UpdateLinkStrokeWidth)
+        .transition()
+        .duration(500)
         .style("opacity", d => {
           return d.isFilteredOut ? 0 : 1.0
         });
