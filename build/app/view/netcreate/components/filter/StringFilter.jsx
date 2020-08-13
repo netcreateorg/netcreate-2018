@@ -3,46 +3,107 @@ import React from 'react';
 const ReactStrap = require('reactstrap');
 const { Form, FormGroup, Input, Label } = ReactStrap;
 
-export default function StringFilter({
-  filter: {
-    id,
-    key,
-    keylabel, // human friendly display name for the key.  This can be customized in the template.
-    operator,
-    value
-  },
-  onChangeHandler
-}) {
+const UNISYS = require('unisys/client');
+var UDATA = null;
 
-  const OPERATORS = [
-    { value: FILTER.STRING_OPERATORS.CONTAINS, label: "contains"},
-    { value: FILTER.STRING_OPERATORS.NOT_CONTAINS, label: "does not contain"},
-  ]
-
-  console.log('StringFilter: id is', id);
-
-  function HandleChangeLocal(e) {
-    const filterType = document.getElementById(`filterType-${id}`).value;
-    const filterValue = document.getElementById(`filterValue-${id}`).value;
-    // Construct search string
-    // let result = name;
-    // result +=':' + filterType + ':' + filterValue;
-    let result = { key, operator: filterType, value: filterValue };
-    onChangeHandler(result);
+const OPERATORS = [
   { value: FILTER.STRING_OPERATORS.NO_OP, label: "--"},
+  { value: FILTER.STRING_OPERATORS.CONTAINS, label: "contains"},
+  { value: FILTER.STRING_OPERATORS.NOT_CONTAINS, label: "does not contain"},
+]
+
+/*/
+
+  StringFilter
+
+  props
+      {
+        group       // node or edge
+        filter: {
+          id,
+          key,      // node field key from the template
+          keylabel, // human friendly display name for the key.  This can be customized in the template.
+          operator,
+          value
+        },
+        onChangeHandler // callback function
+      }
+
+
+/*/
+class StringFilter extends React.Component {
+
+  constructor({
+    group,
+    filter: {id, key, keylabel, operator, value},
+    onChangeHandler
+  }) {
+    super();
+    this.OnChangeOperator = this.OnChangeOperator.bind(this);
+    this.OnChangeValue = this.OnChangeValue.bind(this);
+    this.TriggerChangeHandler = this.TriggerChangeHandler.bind(this);
+
+    this.state = {
+      operator: FILTER.STRING_OPERATORS.NO_OP, // Used locally to define result
+      value: '' // Used locally to define result
+    };
+
+    /// Initialize UNISYS DATA LINK for REACT
+    UDATA = UNISYS.NewDataLink(this);
   }
 
-  return (
-    <Form inline className="filter-item" id={id}>
-      <FormGroup>
-        <Label size="sm" style={{width:`5em`,justifyContent:'flex-end'}}>{keylabel}&nbsp;</Label>
-        <Input id={`filterType-${id}`} type="select" value={operator} onChange={HandleChangeLocal} bsSize="sm">
-          {OPERATORS.map(op =>
-            <option value={op.value} key={`${id}${op.value}`} size="sm">{op.label}</option>
-          )}
-        </Input>
-        <Input id={`filterValue-${id}`} type="text" value={value} onChange={HandleChangeLocal} bsSize="sm"/>
-      </FormGroup>
-    </Form>
-  );
+  OnChangeOperator(e) {
+    this.setState({
+      operator: e.target.value
+    }, this.TriggerChangeHandler);
+  }
+
+  OnChangeValue(e) {
+    this.setState({
+      value: e.target.value
+    }, this.TriggerChangeHandler);
+  }
+
+  TriggerChangeHandler() {
+    const { id, key, keylabel } = this.props.filter;
+
+    // Allow NO_OP so user can reset operator to blank
+    // if (this.state.operator === FILTER.STRING_OPERATORS.NO_OP) return;
+
+    const filter = {
+      id,
+      key,
+      keylabel,
+      operator: this.state.operator,
+      value: this.state.value
+    };
+    UDATA.LocalCall('FILTER_DEFINE', {
+      group: this.props.group,
+      filter
+    }); // set a SINGLE filter
+  }
+
+  render() {
+    const { id, key, keylabel, operator, value } = this.props.filter;
+    return (
+      <Form inline className="filter-item" key={id}>
+        <FormGroup>
+          <Label size="sm" className="small text-muted"
+            style={{ fontSize: '0.75em', lineHeight: '1em', width: `6em`, justifyContent: 'flex-end' }}>
+            {keylabel}&nbsp;
+          </Label>
+          <Input type="select" value={operator}
+            onChange={this.OnChangeOperator} bsSize="sm">
+            {OPERATORS.map(op =>
+              <option value={op.value} key={`${id}${op.value}`} size="sm">{op.label}</option>
+            )}
+          </Input>
+          <Input type="text" value={value} placeholder="..."
+            onChange={this.OnChangeValue} bsSize="sm" />
+        </FormGroup>
+      </Form>
+    );
+  }
 }
+
+export default StringFilter;
