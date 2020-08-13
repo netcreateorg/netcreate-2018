@@ -7,14 +7,18 @@ const UNISYS = require('unisys/client');
 var UDATA = null;
 
 const OPERATORS = [
-  { value: FILTER.OPERATORS.NO_OP, label: "--"},
-  { value: FILTER.OPERATORS.STRING.CONTAINS, label: "contains"},
-  { value: FILTER.OPERATORS.STRING.NOT_CONTAINS, label: "does not contain"},
+  { value: FILTER.OPERATORS.NUMBER.NO_OP, label: "--"},
+  { value: FILTER.OPERATORS.NUMBER.GT, label: ">"},
+  { value: FILTER.OPERATORS.NUMBER.GT_EQ, label: ">="},
+  { value: FILTER.OPERATORS.NUMBER.LT, label: "<"},
+  { value: FILTER.OPERATORS.NUMBER.LT_EQ, label: "<="},
+  { value: FILTER.OPERATORS.NUMBER.EQ, label: "="},
+  { value: FILTER.OPERATORS.NUMBER.NOT_EQ, label: `\u2260`},
 ]
 
 /*/
 
-  StringFilter
+  NumberFilter
 
   props
       {
@@ -32,11 +36,11 @@ const OPERATORS = [
 
 
 /*/
-class StringFilter extends React.Component {
+class NumberFilter extends React.Component {
 
   constructor({
     group,
-    filter: {id, type, ey, keylabel, operator, value},
+    filter: {id, type, key, keylabel, operator, value},
     onChangeHandler
   }) {
     super();
@@ -69,7 +73,7 @@ class StringFilter extends React.Component {
     const { id, type, key, keylabel } = this.props.filter;
 
     // Allow NO_OP so user can reset operator to blank
-    // if (this.state.operator === FILTER.STRING_OPERATORS.NO_OP) return;
+    // if (this.state.operator === FILTER.OPERATORS.NUMBER.NO_OP) return;
 
     const filter = {
       id,
@@ -108,4 +112,4 @@ class StringFilter extends React.Component {
   }
 }
 
-export default StringFilter;
+export default NumberFilter;

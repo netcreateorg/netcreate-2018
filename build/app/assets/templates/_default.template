@@ -91,7 +91,7 @@
                 "hidden": false
               },
     "info":  {
-                "type": "string",
+                "type": "number",
                 "label": "Geocode or Date",
                 "help":  "Use latitude/longitude or a date mm/dd/yyy",
                 "includeInGraphTooltip":  true,

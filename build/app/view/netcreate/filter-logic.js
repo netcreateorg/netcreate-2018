@@ -222,17 +222,16 @@ function m_ImportPrompts(prompts) {
     let operator;
     switch (prompt.type) {
       case FILTER.TYPES.STRING:
-        operator = FILTER.STRING_OPERATORS.NO_OP; // default to no_op
+        operator = FILTER.OPERATORS.NO_OP; // default to no_op
         break;
       case FILTER.TYPES.NUMBER:
-        console.error('skipping NUMBER for now');
-        // operator = FILTER.NUMBER_OPERATORS.GT; // skip for now
+        operator = FILTER.OPERATORS.NO_OP; // default to gt
         break;
       case FILTER.TYPES.SELECT:
         console.error('skipping SELECT for now');
         break;
       case FILTER.TYPES.NODE:
-        operator = FILTER.STRING_OPERATORS.NO_OP; // default to no_op
+        operator = FILTER.OPERATORS.NO_OP; // default to no_op
         break;
       case FILTER.TYPES.HIDDEN:
         break;
@@ -338,7 +337,7 @@ function m_FiltersApplyToNode(node, filters) {
   let matched = true;
   // implicit AND.  ALL filters must return true.
   filters.forEach(filter => {
-    if (filter.operator === FILTER.STRING_OPERATORS.NO_OP) return; // skip no_op
+    if (filter.operator === FILTER.OPERATORS.NO_OP) return; // skip no_op
     all_no_op = false;
     if (!m_IsNodeMatchedByFilter(node, filter)) {
       matched = false;
@@ -360,7 +359,7 @@ function m_IsNodeMatchedByFilter(node, filter) {
     return false; // nothing to filter
   }
 
-  let nodeStr;
+  let nodeValue;
   // HACK
   // The old data model has secondary keys stuffed
   // into an `attributes` object.  This is a
@@ -368,19 +367,21 @@ function m_IsNodeMatchedByFilter(node, filter) {
   // data import.  If we ever change the data format
   // this HACKMAP should be removed.
   if (['type', 'info', 'notes'].includes(filter.key)) {
-    nodeStr = node.attributes[HACKMAP[filter.key]];
+    nodeValue = node.attributes[HACKMAP[filter.key]];
   } else {
-    nodeStr = node[filter.key];
+    nodeValue = node[filter.key];
   }
   switch (filter.operator) {
-    case FILTER.STRING_OPERATORS.CONTAINS:
-      return m_MatchString(filter.value, nodeStr, true);
+    case FILTER.OPERATORS.STRING.CONTAINS:
+      return m_MatchString(filter.value, nodeValue, true);
       break;
-    case FILTER.STRING_OPERATORS.NOT_CONTAINS:
-      return m_MatchString(filter.value, nodeStr, false);
+    case FILTER.OPERATORS.STRING.NOT_CONTAINS:
+      return m_MatchString(filter.value, nodeValue, false);
       break;
     default:
-      throw `Unknown filter operator ${filter.operator}`;
+      // Else assume it's a number
+      console.log('NUMBER', filter, node);
+      return m_MatchNumber(filter.operator, filter.value, nodeValue)
       break;
   }
 }
@@ -400,7 +401,37 @@ function m_MatchString(pin, haystack, contains = true) {
   return matches;
 }
 
-
+function m_MatchNumber(operator, filterVal, nodeVal) {
+  let matches;
+  if (filterVal === "") {
+    matches = true;
+  } else {
+    switch (operator) {
+      case FILTER.OPERATORS.NUMBER.GT:
+        matches = nodeVal > filterVal;
+        break;
+      case FILTER.OPERATORS.NUMBER.GT_EQ:
+        matches = nodeVal >= filterVal;
+        break;
+      case FILTER.OPERATORS.NUMBER.LT:
+        matches = nodeVal < filterVal;
+        break;
+      case FILTER.OPERATORS.NUMBER.LT_EQ:
+        matches = nodeVal <= filterVal;
+        break;
+      case FILTER.OPERATORS.NUMBER.EQ:
+        matches = nodeVal === filterVal;
+        break;
+      case FILTER.OPERATORS.NUMBER.NOT_EQ:
+        matches = nodeVal !== filterVal;
+        break;
+      default:
+        console.error(`filter-logic.js: Unknown operator ${operator}`);
+        break;
+    }
+  }
+  return matches;
+}
 
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -427,7 +458,7 @@ function m_FiltersApplyToEdge(edge, filters) {
   let matched = true;
   // implicit AND.  ALL filters must return true.
   filters.forEach(filter => {
-    if (filter.operator === FILTER.STRING_OPERATORS.NO_OP) return; // skip no_op
+    if (filter.operator === FILTER.OPERATORS.NO_OP) return; // skip no_op
     all_no_op = false;
     if (!m_IsEdgeMatchedByFilter(edge, filter)) {
       matched = false;
@@ -459,10 +490,10 @@ function m_IsEdgeMatchedByFilter(edge, filter) {
   }
 
   switch (filter.operator) {
-    case FILTER.STRING_OPERATORS.CONTAINS:
+    case FILTER.OPERATORS.STRING.CONTAINS:
       return m_MatchString(filter.value, edgeStr, true);
       break;
-    case FILTER.STRING_OPERATORS.NOT_CONTAINS:
+    case FILTER.OPERATORS.STRING.NOT_CONTAINS:
       return m_MatchString(filter.value, edgeStr, false);
       break;
     default:
@@ -583,13 +614,13 @@ function m_IsEdgeMatchedByFilter(edge, filter) {
 //   // If value is cleared, how do we clear the search?
 
 //   switch (filter.operator) {
-//     case FILTER.STRING_OPERATORS.CONTAINS:
+//     case FILTER.OPERATORS.STRING.CONTAINS:
 //       m_SetMatchingNodesKey(filter.key, filter.value, marked, normal);
 //       break;
-//     case FILTER.STRING_OPERATORS.NOT_CONTAINS:
+//     case FILTER.OPERATORS.STRING.NOT_CONTAINS:
 //       m_SetMatchingNodesKey(filter.key, filter.value, marked, normal, false);
 //       break;
-//     case FILTER.STRING_OPERATORS.NO_OP:
+//     case FILTER.OPERATORS.NO_OP:
 //       // ignore
 //       break;
 //     default:
@@ -613,13 +644,13 @@ function m_IsEdgeMatchedByFilter(edge, filter) {
 //   const normal = { isFilteredOut: false };
 
 //   switch (filter.operator) {
-//     case FILTER.STRING_OPERATORS.CONTAINS:
+//     case FILTER.OPERATORS.STRING.CONTAINS:
 //       // m_SetMatchingNodesKey(filter.key, filter.value, marked, normal);
 //       break;
-//     case FILTER.STRING_OPERATORS.NOT_CONTAINS:
+//     case FILTER.OPERATORS.STRING.NOT_CONTAINS:
 //       // m_SetMatchingNodesKey(filter.key, filter.value, marked, normal, false);
 //       break;
-//     case FILTER.STRING_OPERATORS.NO_OP:
+//     case FILTER.OPERATORS.NO_OP:
 //       // ignore
 //       break;
 //     default:

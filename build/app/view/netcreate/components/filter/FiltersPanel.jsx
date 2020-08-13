@@ -72,10 +72,9 @@ console.error('######## fieldPanel Constructor')
         style={{
           overflow: 'auto', position: 'relative',
           display: 'flex', flexDirection: 'column',
-          maxHeight: tableHeight,
-          backgroundColor:'rgba(0,0,0,0.1)'
+          maxHeight: tableHeight
         }}>
-        <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+        <div style={{ display: 'flex', flexGrow: `1`, justifyContent: 'space-evenly' }}>
           {defs.map(def => <FilterGroup
             key={def.label}
             group={def.group}
@@ -84,7 +83,9 @@ console.error('######## fieldPanel Constructor')
             onFiltersChange={this.OnFilterChange}
           />)}
         </div>
-        <Button size="sm" onClick={this.OnClearBtnClick}>Clear Filters</Button>
+        <div style={{ display: 'flex', justifyContent: 'space-evenly', padding: '10px' }}>
+          <Button size="sm" onClick={this.OnClearBtnClick}>Clear Filters</Button>
+        </div>
       </div>
     )
   }
