@@ -6,7 +6,6 @@ const ReactStrap = require('reactstrap');
 
 const { Button, Input, Label } = ReactStrap;
 
-
 const UNISYS = require('unisys/client');
 var UDATA  = null;
 
@@ -15,63 +14,101 @@ var UDATA  = null;
 // const UNISYS = require('../../../../unisys/client');
 // class FiltersPanel extends React.Component {
 
-// Dummy Data
-// const filterData = {
-//   id: '1',
-//   name: 'Label',
-//   type: 'contains',
-//   value: 'tacitus'
-// };
-const filtersDefs = [
-  {
+
+// Playing with alternative representation:
+// PROS
+// * More concise
+// CONS
+// * Restricts ability to create two filters on the same key
+const FILTERDEF = {
+  nodes: {
     label: "Nodes",
+    filters: {
+      label: {
+        keylabel: 'Label',
+        operator: 'contains',
+        value: 'tacitus'
+      },
+      type: {
+        keylabel: 'Type',
+        operator: 'not-contains',
+        value: 'person'
+      },
+      notes: {
+        keylabel: 'Significance',
+        operator: 'contains',
+        value: 'xxx'
+      }
+    }
+  },
+  edges: {
+    label: "Edges",
+    filters: {}
+  }
+}
+
+
+
+// eventually generate this from template?
+let filterDefs = [
+  {
+    group: "node",
+    label: "Nodes -- Show me all nodes where...",
     filters: [
       {
         id: '1',
         key: 'label',
         keylabel: 'Label',
-        operator: 'contains',
-        value: 'tacitus'
+        operator: 'no-op',
+        value: ''
+      },
+      {
+        id: '4',
+        key: 'label',
+        keylabel: 'Label',
+        operator: 'no-op',
+        value: ''
       },
       {
         id: '2',
         key: 'type',
         keylabel: 'Type',
-        operator: 'contains',
-        value: 'person'
+        operator: 'no-op',
+        value: ''
       },
       {
         id: '3',
         key: 'notes',
         keylabel: 'Significance',
-        operator: 'contains',
-        value: 'xxx'
+        operator: 'no-op',
+        value: ''
       }
     ]
   },
   {
+    group: "edge",
     label: "Edges",
     filters: [
       {
-        id: '1',
+        id: '5',
         key: 'source',
         keylabel: 'Source',
-        operator: 'contains',
-        value: 'tacitus'
+        operator: 'no-op',
+        value: ''
       },
       {
-        id: '2',
+        id: '6',
         key: 'type',
         keylabel: 'Type',
-        operator: 'not-contains',
-        value: 'is related to'
+        operator: 'no-op',
+        value: ''
       },
       {
-        id: '3',
+        id: '7',
         key: 'target',
         keylabel: 'Target',
-        operator: 'contains',
-        value: 'Rome'
+        operator: 'no-op',
+        value: ''
       }
     ]
   }
@@ -82,35 +119,69 @@ class FiltersPanel extends UNISYS.Component {
   constructor({ filterGroups, onFiltersChange, tableHeight }) {
     super();
 
-    console.log('filters is', filterGroups)
-
-    this.OnFilterChange = this.OnFilterChange.bind(this);
+    this.UpdateFilterDefs = this.UpdateFilterDefs.bind(this);
+    this.OnFilterReset = this.OnFilterReset.bind(this);
     this.OnClearBtnClick = this.OnClearBtnClick.bind(this);
 
      /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
+
+console.error('######## fieldPanel Constructor')
+    // Load Templates
+    let FDATA = UDATA.AppState("FILTERDEFS");
+    console.error('####### FDATA', FDATA)
+    this.state = { defs: FDATA.defs };
+
+// defs should be triggered by filter-logic
+// but constructor doesn't init until fairly late.
+    // // HACK in filter set here for now
+    // // Eventually this should be read from the template file
+    // UDATA.SetAppState("FILTERDEFS", { defs: filterDefs });
+
+    UDATA.OnAppStateChange("FILTERDEFS", this.UpdateFilterDefs);
+
+    UDATA.HandleMessage("FILTER_RESET", this.OnFilterReset);
+
   } // constructor
 
-  OnFilterChange(filter) {
-    console.log('onFilterChange', filter);
-    UDATA.LocalCall('FILTER', { action: FILTER.ACTIONS.FILTER_NODES , filter });
+
+  UpdateFilterDefs(data) {
+    console.error('####fieldpanel got state change', data)
+    this.setState({ defs: data.defs }, () => {
+      console.error('fieldpanel updated state is', this.state.defs);
+    });
+  }
+
+  // Reset the form
+  OnFilterReset() {
+    console.error('RESETING')
+    UDATA.SetAppState("FILTERDEFS", { defs: [{group: "node", filters:[]},{group: "edge", filters:[]}] });
   }
 
   OnClearBtnClick() {
-    UDATA.LocalCall('FILTER', {action: FILTER.ACTIONS.CLEAR });
+    this.OnFilterReset();
+    // UDATA.LocalCall('FILTER_CLEAR');
+  }
+
+  componentWillUnmount() {
+    console.error('gracefully unsubscribe!')
   }
 
   render() {
     const { tableHeight } = this.props;
+    const { defs } = this.state;
     return (
       <div className="filterPanel"
         style={{
-          overflow: 'auto', position: 'relative', display: 'block',
+          overflow: 'auto', position: 'relative',
+          display: 'flex', flexDirection: 'column',
           maxHeight: tableHeight,
           backgroundColor:'rgba(0,0,0,0.1)'
         }}>
-        <div style={{ display: 'flex' }}>
-          {filtersDefs.map(def => <FilterGroup
+        <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+          {defs.map(def => <FilterGroup
+            key={def.label}
+            group={def.group}
             label={def.label}
             filters={def.filters}
             onFiltersChange={this.OnFilterChange}

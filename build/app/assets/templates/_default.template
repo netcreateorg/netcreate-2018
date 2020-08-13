@@ -28,6 +28,7 @@
 
   "nodePrompts": {
     "label": {
+                "type":     "string",
                 "label":    "Label",
                 "help":     "A short title for the node",
                 "includeInGraphTooltip":  true,
@@ -36,6 +37,7 @@
                 "_cmt4":    "/// `Label` is always required and cannot be hidden"
              },
     "type":  {
+                "type":     "select",
                 "label":    "Type",
                 "help":     "Multiple people are a 'Group'",
                 "includeInGraphTooltip":  true,
@@ -75,29 +77,34 @@
                 ]
              },
     "degrees": {
+      "type": "number",
       "label": "Degrees",
       "help": "Number of edges.",
       "includeInGraphTooltip":  true,
       "hidden": false
     },
     "notes": {
+                "type": "string",
                 "label": "Significance",
-                "help":  "Add some details.",
+                "help": "Add some details.",
                 "includeInGraphTooltip":  true,
                 "hidden": false
               },
     "info":  {
+                "type": "string",
                 "label": "Geocode or Date",
                 "help":  "Use latitude/longitude or a date mm/dd/yyy",
                 "includeInGraphTooltip":  true,
                 "hidden": true
               },
     "updated":{
+                "type": "string",
                 "label": "Last update",
                 "includeInGraphTooltip": true,
                 "_cmt4": "//updated is included in the edge tables if in admin mode, and in the graph tooltip  if indicated here. Probably those should be more consistent."
               },
     "delete": {
+      "type": "hidden",
       "hidden": false
     }
   },
@@ -107,11 +114,13 @@
   "edgePrompts": {
     "edgeIsLockedMessage": "This edge is currently being edited by someone else, please try again later.",
     "source":   {
+                  "type": "node",
                   "label": "Source",
                   "help":  "",
                   "hidden": false
                 },
     "type":     {
+                  "type": "select",
                   "label": "Type",
                   "help":  "",
                   "hidden": false,
@@ -147,26 +156,31 @@
                   ]
                 },
     "target":   {
+                  "type": "node",
                   "label": "Target",
                   "help":  "",
                   "hidden": false
                 },
     "notes":    {
+                  "type": "string",
                   "label": "Signficance",
                   "help":  "",
                   "hidden": false
                 },
     "info":     {
+                  "type": "string",
                   "label": "Approximate Date of Interaction",
                   "help":  "",
                   "hidden": true
                 },
     "citation": {
+                  "type": "string",
                   "label": "Citation",
                   "help":  "Enter Chapter number.",
                   "hidden": false
                 },
     "category":     {
+                  "type": "string",
                   "label": "Category",
                   "help":  "",
                   "hidden": true
