@@ -97,7 +97,7 @@ class NetGraph extends UNISYS.Component {
       let nodeTypes = this.AppState('TEMPLATE').nodePrompts.type.options;
       return (
         <div style={{ height: '100%' }}>
-          <div>
+          <div style={{ margin: '10px 0 0 10px' }}>
             <div className="tooltipAnchor">
                 <span style={{ fontSize: '9px' }}><i className="fas fa-question-circle"></i>NETGRAPH for {this.AppState('TEMPLATE').name}</span>
                 <span style={{ fontSize: '12px' }} className="tooltiptext">{this.AppState('TEMPLATE').description}</span>

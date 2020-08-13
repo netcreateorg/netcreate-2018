@@ -133,7 +133,7 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
                   <NodeSelector/>
                 </div>
               </div>
-              <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 60%', padding:'10px',marginTop:'38px'}}>
+              <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 60%',marginTop:'38px'}}>
                 <InfoPanel/>
                 <NetGraph/>
                 <div style={{fontSize:'10px',position:'fixed',left:'0px',bottom:'0px',right:'0px',zIndex:'1500',color:'#aaa',backgroundColor:'#eee',padding:'5px 10px'}}>Please contact Professor

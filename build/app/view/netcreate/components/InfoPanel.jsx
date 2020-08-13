@@ -108,10 +108,9 @@ class InfoPanel extends UNISYS.Component {
     e.stopPropagation();
     let top = e.clientY + this.state.draggerMouseOffsetY;
     this.setState({
-      tabpanelHeight: (top - this.state.tabpanelTop) + 'px',
-      tableHeight: (top - this.state.tabpanelTop - 55) + 'px',    // Hacked tab button + thead offset
-      draggerTop: top + 'px',
-      savedTabpanelHeight: (top - this.state.tabpanelTop) + 'px',  // remember height when switching tabs
+      tabpanelHeight: (top - this.state.tabpanelTop - 40) + 'px',
+      tableHeight: (top - this.state.tabpanelTop) + 'px',
+      savedTabpanelHeight: (top - this.state.tabpanelTop - 40) + 'px',  // remember height when switching tabs
       bIgnoreTableUpdates: true // ignore this update at the table level if it is a large data set
     });
   }
@@ -150,7 +149,7 @@ class InfoPanel extends UNISYS.Component {
     return (
       <div>
         <div id='tabpanel'
-          style={{ height: tabpanelHeight, overflow: 'hidden', backgroundColor: '#eee', padding: '5px' }}>
+          style={{ height: tabpanelHeight, overflow: 'hidden', backgroundColor: '#eee'}}>
           <Nav tabs>
             <NavItem>
               <NavLink
@@ -201,15 +200,11 @@ class InfoPanel extends UNISYS.Component {
               </NavLink>
             </NavItem>
           </Nav>
-          <TabContent activeTab={this.state.activeTab} >
+          <TabContent activeTab={this.state.activeTab} style={{overflow: 'hidden auto'}}>
             <TabPane tabId="1">
             </TabPane>
             <TabPane tabId="2">
-              <Row>
-                <Col sm="12">
-                  <FiltersPanel tableHeight={tableHeight} />
-                </Col>
-              </Row>
+              <FiltersPanel tableHeight={tableHeight} />
             </TabPane>
             <TabPane tabId="3">
               <Row>
@@ -244,8 +239,7 @@ class InfoPanel extends UNISYS.Component {
 
         <div id='dragger' hidden={hideDragger}
           style={{
-            top: draggerTop,
-            position: 'absolute', width: '100%', height: '10px', backgroundColor: 'gray',
+            position: 'relative', top: '0px', left: '0px', right: '0px', height: '10px', backgroundColor: 'gray',
             cursor: 'ns-resize'
           }}
           onMouseDown={this.handleMouseDown}
