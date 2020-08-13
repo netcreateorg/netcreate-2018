@@ -1,6 +1,7 @@
 import FILTER from './FilterEnums';
 import NumberFilter from './NumberFilter';
 import React from 'react';
+import SelectFilter from './SelectFilter';
 import StringFilter from './StringFilter';
 const ReactStrap = require('reactstrap');
 const { Input, Label } = ReactStrap;
@@ -19,6 +20,9 @@ export default function FilterGroup({
             break;
           case FILTER.TYPES.NUMBER:
             return <NumberFilter key={filterData.id} group={group} filter={filterData} />
+            break;
+          case FILTER.TYPES.SELECT:
+            return <SelectFilter key={filterData.id} group={group} filter={filterData} />
             break;
           default:
             console.error(`FilterGroup: Filter Type not found ${filterData.type}`)

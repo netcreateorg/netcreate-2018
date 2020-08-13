@@ -7,118 +7,43 @@
 
   The initial filter definitions are loaded from the current database template.
 
-  FDATA = {
-    nodes: { ...filters },
-    edges: { ...filters }
-  }
+
+    FDATA = {
+        nodes: {                    // group
+            label: "Node Filters",  // group label
+            filters: [              // array of filter objects
+                {
+                  id: '4',
+                  type: 'string',
+                  key: 'label',
+                  keylabel: 'Label',
+                  operator: 'no-op',
+                  value: ''
+                },
+                {
+                  id: '2',
+                  type: 'select',
+                  key: 'type',
+                  keylabel: 'Type',
+                  operator: 'no-op',
+                  value: ''
+                },
+                ...
+            ]
+        },
+        edges: {
+            label: "Edge Filters",
+            filters: [...]
+        }
+    }
+
+
 
   Filters can be stacked.
   * You can define two "Label" filters, for example.
     The only reason you can't do it right now is because the filter template
     is reading directly from the _default.template file.  You can easily
     insert another filter into the mix.
-
-
-
-// Playing with alternative representation:
-// PROS
-// * More concise
-// CONS
-// * Restricts ability to create two filters on the same key
-const FILTERDEF = {
-  nodes: {
-    label: "Nodes",
-    filters: {
-      label: {
-        keylabel: 'Label',
-        operator: 'contains',
-        value: 'tacitus'
-      },
-      type: {
-        keylabel: 'Type',
-        operator: 'not-contains',
-        value: 'person'
-      },
-      notes: {
-        keylabel: 'Significance',
-        operator: 'contains',
-        value: 'xxx'
-      }
-    }
-  },
-  edges: {
-    label: "Edges",
-    filters: {}
-  }
-}
-
-
-
-
-// eventually generate this from template?
-let filterDefs = [
-  {
-    group: "node",
-    label: "Nodes -- Show me all nodes where...",
-    filters: [
-      {
-        id: '1',
-        key: 'label',
-        keylabel: 'Label',
-        operator: 'no-op',
-        value: ''
-      },
-      {
-        id: '4',
-        key: 'label',
-        keylabel: 'Label',
-        operator: 'no-op',
-        value: ''
-      },
-      {
-        id: '2',
-        key: 'type',
-        keylabel: 'Type',
-        operator: 'no-op',
-        value: ''
-      },
-      {
-        id: '3',
-        key: 'notes',
-        keylabel: 'Significance',
-        operator: 'no-op',
-        value: ''
-      }
-    ]
-  },
-  {
-    group: "edge",
-    label: "Edges",
-    filters: [
-      {
-        id: '5',
-        key: 'source',
-        keylabel: 'Source',
-        operator: 'no-op',
-        value: ''
-      },
-      {
-        id: '6',
-        key: 'type',
-        keylabel: 'Type',
-        operator: 'no-op',
-        value: ''
-      },
-      {
-        id: '7',
-        key: 'target',
-        keylabel: 'Target',
-        operator: 'no-op',
-        value: ''
-      }
-    ]
-  }
-];
 
 
 
@@ -256,6 +181,18 @@ function m_ImportPrompts(prompts) {
       operator: operator,
       value: ''
     };
+
+    // Add "Options" for "select" filter types
+    if (prompt.type === FILTER.TYPES.SELECT) {
+      let options = [];
+      prompt.options.forEach(opt => {
+        if (opt.label === "") return;
+        options.push(opt.label);
+      })
+      filter.options = options;
+      console.error('options', options);
+    }
+
     filters.push(filter);
   }
   return filters;
