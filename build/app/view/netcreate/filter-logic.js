@@ -147,9 +147,16 @@ const DATASET = window.NC_CONFIG.dataset || "netcreate";
 const TEMPLATE_URL = `templates/${DATASET}.json`;
 
 // Map to convert old 'attributes' data formats. Used in m_IsNodeMatchedByFilter
-const HACKMAP = {
+const HACKMAP_NODES = {
   type: "Node_Type",
   info: "Extra Info",
+  notes: "Notes"
+}
+const HACKMAP_EDGES = {
+  type: "Relationship",
+  category: "Category",
+  citations: "Citations",
+  info: "Info",
   notes: "Notes"
 }
 
@@ -225,10 +232,10 @@ function m_ImportPrompts(prompts) {
         operator = FILTER.OPERATORS.NO_OP; // default to no_op
         break;
       case FILTER.TYPES.NUMBER:
-        operator = FILTER.OPERATORS.NO_OP; // default to gt
+        operator = FILTER.OPERATORS.NO_OP; // default to no_op
         break;
       case FILTER.TYPES.SELECT:
-        console.error('skipping SELECT for now');
+        operator = FILTER.OPERATORS.NO_OP; // default to no_op
         break;
       case FILTER.TYPES.NODE:
         operator = FILTER.OPERATORS.NO_OP; // default to no_op
@@ -367,7 +374,7 @@ function m_IsNodeMatchedByFilter(node, filter) {
   // data import.  If we ever change the data format
   // this HACKMAP should be removed.
   if (['type', 'info', 'notes'].includes(filter.key)) {
-    nodeValue = node.attributes[HACKMAP[filter.key]];
+    nodeValue = node.attributes[HACKMAP_NODES[filter.key]];
   } else {
     nodeValue = node[filter.key];
   }
@@ -401,35 +408,36 @@ function m_MatchString(pin, haystack, contains = true) {
   return matches;
 }
 
-function m_MatchNumber(operator, filterVal, nodeVal) {
+function m_MatchNumber(operator, filterVal, objVal) {
   let matches;
   if (filterVal === "") {
     matches = true;
   } else {
     switch (operator) {
       case FILTER.OPERATORS.NUMBER.GT:
-        matches = nodeVal > filterVal;
+        matches = objVal > filterVal;
         break;
       case FILTER.OPERATORS.NUMBER.GT_EQ:
-        matches = nodeVal >= filterVal;
+        matches = objVal >= filterVal;
         break;
       case FILTER.OPERATORS.NUMBER.LT:
-        matches = nodeVal < filterVal;
+        matches = objVal < filterVal;
         break;
       case FILTER.OPERATORS.NUMBER.LT_EQ:
-        matches = nodeVal <= filterVal;
+        matches = objVal <= filterVal;
         break;
       case FILTER.OPERATORS.NUMBER.EQ:
-        matches = nodeVal === filterVal;
+        matches = objVal === filterVal;
         break;
       case FILTER.OPERATORS.NUMBER.NOT_EQ:
-        matches = nodeVal !== filterVal;
+        matches = objVal !== filterVal;
         break;
       default:
         console.error(`filter-logic.js: Unknown operator ${operator}`);
         break;
     }
   }
+  console.error('NUMBER', filterVal, operator, objVal, matches);
   return matches;
 }
 
@@ -482,22 +490,33 @@ function m_IsEdgeMatchedByFilter(edge, filter) {
 
   // edges require special handling because `source` and `target`
   // point to node data, not simple strings.
-  let edgeStr;
+  let edgeValue;
   if (filter.type === FILTER.TYPES.NODE) {
-    edgeStr = edge[filter.key].label; // search on the source/target node label
+    edgeValue = edge[filter.key].label; // search on the source/target node label
   } else {
-    edgeStr = edge[filter.key];
+      // HACK
+    // The old data model has secondary keys stuffed
+    // into an `attributes` object.  This is a
+    // holdover from the original pre-netcreate
+    // data import.  If we ever change the data format
+    // this HACKMAP should be removed.
+    if (['category','citation','info','notes','type'].includes(filter.key)) {
+      edgeValue = edge.attributes[HACKMAP_EDGES[filter.key]];
+    } else {
+      edgeValue = edge[filter.key];
+    }
   }
 
   switch (filter.operator) {
     case FILTER.OPERATORS.STRING.CONTAINS:
-      return m_MatchString(filter.value, edgeStr, true);
+      return m_MatchString(filter.value, edgeValue, true);
       break;
     case FILTER.OPERATORS.STRING.NOT_CONTAINS:
-      return m_MatchString(filter.value, edgeStr, false);
+      return m_MatchString(filter.value, edgeValue, false);
       break;
     default:
-      throw `Unknown filter operator ${filter.operator}`;
+      // Else assume it's a number
+      return m_MatchNumber(filter.operator, filter.value, edgeValue)
       break;
   }
 }

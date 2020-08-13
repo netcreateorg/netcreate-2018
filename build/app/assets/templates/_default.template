@@ -168,10 +168,10 @@
                   "hidden": false
                 },
     "info":     {
-                  "type": "string",
+                  "type": "number",
                   "label": "Approximate Date of Interaction",
                   "help":  "",
-                  "hidden": true
+                  "hidden": false
                 },
     "citation": {
                   "type": "string",
