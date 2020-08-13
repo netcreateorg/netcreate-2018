@@ -65,13 +65,14 @@ class StringFilter extends React.Component {
   }
 
   TriggerChangeHandler() {
-    const { id, key, keylabel } = this.props.filter;
+    const { id, type, key, keylabel } = this.props.filter;
 
     // Allow NO_OP so user can reset operator to blank
     // if (this.state.operator === FILTER.STRING_OPERATORS.NO_OP) return;
 
     const filter = {
       id,
+      type,
       key,
       keylabel,
       operator: this.state.operator,
