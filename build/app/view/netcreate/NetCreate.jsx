@@ -87,7 +87,7 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
 
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ SESSION is called by SessionSHell when the ID changes
+  /*/ SESSION is called by SessionShell when the ID changes
       Show or hide netgraph depending on template settings.
   /*/ onStateChange_SESSION( decoded ) {
         this.setState({ isLoggedIn: decoded.isValid });
@@ -116,10 +116,9 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
         if (this.state.requireLogin && !isLoggedIn) hideGraph = true;
         return (
           <div>
-            <div hidden={this.state.isConnected} style={{ width:'100%',height:'100%',position:'fixed',backgroundColor:'rgba(0,0,0,0.5',display:'flex',flexDirection:'column',justifyContent:'space-evenly',zIndex:'3000'}}>
+            <div hidden={this.state.isConnected} style={{ width:'100%',height:'38px',position:'fixed',backgroundColor:'rgba(256,0,0,0.5',display:'flex',flexDirection:'column',justifyContent:'space-evenly',alignItems:'center',zIndex:'3000'}}>
               <div style={{color:'#fff',width:'100%',textAlign:'center'}}>
-                <h1>Server Disconnected</h1>
-                <p>Please contact your administrator to restart the graph.</p>
+                <b>Server Disconnected!</b> Your changes will not be saved!  Please contact your administrator to restart the graph.
               </div>
             </div>
             <Route path='/edit/:token' exact={true} component={SessionShell}/>

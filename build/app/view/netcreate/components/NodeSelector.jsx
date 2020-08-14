@@ -331,6 +331,14 @@ class NodeSelector extends UNISYS.Component {
         this.setState({ edgesAreLocked: false });
       });
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Prevent editing if server is disconnected.
+      This is necessary to hide the "Add New Node" button.
+  /*/
+      this.OnDisconnect(() => {
+        console.log('NodeSelector got disconnect')
+        this.setState({ isLocked: true });
+      });
 
     } // constructor
 
