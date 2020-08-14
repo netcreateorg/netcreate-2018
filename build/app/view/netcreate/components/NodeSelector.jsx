@@ -1049,6 +1049,7 @@ class NodeSelector extends UNISYS.Component {
                 edgeID={edge.id}
                 key={edge.id}
                 parentNodeLabel={this.state.formData.label}
+                parentNodeIsLocked={this.state.isLocked}
               />
             ))}
             <FormGroup className="text-right">

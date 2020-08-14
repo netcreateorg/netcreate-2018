@@ -49,6 +49,9 @@
                       by the EdgeEditor to determine whether it should
                       display the edge nodes as targets or sources.
 
+    parentNodeIsLocked The parent node is locked when the server disconnects
+                       this will disable the Delete and Edit buttons.
+
   ## STATES
 
       dbIsLocked
@@ -290,6 +293,15 @@ class EdgeEditor extends UNISYS.Component {
 
       // Template handler
       this.OnAppStateChange('TEMPLATE', this.setTemplate);
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Prevent editing if server is disconnected.
+      This is necessary to hide the "Add New Node" button.
+  /*/
+      this.OnDisconnect(() => {
+        console.log('EdgeSelector got disconnect')
+        this.setState({ isLocked: true });
+      });
 
     } // constructor
 
@@ -834,7 +846,7 @@ class EdgeEditor extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ render () {
-      const { edgeID, parentNodeLabel } = this.props;
+      const { edgeID, parentNodeLabel, parentNodeIsLocked } = this.props;
       const { formData, sourceNode, targetNode, edgePrompts} = this.state;
       let {citationPrompts} = this.state;
       if (edgePrompts.category === undefined) { // for backwards compatability
@@ -1001,7 +1013,7 @@ class EdgeEditor extends UNISYS.Component {
               </div><br/>
               <FormGroup className="text-right" style={{paddingRight:'5px'}}>
                 <Button className="small float-left btn btn-outline-light" size="sm"
-                 hidden={this.state.isLocked}
+                 hidden={this.state.isLocked || parentNodeIsLocked}
                  onClick={this.onDeleteButtonClick}
                 >Delete</Button>&nbsp;
                 <Button outline size="sm"
@@ -1009,7 +1021,7 @@ class EdgeEditor extends UNISYS.Component {
                 onClick={this.onCiteButtonClick}
               >Cite Edge</Button>&nbsp;&nbsp;
               <Button outline size="sm"
-                  hidden={this.state.isLocked || this.state.isEditable}
+                  hidden={this.state.isLocked || this.state.isEditable || parentNodeIsLocked}
                   onClick={this.onEditButtonClick}
                 >{this.state.isEditable ? "Add New Edge" : "Edit Edge"}</Button>&nbsp;
                 <Button size="sm"
