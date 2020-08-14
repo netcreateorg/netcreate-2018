@@ -55,6 +55,7 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import FILTER from './components/filter/FilterEnums';
 const UNISYS = require("unisys/client");
+const clone = require("rfdc")();
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -146,6 +147,9 @@ function m_ImportFilters() {
   };
 
   UDATA.SetAppState("FDATA", fdata);
+
+  // Save off a copy for clearing the form.
+  FDATA_RESTORE = clone(fdata);
 }
 
 function m_ImportPrompts(prompts) {
