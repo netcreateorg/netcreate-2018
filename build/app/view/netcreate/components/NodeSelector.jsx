@@ -954,7 +954,7 @@ class NodeSelector extends UNISYS.Component {
               </Col>
             </FormGroup>
             <FormGroup row hidden={nodePrompts.notes.hidden}>
-              <Col sm={3} style={{overflow: 'hidden'}}>
+              <Col sm={3} style={{hyphens: 'auto'}}>
                 <Label for="notes" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{nodePrompts.notes.label}<span className="tooltiptext">{this.helpText(nodePrompts.notes)}</span></Label>
               </Col>
               <Col sm={9}>
