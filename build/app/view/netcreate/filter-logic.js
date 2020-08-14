@@ -178,6 +178,7 @@ function m_ImportPrompts(prompts) {
         break;
     }
     if (operator === undefined) continue; // don't add filter if operator is hidden
+    if (prompt.hidden) continue; // don't add filter if "hidden": true
     let filter = {
       id: counter++,
       key: key,
