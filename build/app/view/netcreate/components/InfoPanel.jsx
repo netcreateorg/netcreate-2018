@@ -50,13 +50,18 @@ class InfoPanel extends UNISYS.Component {
       tableHeight: '350px',
       savedTabpanelHeight: '350px',
       draggerTop: 'inherit',
-      hideDragger: true
+      hideDragger: true,
+      filtersSummary: ''
     }
 
     this.toggle = this.toggle.bind(this);
     this.handleMouseDown = this.handleMouseDown.bind(this);
     this.endDrag = this.endDrag.bind(this);
     this.handleDrag = this.handleDrag.bind(this);
+    this.UpdateFilterSummary = this.UpdateFilterSummary.bind(this);
+
+    var UDATA = UNISYS.NewDataLink(this);
+    UDATA.HandleMessage("FILTER_SUMMARY_UPDATE", this.UpdateFilterSummary);
 
   } // constructor
 
@@ -122,6 +127,10 @@ class InfoPanel extends UNISYS.Component {
     document.onmousemove = null;
   }
 
+  UpdateFilterSummary(data) {
+    this.setState({ filtersSummary: data.filtersSummary });
+  }
+
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -146,7 +155,7 @@ class InfoPanel extends UNISYS.Component {
   /*/
   /*/
   render() {
-    let { tabpanelHeight, tableHeight, hideDragger, draggerTop, bIgnoreTableUpdates} = this.state;
+    let { tabpanelHeight, tableHeight, hideDragger, draggerTop, bIgnoreTableUpdates, filtersSummary} = this.state;
     //send flag in with tableheight
     return (
       <div>
@@ -247,6 +256,11 @@ class InfoPanel extends UNISYS.Component {
           onMouseDown={this.handleMouseDown}
         ></div>
 
+        <div hidden={!hideDragger || filtersSummary===''}
+          style={{ padding: '3px', fontSize: '0.8em', color:'#999', backgroundColor:'#eef'}}
+        >
+          FILTERED BY: {filtersSummary}
+        </div>
       </div>
     );
   }

@@ -50,14 +50,14 @@ const UNISYS = require('unisys/client');
 var UDATA = null;
 
 const OPERATORS = [
-  { value: FILTER.OPERATORS.NUMBER.NO_OP, label: "--"},
-  { value: FILTER.OPERATORS.NUMBER.GT, label: ">"},
-  { value: FILTER.OPERATORS.NUMBER.GT_EQ, label: ">="},
-  { value: FILTER.OPERATORS.NUMBER.LT, label: "<"},
-  { value: FILTER.OPERATORS.NUMBER.LT_EQ, label: "<="},
-  { value: FILTER.OPERATORS.NUMBER.EQ, label: "="},
-  { value: FILTER.OPERATORS.NUMBER.NOT_EQ, label: `\u2260`},
-]
+  FILTER.OPERATORS.NO_OP,
+  FILTER.OPERATORS.GT,
+  FILTER.OPERATORS.GT_EQ,
+  FILTER.OPERATORS.LT,
+  FILTER.OPERATORS.LT_EQ,
+  FILTER.OPERATORS.EQ,
+  FILTER.OPERATORS.NOT_EQ
+];
 
 
 /// CLASS /////////////////////////////////////////////////////////////////////
@@ -122,7 +122,7 @@ class NumberFilter extends React.Component {
           <Input type="select" value={operator}
             onChange={this.OnChangeOperator} bsSize="sm">
             {OPERATORS.map(op =>
-              <option value={op.value} key={`${id}${op.value}`} size="sm">{op.label}</option>
+              <option value={op.key} key={`${id}${op.key}`} size="sm">{op.label}</option>
             )}
           </Input>
           <Input type="text" value={value} placeholder="..."

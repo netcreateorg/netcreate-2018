@@ -74,7 +74,7 @@ var FDATA_RESTORE; // pristine FDATA for clearing
 const DATASET = window.NC_CONFIG.dataset || "netcreate";
 const TEMPLATE_URL = `templates/${DATASET}.json`;
 
-const DBG = true;
+const DBG = false;
 const PR = "filter-logic: ";
 
 
@@ -105,6 +105,7 @@ MOD.Hook("INITIALIZE", () => {
     if (DBG) console.log(PR + 'OnAppStateChange: FDATA', data);
     // The filter defs have been updated, so apply the filters.
     m_FiltersApply();
+    m_UpdateFilterSummary();
   });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -162,16 +163,16 @@ function m_ImportPrompts(prompts) {
     let operator;
     switch (prompt.type) {
       case FILTER.TYPES.STRING:
-        operator = FILTER.OPERATORS.NO_OP; // default to no_op
+        operator = FILTER.OPERATORS.NO_OP.key; // default to no_op
         break;
       case FILTER.TYPES.NUMBER:
-        operator = FILTER.OPERATORS.NO_OP; // default to no_op
+        operator = FILTER.OPERATORS.NO_OP.key; // default to no_op
         break;
       case FILTER.TYPES.SELECT:
-        operator = FILTER.OPERATORS.NO_OP; // default to no_op
+        operator = FILTER.OPERATORS.NO_OP.key; // default to no_op
         break;
       case FILTER.TYPES.NODE:
-        operator = FILTER.OPERATORS.NO_OP; // default to no_op
+        operator = FILTER.OPERATORS.NO_OP.key; // default to no_op
         break;
       case FILTER.TYPES.HIDDEN:
         break;
@@ -216,11 +217,7 @@ function m_ImportPrompts(prompts) {
  * @param {Object} data {group, filter}
  */
 function m_FilterDefine(data) {
-  console.error('FILTER_DEFINE received', data);
-
   const FDATA = UDATA.AppState("FDATA");
-  console.error('FDATA is', FDATA);
-
   if (data.group === "nodes") {
     let nodeFilters = FDATA.nodes.filters;
     const index = nodeFilters.findIndex(f => f.id === data.filter.id);
@@ -234,8 +231,6 @@ function m_FilterDefine(data) {
   } else {
     throw `FILTER_DEFINE called with unknown group: ${data.group}`;
   }
-
-  console.log('FDATA spliced is now', FDATA); // already an object
   UDATA.SetAppState("FDATA", FDATA);
 }
 
@@ -245,17 +240,8 @@ function m_FilterDefine(data) {
  */
 function m_FiltersApply() {
   const FDATA = UDATA.AppState("FDATA");
-
-  console.error('@@@@@ m_FiltersApply', FDATA);
-
-  // hack in selection for now
-  // we should update the data.defs to use objects
-  // rather than an array?
-  const nodeFilters = FDATA.nodes.filters;
-  const edgeFilters = FDATA.edges.filters;
-
-  m_FiltersApplyToNodes(nodeFilters);
-  m_FiltersApplyToEdges(edgeFilters);
+  m_FiltersApplyToNodes(FDATA.nodes.filters);
+  m_FiltersApplyToEdges(FDATA.edges.filters);
 }
 
 function m_ClearFilters() {
@@ -264,7 +250,34 @@ function m_ClearFilters() {
   UDATA.SetAppState("FDATA", FDATA);
 }
 
+function m_UpdateFilterSummary() {
+  const FDATA = UDATA.AppState("FDATA");
 
+  const nodeFilters = FDATA.nodes.filters;
+  const edgeFilters = FDATA.edges.filters;
+
+  let summary = '';
+  summary += m_FiltersToString(FDATA.nodes.filters);
+  summary += m_FiltersToString(FDATA.edges.filters);
+
+  UDATA.LocalCall('FILTER_SUMMARY_UPDATE', { filtersSummary: summary });
+}
+
+function m_FiltersToString(filters) {
+  let summary = ''
+  filters.forEach(filter => {
+    if ((filter.operator === undefined) ||
+      (filter.value === undefined) ||
+      (filter.value === '')) return;
+    summary += filter.keylabel + ' ';
+    summary += m_OperatorToString(filter.operator) + ' ';
+    summary += '"' + filter.value + '"; ';
+  });
+  return summary;
+}
+function m_OperatorToString(operator) {
+  return FILTER.OPERATORS[operator].label;
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ UTILITY FUNCTIONS
 /*/
@@ -290,22 +303,22 @@ function m_MatchNumber(operator, filterVal, objVal) {
     matches = true;
   } else {
     switch (operator) {
-      case FILTER.OPERATORS.NUMBER.GT:
+      case FILTER.OPERATORS.GT.key:
         matches = objVal > filterVal;
         break;
-      case FILTER.OPERATORS.NUMBER.GT_EQ:
+      case FILTER.OPERATORS.GT_EQ.key:
         matches = objVal >= filterVal;
         break;
-      case FILTER.OPERATORS.NUMBER.LT:
+      case FILTER.OPERATORS.LT.key:
         matches = objVal < filterVal;
         break;
-      case FILTER.OPERATORS.NUMBER.LT_EQ:
+      case FILTER.OPERATORS.LT_EQ.key:
         matches = objVal <= filterVal;
         break;
-      case FILTER.OPERATORS.NUMBER.EQ:
+      case FILTER.OPERATORS.EQ.key:
         matches = objVal === filterVal;
         break;
-      case FILTER.OPERATORS.NUMBER.NOT_EQ:
+      case FILTER.OPERATORS.NOT_EQ.key:
         matches = objVal !== filterVal;
         break;
       default:
@@ -313,7 +326,6 @@ function m_MatchNumber(operator, filterVal, objVal) {
         break;
     }
   }
-  console.error('NUMBER', filterVal, operator, objVal, matches);
   return matches;
 }
 
@@ -341,7 +353,7 @@ function m_FiltersApplyToNode(node, filters) {
   let matched = true;
   // implicit AND.  ALL filters must return true.
   filters.forEach(filter => {
-    if (filter.operator === FILTER.OPERATORS.NO_OP) return; // skip no_op
+    if (filter.operator === FILTER.OPERATORS.NO_OP.key) return; // skip no_op
     all_no_op = false;
     if (!m_IsNodeMatchedByFilter(node, filter)) {
       matched = false;
@@ -376,10 +388,10 @@ function m_IsNodeMatchedByFilter(node, filter) {
     nodeValue = node[filter.key];
   }
   switch (filter.operator) {
-    case FILTER.OPERATORS.STRING.CONTAINS:
+    case FILTER.OPERATORS.CONTAINS.key:
       return m_MatchString(filter.value, nodeValue, true);
       break;
-    case FILTER.OPERATORS.STRING.NOT_CONTAINS:
+    case FILTER.OPERATORS.NOT_CONTAINS.key:
       return m_MatchString(filter.value, nodeValue, false);
       break;
     default:
@@ -415,7 +427,7 @@ function m_FiltersApplyToEdge(edge, filters) {
   let matched = true;
   // implicit AND.  ALL filters must return true.
   filters.forEach(filter => {
-    if (filter.operator === FILTER.OPERATORS.NO_OP) return; // skip no_op
+    if (filter.operator === FILTER.OPERATORS.NO_OP.key) return; // skip no_op
     all_no_op = false;
     if (!m_IsEdgeMatchedByFilter(edge, filter)) {
       matched = false;
@@ -457,10 +469,10 @@ function m_IsEdgeMatchedByFilter(edge, filter) {
   }
 
   switch (filter.operator) {
-    case FILTER.OPERATORS.STRING.CONTAINS:
+    case FILTER.OPERATORS.CONTAINS.key:
       return m_MatchString(filter.value, edgeValue, true);
       break;
-    case FILTER.OPERATORS.STRING.NOT_CONTAINS:
+    case FILTER.OPERATORS.NOT_CONTAINS.key:
       return m_MatchString(filter.value, edgeValue, false);
       break;
     default:

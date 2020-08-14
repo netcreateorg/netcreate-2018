@@ -17,23 +17,18 @@ FILTER.KEY.TARGET = "target";
 
 
 FILTER.OPERATORS = {};
-FILTER.OPERATORS.NO_OP = "no-op";
 
-FILTER.OPERATORS.STRING = {};
-FILTER.OPERATORS.STRING.CONTAINS = "contains";
-FILTER.OPERATORS.STRING.NOT_CONTAINS = "not-contains";
-
-FILTER.OPERATORS.SELECT = {};
-FILTER.OPERATORS.SELECT.CONTAINS = "contains";
-FILTER.OPERATORS.SELECT.NOT_CONTAINS = "not-contains";
-
-FILTER.OPERATORS.NUMBER = {};
-FILTER.OPERATORS.NUMBER.GT = "gt";
-FILTER.OPERATORS.NUMBER.GT_EQ = "gt_eq";
-FILTER.OPERATORS.NUMBER.LT = "lt";
-FILTER.OPERATORS.NUMBER.LT_EQ = "lt-eq";
-FILTER.OPERATORS.NUMBER.EQ = "eq";
-FILTER.OPERATORS.NUMBER.NOT_EQ = "not-eq";
+// key needs to match the OPERATOR name for lookup purposes
+// in filter-logic.js
+FILTER.OPERATORS.NO_OP = { key: "NO_OP", label: "--" };
+FILTER.OPERATORS.CONTAINS = { key: "CONTAINS", label: "contains" };
+FILTER.OPERATORS.NOT_CONTAINS = { key: "NOT_CONTAINS", label: "does not contain" };
+FILTER.OPERATORS.GT = { key: "GT", label: ">" };
+FILTER.OPERATORS.GT_EQ = { key: "GT_EQ", label: ">=" };
+FILTER.OPERATORS.LT = { key: "LT", label: "<" };
+FILTER.OPERATORS.LT_EQ = { key: "LT_EQ", label: "<=" };
+FILTER.OPERATORS.EQ = { key: "EQ", label: "=" };
+FILTER.OPERATORS.NOT_EQ = { key: "NOT_EQ", label: `\u2260` };
 
 
 /*/ UDATA MESSAGES ////////////////////////////////////////////////////////////
@@ -44,11 +39,18 @@ Filter UDATA Messages
 Affects ALL Filters
 ===================
 
-  FDATA           Sets the FDATA data object
+  FDATA           AppState
+                  Sets the FDATA data object
                   Triggers AppStateChange
 
-  FILTER_CLEAR    Unhides all objects on the graph
+  FILTER_CLEAR    Message / LocalCall
+                  Unhides all objects on the graph
                   Resets filter form to blank state
+
+  FILTER_SUMMARY_UPDATE
+                  Message / LocalCall
+                  Summary of filters for InfoPanel display
+                  is updated.
 
 
 Affects Individual Filters

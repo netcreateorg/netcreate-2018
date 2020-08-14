@@ -46,9 +46,9 @@ const UNISYS = require('unisys/client');
 var UDATA = null;
 
 const OPERATORS = [
-  { value: FILTER.OPERATORS.NO_OP, label: "--"},
-  { value: FILTER.OPERATORS.STRING.CONTAINS, label: "contains"},
-  { value: FILTER.OPERATORS.STRING.NOT_CONTAINS, label: "does not contain"},
+  FILTER.OPERATORS.NO_OP,
+  FILTER.OPERATORS.CONTAINS,
+  FILTER.OPERATORS.NOT_CONTAINS
 ]
 
 
@@ -115,7 +115,7 @@ class StringFilter extends React.Component {
             style={{maxWidth:'12em', height:'1.5em', padding: '0'}}
             onChange={this.OnChangeOperator} bsSize="sm">
             {OPERATORS.map(op =>
-              <option value={op.value} key={`${id}${op.value}`} size="sm">{op.label}</option>
+              <option value={op.key} key={`${id}${op.key}`} size="sm">{op.label}</option>
             )}
           </Input>
           <Input type="text" value={value} placeholder="..."
