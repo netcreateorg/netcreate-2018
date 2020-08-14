@@ -21,7 +21,6 @@ class FiltersPanel extends UNISYS.Component {
     super();
 
     this.UpdateFilterDefs = this.UpdateFilterDefs.bind(this);
-    this.OnFilterReset = this.OnFilterReset.bind(this);
     this.OnClearBtnClick = this.OnClearBtnClick.bind(this);
 
      /// Initialize UNISYS DATA LINK for REACT
@@ -38,26 +37,16 @@ console.error('######## fieldPanel Constructor')
     this.state = FDATA;
 
     UDATA.OnAppStateChange("FDATA", this.UpdateFilterDefs);
-    UDATA.HandleMessage("FILTER_RESET", this.OnFilterReset);
   } // constructor
 
 
   UpdateFilterDefs(data) {
-    console.error('####fieldpanel got state change', data)
-    this.setState(data, () => {
-      console.error('fieldpanel updated state is', this.state);
-    });
-  }
-
-  // Reset the form
-  OnFilterReset() {
-    console.error('RESETING')
-    UDATA.SetAppState("FDATA", { defs: [{group: "node", filters:[]},{group: "edge", filters:[]}] });
+    console.log('FiltersPanel: Updating filter defs', data);
+    this.setState(data);
   }
 
   OnClearBtnClick() {
-    this.OnFilterReset();
-    // UDATA.LocalCall('FILTER_CLEAR');
+    UDATA.LocalCall('FILTER_CLEAR');
   }
 
   componentWillUnmount() {

@@ -66,6 +66,7 @@ var TEMPLATE = null; // template definition for prompts
 const PROMPTS = require("system/util/prompts");
 const NCLOGIC = require("./nc-logic");
 
+var FDATA_RESTORE; // pristine FDATA for clearing
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DATASET = window.NC_CONFIG.dataset || "netcreate";
@@ -250,11 +251,9 @@ function m_FiltersApply() {
 }
 
 function m_ClearFilters() {
-  const props = { isFilteredOut: false };
-  const FDATA = UDATA.AppState("FDATA");
-  NCLOGIC.SetAllObjs(FDATA.nodes.filters, props); // clear nodes
-  NCLOGIC.SetAllObjs(FDATA.edges.filters, props); // clear props
-  m_FiltersApply();
+  // Reload fdata
+  const FDATA = clone(FDATA_RESTORE);
+  UDATA.SetAppState("FDATA", FDATA);
 }
 
 
