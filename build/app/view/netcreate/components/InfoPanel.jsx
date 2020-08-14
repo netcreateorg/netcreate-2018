@@ -200,7 +200,7 @@ class InfoPanel extends UNISYS.Component {
               </NavLink>
             </NavItem>
           </Nav>
-          <TabContent activeTab={this.state.activeTab} style={{overflow: 'hidden auto'}}>
+          <TabContent activeTab={this.state.activeTab} style={{height:'100%',overflow: 'hidden auto', backgroundColor: 'rgba(0,0,0,0.1)'}}>
             <TabPane tabId="1">
             </TabPane>
             <TabPane tabId="2">

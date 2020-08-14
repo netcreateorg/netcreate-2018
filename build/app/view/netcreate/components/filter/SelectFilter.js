@@ -125,12 +125,14 @@ class SelectFilter extends React.Component {
             {keylabel}&nbsp;
           </Label>
           <Input type="select" value={operator}
+            style={{ height:'1.5em', padding: '0'}}
             onChange={this.OnChangeOperator} bsSize="sm">
             {OPERATORS.map(op =>
               <option value={op.value} key={`${id}${op.value}`} size="sm">{op.label}</option>
             )}
           </Input>
           <Input type="select" value={value}
+            style={{maxWidth:'12em', height:'1.5em', padding: '0'}}
             onChange={this.OnChangeValue} bsSize="sm">
             {options.map(op =>
               <option value={op} key={`${id}${op}`} size="sm">{op}</option>

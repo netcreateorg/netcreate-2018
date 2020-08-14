@@ -112,12 +112,14 @@ class StringFilter extends React.Component {
             {keylabel}&nbsp;
           </Label>
           <Input type="select" value={operator}
+            style={{maxWidth:'12em', height:'1.5em', padding: '0'}}
             onChange={this.OnChangeOperator} bsSize="sm">
             {OPERATORS.map(op =>
               <option value={op.value} key={`${id}${op.value}`} size="sm">{op.label}</option>
             )}
           </Input>
           <Input type="text" value={value} placeholder="..."
+            style={{maxWidth:'12em', height:'1.5em'}}
             onChange={this.OnChangeValue} bsSize="sm" />
         </FormGroup>
       </Form>
