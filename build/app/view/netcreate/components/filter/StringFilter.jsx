@@ -1,3 +1,42 @@
+/*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  STRINGFILTER
+
+  StringFilter provides the UI for entering search strings for string-based
+  node and edge properties.
+
+  Two String operators are supported:
+  * contains
+  * not contains
+
+  Matches will SHOW the resulting node or edge.
+  Any nodes/edges not matching will be hidden.
+
+  The filter definition is passed in via props.
+
+    props
+      {
+        group       // "nodes" or "edges"
+        filter: {
+          id,       // numeric id used for unique React key
+          type,     // filter type, e.g "string" vs "number"
+          key,      // node field key from the template
+          keylabel, // human friendly display name for the key.  This can be customized in the template.
+          operator, // the comparison function, e.g. 'contains' or '>'
+          value     // the search value to be used for matching
+        },
+        onChangeHandler // callback function for parent component
+      }
+
+  The `onChangeHandler` callback function is not currently used.  Instead,
+  selection changes directly trigger a UDATA.LocalCall('FILTER_DEFINE',...).
+
+  The `id` variable allows us to potentially support multiple search filters
+  using the same key, e.g. we could have two 'Label' filters.
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
+
+
 import FILTER from './FilterEnums';
 import React from 'react';
 const ReactStrap = require('reactstrap');
@@ -12,26 +51,8 @@ const OPERATORS = [
   { value: FILTER.OPERATORS.STRING.NOT_CONTAINS, label: "does not contain"},
 ]
 
-/*/
 
-  StringFilter
-
-  props
-      {
-        group       // node or edge
-        filter: {
-          id,
-          type,     // filter type, e.g "string" vs "number"
-          key,      // node field key from the template
-          keylabel, // human friendly display name for the key.  This can be customized in the template.
-          operator,
-          value
-        },
-        onChangeHandler // callback function
-      }
-
-
-/*/
+/// CLASS /////////////////////////////////////////////////////////////////////
 class StringFilter extends React.Component {
 
   constructor({
@@ -67,10 +88,6 @@ class StringFilter extends React.Component {
 
   TriggerChangeHandler() {
     const { id, type, key, keylabel } = this.props.filter;
-
-    // Allow NO_OP so user can reset operator to blank
-    // if (this.state.operator === FILTER.STRING_OPERATORS.NO_OP) return;
-
     const filter = {
       id,
       type,
@@ -108,4 +125,6 @@ class StringFilter extends React.Component {
   }
 }
 
+/// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default StringFilter;

@@ -1,10 +1,14 @@
 {
 
-  "_comments":  [ "/// NetCreate Template File ///",
-                  "/// IMPORTANT: As of 8/7/2020, the following funcationality is available:               ///",
+  "_comments":  [ "/// NetCreate Template File                                                             ///",
+                  "/// RELEASE NOTES: As of 8/13/2020, a 'type' specification needs to added to each       ///",
+                  "///     nodePrompt and edgePrompt for filters to work.  Valid types are:                ///",
+                  "///     "string", "number", "select", and "node".  The "node" type is only valid for    ///",
+                  "///     "source" and "target" objects for edges.                                        ///",
+                  "/// RELEASE NOTES: As of 8/7/2020, the following functionality is available:            ///",
                   "///  * `requireLogin: true` will require users to login to view graphs.  If the         ///",
                   "///     parameter is `false` or missing, graphs are public, and login is not required   ///",
-                  "/// IMPORTANT: As of 1/31/2019, the following functionality is available:               ///",
+                  "/// RELEASE NOTES: As of 1/31/2019, the following functionality is available:           ///",
                   "///  * `label` parameter for each field may be customized                               ///",
                   "///  * `hidden` parameter may be used to hide fields                                    ///",
                   "///  * changing the order of the `options` WILL change their order on selections        ///",

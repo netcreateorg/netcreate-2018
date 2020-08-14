@@ -1,5 +1,6 @@
 const FILTER = {};
 
+// Types of filters definable in template files.
 FILTER.TYPES = {};
 FILTER.TYPES.STRING = 'string';
 FILTER.TYPES.NUMBER = 'number';
@@ -14,10 +15,6 @@ FILTER.KEY = {};
 FILTER.KEY.SOURCE = "source";
 FILTER.KEY.TARGET = "target";
 
-FILTER.ACTIONS = {};
-FILTER.ACTIONS.CLEAR = "clear";
-FILTER.ACTIONS.FILTER_NODES = "filter-nodes";
-FILTER.ACTIONS.FILTER_EDGES = "filter-edges";
 
 FILTER.OPERATORS = {};
 FILTER.OPERATORS.NO_OP = "no-op";
@@ -38,25 +35,28 @@ FILTER.OPERATORS.NUMBER.LT_EQ = "lt-eq";
 FILTER.OPERATORS.NUMBER.EQ = "eq";
 FILTER.OPERATORS.NUMBER.NOT_EQ = "not-eq";
 
-/*/
+
+/*/ UDATA MESSAGES ////////////////////////////////////////////////////////////
 
 Filter UDATA Messages
 
-All Filters operations
 
-  FILTERDEFS      Set the FILTERDEFS data object
-                  FILTERDATA?  FILTER_DATA?
-                  FDATA? FLTRDATA
+Affects ALL Filters
+===================
 
-  FILTER_RESET    Resets filter form to blank state
+  FDATA           Sets the FDATA data object
+                  Triggers AppStateChange
 
-Individual Filter Operations
+  FILTER_CLEAR    Unhides all objects on the graph
+                  Resets filter form to blank state
 
-  FILTER_DEFINE   Define a new individual filter
+
+Affects Individual Filters
+==========================
+
+  FILTER_DEFINE   Define a single new filter
 
 
 /*/
-
-
 
 module.exports = FILTER;

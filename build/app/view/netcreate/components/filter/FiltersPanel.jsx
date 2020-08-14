@@ -1,3 +1,19 @@
+/*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  FILTERSPANEL
+
+  This is the base UI component that displays filters in the InfoPanel.
+
+  FiltersPanel
+  |-- FiltersGroup
+      |-- StringFilter
+      |-- NumberFilter
+      |-- SelectFilter
+
+  FiltersPanel reads data directly from FDATA.
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
+
 import FILTER from './FilterEnums';
 import FilterGroup from './FilterGroup';
 import React from 'react';
@@ -9,13 +25,7 @@ const { Button, Input, Label } = ReactStrap;
 const UNISYS = require('unisys/client');
 var UDATA  = null;
 
-
-// Storybook has problems with loading unisys without relative ref
-// but even with relative ref, it can't load submodules
-// const UNISYS = require('../../../../unisys/client');
-// class FiltersPanel extends React.Component {
-
-
+/// CLASS /////////////////////////////////////////////////////////////////////
 class FiltersPanel extends UNISYS.Component {
   constructor({ filterGroups, onFiltersChange, tableHeight }) {
     super();
@@ -26,14 +36,11 @@ class FiltersPanel extends UNISYS.Component {
      /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
 
-
-console.error('######## fieldPanel Constructor')
     // Load Templates
-    // The intial `OnAppStateChange("FILTERDEFS")` event when the template is
+    // The intial `OnAppStateChange("FDATA")` event when the template is
     // first loaded is called well before FiltersPanel is
     // even constructed.  So we need to explicitly load it here.
     let FDATA = UDATA.AppState("FDATA");
-    console.error('####### FDATA', FDATA)
     this.state = FDATA;
 
     UDATA.OnAppStateChange("FDATA", this.UpdateFilterDefs);
@@ -41,7 +48,6 @@ console.error('######## fieldPanel Constructor')
 
 
   UpdateFilterDefs(data) {
-    console.log('FiltersPanel: Updating filter defs', data);
     this.setState(data);
   }
 
@@ -50,7 +56,7 @@ console.error('######## fieldPanel Constructor')
   }
 
   componentWillUnmount() {
-    console.error('gracefully unsubscribe!')
+    console.error('TBD: gracefully unsubscribe!')
   }
 
   render() {
@@ -80,7 +86,11 @@ console.error('######## fieldPanel Constructor')
   }
 }
 
-module.exports = FiltersPanel;
+/// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-// storyboard wants a regular export?!?!
+// Storybook export
 // export default FiltersPanel;
+
+// Brunch export
+module.exports = FiltersPanel;

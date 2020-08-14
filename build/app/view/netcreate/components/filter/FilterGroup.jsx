@@ -12,22 +12,23 @@ export default function FilterGroup({
   return (
     <div className="filter-group" style={{margin:'5px 5px 5px 0',padding:'10px',backgroundColor:'rgba(0,0,0,0)'}}>
       <div className="small text-muted" style={{fontWeight:'bold',textTransform:'uppercase',marginBottom:'0.4em'}}>{label}</div>
-      {filters.map(filterData => {
-        switch (filterData.type) {
+      {filters.map(filter => {
+        switch (filter.type) {
           case FILTER.TYPES.STRING:
           case FILTER.TYPES.NODE:
-            return <StringFilter key={filterData.id} group={group} filter={filterData} />
+            return <StringFilter key={filter.id} group={group} filter={filter} />
             break;
           case FILTER.TYPES.NUMBER:
-            return <NumberFilter key={filterData.id} group={group} filter={filterData} />
+            return <NumberFilter key={filter.id} group={group} filter={filter} />
             break;
           case FILTER.TYPES.SELECT:
-            return <SelectFilter key={filterData.id} group={group} filter={filterData} />
+            return <SelectFilter key={filter.id} group={group} filter={filter} />
             break;
           default:
-            console.error(`FilterGroup: Filter Type not found ${filterData.type}`)
+            console.error(`FilterGroup: Filter Type not found ${filter.type} for filter`, filter);
             break;
         }
+        return '';
       })}
     </div>
   );
