@@ -603,8 +603,14 @@ class EdgeEditor extends UNISYS.Component {
           if (originalEdge === undefined) {
             // user abandoned editing a new node that was never saved
             const parentNode = D3DATA.nodes.find(node => node.label === this.props.parentNodeLabel);
-            if (!parentNode) throw `No parent node found for ${this.props.parentNodeLabel} while trying to cancel edit.  This should not happen!`;
-            UDATA.LocalCall('EDGE_NEW_CANCEL', { nodeID: parentNode.id });
+            // parentNode might be missing if the admin user deleted it.
+            if (parentNode) {
+              // Unlock edges and reselect the source node
+              UDATA.LocalCall('EDGE_NEW_CANCEL', { nodeID: parentNode.id });
+            } else {
+              // Unlock edges and deselect the missing source node
+              UDATA.LocalCall('EDGE_NEW_CANCEL');
+            }
             this.clearForm();
           } else {
             // User is abandoning edits to an existing edge.
@@ -814,6 +820,30 @@ class EdgeEditor extends UNISYS.Component {
         }
       }
       if (DBG) console.group('EdgeEntry.onSubmit submitting',edge)
+
+      // Make sure source and target still exist before saving an edge in case
+      // admin user deletes a node. This is to prevent data corruption by
+      // linking to non-existent nodes. This should probably be moved to nc-logic.
+      if (edge) {
+        // check source
+        const D3DATA = this.AppState('D3DATA');
+        console.log('D3DATA is', D3DATA);
+        const source = D3DATA.nodes.find(node => node.id === edge.source);
+        if (!source) {
+          alert('Sorry, the source node has been removed.  Please recreate your edge.');
+          // Trigger Cancel
+          this.onEdgeClick();
+          return;
+        }
+        // check target
+        const target = D3DATA.nodes.find(node => node.id === edge.target);
+        if (!target) {
+          alert('Sorry, the target node has been removed.  Please recreate your edge.');
+          // Trigger Cancel
+          this.onEdgeClick();
+          return;
+        }
+      }
 
       this.AppCall('EDGEEDIT_UNLOCK', { edgeID: this.props.edgeID }); // inform NodeSelector
       // pass currentAutoComplete back to nodeselector

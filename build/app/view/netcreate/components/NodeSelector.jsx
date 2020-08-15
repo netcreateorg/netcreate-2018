@@ -303,6 +303,9 @@ class NodeSelector extends UNISYS.Component {
          asynchronously, so `handleSelection` ends up getting called
          before the states are updated.
       To fix this, we use setState's callback to trigger the reload.
+
+      Call this with no data object to trigger deselect.  Used when
+      source is deleted by admin user.
   /*/
       UDATA.HandleMessage("EDGE_NEW_CANCEL", data => {
         if (data.nodeID === this.state.formData.id) {
@@ -310,6 +313,14 @@ class NodeSelector extends UNISYS.Component {
             // Do this in callback, otherwise, edges are not unlocked
             // and the source_select never triggers an update
             UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [this.state.formData.id] });
+          });
+        } else {
+          // Edge is requesting a SOURCE deselect because the source
+          // node was deleted by admin
+          this.setState({ edgesAreLocked: false }, () => {
+            // Do this in callback, otherwise, edges are not unlocked
+            // and the source_select never triggers an update
+            UDATA.LocalCall('SOURCE_SELECT');  // Deselect
           });
         }
       });
