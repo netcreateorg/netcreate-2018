@@ -934,7 +934,7 @@ class NodeSelector extends UNISYS.Component {
             onSubmit={this.onSubmit}>
             <FormText><b>NODE {this.state.formData.id||''}</b></FormText>
             <FormGroup row>
-              <Col sm={3}>
+              <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                 <Label for="nodeLabel" className="tooltipAnchor small text-muted">
                 <i className="fas fa-question-circle"></i>{nodePrompts.label.label}<span className="tooltiptext">{this.helpText(nodePrompts.label)}</span></Label>
               </Col>
@@ -957,7 +957,7 @@ class NodeSelector extends UNISYS.Component {
               <NodeDetail/>
             </div>
             <FormGroup row hidden={nodePrompts.type.hidden}>
-              <Col sm={3}>
+              <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                 <Label for="type" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{nodePrompts.type.label}<span className="tooltiptext">{this.helpText(nodePrompts.type)}</span></Label>
               </Col>
               <Col sm={9}>
@@ -973,7 +973,7 @@ class NodeSelector extends UNISYS.Component {
               </Col>
             </FormGroup>
             <FormGroup row hidden={nodePrompts.notes.hidden}>
-              <Col sm={3} style={{hyphens: 'auto'}}>
+              <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                 <Label for="notes" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{nodePrompts.notes.label}<span className="tooltiptext">{this.helpText(nodePrompts.notes)}</span></Label>
               </Col>
               <Col sm={9}>
@@ -987,7 +987,7 @@ class NodeSelector extends UNISYS.Component {
               </Col>
             </FormGroup>
             <FormGroup row hidden={nodePrompts.info.hidden}>
-              <Col sm={3}>
+              <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                 <Label for="info" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{nodePrompts.info.label}<span className="tooltiptext">{this.helpText(nodePrompts.info)}</span></Label>
               </Col>
               <Col sm={9}>

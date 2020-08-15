@@ -922,7 +922,7 @@ class EdgeEditor extends UNISYS.Component {
                   onSubmit={this.onSubmit}>
               <FormText onClick={this.onEdgeClick}><b>EDGE {formData.id}</b></FormText>
               <FormGroup row>
-                <Col sm={3}>
+                <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="source" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.source.label}<span className="tooltiptext">{this.helpText(edgePrompts.source)}</span></Label>
                 </Col>
                 <Col sm={9}>
@@ -943,7 +943,7 @@ class EdgeEditor extends UNISYS.Component {
                 </Col>
               </FormGroup>
               <FormGroup row hidden={edgePrompts.type.hidden}>
-                <Col sm={3}>
+                <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="relationship" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.type.label}<span className="tooltiptext">{this.helpText(edgePrompts.type)}</span></Label>
                 </Col>
                 <Col sm={9}>
@@ -959,7 +959,7 @@ class EdgeEditor extends UNISYS.Component {
                 </Col>
               </FormGroup>
               <FormGroup row>
-                <Col sm={3}>
+                <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="nodeLabel" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.target.label}<span className="tooltiptext">{this.helpText(edgePrompts.target)}</span></Label>
                 </Col>
                 <Col sm={9}>
@@ -988,7 +988,7 @@ class EdgeEditor extends UNISYS.Component {
                 </Col>
               </FormGroup>
               <FormGroup row hidden={edgePrompts.category.hidden}>
-                <Col sm={3}>
+                <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="category" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.category.label}<span className="tooltiptext">{this.helpText(edgePrompts.category)}</span></Label>
                 </Col>
                 <Col sm={9}>
@@ -999,7 +999,7 @@ class EdgeEditor extends UNISYS.Component {
                   />
                 </Col>
               </FormGroup><FormGroup row hidden={edgePrompts.citation.hidden}>
-                <Col sm={3}>
+                <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="citation" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.citation.label}<span className="tooltiptext">{this.helpText(edgePrompts.citation)}</span></Label>
                 </Col>
                 <Col sm={9}>
@@ -1011,7 +1011,7 @@ class EdgeEditor extends UNISYS.Component {
                 </Col>
               </FormGroup>
               <FormGroup row hidden={edgePrompts.notes.hidden}>
-                <Col sm={3}>
+                <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="notes" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.notes.label}<span className="tooltiptext">{this.helpText(edgePrompts.notes)}</span></Label>
                 </Col>
                 <Col sm={9}>
@@ -1025,7 +1025,7 @@ class EdgeEditor extends UNISYS.Component {
                 </Col>
               </FormGroup>
               <FormGroup row hidden={edgePrompts.info.hidden}>
-                <Col sm={3}>
+                <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="info" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.info.label}<span className="tooltiptext">{this.helpText(edgePrompts.info)}</span></Label>
                 </Col>
                 <Col sm={9}>
