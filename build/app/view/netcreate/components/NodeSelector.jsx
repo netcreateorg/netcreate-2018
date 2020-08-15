@@ -227,7 +227,7 @@ class NodeSelector extends UNISYS.Component {
         let updatedNodeID = data.node.id;
         if (currentNodeID === updatedNodeID) needsUpdate = true;
         this.state.edges.forEach(edge => {
-          if ((edge.source.id === updatedNodeID) || (edge.target.id === updatedNodeID)) needsUpdate = true;
+          if ((edge.source && edge.source.id === updatedNodeID) || (edge.target && edge.target.id === updatedNodeID)) needsUpdate = true;
         })
         if (needsUpdate) {
           if (DBG) console.log('NodeSelector.SOURCE_UPDATE triggering SOURCE_SELECT with', currentNodeID)
