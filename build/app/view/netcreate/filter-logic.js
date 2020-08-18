@@ -86,7 +86,7 @@ const HACKMAP_NODES = { // Map to convert old 'attributes' data formats.
 const HACKMAP_EDGES = { // Map to convert old 'attributes' data formats.
   type: "Relationship", // Used in m_IsEdgeMatchedByFilter
   category: "Category",
-  citations: "Citations",
+  citation: "Citation",
   info: "Info",
   notes: "Notes"
 }
