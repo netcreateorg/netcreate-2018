@@ -179,7 +179,7 @@ function m_ResetHearbeatTimer() {
 function m_HandleMessage(msgEvent) {
 
   // Check Hearbeat
-  if (msgEvent.data === 'heartbeat') {
+  if (msgEvent.data === 'ping') {
     if (DBG.handle) console.log(PR, '...got hearbeat!  Reset timer');
     m_ResetHearbeatTimer();
     return;

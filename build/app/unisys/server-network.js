@@ -49,6 +49,7 @@ var m_message_map     = new Map();  // message map storing other handlers
 var m_socket_msgs_list = new Map(); // message map by uaddr
 // heartbeat
 var m_heartbeat_interval;
+var m_pong_timer = [];
 
 /// API MEHTHODS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -195,7 +196,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       m_heartbeat_interval = setInterval(function sendHeartbeat() {
         mu_sockets.forEach((socket, key, map) => {
           if (DBG) console.log(PR, 'sending heartbeat to', socket.UADDR);
-          socket.send('heartbeat');
+          socket.send('ping');
         });
       }, DEFS.SERVER_HEARTBEAT_INTERVAL);
     }
