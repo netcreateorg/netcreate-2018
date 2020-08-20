@@ -190,6 +190,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ When a new socket is connected, we send a periodic heartbeat to let them
     know we're still here, and so client can detect when network is lost.
+    This will keep sending a heartbeat to the socket so long as it is open.
 /*/ function m_StartHeartbeat() {
       if (DBG) console.log(PR, 'starting heartbeat');
       if (m_heartbeat_interval) return; // already started
@@ -222,7 +223,18 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
     }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle all incoming socket messages asynchronously through Promises
-/*/ function m_SocketMessage( socket, json ) {
+/*/ function m_SocketMessage(socket, json) {
+        // Check Heartbeat
+        if (json === 'pong') {
+          if (DBG) console.log('PONG!', json, socket.UADDR);
+
+          // Don't start the timer if we get a bad UADDR
+          if (socket.UADDR === undefined) return;
+
+          m_ResetPongTimer(socket.UADDR);
+          return;
+        }
+
         let pkt = new NetMessage(json);
         // figure out what to do
         switch (pkt.Type()) {
