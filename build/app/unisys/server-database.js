@@ -32,8 +32,8 @@ let m_max_nodeID;
 let m_dupe_set; // set of nodeIDs for determine whether there are duplicates
 let NODES; // loki "nodes" collection
 let EDGES; // loki "edges" collection
-let m_locked_nodes;
-let m_locked_edges;
+let m_locked_nodes; // map key = nodeID, value = uaddr initiating the lock
+let m_locked_edges; // map key = nodeID, value = uaddr initiating the lock
 let TEMPLATE;
 
 /// API METHODS ///////////////////////////////////////////////////////////////
@@ -70,10 +70,10 @@ DB.InitializeDatabase = function (options = {}) {
     // add (and configure) them now.
     NODES = m_db.getCollection("nodes");
     if (NODES === null) NODES = m_db.addCollection("nodes");
-    m_locked_nodes = new Set();
+    m_locked_nodes = new Map();
     EDGES = m_db.getCollection("edges");
     if (EDGES === null) EDGES = m_db.addCollection("edges");
-    m_locked_edges = new Set();
+    m_locked_edges = new Map();
 
     // initialize unique set manager
     m_dupe_set = new Set();
@@ -198,18 +198,20 @@ DB.PKT_GetNewEdgeID = function(pkt) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_RequestLockNode = function(pkt) {
   let { nodeID } = pkt.Data();
+  const uaddr = pkt.s_uaddr;
   let errcode = m_IsInvalidNode( nodeID );
   if (errcode) return errcode;
   // check if node is already locked
   if (m_locked_nodes.has(nodeID)) return m_MakeLockError(`nodeID ${nodeID} is already locked`);
   // SUCCESS
   // single matching node exists and is not yet locked, so lock it
-  m_locked_nodes.add(nodeID);
+  m_locked_nodes.set(nodeID, uaddr);
   return { nodeID, locked : true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DB.PKT_RequestUnlockNode = function(pkt) {
+DB.PKT_RequestUnlockNode = function (pkt) {
   let { nodeID } = pkt.Data();
+  const uaddr = pkt.s_uaddr;
   let errcode = m_IsInvalidNode( nodeID );
   if (errcode) return errcode;
   // check that node is already locked
@@ -240,18 +242,20 @@ function m_MakeLockError( info ) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_RequestLockEdge = function (pkt) {
   let { edgeID } = pkt.Data();
+  const uaddr = pkt.s_uaddr;
   let errcode = m_IsInvalidEdge(edgeID);
   if (errcode) return errcode;
   // check if edge is already locked
   if (m_locked_edges.has(edgeID)) return m_MakeLockError(`edgeID ${edgeID} is already locked`);
   // SUCCESS
   // single matching edge exists and is not yet locked, so lock it
-  m_locked_edges.add(edgeID);
+  m_locked_edges.set(edgeID, uaddr);
   return { edgeID, locked: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_RequestUnlockEdge = function (pkt) {
   let { edgeID } = pkt.Data();
+  const uaddr = pkt.s_uaddr;
   let errcode = m_IsInvalidEdge(edgeID);
   if (errcode) return errcode;
   // check that edge is already locked
@@ -278,17 +282,29 @@ function m_IsInvalidEdge(edgeID) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_RequestUnlockAllNodes = function (pkt) {
-  m_locked_nodes = new Set();
+  m_locked_nodes = new Map();
   return { unlocked: true };
 }
 DB.PKT_RequestUnlockAllEdges = function (pkt) {
-  m_locked_edges = new Set();
+  m_locked_edges = new Map();
   return { unlocked: true };
 }
 DB.PKT_RequestUnlockAll = function (pkt) {
-  m_locked_nodes = new Set();
-  m_locked_edges = new Set();
+  m_locked_nodes = new Map();
+  m_locked_edges = new Map();
   return { unlocked: true };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ called by server-network when a client disconnects we want to unlock any
+    nodes and edges they had locked.
+/*/
+DB.RequestUnlock = function (uaddr) {
+  m_locked_nodes.forEach((value, key) => {
+    if (value === uaddr) m_locked_nodes.delete(key);
+  });
+  m_locked_edges.forEach((value, key) => {
+    if (value === uaddr) m_locked_edges.delete(key);
+  });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_Update = function(pkt) {
