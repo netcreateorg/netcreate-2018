@@ -12,7 +12,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = false;
+const DBG = true;
 
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -202,6 +202,16 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       }, DEFS.SERVER_HEARTBEAT_INTERVAL);
     }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ If a 'pong' message is not received from the client 5 seconds
+    after we send the client a ping message, we assume the network connection
+    has gone down.
+
+    The socket close handler is only triggered when the server closes the
+    connection.  In order to detect the internet connection going down
+    (e.g. loss of wifi) we need to check to see if we are peridically receiving
+    a heartbeat message from the client.
+/*/
     function m_ResetPongTimer(uaddr) {
       if (DBG) console.log(PR, uaddr, 'pong received...reset timer');
       clearTimeout(m_pong_timer[uaddr]);

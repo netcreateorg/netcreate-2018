@@ -158,7 +158,8 @@ function m_HandleRegistrationMessage(msgEvent) {
   m_ResetHearbeatTimer();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ When a heartbeat ping is received, respond with a pong.
+/*/ When a heartbeat ping is received, respond with a pong to let the server
+    know that we're still alive.
 /*/
 function m_RespondToHeartbeat() {
   NETSOCK.ws.send('pong');
