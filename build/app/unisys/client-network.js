@@ -158,6 +158,12 @@ function m_HandleRegistrationMessage(msgEvent) {
   m_ResetHearbeatTimer();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ When a heartbeat ping is received, respond with a pong.
+/*/
+function m_RespondToHeartbeat() {
+  NETSOCK.ws.send('pong');
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ If a 'hearbeat' message is not received from the server every 5 seconds
     we assume the network connection has gone down.  The timeout should be
     greater than the server heartbeat interval set in
@@ -181,6 +187,7 @@ function m_HandleMessage(msgEvent) {
   // Check Hearbeat
   if (msgEvent.data === 'ping') {
     if (DBG.handle) console.log(PR, '...got hearbeat!  Reset timer');
+    m_RespondToHeartbeat();
     m_ResetHearbeatTimer();
     return;
   }

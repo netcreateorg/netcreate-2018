@@ -201,6 +201,15 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       }, DEFS.SERVER_HEARTBEAT_INTERVAL);
     }
 
+    function m_ResetPongTimer(uaddr) {
+      if (DBG) console.log(PR, uaddr, 'pong received...reset timer');
+      clearTimeout(m_pong_timer[uaddr]);
+      m_pong_timer[uaddr] = setTimeout(function pongStopped() {
+        if (DBG) console.log(PR, uaddr, 'pong not received before time ran out -- YOURE DEAD!');
+        // Do something
+      }, DEFS.SERVER_HEARTBEAT_INTERVAL + 1000);
+    }
+
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ When a new socket connection happens, send back the special registration
     packet (WIP)
