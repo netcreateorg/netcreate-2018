@@ -177,6 +177,9 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
         m_SocketMessage(socket,json);
       });
       socket.on('close', () => {
+        // The socket wil not receive a close event immediately if the client
+        // loses their internet connection.  The close event WILL fire if the
+        // client comes back online and reconnects.
         m_SocketDelete(socket);
       });
 
