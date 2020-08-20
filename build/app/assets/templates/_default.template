@@ -179,7 +179,7 @@
                 },
     "citation": {
                   "type": "string",
-                  "label": "Citation",
+                  "label": "Citations",
                   "help":  "Enter Chapter number.",
                   "hidden": false
                 },
