@@ -21,6 +21,7 @@ var   FSE               = require('fs-extra');
 var   NetMessage        = require('../unisys/common-netmessage-class');
 const LOGGER            = require('../unisys/server-logger');
 var   DB                = require('../unisys/server-database');
+var   DEFS              = require('./common-defs');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,7 +47,8 @@ var mu_sid_counter = 0;             // for generating  unique socket ids
 var m_server_handlers = new Map();  // message map storing sets of functions
 var m_message_map     = new Map();  // message map storing other handlers
 var m_socket_msgs_list = new Map(); // message map by uaddr
-
+// heartbeat
+var m_heartbeat_interval;
 
 /// API MEHTHODS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -177,7 +179,24 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       socket.on('close', () => {
         m_SocketDelete(socket);
       });
+
+      // start heartbeat
+      m_StartHeartbeat();
     }
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ When a new socket is connected, we send a periodic heartbeat to let them
+    know we're still here, and so client can detect when network is lost.
+/*/ function m_StartHeartbeat() {
+      if (DBG) console.log(PR, 'starting heartbeat');
+      if (m_heartbeat_interval) return; // already started
+      m_heartbeat_interval = setInterval(function sendHeartbeat() {
+        mu_sockets.forEach((socket, key, map) => {
+          if (DBG) console.log(PR, 'sending heartbeat to', socket.UADDR);
+          socket.send('heartbeat');
+        });
+      }, DEFS.SERVER_HEARTBEAT_INTERVAL);
+    }
+
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ When a new socket connection happens, send back the special registration
     packet (WIP)
