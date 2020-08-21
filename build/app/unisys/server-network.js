@@ -180,7 +180,8 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       socket.on('close', () => {
         // The socket wil not receive a close event immediately if the client
         // loses their internet connection.  The close event WILL fire if the
-        // client comes back online and reconnects.
+        // client comes back online and reconnects on a new UADDR.
+        // The socket will close eventually after about 4 minutes.
         m_SocketDelete(socket);
       });
 
@@ -196,6 +197,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       if (m_heartbeat_interval) return; // already started
       m_heartbeat_interval = setInterval(function sendHeartbeat() {
         mu_sockets.forEach((socket, key, map) => {
+          if (DBG) console.log(PR, 'sending heartbeat to', socket.UADDR);
           socket.send('ping');
         });
       }, DEFS.SERVER_HEARTBEAT_INTERVAL);
@@ -213,7 +215,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
 /*/
     function m_ResetPongTimer(uaddr) {
       clearTimeout(m_pong_timer[uaddr]);
-      m_pong_timer[uaddr] = setTimeout(function pongStopped() {
+      m_pong_timer[uaddr] = setTimeout(function pongTimedOut() {
         if (DBG) console.log(PR, uaddr, 'pong not received before time ran out -- CONNECTION DEAD!');
         DB.RequestUnlock(uaddr);
       }, DEFS.SERVER_HEARTBEAT_INTERVAL + 1000);
