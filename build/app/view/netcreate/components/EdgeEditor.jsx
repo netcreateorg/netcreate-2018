@@ -49,6 +49,9 @@
                       by the EdgeEditor to determine whether it should
                       display the edge nodes as targets or sources.
 
+    parentNodeIsLocked The parent node is locked when the server disconnects
+                       this will disable the Delete and Edit buttons.
+
   ## STATES
 
       dbIsLocked
@@ -290,6 +293,15 @@ class EdgeEditor extends UNISYS.Component {
 
       // Template handler
       this.OnAppStateChange('TEMPLATE', this.setTemplate);
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Prevent editing if server is disconnected.
+      This is necessary to hide the "Add New Node" button.
+  /*/
+      this.OnDisconnect(() => {
+        console.log('EdgeSelector got disconnect')
+        this.setState({ isLocked: true });
+      });
 
     } // constructor
 
@@ -591,8 +603,14 @@ class EdgeEditor extends UNISYS.Component {
           if (originalEdge === undefined) {
             // user abandoned editing a new node that was never saved
             const parentNode = D3DATA.nodes.find(node => node.label === this.props.parentNodeLabel);
-            if (!parentNode) throw `No parent node found for ${this.props.parentNodeLabel} while trying to cancel edit.  This should not happen!`;
-            UDATA.LocalCall('EDGE_NEW_CANCEL', { nodeID: parentNode.id });
+            // parentNode might be missing if the admin user deleted it.
+            if (parentNode) {
+              // Unlock edges and reselect the source node
+              UDATA.LocalCall('EDGE_NEW_CANCEL', { nodeID: parentNode.id });
+            } else {
+              // Unlock edges and deselect the missing source node
+              UDATA.LocalCall('EDGE_NEW_CANCEL');
+            }
             this.clearForm();
           } else {
             // User is abandoning edits to an existing edge.
@@ -803,6 +821,30 @@ class EdgeEditor extends UNISYS.Component {
       }
       if (DBG) console.group('EdgeEntry.onSubmit submitting',edge)
 
+      // Make sure source and target still exist before saving an edge in case
+      // admin user deletes a node. This is to prevent data corruption by
+      // linking to non-existent nodes. This should probably be moved to nc-logic.
+      if (edge) {
+        // check source
+        const D3DATA = this.AppState('D3DATA');
+        console.log('D3DATA is', D3DATA);
+        const source = D3DATA.nodes.find(node => node.id === edge.source);
+        if (!source) {
+          alert('Sorry, the source node has been removed.  Please recreate your edge.');
+          // Trigger Cancel
+          this.onEdgeClick();
+          return;
+        }
+        // check target
+        const target = D3DATA.nodes.find(node => node.id === edge.target);
+        if (!target) {
+          alert('Sorry, the target node has been removed.  Please recreate your edge.');
+          // Trigger Cancel
+          this.onEdgeClick();
+          return;
+        }
+      }
+
       this.AppCall('EDGEEDIT_UNLOCK', { edgeID: this.props.edgeID }); // inform NodeSelector
       // pass currentAutoComplete back to nodeselector
       this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
@@ -834,7 +876,7 @@ class EdgeEditor extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ render () {
-      const { edgeID, parentNodeLabel } = this.props;
+      const { edgeID, parentNodeLabel, parentNodeIsLocked } = this.props;
       const { formData, sourceNode, targetNode, edgePrompts} = this.state;
       let {citationPrompts} = this.state;
       if (edgePrompts.category === undefined) { // for backwards compatability
@@ -880,7 +922,7 @@ class EdgeEditor extends UNISYS.Component {
                   onSubmit={this.onSubmit}>
               <FormText onClick={this.onEdgeClick}><b>EDGE {formData.id}</b></FormText>
               <FormGroup row>
-                <Col sm={3}>
+                <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="source" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.source.label}<span className="tooltiptext">{this.helpText(edgePrompts.source)}</span></Label>
                 </Col>
                 <Col sm={9}>
@@ -901,7 +943,7 @@ class EdgeEditor extends UNISYS.Component {
                 </Col>
               </FormGroup>
               <FormGroup row hidden={edgePrompts.type.hidden}>
-                <Col sm={3}>
+                <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="relationship" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.type.label}<span className="tooltiptext">{this.helpText(edgePrompts.type)}</span></Label>
                 </Col>
                 <Col sm={9}>
@@ -917,7 +959,7 @@ class EdgeEditor extends UNISYS.Component {
                 </Col>
               </FormGroup>
               <FormGroup row>
-                <Col sm={3}>
+                <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="nodeLabel" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.target.label}<span className="tooltiptext">{this.helpText(edgePrompts.target)}</span></Label>
                 </Col>
                 <Col sm={9}>
@@ -946,7 +988,7 @@ class EdgeEditor extends UNISYS.Component {
                 </Col>
               </FormGroup>
               <FormGroup row hidden={edgePrompts.category.hidden}>
-                <Col sm={3}>
+                <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="category" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.category.label}<span className="tooltiptext">{this.helpText(edgePrompts.category)}</span></Label>
                 </Col>
                 <Col sm={9}>
@@ -957,7 +999,7 @@ class EdgeEditor extends UNISYS.Component {
                   />
                 </Col>
               </FormGroup><FormGroup row hidden={edgePrompts.citation.hidden}>
-                <Col sm={3}>
+                <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="citation" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.citation.label}<span className="tooltiptext">{this.helpText(edgePrompts.citation)}</span></Label>
                 </Col>
                 <Col sm={9}>
@@ -969,7 +1011,7 @@ class EdgeEditor extends UNISYS.Component {
                 </Col>
               </FormGroup>
               <FormGroup row hidden={edgePrompts.notes.hidden}>
-                <Col sm={3}>
+                <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="notes" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.notes.label}<span className="tooltiptext">{this.helpText(edgePrompts.notes)}</span></Label>
                 </Col>
                 <Col sm={9}>
@@ -983,7 +1025,7 @@ class EdgeEditor extends UNISYS.Component {
                 </Col>
               </FormGroup>
               <FormGroup row hidden={edgePrompts.info.hidden}>
-                <Col sm={3}>
+                <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="info" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.info.label}<span className="tooltiptext">{this.helpText(edgePrompts.info)}</span></Label>
                 </Col>
                 <Col sm={9}>
@@ -1001,7 +1043,7 @@ class EdgeEditor extends UNISYS.Component {
               </div><br/>
               <FormGroup className="text-right" style={{paddingRight:'5px'}}>
                 <Button className="small float-left btn btn-outline-light" size="sm"
-                 hidden={this.state.isLocked}
+                 hidden={this.state.isLocked || parentNodeIsLocked}
                  onClick={this.onDeleteButtonClick}
                 >Delete</Button>&nbsp;
                 <Button outline size="sm"
@@ -1009,7 +1051,7 @@ class EdgeEditor extends UNISYS.Component {
                 onClick={this.onCiteButtonClick}
               >Cite Edge</Button>&nbsp;&nbsp;
               <Button outline size="sm"
-                  hidden={this.state.isLocked || this.state.isEditable}
+                  hidden={this.state.isLocked || this.state.isEditable || parentNodeIsLocked}
                   onClick={this.onEditButtonClick}
                 >{this.state.isEditable ? "Add New Edge" : "Edit Edge"}</Button>&nbsp;
                 <Button size="sm"

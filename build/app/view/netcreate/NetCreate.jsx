@@ -49,7 +49,7 @@ const Search       = require('./components/Search');
 const NodeSelector = require('./components/NodeSelector');
 const InfoPanel    = require('./components/InfoPanel');
 const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
-
+const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -87,7 +87,7 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
 
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ SESSION is called by SessionSHell when the ID changes
+  /*/ SESSION is called by SessionShell when the ID changes
       Show or hide netgraph depending on template settings.
   /*/ onStateChange_SESSION( decoded ) {
         this.setState({ isLoggedIn: decoded.isValid });
@@ -116,10 +116,9 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
         if (this.state.requireLogin && !isLoggedIn) hideGraph = true;
         return (
           <div>
-            <div hidden={this.state.isConnected} style={{ width:'100%',height:'100%',position:'fixed',backgroundColor:'rgba(0,0,0,0.5',display:'flex',flexDirection:'column',justifyContent:'space-evenly',zIndex:'3000'}}>
+            <div hidden={this.state.isConnected} style={{ width:'100%',height:'38px',position:'fixed',backgroundColor:'rgba(256,0,0,0.5',display:'flex',flexDirection:'column',justifyContent:'space-evenly',alignItems:'center',zIndex:'3000'}}>
               <div style={{color:'#fff',width:'100%',textAlign:'center'}}>
-                <h1>Server Disconnected</h1>
-                <p>Please contact your administrator to restart the graph.</p>
+                <b>Server Disconnected!</b> Your changes will not be saved!  Please contact your administrator to restart the graph.
               </div>
             </div>
             <Route path='/edit/:token' exact={true} component={SessionShell}/>
@@ -133,7 +132,7 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
                   <NodeSelector/>
                 </div>
               </div>
-              <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 60%', padding:'10px',marginTop:'38px'}}>
+              <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 60%',marginTop:'38px'}}>
                 <InfoPanel/>
                 <NetGraph/>
                 <div style={{fontSize:'10px',position:'fixed',left:'0px',bottom:'0px',right:'0px',zIndex:'1500',color:'#aaa',backgroundColor:'#eee',padding:'5px 10px'}}>Please contact Professor

@@ -668,7 +668,13 @@ MOD.Hook("INITIALIZE", () => {
   UDATA.HandleMessage("AUTOCOMPLETE_SELECT", function(data) {
     m_HandleAutoCompleteSelect(data);
   });
+
 }); // end UNISYS_INIT
+
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ INIT HANDLERS
+/*/
 
 function m_HandleAutoCompleteSelect(data) {
   if (DBG) console.log("ACL: Setting activeAutoCompleteId to", data.id);
@@ -783,6 +789,7 @@ function m_SetAllObjs(obj_list, all = {}) {
     for (let key in all) obj[key] = all[key];
   });
 }
+MOD.SetAllObjs = m_SetAllObjs; // Expose for filter-logic.js
 
 /// NODE HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -843,6 +850,9 @@ function m_SetMatchingNodesByLabel(str = "", yes = {}, no = {}) {
   });
   return returnMatches;
 }
+
+
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Update props of exact matching nodes, returns matches
     Optionally resets all the NON matching nodes as well
@@ -926,6 +936,7 @@ const REGEX_REGEXCHARS = /[.*+?^${}()|[\]\\]/g;
 function u_EscapeRegexChars(string) {
   return string.replace(REGEX_REGEXCHARS, "\\$&"); // $& means the whole matched string
 }
+MOD.EscapeRegexChars = u_EscapeRegexChars; // Expose for filter-logic.js
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Convert all IDs to integers
     Node and Edge IDs should be integers.

@@ -118,6 +118,17 @@ class SessionShell extends UNISYS.Component {
       isValid: false
     };
     this.previousIsValid = false; // to track changes in loggedIn status
+
+    // This will invalidate the token when the server is disconnected
+    // but this can be a problem for projects that require login
+    // to view the graph.
+    // this.OnDisconnect(() => {
+    //   const token = this.props.match.params.token;
+    //   const decoded = SESSION.DecodeToken(token, window.NC_CONFIG.dataset);
+    //   // invalidate the token and announce it
+    //   decoded.isValid = false;
+    //   this.SetAppState("SESSION", decoded);
+    // });
   }
 
   /// ROUTE RENDER FUNCTIONS ////////////////////////////////////////////////////

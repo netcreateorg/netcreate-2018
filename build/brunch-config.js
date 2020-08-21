@@ -98,6 +98,14 @@ module.exports = {
       }
     },
 
+/// STORYBOOK COMPATIBILITY ///////////////////////////////////////////////////
+/*/ Storybook uses spread operators, which are not supported in the current
+    version of brunch-babel.  Brunch doesn't need to compile storybook files
+    anyway because storybook has its own compile via webpack.  So ignore them.
+/*/ conventions: {
+      ignored: [ /\.stories.js$/]
+    },
+
 /// OVERRIDES FOR PRODUCTION //////////////////////////////////////////////////
 /*/ Brunch configuration settings default to development mode in the
     environment. You can override each env (e.g. production) after all other
