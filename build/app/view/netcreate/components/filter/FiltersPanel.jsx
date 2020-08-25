@@ -56,7 +56,7 @@ class FiltersPanel extends UNISYS.Component {
   }
 
   componentWillUnmount() {
-    console.error('TBD: gracefully unsubscribe!')
+    // console.error('TBD: gracefully unsubscribe!')
   }
 
   render() {

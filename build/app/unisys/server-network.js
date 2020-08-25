@@ -12,7 +12,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = false;
+const DBG = true;
 
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -49,6 +49,7 @@ var m_message_map     = new Map();  // message map storing other handlers
 var m_socket_msgs_list = new Map(); // message map by uaddr
 // heartbeat
 var m_heartbeat_interval;
+var m_pong_timer = [];
 
 /// API MEHTHODS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -177,6 +178,10 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
         m_SocketMessage(socket,json);
       });
       socket.on('close', () => {
+        // The socket wil not receive a close event immediately if the client
+        // loses their internet connection.  The close event WILL fire if the
+        // client comes back online and reconnects on a new UADDR.
+        // The socket will close eventually after about 4 minutes.
         m_SocketDelete(socket);
       });
 
@@ -186,15 +191,34 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ When a new socket is connected, we send a periodic heartbeat to let them
     know we're still here, and so client can detect when network is lost.
+    This will keep sending a heartbeat to the socket so long as it is open.
 /*/ function m_StartHeartbeat() {
       if (DBG) console.log(PR, 'starting heartbeat');
       if (m_heartbeat_interval) return; // already started
       m_heartbeat_interval = setInterval(function sendHeartbeat() {
         mu_sockets.forEach((socket, key, map) => {
           if (DBG) console.log(PR, 'sending heartbeat to', socket.UADDR);
-          socket.send('heartbeat');
+          socket.send('ping');
         });
       }, DEFS.SERVER_HEARTBEAT_INTERVAL);
+    }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ If a 'pong' message is not received from the client 5 seconds
+    after we send the client a ping message, we assume the network connection
+    has gone down.
+
+    The socket close handler is only triggered when the server closes the
+    connection.  In order to detect the internet connection going down
+    (e.g. loss of wifi) we need to check to see if we are peridically receiving
+    a heartbeat message from the client.
+/*/
+    function m_ResetPongTimer(uaddr) {
+      clearTimeout(m_pong_timer[uaddr]);
+      m_pong_timer[uaddr] = setTimeout(function pongTimedOut() {
+        if (DBG) console.log(PR, uaddr, 'pong not received before time ran out -- CONNECTION DEAD!');
+        DB.RequestUnlock(uaddr);
+      }, DEFS.SERVER_HEARTBEAT_INTERVAL + 1000);
     }
 
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -209,7 +233,14 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
     }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle all incoming socket messages asynchronously through Promises
-/*/ function m_SocketMessage( socket, json ) {
+/*/ function m_SocketMessage(socket, json) {
+        // Check Heartbeat
+        if (json === 'pong') {
+          if (socket.UADDR === undefined) return; // Don't start the timer if we get a bad UADDR
+          m_ResetPongTimer(socket.UADDR);
+          return;
+        }
+
         let pkt = new NetMessage(json);
         // figure out what to do
         switch (pkt.Type()) {
