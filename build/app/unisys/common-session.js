@@ -29,8 +29,12 @@ var m_current_groupid = null;
     containing as many decoded values as possible. Check isValid for
     complete decode succes. groupId is also set if successful
 /*/
-SESUTIL.DecodeToken = function(token) {
+SESUTIL.DecodeToken = function(token, dataset) {
   if (token === undefined) return {};
+  if (dataset === undefined) {
+    console.error('SESUTIL.DecodeToken called without "dataset" parameter.');
+    return {};
+  }
   let tokenBits = token.split("-");
   let classId, projId, hashedId, groupId, subId, isValid;
   // optimistically set valid flag to be negated on failure
@@ -46,7 +50,7 @@ SESUTIL.DecodeToken = function(token) {
   if (tokenBits[2]) hashedId = tokenBits[2].toUpperCase();
   if (tokenBits[3]) subId = tokenBits[3].toUpperCase();
   // initialize hashid structure
-  let salt = `${classId}${projId}`;
+  let salt = `${classId}${projId}${dataset}`;
   let hashids = new HashIds(salt, HASH_MINLEN, HASH_ABET);
   // try to decode the groupId
   groupId = hashids.decode(hashedId)[0];
@@ -88,8 +92,8 @@ SESUTIL.DecodeToken = function(token) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return TRUE if the token decodes into an expected range of values
 /*/
-SESUTIL.IsValidToken = function(token) {
-  let decoded = SESUTIL.DecodeToken(token);
+SESUTIL.IsValidToken = function(token, dataset) {
+  let decoded = SESUTIL.DecodeToken(token, dataset);
   return decoded && Number.isInteger(decoded.groupId);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -97,7 +101,7 @@ SESUTIL.IsValidToken = function(token) {
     classId and projId should be short and are case-insensitive.
     groupId must be a non-negative integer
 /*/
-SESUTIL.MakeToken = function(classId, projId, groupId) {
+SESUTIL.MakeToken = function(classId, projId, groupId, dataset) {
   // type checking
   if (typeof classId !== "string")
     throw Error(`classId arg1 '${classId}' must be string`);
@@ -114,7 +118,7 @@ SESUTIL.MakeToken = function(classId, projId, groupId) {
   // initialize hashid structure
   classId = classId.toUpperCase();
   projId = projId.toUpperCase();
-  let salt = `${classId}${projId}`;
+  let salt = `${classId}${projId}${dataset}`;
   let hashids = new HashIds(salt, HASH_MINLEN, HASH_ABET);
   let hashedId = hashids.encode(groupId);
   return `${classId}-${projId}-${hashedId}`;
@@ -124,7 +128,12 @@ SESUTIL.MakeToken = function(classId, projId, groupId) {
 /*/ Set the global GROUPID, which is included in all NetMessage
     packets that are sent to server.
 /*/
-SESUTIL.SetGroupID = function(token) {
+// REVIEW/FIXME
+// `SetGroupID` isn't being called by anyone?
+// If it is, the DecodeToken call needs to add a 'dataset' parameter or it will
+// fail.
+SESUTIL.SetGroupID = function (token) {
+  console.error('SetGroupID calling decodeToken NC_CONFIG IS', window.NC_CONFIG);
   let good = SESUTIL.DecodeToken(token).isValid;
   if (good) m_current_groupid = token;
   return good;

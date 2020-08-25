@@ -12,7 +12,9 @@ const DBG = { connect: true, handle: false };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SETTINGS = require("settings");
 const NetMessage = require("unisys/common-netmessage-class");
+const DEFS = require("./common-defs");
 const PROMPTS = require("system/util/prompts");
+
 const PR = PROMPTS.Pad("NETWORK");
 const WARN = PROMPTS.Pad("!!!");
 const ERR_NM_REQ = "arg1 must be NetMessage instance";
@@ -36,6 +38,9 @@ const M_STANDALONE = 5;
 const M_NOCONNECT = 6;
 var m_status = M0_INIT;
 var m_options = {};
+
+// hearbeat
+var m_hearbeat_timer;
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -149,9 +154,46 @@ function m_HandleRegistrationMessage(msgEvent) {
   m_status = M4_READY;
   // (4) network is initialized
   if (typeof m_options.success === "function") m_options.success();
+  // (5) initialize heartbeat timer
+  m_ResetHearbeatTimer();
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ When a heartbeat ping is received, respond with a pong to let the server
+    know that we're still alive.
+/*/
+function m_RespondToHeartbeat() {
+  NETSOCK.ws.send('pong');
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ If a 'hearbeat' message is not received from the server every 5 seconds
+    we assume the network connection has gone down.  The timeout should be
+    greater than the server heartbeat interval set in
+    server-network.js:m_StartHeartbeat()
+
+    The UNISYSDisconnect handler only goes down when the server closes the
+    connection.  In order to detect the internet connection going down
+    (e.g. wifi) we need to check to see if we are peridically receiving
+    a heartbeat message from the server.
+/*/
+function m_ResetHearbeatTimer() {
+  clearTimeout(m_hearbeat_timer);
+  m_hearbeat_timer = setTimeout(function heartbeatStopped() {
+    if (DBG.handle) console.log(PR, 'heartbeat not received before time ran out -- YOURE DEAD!');
+    NetMessage.GlobalOfflineMode();
+  }, DEFS.SERVER_HEARTBEAT_INTERVAL + 1000);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_HandleMessage(msgEvent) {
+
+  // Check Hearbeat
+  if (msgEvent.data === 'ping') {
+    if (DBG.handle) console.log(PR, '...got hearbeat!  Reset timer');
+    m_RespondToHeartbeat();
+    m_ResetHearbeatTimer();
+    return;
+  }
+
+  // Handle Regular Message
   let pkt = new NetMessage(msgEvent.data);
   let msg = pkt.Message();
   if (pkt.IsOwnResponse()) {

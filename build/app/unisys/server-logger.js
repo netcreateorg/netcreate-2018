@@ -19,6 +19,7 @@ const FSE               = require('fs-extra');
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const PROMPTS           = require('../system/util/prompts');
 const PR                = PROMPTS.Pad('SRV-LOG');
+const NC_CONFIG         = require("../assets/netcreate-config");
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -55,7 +56,8 @@ FSE.ensureDir(dir, function (err) {
 /*/	function LogLine ( ...args ) {
 		if (!fs_log) return;
 
-		var out = str_TimeStamp()+' ';
+		var out = str_TimeStamp()+LOG_DELIMITER;
+    out += NC_CONFIG.dataset+LOG_DELIMITER;
 		var c = args.length;
     // arguments are delimited
 		if (c) {

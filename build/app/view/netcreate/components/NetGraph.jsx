@@ -97,7 +97,7 @@ class NetGraph extends UNISYS.Component {
       let nodeTypes = this.AppState('TEMPLATE').nodePrompts.type.options;
       return (
         <div style={{ height: '100%' }}>
-          <div>
+          <div style={{ margin: '10px 0 0 10px' }}>
             <div className="tooltipAnchor">
                 <span style={{ fontSize: '9px' }}><i className="fas fa-question-circle"></i>NETGRAPH for {this.AppState('TEMPLATE').name}</span>
                 <span style={{ fontSize: '12px' }} className="tooltiptext">{this.AppState('TEMPLATE').description}</span>
@@ -112,12 +112,12 @@ class NetGraph extends UNISYS.Component {
 
             <div style={{ display: 'inline-block', paddingRight: '2em' }}>KEY:</div>
             {nodeTypes.map((type, i) => (
-
-               <div className="tooltipAnchor">
-                    <div key={i} style={{ display:'inline-block', paddingRight:'2em', lineHeight:'10px' }}>                <div style={{ display:'inline-block',width:'10px',height:'8px',backgroundColor:type.color }}></div>
+               <div key={i} className="tooltipAnchor">
+                <div style={{ display: 'inline-block', paddingRight: '2em', lineHeight: '10px' }}>
+                  <div style={{ display: 'inline-block', width: '10px', height: '8px', backgroundColor: type.color }}></div>
                     &nbsp;{ (type.label==='') ? 'No Type Selected' : type.label }
                   </div>
-                   <span className="tooltiptextabove">{ (type.label==='') ? 'No Type Selected' : ((type.help != undefined) ? type.help : type.label) }</span>
+                   <span className="tooltiptextabove">{ (type.label==='') ? 'No Type Selected' : type.help || type.label }</span>
                 </div>
             ))}
 

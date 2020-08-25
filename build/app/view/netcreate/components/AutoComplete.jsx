@@ -359,6 +359,8 @@ class AutoComplete extends UNISYS.Component {
     _IsMounted = false;
     // deregister ACTIVEAUTOMPLETE when component unmounts
     // otherwise state updates trigger a setState on unmounted component error
+    this.AppStateChangeOff('SEARCH',             this.onStateChange_SEARCH);
+    this.AppStateChangeOff('SELECTION',          this.onStateChange_SELECTION);
     this.AppStateChangeOff('ACTIVEAUTOCOMPLETE', this.onStateChange_AUTOCOMPLETE);
   }
 

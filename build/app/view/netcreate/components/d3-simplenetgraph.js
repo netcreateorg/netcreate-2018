@@ -303,27 +303,30 @@ class D3NetGraph {
       // enter node: also append 'circle' element of a calculated size
       elementG
         .append("circle")
-          // "r" has to be set here or circles don't draw.
-          .attr("r", (d) => {
-              let radius = this.data.edges.reduce((acc,ed)=>{
-                return (ed.source===d.id || ed.target===d.id) ? acc+1 : acc;
-              },1);
+        // "r" has to be set here or circles don't draw.
+        .attr("r", (d) => {
+          let radius = this.data.edges.reduce((acc, ed) => {
+            return (ed.source === d.id || ed.target === d.id) ? acc + 1 : acc;
+          }, 1);
 
-              d.weight = radius
-              d.size   = radius // save the calculated size
-              return this.defaultSize + (this.defaultSize * d.weight / 2)
-          })
-  //        .attr("r", (d) => { return this.defaultSize }) // d.size ?  d.size/10 : this.defaultSize; })
-          .attr("fill", (d) => {
-            // REVIEW: Using label match.  Should we use id instead?
-            // The advantage of using the label is backward compatibility with
-            // Google Fusion table data as well as exportability.
-            // If we save the type as an id, the data format will be
-            // less human-readable.
-            // The problem with this approach though is that any changes
-            // to the label text will result in a failed color lookup!
-            return COLORMAP[d.attributes["Node_Type"]];
-          });
+          d.weight = radius
+          d.size = radius // save the calculated size
+          return this.defaultSize + (this.defaultSize * d.weight / 2)
+        })
+        //        .attr("r", (d) => { return this.defaultSize }) // d.size ?  d.size/10 : this.defaultSize; })
+        .attr("fill", (d) => {
+          // REVIEW: Using label match.  Should we use id instead?
+          // The advantage of using the label is backward compatibility with
+          // Google Fusion table data as well as exportability.
+          // If we save the type as an id, the data format will be
+          // less human-readable.
+          // The problem with this approach though is that any changes
+          // to the label text will result in a failed color lookup!
+          return COLORMAP[d.attributes["Node_Type"]];
+        })
+        .style("opacity", d => {
+          return d.isFilteredOut ? 0 : 1.0
+        });
 
       // enter node: also append 'text' element
       elementG
@@ -332,7 +335,10 @@ class D3NetGraph {
           .attr("font-size", 10)
           .attr("dx", (d=>{return this.defaultSize + 5})) // 8)
           .attr("dy", "0.35em") // ".15em")
-          .text((d) => { return d.label });
+          .text((d) => { return d.label })
+          .style("opacity", d => {
+            return d.isFilteredOut ? 0 : 1.0
+          });
 
       // enter node: also append a 'title' tag
       // we should move this to our tooltip functions, but it works for now
@@ -404,6 +410,12 @@ class D3NetGraph {
               d.weight = radius
               d.size = radius // save the calculated size
               return this.defaultSize + (this.defaultSize * d.weight / 2)
+          })
+          .transition()
+          .duration(500)
+          .style("opacity", d => {
+            // console.log(d);
+            return d.isFilteredOut ? 0 : 1.0
           });
 
       // UPDATE text in each node for all nodes
@@ -420,7 +432,12 @@ class D3NetGraph {
             if (d.selected) return 'bold';
             return undefined; // don't set font weight
           })
-          .text((d) => { return d.label });  // in case text is updated
+          .text((d) => { return d.label }) // in case text is updated
+          .transition()
+          .duration(500)
+          .style("opacity", d => {
+            return d.isFilteredOut ? 0 : 1.0
+          });
 
       nodeElements.merge(nodeElements)
         .selectAll("title") // node tooltip
@@ -446,12 +463,20 @@ class D3NetGraph {
         //   if (DBG) console.log('clicked on',d.label,d.id)
         //   this.edgeClickFn( d )
         // })
+        .style("opacity", d => {
+          return d.isFilteredOut ? 0 : 1.0
+        });
 
       // .merge() updates the visuals whenever the data is updated.
       linkElements.merge(linkElements)
         .classed("selected",  (d) => { return d.selected })
         .style('stroke', this._UpdateLinkStrokeColor)
         .style('stroke-width', this._UpdateLinkStrokeWidth)
+        .transition()
+        .duration(500)
+        .style("opacity", d => {
+          return d.isFilteredOut ? 0 : 1.0
+        });
 
       linkElements.exit().remove()
 
@@ -571,7 +596,7 @@ displayUpdated(nodeEdge)
     Used by linElements.enter() and linkElements.merge()
     and mouseover events.
 /*/
-_UpdateLinkStrokeWidth (edge) {
+_UpdateLinkStrokeWidth(edge) {
   if (edge.selected ||
     (edge.source.id === mouseoverNodeId) ||
     (edge.target.id === mouseoverNodeId) ||
@@ -583,12 +608,10 @@ _UpdateLinkStrokeWidth (edge) {
   }
 }
 
-_UpdateLinkStrokeColor(edge){
+_UpdateLinkStrokeColor(edge) {
   let COLORMAP = UDATA.AppState('NODECOLORMAP');
   let color = COLORMAP[edge.attributes.Relationship]
   return color;
-
-
 }
 
 
