@@ -1,0 +1,129 @@
+{
+
+  "_comments":  [ "/// NetCreate Template File ///",
+                  "/// IMPORTANT: As of 1/31/2019, the following functionality is available:               ///",
+                  "///  * `label` parameter for each field may be customized                               ///",
+                  "///  * `hidden` parameter may be used to hide fields                                    ///",
+                  "///  * changing the order of the `options` WILL change their order on selections        ///",
+                  "///  * changing the order of the prompts themselves will NOT change their order         ///",
+                  "///  * `duplicateWarning` is used in NodeSelector                                       ///",
+                  "///  * `sourceNodeIsLockedMessage` is used in NodeSelector                              ///",
+                  "///  * `edgeIsLockedMessage` is used in EdgeEditor                                      ///",
+                  "/// The rest of the definitions are there as placeholders for future functionality      ///"
+  ],
+
+  "name":        "Grimm",
+
+  "description": "Grimm Motif Network",
+
+  "citationPrompts":{
+                "citation": "Landini, Grimm Network (Spring 2020)",
+                "hidden": false
+    },
+
+
+  "nodePrompts": {
+    "label": {
+                "label":    "Label",
+                "help":     "A short title for the node",
+                "duplicateWarning": "You’re entering a duplicate node.  Do you want to View the Existing node, or Continue creating?",
+                "sourceNodeIsLockedMessage": "This node is currently being edited by someone else. Please try again in 10 minutes. If you are still getting this message, send your instructor a text using the phone number provided in this week's Canvas assignment.",
+                "_cmt4":    "/// `Label` is always required and cannot be hidden"
+             },
+    "type":  {
+                "label":    "Type",
+                "help":     "Multiple people are a 'Group'",
+                "hidden":   false,
+                "options": [
+                  {
+                    "_comment": "Default color when nothing is selected",
+                    "id":       "",
+                    "label":    "",
+                    "color":    "#EEEEEE"
+                  },
+                  {
+                    "id":    "grimm",
+                    "label": "Grimm",
+	                "help":  "A Brothers Grimm tale",
+                    "color": "#aabaf2"
+                  },
+                  {
+                    "id":    "motif",
+                    "label": "Motif",
+	                "help":  "A named motif",
+                    "color": "#00FF00"
+                  }
+                 ]
+             },
+    "degrees": {
+      "label": "Degrees",
+      "help": "Number of edges.",
+      "hidden": false
+    },
+    "notes": {
+                "label": "Significance",
+                "help":  "Notes",
+                "hidden": false
+              },
+    "info":  {
+                "label": "Geocode or Date",
+                "help":  "Use latitude/longitude or a date YYYY-MM-DD",
+                "hidden": true
+              },
+    "delete": {
+      "hidden": false
+    }
+  },
+
+
+
+  "edgePrompts": {
+    "edgeIsLockedMessage": "This edge is currently being edited by someone else. Please try again in 10 minutes. If you are still getting this message, send your instructor a text using the phone number provided in this week's Canvas assignment.",
+    "source":   {
+                  "label": "Source",
+                  "help":  "Source",
+                  "hidden": false
+                },
+    "type":     {
+                  "label": "Type",
+                  "help":  "Type",
+                  "hidden": false,
+                  "options": [
+                    {
+                      "id":    "notSelected",
+                      "label": ""
+                    },
+                    {
+                      "id":    "present",
+                      "label": "Motif Present in this tale"
+                    }
+                  ]
+                },
+    "target":   {
+                  "label": "Target",
+                  "help":  "Target",
+                  "hidden": false
+                },
+    "notes":    {
+                  "label": "Signficance",
+                  "help":  "Notes",
+                  "hidden": false
+                },
+    "info":     {
+                  "label": "Date",
+                  "help":  "'YYYY-MM-DD' format",
+                  "hidden": true
+                },
+    "citation": {
+                  "label": "Citation",
+                  "help":  "3-digit page number",
+                  "hidden": true
+                },
+    "category":     {
+                  "label": "Category",
+                  "help":  "Political? Social? Economic? Racial/ethnic? Religious? Medical?",
+                  "hidden": true
+                }
+  }
+
+}

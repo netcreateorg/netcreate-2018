@@ -4,8 +4,10 @@
 
   InfoPanel shows a tab panel for selecting:
   * hiding (showing the Graph)
+  * Filters
   * Nodes Table
   * Edges Table
+  * Vocabulary
   * Help
 
   The panel itself can be resized vertically.
@@ -26,10 +28,11 @@ const ReactStrap = require('reactstrap');
 const { TabContent, TabPane, Nav, NavItem, NavLink, Row, Col, Button } = ReactStrap;
 const classnames = require('classnames');
 
-const Help = require('./Help');
-const Vocabulary = require('./Vocabulary');
+const FiltersPanel = require('./filter/FiltersPanel');
 const NodeTable = require('./NodeTable');
 const EdgeTable = require('./EdgeTable');
+const Vocabulary = require('./Vocabulary');
+const Help = require('./Help');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,13 +50,18 @@ class InfoPanel extends UNISYS.Component {
       tableHeight: '350px',
       savedTabpanelHeight: '350px',
       draggerTop: 'inherit',
-      hideDragger: true
+      hideDragger: true,
+      filtersSummary: ''
     }
 
     this.toggle = this.toggle.bind(this);
     this.handleMouseDown = this.handleMouseDown.bind(this);
     this.endDrag = this.endDrag.bind(this);
     this.handleDrag = this.handleDrag.bind(this);
+    this.UpdateFilterSummary = this.UpdateFilterSummary.bind(this);
+
+    var UDATA = UNISYS.NewDataLink(this);
+    UDATA.HandleMessage("FILTER_SUMMARY_UPDATE", this.UpdateFilterSummary);
 
   } // constructor
 
@@ -67,7 +75,7 @@ class InfoPanel extends UNISYS.Component {
     window.event.stopPropagation();
     if (this.state.activeTab !== tab) {
       this.setState({ activeTab: tab });
-      if ((tab === `1`) ||  (tab === '5')) {
+      if ((tab === `1`) || (tab === '6')) { // graph or help
         this.setState({
           tabpanelHeight: '50px', // show only tab buttons
           hideDragger: true,
@@ -103,12 +111,13 @@ class InfoPanel extends UNISYS.Component {
   }
   handleDrag(e) {
     e.stopPropagation();
-    let top = e.clientY + this.state.draggerMouseOffsetY;
+    // limit to 80 to keep from dragging up past the tabpanel
+    // 80 = navbar + tabpanel height
+    let top = Math.max(80, e.clientY + this.state.draggerMouseOffsetY);
     this.setState({
-      tabpanelHeight: (top - this.state.tabpanelTop) + 'px',
-      tableHeight: (top - this.state.tabpanelTop - 55) + 'px',    // Hacked tab button + thead offset
-      draggerTop: top + 'px',
-      savedTabpanelHeight: (top - this.state.tabpanelTop) + 'px',  // remember height when switching tabs
+      tabpanelHeight: (top - this.state.tabpanelTop - 40) + 'px',
+      tableHeight: (top - this.state.tabpanelTop) + 'px',
+      savedTabpanelHeight: (top - this.state.tabpanelTop - 40) + 'px',  // remember height when switching tabs
       bIgnoreTableUpdates: true // ignore this update at the table level if it is a large data set
     });
   }
@@ -116,6 +125,10 @@ class InfoPanel extends UNISYS.Component {
     this.setState({bIgnoreTableUpdates: false})
     document.onmouseup = null;
     document.onmousemove = null;
+  }
+
+  UpdateFilterSummary(data) {
+    this.setState({ filtersSummary: data.filtersSummary });
   }
 
 
@@ -142,12 +155,12 @@ class InfoPanel extends UNISYS.Component {
   /*/
   /*/
   render() {
-    let { tabpanelHeight, tableHeight, hideDragger, draggerTop, bIgnoreTableUpdates} = this.state;
+    let { tabpanelHeight, tableHeight, hideDragger, draggerTop, bIgnoreTableUpdates, filtersSummary} = this.state;
     //send flag in with tableheight
     return (
       <div>
         <div id='tabpanel'
-          style={{ height: tabpanelHeight, overflow: 'hidden', backgroundColor: '#eee', padding: '5px' }}>
+          style={{ height: tabpanelHeight, overflow: 'hidden', backgroundColor: '#eee'}}>
           <Nav tabs>
             <NavItem>
               <NavLink
@@ -155,66 +168,77 @@ class InfoPanel extends UNISYS.Component {
                 onClick={() => { this.toggle('1'); this.sendGA('Graph', window.location); } }
               >
                 Graph
-                        </NavLink>
+              </NavLink>
             </NavItem>
             <NavItem>
               <NavLink
                 className={classnames({ active: this.state.activeTab === '2' })}
-                onClick={() => { this.toggle('2'); this.sendGA('Nodes Table', window.location); }}
+                onClick={() => { this.toggle('2'); this.sendGA('Filter', window.location); }}
               >
-                Nodes Table
-                        </NavLink>
+                Filters
+              </NavLink>
             </NavItem>
             <NavItem>
               <NavLink
                 className={classnames({ active: this.state.activeTab === '3' })}
-                onClick={() => { this.toggle('3'); this.sendGA('Edges Table', window.location); }}
+                onClick={() => { this.toggle('3'); this.sendGA('Nodes Table', window.location); }}
               >
-                Edges Table
-                        </NavLink>
+                Nodes Table
+              </NavLink>
             </NavItem>
             <NavItem>
               <NavLink
                 className={classnames({ active: this.state.activeTab === '4' })}
-                onClick={() => { this.toggle('4'); this.sendGA('Vocabulary', window.location); }}
+                onClick={() => { this.toggle('4'); this.sendGA('Edges Table', window.location); }}
               >
-                Vocabulary
-                        </NavLink>
+                Edges Table
+              </NavLink>
             </NavItem>
             <NavItem>
               <NavLink
                 className={classnames({ active: this.state.activeTab === '5' })}
-                onClick={() => { this.toggle('5'); this.sendGA('Help', window.location); }}
+                onClick={() => { this.toggle('5'); this.sendGA('Vocabulary', window.location); }}
+              >
+                Vocabulary
+              </NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink
+                className={classnames({ active: this.state.activeTab === '6' })}
+                onClick={() => { this.toggle('6'); this.sendGA('Help', window.location); }}
               >
                 Help
-                        </NavLink>
+              </NavLink>
             </NavItem>
           </Nav>
-          <TabContent activeTab={this.state.activeTab} >
+          <TabContent activeTab={this.state.activeTab} style={{height:'100%',overflow: 'hidden', backgroundColor: 'rgba(0,0,0,0.1)'}}>
             <TabPane tabId="1">
             </TabPane>
             <TabPane tabId="2">
+              <FiltersPanel tableHeight={tableHeight} />
+            </TabPane>
+            <TabPane tabId="3">
               <Row>
                 <Col sm="12">
                   <NodeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates}/>
                 </Col>
               </Row>
             </TabPane>
-            <TabPane tabId="3">
+            <TabPane tabId="4">
               <Row>
                 <Col sm="12">
                   <EdgeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates} />
                 </Col>
               </Row>
             </TabPane>
-            <TabPane tabId="4">
+            <TabPane tabId="5">
               <Row>
                 <Col sm="12">
                   <Vocabulary tableHeight={tableHeight} />
                 </Col>
               </Row>
             </TabPane>
-            <TabPane tabId="5">
+            <TabPane tabId="6">
               <Row>
                 <Col sm="12">
                   <Help />
@@ -226,13 +250,17 @@ class InfoPanel extends UNISYS.Component {
 
         <div id='dragger' hidden={hideDragger}
           style={{
-            top: draggerTop,
-            position: 'absolute', width: '100%', height: '10px', backgroundColor: 'gray',
+            position: 'relative', top: '0px', left: '0px', right: '0px', height: '10px', backgroundColor: 'gray',
             cursor: 'ns-resize'
           }}
           onMouseDown={this.handleMouseDown}
         ></div>
 
+        <div hidden={!hideDragger || filtersSummary===''}
+          style={{ padding: '3px', fontSize: '0.8em', color:'#999', backgroundColor:'#eef'}}
+        >
+          FILTERED BY: {filtersSummary}
+        </div>
       </div>
     );
   }

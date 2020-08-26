@@ -1,14 +1,7 @@
 {
 
-  "_comments":  [ "/// NetCreate Template File                                                             ///",
-                  "/// RELEASE NOTES: As of 8/13/2020, a 'type' specification needs to added to each       ///",
-                  "///     nodePrompt and edgePrompt for filters to work.  Valid types are:                ///",
-                  "///     'string', 'number', 'select', and 'node'.  The 'node' type is only valid for    ///",
-                  "///     'source' and 'target' objects for edges.                                        ///",
-                  "/// RELEASE NOTES: As of 8/7/2020, the following functionality is available:            ///",
-                  "///  * `requireLogin: true` will require users to login to view graphs.  If the         ///",
-                  "///     parameter is `false` or missing, graphs are public, and login is not required   ///",
-                  "/// RELEASE NOTES: As of 1/31/2019, the following functionality is available:           ///",
+  "_comments":  [ "/// NetCreate Template File ///",
+                  "/// IMPORTANT: As of 1/31/2019, the following functionality is available:               ///",
                   "///  * `label` parameter for each field may be customized                               ///",
                   "///  * `hidden` parameter may be used to hide fields                                    ///",
                   "///  * changing the order of the `options` WILL change their order on selections        ///",
@@ -19,32 +12,22 @@
                   "/// The rest of the definitions are there as placeholders for future functionality      ///"
   ],
 
-  "name":        "Blank",
+  "name":        "Tacitus",
 
-  "description": "This graph left intentionally blank for serving static files.",
+  "description": "Tacitus with all genders included in a single Person node type",
 
-  "requireLogin": true,
-
-  "citationPrompts":{
-                "citation": "Citation Text",
-                "hidden": false
-    },
 
   "nodePrompts": {
     "label": {
-                "type":     "string",
                 "label":    "Label",
                 "help":     "A short title for the node",
-                "includeInGraphTooltip":  true,
                 "duplicateWarning": "You’re entering a duplicate node.  Do you want to View the Existing node, or Continue creating?",
                 "sourceNodeIsLockedMessage": "This node is currently being edited by someone else, please try again later.",
                 "_cmt4":    "/// `Label` is always required and cannot be hidden"
              },
     "type":  {
-                "type":     "select",
                 "label":    "Type",
                 "help":     "Multiple people are a 'Group'",
-                "includeInGraphTooltip":  true,
                 "hidden":   false,
                 "options": [
                   {
@@ -56,59 +39,46 @@
                   {
                     "id":    "person",
                     "label": "Person",
-                    "color": "#aabaf2"
+                    "color": "#e5ccff"
                   },
                   {
-                    "id":    "group",
-                    "label": "Group",
-                    "color": "#3399FF"
+                    "id":    "object",
+                    "label": "Object",
+                    "color": "#253494"
+                  },
+                  {
+                    "id":    "context",
+                    "label": "Contextual info",
+                    "color": "#41b6c4"
                   },
                   {
                     "id":    "place",
                     "label": "Place",
-                    "color": "#00FF00"
+                    "color": "#2c7fb8"
                   },
                   {
-                    "id":    "thing",
-                    "label": "Thing",
-                    "color": "#FF0000"
-                  },
-                  {
-                    "id":    "event",
-                    "label": "Event",
-                    "color": "#009999"
+                    "id":    "tag",
+                    "label": "Tag",
+                    "color": "#a1dab4"
                   }
                 ]
              },
     "degrees": {
-      "type": "number",
       "label": "Degrees",
       "help": "Number of edges.",
-      "includeInGraphTooltip":  true,
       "hidden": false
     },
     "notes": {
-                "type": "string",
                 "label": "Significance",
-                "help": "Add some details.",
-                "includeInGraphTooltip":  true,
+                "help":  "Add some details.",
                 "hidden": false
               },
     "info":  {
-                "type": "number",
                 "label": "Geocode or Date",
                 "help":  "Use latitude/longitude or a date mm/dd/yyy",
-                "includeInGraphTooltip":  true,
                 "hidden": true
               },
-    "updated":{
-                "type": "string",
-                "label": "Last update",
-                "includeInGraphTooltip": true,
-                "_cmt4": "//updated is included in the edge tables if in admin mode, and in the graph tooltip  if indicated here. Probably those should be more consistent."
-              },
     "delete": {
-      "type": "hidden",
       "hidden": false
     }
   },
@@ -118,13 +88,11 @@
   "edgePrompts": {
     "edgeIsLockedMessage": "This edge is currently being edited by someone else, please try again later.",
     "source":   {
-                  "type": "node",
                   "label": "Source",
                   "help":  "",
                   "hidden": false
                 },
     "type":     {
-                  "type": "select",
                   "label": "Type",
                   "help":  "",
                   "hidden": false,
@@ -134,60 +102,58 @@
                       "label": ""
                     },
                     {
-                      "id":    "peaceful",
-                      "label": "has peaceful, familial or conversational interaction with"
+                      "id":    "part",
+                      "label": "is part of"
                     },
                     {
-                      "id":    "martial",
-                      "label": "has martial or adversarial interaction with"
+                      "id":    "familial",
+                      "label": "has a familial tie with"
                     },
                     {
-                      "id":    "writes",
-                      "label": "sends written communication to"
+                      "id":    "cultural",
+                      "label": "has a cultural tie with"
                     },
                     {
-                      "id":    "member",
-                      "label": "is a group member of"
+                      "id":    "artistic",
+                      "label": "has an artistic tie with"
                     },
                     {
-                      "id":    "participate",
-                      "label": "participates in"
+                      "id":    "institutional",
+                      "label": "has an institutional tie with"
                     },
                     {
-                      "id":    "visit",
-                      "label": "makes visit to"
+                      "id":    "representation",
+                      "label": "is a representation of"
+                    },
+                    {
+                      "id":    "community",
+                      "label": "has a community tie with"
+                    },
+                    {
+                      "id":    "located",
+                      "label": "is located in"
                     }
                   ]
                 },
     "target":   {
-                  "type": "node",
                   "label": "Target",
                   "help":  "",
                   "hidden": false
                 },
     "notes":    {
-                  "type": "string",
                   "label": "Signficance",
                   "help":  "",
                   "hidden": false
                 },
     "info":     {
-                  "type": "number",
                   "label": "Approximate Date of Interaction",
                   "help":  "",
-                  "hidden": false
+                  "hidden": true
                 },
     "citation": {
-                  "type": "string",
-                  "label": "Citations",
+                  "label": "Citation",
                   "help":  "Enter Chapter number.",
                   "hidden": false
-                },
-    "category":     {
-                  "type": "string",
-                  "label": "Category",
-                  "help":  "",
-                  "hidden": true
                 }
   }
 

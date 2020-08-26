@@ -75,8 +75,8 @@ module.exports = {
   a callback function that is invoked when the server is done initializing.
   It should return an object with a close() method (as ExpressJS app does)
 /*/ server: {
-      // viewing url is http://localhost:3000
-      port   : 3000
+      // viewing url is http://localhost:3000 by default, unless overridden by nc.js
+      port   : parseInt(NC_CONFIG.port)
     },
 
 /// NPM INTEGRATION ///////////////////////////////////////////////////////////
@@ -96,6 +96,14 @@ module.exports = {
       onCompile() {
         console.log(`\n*** NetCreate is running (dev mode) ***\n`);
       }
+    },
+
+/// STORYBOOK COMPATIBILITY ///////////////////////////////////////////////////
+/*/ Storybook uses spread operators, which are not supported in the current
+    version of brunch-babel.  Brunch doesn't need to compile storybook files
+    anyway because storybook has its own compile via webpack.  So ignore them.
+/*/ conventions: {
+      ignored: [ /\.stories.js$/]
     },
 
 /// OVERRIDES FOR PRODUCTION //////////////////////////////////////////////////

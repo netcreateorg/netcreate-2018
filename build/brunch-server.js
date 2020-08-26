@@ -23,6 +23,7 @@ const DP         = PROMPTS.Stars(3);
 const GIT        = PROMPTS.Pad('GIT');
 var   UKEY_IDX   = 0;
 const USRV_START = new Date(Date.now()).toISOString();
+const NC_CONFIG  = require("./app/assets/netcreate-config");
 
 /// BRUNCH CUSTOM SERVER START FUNCTION ///////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,7 +33,8 @@ module.exports = (config, callback) => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ This happens early because we need to inject UNISYS connection parameters
   into index.ejs
-/*/ let unetOptions = UNISYS.InitializeNetwork();
+/*/ let nc_options = { port: NC_CONFIG.netport };
+    let unetOptions = UNISYS.InitializeNetwork( nc_options );
 
 /// CONFIGURE EXPRESS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -54,8 +56,16 @@ module.exports = (config, callback) => {
     APP.get('/', function(req, res, next) {
       // gather important information for client so it
       // can establish a socket connection to UNISYS
-      let uaddr = IP.address();      // this server LAN ip
-      let hostip = IP.address();     // this gets copied to server properties to
+      let uaddr;
+      let hostip;
+      let ipOverride = NC_CONFIG.ip;
+      if (ipOverride) {
+        uaddr = ipOverride;
+        hostip = ipOverride;
+      } else {
+        uaddr = IP.address();      // this server LAN ip
+        hostip = IP.address();     // this gets copied to server properties to
+      }
       let uport = unetOptions.port;  // unisys listening port
       let { ip, hostname } = req;    // remote ip, hostname
       // rewrite shortcut localhost into long form
@@ -95,8 +105,15 @@ module.exports = (config, callback) => {
       // setup prompts
       console.log(PR);
       console.log(PR,DP,'GO TO ONE OF THESE URLS in CHROME WEB BROWSER',DP);
-      console.log(PR,DP,'MAINAPP - http://localhost:'+config.port);
-      console.log(PR,DP,'CLIENTS - http://'+IP.address()+':'+config.port);
+      console.log(PR, DP, 'MAINAPP - http://localhost:' + config.port);
+
+      let ipOverride = NC_CONFIG.ip;
+      if (ipOverride) {
+        console.log(PR,DP,'CLIENTS - http://'+ipOverride+':'+config.port);
+      } else {
+        console.log(PR,DP,'CLIENTS - http://'+IP.address()+':'+config.port);
+      }
+
       console.log(PR);
       // git branch information
       EXEC('git symbolic-ref --short -q HEAD',(error,stdout,stderr) => {

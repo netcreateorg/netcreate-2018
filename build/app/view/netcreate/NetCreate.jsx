@@ -49,7 +49,7 @@ const Search       = require('./components/Search');
 const NodeSelector = require('./components/NodeSelector');
 const InfoPanel    = require('./components/InfoPanel');
 const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
-
+const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -58,6 +58,11 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
       constructor () {
         super();
         UNISYS.ForceReloadOnNavigation();
+        this.state = {
+          isConnected: true,
+          isLoggedIn: false,
+          requireLogin: this.AppState('TEMPLATE').requireLogin
+        };
         this.OnDOMReady(()=>{
           if (DBG) console.log(PR,'OnDOMReady');
         });
@@ -73,9 +78,20 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
         this.OnRun(()=>{
           if (DBG) console.log(PR,'OnRun');
         });
+        this.OnDisconnect(()=>{
+          this.setState({ isConnected: false });
+        });
+        this.onStateChange_SESSION = this.onStateChange_SESSION.bind(this);
+        this.OnAppStateChange('SESSION',this.onStateChange_SESSION);
       }
 
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ SESSION is called by SessionShell when the ID changes
+      Show or hide netgraph depending on template settings.
+  /*/ onStateChange_SESSION( decoded ) {
+        this.setState({ isLoggedIn: decoded.isValid });
+      }
 
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
@@ -87,26 +103,39 @@ const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
         let dragger = document.getElementById('dragger');
         dragger.onmousedown = this.handleMouseDown;
       }
+
+      componentWillUnmount() {
+        this.AppStateChangeOff('SESSION',this.onStateChange_SESSION);
+      }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Define the component structure of the web application
   /*/ render() {
+    const { isLoggedIn } = this.state;
+        let hideGraph = false;
+        if (this.state.requireLogin && !isLoggedIn) hideGraph = true;
         return (
           <div>
-            <div style={{display:'flex', flexFlow:'row nowrap',
+            <div hidden={this.state.isConnected} style={{ width:'100%',height:'38px',position:'fixed',backgroundColor:'rgba(256,0,0,0.5',display:'flex',flexDirection:'column',justifyContent:'space-evenly',alignItems:'center',zIndex:'3000'}}>
+              <div style={{color:'#fff',width:'100%',textAlign:'center'}}>
+                <b>Server Disconnected!</b> Your changes will not be saved!  Please contact your administrator to restart the graph.
+              </div>
+            </div>
+            <Route path='/edit/:token' exact={true} component={SessionShell}/>
+            <Route path='/edit' exact={true} component={SessionShell}/>
+            <Route path='/' exact={true} component={SessionShell}/>
+            <div hidden={hideGraph} style={{display:'flex', flexFlow:'row nowrap',
                 width:'100%', height:'100vh',overflow:'hidden'}}>
-              <div id="left" style={{backgroundColor:'#EEE',flex:'1 1 25%',maxWidth:'400px',padding:'10px',overflow:'scroll',marginTop:'56px'}}>
+              <div id="left" style={{backgroundColor:'#EEE',flex:'1 1 25%',maxWidth:'400px',padding:'10px',overflow:'scroll',marginTop:'38px'}}>
                 <div style={{display:'flex',flexFlow:'column nowrap'}}>
-                  <Route path='/edit/:token' exact={true} component={SessionShell}/>
-                  <Route path='/edit' exact={true} component={SessionShell}/>
-                  <Route path='/' exact={true} component={SessionShell}/>
                   <Search/>
                   <NodeSelector/>
                 </div>
               </div>
-              <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 60%', padding:'10px',marginTop:'56px'}}>
+              <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 60%',marginTop:'38px'}}>
                 <InfoPanel/>
                 <NetGraph/>
-                <div style={{fontSize:'10px',position:'absolute',left:'0px',bottom:'0px',zIndex:'1500',color:'#aaa',backgroundColor:'#eee',padding:'5px 10px'}}>Please contact Professor
+                <div style={{fontSize:'10px',position:'fixed',left:'0px',bottom:'0px',right:'0px',zIndex:'1500',color:'#aaa',backgroundColor:'#eee',padding:'5px 10px'}}>Please contact Professor
                 Kalani Craig, Institute for Digital Arts & Humanities at
                 (812) 856-5721 (BH) or
                 craigkl@indiana.edu with questions or concerns and/or to

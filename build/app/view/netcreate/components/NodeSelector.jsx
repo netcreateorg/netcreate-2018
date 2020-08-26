@@ -227,7 +227,7 @@ class NodeSelector extends UNISYS.Component {
         let updatedNodeID = data.node.id;
         if (currentNodeID === updatedNodeID) needsUpdate = true;
         this.state.edges.forEach(edge => {
-          if ((edge.source.id === updatedNodeID) || (edge.target.id === updatedNodeID)) needsUpdate = true;
+          if ((edge.source && edge.source.id === updatedNodeID) || (edge.target && edge.target.id === updatedNodeID)) needsUpdate = true;
         })
         if (needsUpdate) {
           if (DBG) console.log('NodeSelector.SOURCE_UPDATE triggering SOURCE_SELECT with', currentNodeID)
@@ -288,6 +288,43 @@ class NodeSelector extends UNISYS.Component {
         }
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Handler for canceling a new edge
+      Called by EdgeEditor
+      Normally we would just use SOURCE_SELECT to reload the node.
+      There are two issues with just using SOURCE_SELECT:
+      1. This special handler is necessary because the newly added edge
+         component is not affected by updates to this.state.edges.  Its key
+         is not in the this.state.edges array, so it is not properly cleared
+         even if we use SOURCE_SELECT to reset the node.
+      2. In order for `handleSelection` to properly reload all the edges,
+         two states have to be cleared first: this node needs to NOT be
+         the ACTIVEAUTOCOMPLETE field, and this node's edges need to be
+         EDGEEDIT_UNLOCKed.  The problem is that these states are set
+         asynchronously, so `handleSelection` ends up getting called
+         before the states are updated.
+      To fix this, we use setState's callback to trigger the reload.
+
+      Call this with no data object to trigger deselect.  Used when
+      source is deleted by admin user.
+  /*/
+      UDATA.HandleMessage("EDGE_NEW_CANCEL", data => {
+        if (data.nodeID === this.state.formData.id) {
+          this.setState({ edgesAreLocked: false }, () => {
+            // Do this in callback, otherwise, edges are not unlocked
+            // and the source_select never triggers an update
+            UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [this.state.formData.id] });
+          });
+        } else {
+          // Edge is requesting a SOURCE deselect because the source
+          // node was deleted by admin
+          this.setState({ edgesAreLocked: false }, () => {
+            // Do this in callback, otherwise, edges are not unlocked
+            // and the source_select never triggers an update
+            UDATA.LocalCall('SOURCE_SELECT');  // Deselect
+          });
+        }
+      });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // This handler is not necessary because SELECTION event clears the form
       // UDATA.HandleMessage("NODE_DELETE", (data) => {
       // });
@@ -305,6 +342,14 @@ class NodeSelector extends UNISYS.Component {
         this.setState({ edgesAreLocked: false });
       });
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Prevent editing if server is disconnected.
+      This is necessary to hide the "Add New Node" button.
+  /*/
+      this.OnDisconnect(() => {
+        console.log('NodeSelector got disconnect')
+        this.setState({ isLocked: true });
+      });
 
     } // constructor
 
@@ -879,7 +924,7 @@ class NodeSelector extends UNISYS.Component {
       }
         return (
         <div>
-          <FormGroup className="text-right" style={{paddingRight:'5px'}}>
+          <FormGroup className="text-right" style={{marginTop:'-35px',paddingRight:'5px'}}>
             <Button outline size="sm"
               hidden={this.state.isLocked || this.state.isEditable}
               onClick={this.onNewNodeButtonClick}
@@ -889,7 +934,7 @@ class NodeSelector extends UNISYS.Component {
             onSubmit={this.onSubmit}>
             <FormText><b>NODE {this.state.formData.id||''}</b></FormText>
             <FormGroup row>
-              <Col sm={3}>
+              <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                 <Label for="nodeLabel" className="tooltipAnchor small text-muted">
                 <i className="fas fa-question-circle"></i>{nodePrompts.label.label}<span className="tooltiptext">{this.helpText(nodePrompts.label)}</span></Label>
               </Col>
@@ -912,7 +957,7 @@ class NodeSelector extends UNISYS.Component {
               <NodeDetail/>
             </div>
             <FormGroup row hidden={nodePrompts.type.hidden}>
-              <Col sm={3}>
+              <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                 <Label for="type" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{nodePrompts.type.label}<span className="tooltiptext">{this.helpText(nodePrompts.type)}</span></Label>
               </Col>
               <Col sm={9}>
@@ -928,7 +973,7 @@ class NodeSelector extends UNISYS.Component {
               </Col>
             </FormGroup>
             <FormGroup row hidden={nodePrompts.notes.hidden}>
-              <Col sm={3}>
+              <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                 <Label for="notes" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{nodePrompts.notes.label}<span className="tooltiptext">{this.helpText(nodePrompts.notes)}</span></Label>
               </Col>
               <Col sm={9}>
@@ -942,7 +987,7 @@ class NodeSelector extends UNISYS.Component {
               </Col>
             </FormGroup>
             <FormGroup row hidden={nodePrompts.info.hidden}>
-              <Col sm={3}>
+              <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                 <Label for="info" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{nodePrompts.info.label}<span className="tooltiptext">{this.helpText(nodePrompts.info)}</span></Label>
               </Col>
               <Col sm={9}>
@@ -1015,6 +1060,7 @@ class NodeSelector extends UNISYS.Component {
                 edgeID={edge.id}
                 key={edge.id}
                 parentNodeLabel={this.state.formData.label}
+                parentNodeIsLocked={this.state.isLocked}
               />
             ))}
             <FormGroup className="text-right">
