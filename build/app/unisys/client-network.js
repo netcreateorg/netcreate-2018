@@ -180,6 +180,7 @@ function m_ResetHearbeatTimer() {
   m_hearbeat_timer = setTimeout(function heartbeatStopped() {
     if (DBG.handle) console.log(PR, 'ping heartbeat not received from server before time ran out -- YOURE DEAD!');
     NetMessage.GlobalOfflineMode({ message: "Client Disconnected" });
+  }, DEFS.SERVER_HEARTBEAT_INTERVAL * 2);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_HandleMessage(msgEvent) {

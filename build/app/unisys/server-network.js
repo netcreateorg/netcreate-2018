@@ -219,7 +219,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
         if (DBG) console.log(PR, uaddr, 'pong not received before time ran out -- CONNECTION DEAD!');
         LOGGER.Write(PR, 'pong not received before time ran out -- CLIENT CONNECTION DEAD!');
         DB.RequestUnlock(uaddr);
-      }, DEFS.SERVER_HEARTBEAT_INTERVAL + 1000);
+      }, DEFS.SERVER_HEARTBEAT_INTERVAL * 2);
     }
 
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
