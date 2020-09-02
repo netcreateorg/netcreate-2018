@@ -103,9 +103,10 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
       }
 
       onDisconnect(e) {
+        const time = new Date().toLocaleTimeString();
         this.setState({
           isConnected: false,
-          disconnectMsg: e.detail.message
+          disconnectMsg: `${e.detail.message} ${time}`
         });
       }
 
