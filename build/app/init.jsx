@@ -56,13 +56,21 @@ document.addEventListener("DOMContentLoaded", () => {
 /// UNISYS LIFECYCLE CLOSE EVENT //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ this custom event accesses post-run lifecycles defined for 'DOMContentLoaded'
+    `event` is originated by `comment-netmessage-class.GlobalOfflineMode
+    with a custom event message coming from client-network.m_ResetHearbeatTimer
+    This is so we can display an error to the user explaining the disconnect
 /*/
-document.addEventListener("UNISYSDisconnect", () => {
+document.addEventListener("UNISYSDisconnect", (event) => {
   console.log(
     "%cDISCONNECT %cUNISYSDisconnect. Closing UNISYS Lifecycle!",
     "color:blue",
     "color:auto"
   );
+  // This call will fail if the server is disconnected.
+  UNISYS.Log('Server disconnected with error', event);
+  // hack a local module for now
+  let UDATA = UNISYS.NewDataLink({});
+  UDATA.LocalCall('DISCONNECT', event);
   (async () => {
     await UNISYS.ServerDisconnect(); // UNISYS has dropped server
     console.log(

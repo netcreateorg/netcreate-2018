@@ -178,9 +178,8 @@ function m_RespondToHeartbeat() {
 function m_ResetHearbeatTimer() {
   clearTimeout(m_hearbeat_timer);
   m_hearbeat_timer = setTimeout(function heartbeatStopped() {
-    if (DBG.handle) console.log(PR, 'heartbeat not received before time ran out -- YOURE DEAD!');
-    NetMessage.GlobalOfflineMode();
-  }, DEFS.SERVER_HEARTBEAT_INTERVAL + 1000);
+    if (DBG.handle) console.log(PR, 'ping heartbeat not received from server before time ran out -- YOURE DEAD!');
+    NetMessage.GlobalOfflineMode({ message: "Client Disconnected" });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_HandleMessage(msgEvent) {

@@ -394,12 +394,23 @@ NetMessage.GlobalCleanup = function() {
 /*/ cleanup any allocated storage internally. This class operates both under the
     server and the client. This is a client feature.
 /*/
-NetMessage.GlobalOfflineMode = function() {
+NetMessage.GlobalOfflineMode = function(data) {
   m_mode = M_STANDALONE;
   if (m_netsocket) {
     console.warn(PR, "STANDALONE MODE: NetMessage disabling network");
     m_netsocket = null;
-    let event = new CustomEvent("UNISYSDisconnect", {});
+    // The disconnect is detected by client-network.js.
+    // If the disconnect is due to a missing ping heartbeat from the server
+    // (usually as a result of wifi/internet connection going down)
+    // it will include a data.message explaining 'Client Disconnect'.
+    // If there's no data.message, then this request came from
+    // either a standalone connect, a server "close" event,
+    // or a server "error" event.
+    let event = new CustomEvent("UNISYSDisconnect", {
+      detail: {
+        message: data ? data.message : "Server Disconnected"
+      }
+    });
     console.log("dispatching event to", document, event);
     document.dispatchEvent(event);
   }
