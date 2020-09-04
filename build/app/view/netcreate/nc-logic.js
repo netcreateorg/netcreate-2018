@@ -173,27 +173,29 @@ MOD.Hook("LOADASSETS", () => {
     }
     // don't use cache, but instead try loading standalone files
     console.warn(PR,"STANDALONE MODE: 'LOADASSETS' is using files (USE_CACHE=false)");
-
     // added by Joshua to check for alternative datasets in the folder
     let urlParams = new URLSearchParams(window.location.search);
     let dataset = urlParams.get('dataset');
     if(dataset == null) dataset = "standalone";
-
-    let p1 = DATASTORE.PromiseJSONFile("data/" + dataset + "-db.json")
-    .then(data => {
-      m_ConvertData(data);
-      m_RecalculateAllEdgeWeights(data);
-      UDATA.SetAppState("D3DATA", data);
-      // Save off local reference because we don't have D3DATA AppStateChange handler
-      D3DATA = data;
+    return new Promise((resolve) => {
+      (async () => {
+        let p1 = await DATASTORE.PromiseJSONFile("data/" + dataset + "-db.json")
+          .then(data => {
+            m_ConvertData(data);
+            m_RecalculateAllEdgeWeights(data);
+            UDATA.SetAppState("D3DATA", data);
+            // Save off local reference because we don't have D3DATA AppStateChange handler
+            D3DATA = data;
+          });
+        // load template
+        let p2 = await DATASTORE.PromiseJSONFile("data/" + dataset + "-template.json")
+          .then(data => {
+            TEMPLATE = data;
+            UDATA.SetAppState("TEMPLATE", TEMPLATE);
+          });
+        resolve();
+      })();
     });
-    // load template
-    let p2 = DATASTORE.PromiseJSONFile("data/" + dataset + "-template.json")
-    .then(data => {
-      TEMPLATE = data;
-      UDATA.SetAppState("TEMPLATE", TEMPLATE);
-    });
-    return Promise.all([p1,p2]);
   }
   // if got this far...
   // NOT STANDALONE MODE so load data into D3DATA
