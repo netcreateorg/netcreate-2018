@@ -155,7 +155,7 @@ class InfoPanel extends UNISYS.Component {
   /*/
   /*/
   render() {
-    let { tabpanelHeight, tableHeight, hideDragger, draggerTop, bIgnoreTableUpdates, filtersSummary} = this.state;
+    let { activeTab, tabpanelHeight, tableHeight, hideDragger, draggerTop, bIgnoreTableUpdates, filtersSummary} = this.state;
     //send flag in with tableheight
     return (
       <div>
@@ -164,7 +164,7 @@ class InfoPanel extends UNISYS.Component {
           <Nav tabs>
             <NavItem>
               <NavLink
-                className={classnames({ active: this.state.activeTab === '1' })}
+                className={classnames({ active: activeTab === '1' })}
                 onClick={() => { this.toggle('1'); this.sendGA('Graph', window.location); } }
               >
                 Graph
@@ -172,7 +172,7 @@ class InfoPanel extends UNISYS.Component {
             </NavItem>
             <NavItem>
               <NavLink
-                className={classnames({ active: this.state.activeTab === '2' })}
+                className={classnames({ active: activeTab === '2' })}
                 onClick={() => { this.toggle('2'); this.sendGA('Filter', window.location); }}
               >
                 Filters
@@ -180,7 +180,7 @@ class InfoPanel extends UNISYS.Component {
             </NavItem>
             <NavItem>
               <NavLink
-                className={classnames({ active: this.state.activeTab === '3' })}
+                className={classnames({ active: activeTab === '3' })}
                 onClick={() => { this.toggle('3'); this.sendGA('Nodes Table', window.location); }}
               >
                 Nodes Table
@@ -188,7 +188,7 @@ class InfoPanel extends UNISYS.Component {
             </NavItem>
             <NavItem>
               <NavLink
-                className={classnames({ active: this.state.activeTab === '4' })}
+                className={classnames({ active: activeTab === '4' })}
                 onClick={() => { this.toggle('4'); this.sendGA('Edges Table', window.location); }}
               >
                 Edges Table
@@ -196,7 +196,7 @@ class InfoPanel extends UNISYS.Component {
             </NavItem>
             <NavItem>
               <NavLink
-                className={classnames({ active: this.state.activeTab === '5' })}
+                className={classnames({ active: activeTab === '5' })}
                 onClick={() => { this.toggle('5'); this.sendGA('Vocabulary', window.location); }}
               >
                 Vocabulary
@@ -204,14 +204,14 @@ class InfoPanel extends UNISYS.Component {
             </NavItem>
             <NavItem>
               <NavLink
-                className={classnames({ active: this.state.activeTab === '6' })}
+                className={classnames({ active: activeTab === '6' })}
                 onClick={() => { this.toggle('6'); this.sendGA('Help', window.location); }}
               >
                 Help
               </NavLink>
             </NavItem>
           </Nav>
-          <TabContent activeTab={this.state.activeTab} style={{height:'100%',overflow: 'hidden', backgroundColor: 'rgba(0,0,0,0.1)'}}>
+          <TabContent activeTab={activeTab} style={{height:'100%',overflow: 'hidden', backgroundColor: 'rgba(0,0,0,0.1)'}}>
             <TabPane tabId="1">
             </TabPane>
             <TabPane tabId="2">
@@ -220,14 +220,14 @@ class InfoPanel extends UNISYS.Component {
             <TabPane tabId="3">
               <Row>
                 <Col sm="12">
-                  <NodeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates}/>
+                  {activeTab==="3" && <NodeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates}/> }
                 </Col>
               </Row>
             </TabPane>
             <TabPane tabId="4">
               <Row>
                 <Col sm="12">
-                  <EdgeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates} />
+                  {activeTab==="4" && <EdgeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates} /> }
                 </Col>
               </Row>
             </TabPane>

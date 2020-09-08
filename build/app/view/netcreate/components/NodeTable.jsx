@@ -100,7 +100,6 @@ class NodeTable extends UNISYS.Component {
       this.OnAppStateChange('TEMPLATE',(data) => {
         this.setState({nodePrompts: data.nodePrompts});
       });
-
     } // constructor
 
 
@@ -109,7 +108,7 @@ class NodeTable extends UNISYS.Component {
 /*/ Handle updated SELECTION
 /*/
 handleDataUpdate(data) {
-  if(data.bMarkedNode)
+  if (data.bMarkedNode)
       {
         //data.bMarkedNode = false;
         // counting on the edge table going second, which is sloppy
@@ -118,23 +117,25 @@ handleDataUpdate(data) {
     else
     {
     if (data.nodes) {
-
-        this.countEdges();
-        this.setState({nodes: data.nodes});
-        this.sortTable();
-      }
+      const edgeCounts = this.countEdges(data.edges);
+      const nodes = this.sortTable('label', data.nodes);
+      this.setState({
+        nodes: nodes,
+        edgeCounts: edgeCounts
+      });
+    }
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Build table of counts
 /*/
-countEdges() {
+countEdges(edges) {
   let edgeCounts = this.state.edgeCounts;
-  this.AppState('D3DATA').edges.forEach( edge => {
-    edgeCounts[edge.source] = edgeCounts[edge.source]!==undefined ? edgeCounts[edge.source]+1 : 1;
-    edgeCounts[edge.target] = edgeCounts[edge.target]!== undefined ? edgeCounts[edge.target]+1 : 1;
-  })
-  this.setState({ edgeCounts: edgeCounts });
+  edges.forEach(edge => {
+    edgeCounts[edge.source] = edgeCounts[edge.source] !== undefined ? edgeCounts[edge.source] + 1 : 1;
+    edgeCounts[edge.target] = edgeCounts[edge.target] !== undefined ? edgeCounts[edge.target] + 1 : 1;
+  });
+  return edgeCounts;
 }
 
 
@@ -209,33 +210,33 @@ countEdges() {
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ If no `sortkey` is passed, the sort will use the existing state.sortkey
-/*/ sortTable ( sortkey=this.state.sortkey) {
-      let nodes = this.state.nodes;
+    Returns the sorted nodes so that the calling function can handle
+    state updates all at once.
+/*/ sortTable ( sortkey=this.state.sortkey, nodes ) {
       switch (sortkey) {
         case 'id':
-          this.sortByID(nodes);
+          return this.sortByID(nodes);
           break;
         case 'edgeCount':
-          this.sortByEdgeCount(nodes);
+          return this.sortByEdgeCount(nodes);
           break;
         case 'type':
-          this.sortByAttribute(nodes, 'Node_Type');
+          return this.sortByAttribute(nodes, 'Node_Type');
           break;
         case 'notes':
-          this.sortByAttribute(nodes, 'Notes');
+          return this.sortByAttribute(nodes, 'Notes');
           break;
         case 'info':
-          this.sortByAttribute(nodes, 'Extra Info');
+          return this.sortByAttribute(nodes, 'Extra Info');
           break;
         case 'Updated':
-          this.sortByUpdated(nodes);
+          return this.sortByUpdated(nodes);
           break;
         case 'label':
         default:
-          this.sortByLabel(nodes);
+          return this.sortByLabel(nodes);
           break;
       }
-      this.setState({nodes: nodes});
     }
 
     sortSymbol(key)
@@ -280,8 +281,8 @@ countEdges() {
       else
           this.sortDirection = 1;
 
-      this.setState({sortkey: key});
-      this.sortTable(key);
+      const nodes = this.sortTable(key, this.state.nodes);
+      this.setState({ sortkey: key, nodes });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -306,7 +307,8 @@ countEdges() {
 /*/
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
-/*/ render () {
+/*/ render() {
+      if (this.state.nodes === undefined) return "";
       let { nodePrompts } = this.state;
       let { tableHeight } = this.props;
       let styles = `thead, tbody {  }
@@ -377,7 +379,11 @@ countEdges() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ componentDidMount () {
-      if (DBG) console.log('NodeTable.componentDidMount!');
+      if (DBG) console.error('NodeTable.componentDidMount!');
+      // Explicitly retrieve data because we may not have gotten a D3DATA
+      // update while we were hidden.
+      let D3DATA = this.AppState('D3DATA');
+      this.handleDataUpdate(D3DATA);
     }
 
 
