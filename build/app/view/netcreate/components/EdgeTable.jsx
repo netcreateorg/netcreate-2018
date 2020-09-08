@@ -117,11 +117,11 @@ class EdgeTable extends UNISYS.Component {
       else
       {
         if (data && data.edges) {
-        this.setState({edges: data.edges});
-        this.sortTable();
+          const edges = this.sortTable(this.state.sortkey, data.edges);
+          this.setState({edges});
+        }
       }
     }
-  }
 
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
@@ -204,42 +204,40 @@ class EdgeTable extends UNISYS.Component {
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ If no `sortkey` is passed, the sort will use the existing state.sortkey
-/*/ sortTable ( sortkey=this.state.sortkey) {
-      let edges = this.state.edges;
+/*/ sortTable ( sortkey=this.state.sortkey, edges) {
       switch (sortkey) {
         case 'id':
-          this.sortByID(edges);
+          return this.sortByID(edges);
           break;
         case 'source':
-          this.sortBySourceLabel(edges);
+          return this.sortBySourceLabel(edges);
           break;
         case 'target':
-          this.sortByTargetLabel(edges);
+          return this.sortByTargetLabel(edges);
           break;
         case 'Relationship':
-          this.sortByAttribute(edges, 'Relationship');
+          return this.sortByAttribute(edges, 'Relationship');
           break;
         case 'Info':
-          this.sortByAttribute(edges, 'Info');
+          return this.sortByAttribute(edges, 'Info');
           break;
         case 'Notes':
-          this.sortByAttribute(edges, 'Notes');
+          return this.sortByAttribute(edges, 'Notes');
           break;
         case 'Category':
-          this.sortByAttribute(edges, 'Category');
+          return this.sortByAttribute(edges, 'Category');
           break;
         case 'Citations':
-          this.sortByAttribute(edges, 'Citations');
+          return this.sortByAttribute(edges, 'Citations');
           break;
         case 'Updated':
-          this.sortByUpdated(edges);
+          return this.sortByUpdated(edges);
           break;
         case 'Relationship':
         default:
-          this.sortByAttribute(edges, 'Relationship');
+          return this.sortByAttribute(edges, 'Relationship');
           break;
       }
-      this.setState({edges});
     }
 
     sortSymbol(key)
@@ -284,8 +282,11 @@ class EdgeTable extends UNISYS.Component {
       else
           this.sortDirection = 1;
 
-      this.setState({sortkey: key});
-      this.sortTable(key);
+      const edges = this.sortTable(key, this.state.edges);
+      this.setState({
+        edges,
+        sortkey: key
+      });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -434,6 +435,10 @@ class EdgeTable extends UNISYS.Component {
 /*/
 /*/ componentDidMount () {
       if (DBG) console.log('EdgeTable.componentDidMount!');
+      // Explicitly retrieve data because we may not have gotten a D3DATA
+      // update while we were hidden.
+      let D3DATA = this.AppState('D3DATA');
+      this.handleDataUpdate(D3DATA);
     }
 
 
