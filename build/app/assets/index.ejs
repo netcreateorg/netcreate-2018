@@ -5,69 +5,68 @@
 		<!-- Required meta tags -->
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		
-		<script src="netcreate-config.js"> 
-		// auto generated netcreate config script
-		</script>
-	
-		<!-- Google Analytics -->
-		<script>
-		    let googlea = NC_CONFIG.googlea;
-		    if(googlea != "0"){
-
-				(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-				(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-				m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-				})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-				ga('create', 'UA-132368455-3', 'auto');
-				ga('send', 'pageview');
-			}
-		</script>
-		<!-- End Google Analytics -->
-
 		<style>
 			body {
 				min-height: 100%
 			}
 		</style>
-			<script>
+		<link rel="stylesheet" href="/styles/netc-app.css" type="text/css">
+	</head>
+	<body>
+		<script src="netcreate-config.js">
+				// auto generated netcreate config script
+		</script>
+		<script>
 			// NC_UNISYS are network parameters
 			if (window.NC_UNISYS) {
-				let err  = `**FATAL ERROR** NC_UNISYS already initialized.\n\n`;
+				let err = `**FATAL ERROR** NC_UNISYS already initialized.\n\n`;
 				err += `Take a screen shot with your phone and report the error!`
 				alert(err);
 				throw Error(err);
 			}
 			window.NC_UNISYS = {
-				client : {
-					ip       : '<%=ip%>',
-					ukey     : '<%=ukey%>'
+				client: {
+					ip: '<%=ip%>',
+					ukey: '<%=ukey%>'
 				},
-				server : {
-					hostname : '<%=hostname%>',
-					ip       : '<%=hostip%>',
-					ustart   : '<%=ustart%>'
+				server: {
+					hostname: '<%=hostname%>',
+					ip: '<%=hostip%>',
+					ustart: '<%=ustart%>'
 				},
-				socket : {
-					uaddr    : '<%=uaddr%>',
-					uport    : '<%=uport%>'
+				socket: {
+					uaddr: '<%=uaddr%>',
+					uport: '<%=uport%>'
 				}
 			};
 			//
 			window.NC_DBG = null; // {} or null
 			if (window.NC_DBG) {
 				Object.assign(window.NC_DBG, {
-					lifecycle : true
+					lifecycle: true
 				});
 			}
 		</script>
 		<script src="/scripts/netc-lib.js"></script>
 		<script src="/scripts/netc-app.js"></script>
-		<link rel="stylesheet" href="/styles/netc-app.css" type="text/css">
-	</head>
-	<body>
-		<div id="app-container"></div>
+		
+		<!-- Google Analytics -->
+		<script>
+			let googlea = NC_CONFIG.googlea;
+			if (googlea != "0") {
+
+				(function (i, s, o, g, r, a, m) {
+					i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+						(i[r].q = i[r].q || []).push(arguments)
+					}, i[r].l = 1 * new Date(); a = s.createElement(o),
+						m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+				})(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+
+				ga('create', 'UA-132368455-3', 'auto');
+				ga('send', 'pageview');
+			}
+		</script>
+		<!-- End Google Analytics -->
 		<script>
 			document.title += ` ${window.NC_CONFIG.dataset} @ ${window.NC_UNISYS.server.ip}`;
 			require("init");
