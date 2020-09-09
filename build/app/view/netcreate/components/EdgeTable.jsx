@@ -24,11 +24,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-// MD React stuff added bt Joshua ... probably could be placed better
-import MDReactComponent from 'markdown-react-js';
-const mdplugins = {
-  emoji: require('markdown-it-emoji')
-};
 
 var DBG = false;
 
@@ -40,30 +35,11 @@ const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1') || (locatio
 const React        = require('react');
 const ReactStrap   = require('reactstrap');
 const { Button, Table }    = ReactStrap;
+const MarkdownNote = require('./MarkdownNote');
 
 const UNISYS   = require('unisys/client');
 var   UDATA    = null;
 
-/// OptMdReact /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-// Optimize the MDReact
-// this should be moved to a separate class / file so it isn't redundant to the one in Edge
-// but this is the easiest for now
-// don't re-render the markup unless the text has actually changed
-class OptMdReact extends MDReactComponent {
-  shouldComponentUpdate(np,ns)
-  {
-    let bReturn = true;
-    if(this.text == np.text)
-        bReturn = false;
-    else
-      this.text = np.text;
-
-    return bReturn;
-  }
-
-}
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -421,7 +397,9 @@ class EdgeTable extends UNISYS.Component {
                     >{edge.target.label || edge.target}</a></td>
                 <td hidden={edgePrompts.category.hidden}>{edge.attributes["Category"]}</td>
                 <td hidden={edgePrompts.citation.hidden}>{edge.attributes["Citations"]}</td>
-                <td hidden={edgePrompts.notes.hidden}><OptMdReact text={edge.attributes["Notes"]} onIterate={this.markdownIterate} markdownOptions={{typographer: true, linkify: true}} plugins={[mdplugins.emoji]}/></td>
+                <td hidden={edgePrompts.notes.hidden}>
+                  {edge.attributes["Notes"] ? <MarkdownNote text={edge.attributes["Notes"]} /> : "" }
+                </td>
                 <td hidden={edgePrompts.info.hidden}>{edge.attributes["Info"]}</td>
                 <td hidden={!isLocalHost}>{this.displayUpdated(edge)}</td>
               </tr>
@@ -440,16 +418,6 @@ class EdgeTable extends UNISYS.Component {
       let D3DATA = this.AppState('D3DATA');
       this.handleDataUpdate(D3DATA);
     }
-
-
-    markdownIterate(Tag, props, children, level){
-  if (Tag === 'a') {
-    props.target = '_blank';
-    }
-
-  return <Tag {...props}>{children}</Tag>;
-
-}
 
   displayUpdated(nodeEdge)
   {

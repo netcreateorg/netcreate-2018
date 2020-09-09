@@ -23,12 +23,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-// MD React stuff added by Joshua ... probably could be placed better
-import MDReactComponent from 'markdown-react-js';
-const mdplugins = {
-  emoji: require('markdown-it-emoji')
-};
-
 var DBG = false;
 
 const SETTINGS     = require('settings');
@@ -40,30 +34,10 @@ const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1') || (locatio
 const React        = require('react');
 const ReactStrap   = require('reactstrap');
 const { Button, Table }    = ReactStrap;
-
+const MarkdownNote = require('./MarkdownNote');
 const UNISYS   = require('unisys/client');
 var   UDATA    = null;
 
-/// OptMdReact /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-// Optimize the MDReact
-// this should be moved to a separate class / file so it isn't redundant to the one in Edge
-// but this is the easiest for now
-// don't re-render the markup unless the text has actually changed
-class OptMdReact extends MDReactComponent {
-  shouldComponentUpdate(np,ns)
-  {
-    let bReturn = true;
-    if(this.text == np.text)
-        bReturn = false;
-    else
-      this.text = np.text;
-
-    return bReturn;
-  }
-
-}
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -206,7 +180,6 @@ countEdges(edges) {
         });
       }
       return undefined;
-
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ If no `sortkey` is passed, the sort will use the existing state.sortkey
@@ -307,75 +280,79 @@ countEdges(edges) {
 /*/
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
-/*/ render() {
-      if (this.state.nodes === undefined) return "";
-      let { nodePrompts } = this.state;
-      let { tableHeight } = this.props;
-      let styles = `thead, tbody {  }
-                    thead { position: relative; }
-                    tbody { overflow: auto; }
-                    `
-      return (
-         <div style={{overflow:'auto',
-                     position:'relative',display: 'block', right:'10px',maxHeight: tableHeight, backgroundColor:'#eafcff'
-             }}>
-          <style>{styles}</style>
-          <Button size="sm" outline hidden
-            onClick={this.onToggleExpanded}
-          >{this.state.isExpanded ? "Hide Node Table" : "Show Node Table"}</Button>
-          <Table hidden={!this.state.isExpanded} hover size="sm"
-                 responsive striped
-                 className="nodetable w-auto"
-          >
-            <thead>
-              <tr>
-                <th width="4%"><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
-                <th width="12%"><Button size="sm"
-                      onClick={() => this.setSortKey("edgeCount")}
-                    >{nodePrompts.degrees.label} {this.sortSymbol("edgeCount")}</Button></th>
-                <th width="15%"><Button size="sm"
-                      onClick={()=>this.setSortKey("label")}
-                    >{nodePrompts.label.label} {this.sortSymbol("label")}</Button></th>
-                <th width="15%"hidden={nodePrompts.type.hidden}>
-                    <Button size="sm"
-                      onClick={()=>this.setSortKey("type")}
-                    >{nodePrompts.type.label} {this.sortSymbol("type")}</Button></th>
-                <th width="26%"hidden={nodePrompts.info.hidden}>
-                    <Button size="sm"
-                      onClick={()=>this.setSortKey("info")}
-                    >{nodePrompts.info.label} {this.sortSymbol("info")}</Button></th>
-                <th width="26%" hidden={nodePrompts.notes.hidden}>
-                    <Button size="sm"
-                      onClick={()=>this.setSortKey("notes")}
-                    >{nodePrompts.notes.label} {this.sortSymbol("notes")}</Button></th>
-                <th  width="20%"hidden={!isLocalHost}><Button size="sm"
-                      onClick={()=>this.setSortKey("Updated")}
-                    >Updated {this.sortSymbol("Updated")}</Button></th>
-              </tr>
-            </thead>
-            <tbody style={{maxHeight: tableHeight}}>
-            {this.state.nodes.map( (node,i) =>
-              <tr key={i}>
-                <td><Button size="sm" outline
-                      value={node.id}
-                      onClick={this.onButtonClick}
-                    >Edit</Button>
-                </td>
-                <td>{this.state.edgeCounts[node.id]}</td>
-                <td><a href="#" onClick={(e)=>this.selectNode(node.id,e)}
-                    >{node.label}</a></td>
-                <td hidden={nodePrompts.type.hidden}>{node.attributes["Node_Type"]}</td>
-                <td hidden={nodePrompts.info.hidden}>{node.attributes["Extra Info"]}</td>
-                <td hidden={nodePrompts.notes.hidden}><OptMdReact text={node.attributes["Notes"]} onIterate={this.markdownIterate} markdownOptions={{typographer: true, linkify: true}} plugins={[mdplugins.emoji]}/></td>
-                <td hidden={!isLocalHost}>{this.displayUpdated(node)}</td>
-              </tr>
-            )}
-            </tbody>
-          </Table>
-        </div>
-      );
+/*/
+render() {
+  console.log('nodetablerender!')
+  if (this.state.nodes === undefined) return "";
+  let { nodePrompts } = this.state;
+  let { tableHeight } = this.props;
+  let styles = `thead, tbody {  }
+                thead { position: relative; }
+                tbody { overflow: auto; }
+                `
+  return (
+      <div style={{overflow:'auto',
+                  position:'relative',display: 'block', right:'10px',maxHeight: tableHeight, backgroundColor:'#eafcff'
+      }}>
+      <style>{styles}</style>
+      <Button size="sm" outline hidden
+        onClick={this.onToggleExpanded}
+      >{this.state.isExpanded ? "Hide Node Table" : "Show Node Table"}</Button>
+      <Table hidden={!this.state.isExpanded} hover size="sm"
+              responsive striped
+              className="nodetable w-auto"
+      >
+        <thead>
+          <tr>
+            <th width="4%"><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
+            <th width="12%"><Button size="sm"
+                  onClick={() => this.setSortKey("edgeCount")}
+                >{nodePrompts.degrees.label} {this.sortSymbol("edgeCount")}</Button></th>
+            <th width="15%"><Button size="sm"
+                  onClick={()=>this.setSortKey("label")}
+                >{nodePrompts.label.label} {this.sortSymbol("label")}</Button></th>
+            <th width="15%"hidden={nodePrompts.type.hidden}>
+                <Button size="sm"
+                  onClick={()=>this.setSortKey("type")}
+                >{nodePrompts.type.label} {this.sortSymbol("type")}</Button></th>
+            <th width="26%"hidden={nodePrompts.info.hidden}>
+                <Button size="sm"
+                  onClick={()=>this.setSortKey("info")}
+                >{nodePrompts.info.label} {this.sortSymbol("info")}</Button></th>
+            <th width="26%" hidden={nodePrompts.notes.hidden}>
+                <Button size="sm"
+                  onClick={()=>this.setSortKey("notes")}
+                >{nodePrompts.notes.label} {this.sortSymbol("notes")}</Button></th>
+            <th  width="20%"hidden={!isLocalHost}><Button size="sm"
+                  onClick={()=>this.setSortKey("Updated")}
+                >Updated {this.sortSymbol("Updated")}</Button></th>
+          </tr>
+        </thead>
+        <tbody style={{maxHeight: tableHeight}}>
+        {this.state.nodes.map( (node,i) => (
+          <tr key={i}>
+            <td><Button size="sm" outline
+                  value={node.id}
+                  onClick={this.onButtonClick}
+                >Edit</Button>
+            </td>
+            <td>{this.state.edgeCounts[node.id]}</td>
+            <td><a href="#" onClick={(e)=>this.selectNode(node.id,e)}
+                >{node.label}</a></td>
+            <td hidden={nodePrompts.type.hidden}>{node.attributes["Node_Type"]}</td>
+            <td hidden={nodePrompts.info.hidden}>{node.attributes["Extra Info"]}</td>
+            <td hidden={nodePrompts.notes.hidden}>
+              {node.attributes["Notes"] ? <MarkdownNote text={node.attributes["Notes"]} /> : "" }
+            </td>
+            <td hidden={!isLocalHost}>{this.displayUpdated(node)}</td>
+          </tr>
+        ))}
+        </tbody>
+      </Table>
+    </div>
+  );
 
-    }
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ componentDidMount () {
@@ -385,16 +362,6 @@ countEdges(edges) {
       let D3DATA = this.AppState('D3DATA');
       this.handleDataUpdate(D3DATA);
     }
-
-
-markdownIterate(Tag, props, children, level){
-  if (Tag === 'a') {
-    props.target = '_blank';
-    }
-
-  return <Tag {...props}>{children}</Tag>;
-
-}
 
 displayUpdated(nodeEdge)
   {
