@@ -43,8 +43,8 @@
     "eslint-plugin-react": "^7.10.0",
     "path": "^0.12.7",
     "react-is": "^16.13.1",
-    "tracer": "^0.9.1",
-    "uglify-js-brunch": "^2.10.0"
+    "terser-brunch": "^4.0.0",
+    "tracer": "^0.9.1"
   },
   "dependencies": {
     "babel-polyfill": "^6.26.0",
