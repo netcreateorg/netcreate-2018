@@ -989,8 +989,10 @@ function m_MarkNodeById(id, color) {
   // this.getDeselectedNodeColor(node,color) are not yet implemented
   // to override the properties
   m_SetMatchingNodesByProp({ id }, marked, normal);
-  // Joshua adding so I can ignore on NodeTable update?
-  D3DATA.bMarkedNode = true;
+
+  // 2020-09-09 Removing this check and relying on other NodeTable optimizations. BL
+  // // Joshua adding so I can ignore on NodeTable update?
+  // D3DATA.bMarkedNode = true;
 
   UDATA.SetAppState("D3DATA", D3DATA); // JD had commented this out because it was triggering a nodetable update that was eating cycles even though nothing had changed
 }

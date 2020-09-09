@@ -83,18 +83,19 @@ class EdgeTable extends UNISYS.Component {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle updated SELECTION
-/*/ handleDataUpdate ( data ) {
-      if(data.bMarkedNode)
-      {
-          data.bMarkedNode = false;
-      }
-      else
-      {
-        if (data && data.edges) {
-          const edges = this.sortTable(this.state.sortkey, data.edges);
-          this.setState({edges});
-        }
-      }
+/*/
+  handleDataUpdate(data) {
+    // 2020-09-09 Removing this check and relying on other NodeTable optimizations. BL
+    // if(data.bMarkedNode)
+    // {
+    //     data.bMarkedNode = false;
+    // }
+    // else
+    // {
+
+    if (data && data.edges) {
+      const edges = this.sortTable(this.state.sortkey, data.edges);
+      this.setState({edges});
     }
   }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -74,20 +74,22 @@ class NodeTable extends UNISYS.Component {
       this.OnAppStateChange('TEMPLATE', this.OnTemplateUpdate);
     } // constructor
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Handle updated SELECTION
+  /*/
+  handleDataUpdate(data) {
+    console.log('handle data update')
 
+    // 2020-09-09 Removing this check and relying on other NodeTable optimizations. BL
+    // if (data.bMarkedNode)
+    //   {
+    //     //data.bMarkedNode = false;
+    //     // counting on the edge table going second, which is sloppy
+    //     // but we are in a rush, so ... do it that way for now
+    //   }
+    // else
+    // {}
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Handle updated SELECTION
-/*/
-handleDataUpdate(data) {
-  if (data.bMarkedNode)
-      {
-        //data.bMarkedNode = false;
-        // counting on the edge table going second, which is sloppy
-        // but we are in a rush, so ... do it that way for now
-      }
-    else
-    {
     if (data.nodes) {
       const edgeCounts = this.countEdges(data.edges);
       const nodes = this.sortTable('label', data.nodes);
