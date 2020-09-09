@@ -55,6 +55,8 @@ class EdgeTable extends UNISYS.Component {
         sortkey:      'Relationship'
       };
 
+      this.handleDataUpdate = this.handleDataUpdate.bind(this);
+      this.OnTemplateUpdate = this.OnTemplateUpdate.bind(this);
       this.onButtonClick            = this.onButtonClick.bind(this);
       this.onToggleExpanded         = this.onToggleExpanded.bind(this);
       this.m_FindMatchingObjsByProp = this.m_FindMatchingObjsByProp.bind(this);
@@ -71,14 +73,10 @@ class EdgeTable extends UNISYS.Component {
 
       // Always make sure class methods are bind()'d before using them
       // as a handler, otherwise object context is lost
-      this.OnAppStateChange('D3DATA',(data) => {
-        this.handleDataUpdate(data);
-      });
+      this.OnAppStateChange('D3DATA', this.handleDataUpdate);
 
       // Handle Template updates
-      this.OnAppStateChange('TEMPLATE',(data) => {
-        this.setState({edgePrompts: data.edgePrompts});
-      });
+      this.OnAppStateChange('TEMPLATE', this.OnTemplateUpdate);
     } // constructor
 
 
@@ -98,6 +96,11 @@ class EdgeTable extends UNISYS.Component {
         }
       }
     }
+  }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  OnTemplateUpdate(data) {
+    this.setState({edgePrompts: data.edgePrompts});
+  }
 
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
@@ -417,6 +420,10 @@ class EdgeTable extends UNISYS.Component {
       // update while we were hidden.
       let D3DATA = this.AppState('D3DATA');
       this.handleDataUpdate(D3DATA);
+
+    componentWillUnmount() {
+      this.AppStateChangeOff('D3DATA', this.handleDataUpdate);
+      this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
     }
 
   displayUpdated(nodeEdge)

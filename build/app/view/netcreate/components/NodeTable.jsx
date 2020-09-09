@@ -54,7 +54,9 @@ class NodeTable extends UNISYS.Component {
         sortkey:      'label'
       };
 
-      this.onButtonClick            = this.onButtonClick.bind(this);
+      this.handleDataUpdate = this.handleDataUpdate.bind(this);
+      this.OnTemplateUpdate = this.OnTemplateUpdate.bind(this);
+      this.onButtonClick = this.onButtonClick.bind(this);
       this.onToggleExpanded         = this.onToggleExpanded.bind(this);
       this.setSortKey               = this.setSortKey.bind(this);
       this.sortSymbol               = this.sortSymbol.bind(this);
@@ -66,14 +68,10 @@ class NodeTable extends UNISYS.Component {
 
       // Always make sure class methods are bind()'d before using them
       // as a handler, otherwise object context is lost
-      this.OnAppStateChange('D3DATA',(data) => {
-        this.handleDataUpdate(data);
-      });
+      this.OnAppStateChange('D3DATA', this.handleDataUpdate);
 
       // Handle Template updates
-      this.OnAppStateChange('TEMPLATE',(data) => {
-        this.setState({nodePrompts: data.nodePrompts});
-      });
+      this.OnAppStateChange('TEMPLATE', this.OnTemplateUpdate);
     } // constructor
 
 
@@ -99,6 +97,9 @@ handleDataUpdate(data) {
       });
     }
   }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+OnTemplateUpdate(data) {
+  this.setState({nodePrompts: data.nodePrompts});
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Build table of counts
@@ -362,6 +363,11 @@ render() {
       let D3DATA = this.AppState('D3DATA');
       this.handleDataUpdate(D3DATA);
     }
+
+  componentWillUnmount() {
+    this.AppStateChangeOff('D3DATA', this.handleDataUpdate);
+    this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
+  }
 
 displayUpdated(nodeEdge)
   {
