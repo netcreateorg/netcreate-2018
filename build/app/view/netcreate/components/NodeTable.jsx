@@ -109,8 +109,8 @@ OnTemplateUpdate(data) {
 countEdges(edges) {
   let edgeCounts = this.state.edgeCounts;
   edges.forEach(edge => {
-    edgeCounts[edge.source] = edgeCounts[edge.source] !== undefined ? edgeCounts[edge.source] + 1 : 1;
-    edgeCounts[edge.target] = edgeCounts[edge.target] !== undefined ? edgeCounts[edge.target] + 1 : 1;
+    edgeCounts[edge.source.id] = edgeCounts[edge.source.id] !== undefined ? edgeCounts[edge.source.id] + 1 : 1;
+    edgeCounts[edge.target.id] = edgeCounts[edge.target.id] !== undefined ? edgeCounts[edge.target.id] + 1 : 1;
   });
   return edgeCounts;
 }
