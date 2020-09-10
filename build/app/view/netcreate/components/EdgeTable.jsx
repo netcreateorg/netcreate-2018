@@ -98,6 +98,7 @@ class EdgeTable extends UNISYS.Component {
       this.setState({edges});
     }
   }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   OnTemplateUpdate(data) {
     this.setState({edgePrompts: data.edgePrompts});
@@ -421,6 +422,7 @@ class EdgeTable extends UNISYS.Component {
       // update while we were hidden.
       let D3DATA = this.AppState('D3DATA');
       this.handleDataUpdate(D3DATA);
+    }
 
     componentWillUnmount() {
       this.AppStateChangeOff('D3DATA', this.handleDataUpdate);
