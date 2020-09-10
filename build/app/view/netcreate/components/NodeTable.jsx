@@ -78,7 +78,8 @@ class NodeTable extends UNISYS.Component {
   /*/ Handle updated SELECTION
   /*/
   handleDataUpdate(data) {
-    console.log('handle data update')
+    if(DBG)
+      console.log('handle data update')
 
     // 2020-09-09 Removing this check and relying on other NodeTable optimizations. BL
     // if (data.bMarkedNode)
@@ -285,6 +286,7 @@ countEdges(edges) {
 /*/
 /*/
 render() {
+  if(DBG)
   console.log('nodetablerender!')
   if (this.state.nodes === undefined) return "";
   let { nodePrompts } = this.state;
