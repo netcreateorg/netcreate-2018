@@ -24,11 +24,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-// MD React stuff added bt Joshua ... probably could be placed better
-import MDReactComponent from 'markdown-react-js';
-const mdplugins = {
-  emoji: require('markdown-it-emoji')
-};
 
 var DBG = false;
 
@@ -40,30 +35,11 @@ const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1') || (locatio
 const React        = require('react');
 const ReactStrap   = require('reactstrap');
 const { Button, Table }    = ReactStrap;
+const MarkdownNote = require('./MarkdownNote');
 
 const UNISYS   = require('unisys/client');
 var   UDATA    = null;
 
-/// OptMdReact /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-// Optimize the MDReact
-// this should be moved to a separate class / file so it isn't redundant to the one in Edge
-// but this is the easiest for now
-// don't re-render the markup unless the text has actually changed
-class OptMdReact extends MDReactComponent {
-  shouldComponentUpdate(np,ns)
-  {
-    let bReturn = true;
-    if(this.text == np.text)
-        bReturn = false;
-    else
-      this.text = np.text;
-
-    return bReturn;
-  }
-
-}
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -79,6 +55,8 @@ class EdgeTable extends UNISYS.Component {
         sortkey:      'Relationship'
       };
 
+      this.handleDataUpdate = this.handleDataUpdate.bind(this);
+      this.OnTemplateUpdate = this.OnTemplateUpdate.bind(this);
       this.onButtonClick            = this.onButtonClick.bind(this);
       this.onToggleExpanded         = this.onToggleExpanded.bind(this);
       this.m_FindMatchingObjsByProp = this.m_FindMatchingObjsByProp.bind(this);
@@ -95,32 +73,35 @@ class EdgeTable extends UNISYS.Component {
 
       // Always make sure class methods are bind()'d before using them
       // as a handler, otherwise object context is lost
-      this.OnAppStateChange('D3DATA',(data) => {
-        this.handleDataUpdate(data);
-      });
+      this.OnAppStateChange('D3DATA', this.handleDataUpdate);
 
       // Handle Template updates
-      this.OnAppStateChange('TEMPLATE',(data) => {
-        this.setState({edgePrompts: data.edgePrompts});
-      });
+      this.OnAppStateChange('TEMPLATE', this.OnTemplateUpdate);
     } // constructor
 
 
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle updated SELECTION
-/*/ handleDataUpdate ( data ) {
-      if(data.bMarkedNode)
-      {
-          data.bMarkedNode = false;
-      }
-      else
-      {
-        if (data && data.edges) {
-        this.setState({edges: data.edges});
-        this.sortTable();
-      }
+/*/
+  handleDataUpdate(data) {
+    // 2020-09-09 Removing this check and relying on other NodeTable optimizations. BL
+    // if(data.bMarkedNode)
+    // {
+    //     data.bMarkedNode = false;
+    // }
+    // else
+    // {
+
+    if (data && data.edges) {
+      const edges = this.sortTable(this.state.sortkey, data.edges);
+      this.setState({edges});
     }
+  }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  OnTemplateUpdate(data) {
+    this.setState({edgePrompts: data.edgePrompts});
   }
 
 
@@ -204,42 +185,40 @@ class EdgeTable extends UNISYS.Component {
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ If no `sortkey` is passed, the sort will use the existing state.sortkey
-/*/ sortTable ( sortkey=this.state.sortkey) {
-      let edges = this.state.edges;
+/*/ sortTable ( sortkey=this.state.sortkey, edges) {
       switch (sortkey) {
         case 'id':
-          this.sortByID(edges);
+          return this.sortByID(edges);
           break;
         case 'source':
-          this.sortBySourceLabel(edges);
+          return this.sortBySourceLabel(edges);
           break;
         case 'target':
-          this.sortByTargetLabel(edges);
+          return this.sortByTargetLabel(edges);
           break;
         case 'Relationship':
-          this.sortByAttribute(edges, 'Relationship');
+          return this.sortByAttribute(edges, 'Relationship');
           break;
         case 'Info':
-          this.sortByAttribute(edges, 'Info');
+          return this.sortByAttribute(edges, 'Info');
           break;
         case 'Notes':
-          this.sortByAttribute(edges, 'Notes');
+          return this.sortByAttribute(edges, 'Notes');
           break;
         case 'Category':
-          this.sortByAttribute(edges, 'Category');
+          return this.sortByAttribute(edges, 'Category');
           break;
         case 'Citations':
-          this.sortByAttribute(edges, 'Citations');
+          return this.sortByAttribute(edges, 'Citations');
           break;
         case 'Updated':
-          this.sortByUpdated(edges);
+          return this.sortByUpdated(edges);
           break;
         case 'Relationship':
         default:
-          this.sortByAttribute(edges, 'Relationship');
+          return this.sortByAttribute(edges, 'Relationship');
           break;
       }
-      this.setState({edges});
     }
 
     sortSymbol(key)
@@ -284,8 +263,11 @@ class EdgeTable extends UNISYS.Component {
       else
           this.sortDirection = 1;
 
-      this.setState({sortkey: key});
-      this.sortTable(key);
+      const edges = this.sortTable(key, this.state.edges);
+      this.setState({
+        edges,
+        sortkey: key
+      });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -420,7 +402,9 @@ class EdgeTable extends UNISYS.Component {
                     >{edge.target.label || edge.target}</a></td>
                 <td hidden={edgePrompts.category.hidden}>{edge.attributes["Category"]}</td>
                 <td hidden={edgePrompts.citation.hidden}>{edge.attributes["Citations"]}</td>
-                <td hidden={edgePrompts.notes.hidden}><OptMdReact text={edge.attributes["Notes"]} onIterate={this.markdownIterate} markdownOptions={{typographer: true, linkify: true}} plugins={[mdplugins.emoji]}/></td>
+                <td hidden={edgePrompts.notes.hidden}>
+                  {edge.attributes["Notes"] ? <MarkdownNote text={edge.attributes["Notes"]} /> : "" }
+                </td>
                 <td hidden={edgePrompts.info.hidden}>{edge.attributes["Info"]}</td>
                 <td hidden={!isLocalHost}>{this.displayUpdated(edge)}</td>
               </tr>
@@ -434,17 +418,16 @@ class EdgeTable extends UNISYS.Component {
 /*/
 /*/ componentDidMount () {
       if (DBG) console.log('EdgeTable.componentDidMount!');
+      // Explicitly retrieve data because we may not have gotten a D3DATA
+      // update while we were hidden.
+      let D3DATA = this.AppState('D3DATA');
+      this.handleDataUpdate(D3DATA);
     }
 
-
-    markdownIterate(Tag, props, children, level){
-  if (Tag === 'a') {
-    props.target = '_blank';
+    componentWillUnmount() {
+      this.AppStateChangeOff('D3DATA', this.handleDataUpdate);
+      this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
     }
-
-  return <Tag {...props}>{children}</Tag>;
-
-}
 
   displayUpdated(nodeEdge)
   {

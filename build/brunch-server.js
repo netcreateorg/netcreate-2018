@@ -7,6 +7,7 @@
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const COMPRESS   = require('compression');
 const EXPRESS    = require('express');
 const COOKIEP    = require('cookie-parser');
 const APP        = EXPRESS();
@@ -43,6 +44,8 @@ module.exports = (config, callback) => {
     const PATH_TEMPLATE = PATH.join(__dirname,'/app/assets');
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// compress all responses
+    APP.use(COMPRESS());
 /// configure cookies middleware (appears in req.cookies)
     APP.use(COOKIEP());
 /// configure headers to allow cross-domain requests of media elements

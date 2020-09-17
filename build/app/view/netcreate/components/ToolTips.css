@@ -105,3 +105,11 @@
   text-decoration: none;
   cursor: pointer;
   }				
+  
+/* (?) Badge overrides bootstrap .badge */
+.tooltipAnchor .badge {
+  color: rgba(256,256,256,0.6);
+  background-color: rgba(108,117,125,0.4); /* bootstrap `text-muted` */
+  vertical-align: text-top;
+  margin-right: 2pt;
+}

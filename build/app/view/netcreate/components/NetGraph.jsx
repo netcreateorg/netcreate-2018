@@ -99,7 +99,10 @@ class NetGraph extends UNISYS.Component {
         <div style={{ height: '100%' }}>
           <div style={{ margin: '10px 0 0 10px' }}>
             <div className="tooltipAnchor">
-                <span style={{ fontSize: '9px' }}><i className="fas fa-question-circle"></i>NETGRAPH for {this.AppState('TEMPLATE').name}</span>
+              <span style={{ fontSize: '9px' }}>
+                <div className="badge">?</div>
+                NETGRAPH for {this.AppState('TEMPLATE').name}
+              </span>
                 <span style={{ fontSize: '12px' }} className="tooltiptext">{this.AppState('TEMPLATE').description}</span>
             </div>
           </div>

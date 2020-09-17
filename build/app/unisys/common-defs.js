@@ -10,7 +10,7 @@ const DBG         = true;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var   DEFS = {};
 
-DEFS.SERVER_HEARTBEAT_INTERVAL = 5000;
+DEFS.SERVER_HEARTBEAT_INTERVAL = 5000; // ms
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
