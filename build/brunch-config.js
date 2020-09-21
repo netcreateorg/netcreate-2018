@@ -113,8 +113,14 @@ module.exports = {
 /*/ overrides: {
       // env 'classroom' is set by npm start / npm run start
       classroom: {
+        optimize: true,
+        sourceMaps: false,
         plugins: {
-          autoReload: { enabled: false }
+          autoReload: { enabled: false },
+          terser: {
+            ecma: 2016,
+            mangle: false
+          }
         },
         hooks: {
           onCompile() {
@@ -131,7 +137,7 @@ module.exports = {
       // env 'package' is set by npm run package
       package: {
         optimize: false,
-        sourceMaps: true,
+        sourceMaps: false,
         plugins: {
           autoReload: { enabled: false }
         },

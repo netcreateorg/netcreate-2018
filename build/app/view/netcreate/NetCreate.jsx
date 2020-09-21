@@ -61,7 +61,8 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
         this.state = {
           isConnected: true,
           isLoggedIn: false,
-          requireLogin: this.AppState('TEMPLATE').requireLogin
+          requireLogin: this.AppState('TEMPLATE').requireLogin,
+          disconnectMsg: ''
         };
         this.OnDOMReady(()=>{
           if (DBG) console.log(PR,'OnDOMReady');
@@ -78,11 +79,19 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
         this.OnRun(()=>{
           if (DBG) console.log(PR,'OnRun');
         });
-        this.OnDisconnect(()=>{
-          this.setState({ isConnected: false });
+        this.OnDisconnect((e) => {
+          if (DBG) console.log(PR,'OnDisconnect');
+          // This is now handled by the UDATA "DISCONNECT" message.
+          // so that we can show a message explaining the cause of disconnect.
+          // this.setState({ isConnected: false });
         });
         this.onStateChange_SESSION = this.onStateChange_SESSION.bind(this);
-        this.OnAppStateChange('SESSION',this.onStateChange_SESSION);
+        this.onDisconnect = this.onDisconnect.bind(this);
+
+        this.OnAppStateChange('SESSION', this.onStateChange_SESSION);
+
+        const UDATA = UNISYS.NewDataLink(this);
+        UDATA.HandleMessage("DISCONNECT", this.onDisconnect);
       }
 
 
@@ -93,6 +102,13 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
         this.setState({ isLoggedIn: decoded.isValid });
       }
 
+      onDisconnect(e) {
+        const time = new Date().toLocaleTimeString();
+        this.setState({
+          isConnected: false,
+          disconnectMsg: `${e.detail.message} ${time}`
+        });
+      }
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -111,14 +127,14 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Define the component structure of the web application
   /*/ render() {
-    const { isLoggedIn } = this.state;
+    const { isLoggedIn, disconnectMsg } = this.state;
         let hideGraph = false;
         if (this.state.requireLogin && !isLoggedIn) hideGraph = true;
         return (
           <div>
             <div hidden={this.state.isConnected} style={{ width:'100%',height:'38px',position:'fixed',backgroundColor:'rgba(256,0,0,0.5',display:'flex',flexDirection:'column',justifyContent:'space-evenly',alignItems:'center',zIndex:'3000'}}>
               <div style={{color:'#fff',width:'100%',textAlign:'center'}}>
-                <b>Server Disconnected!</b> Your changes will not be saved!  Please contact your administrator to restart the graph.
+                <b>{disconnectMsg}!</b> Your changes will not be saved!  Please report "{disconnectMsg}" to your administrator to restart the graph.
               </div>
             </div>
             <Route path='/edit/:token' exact={true} component={SessionShell}/>

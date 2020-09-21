@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   ## OVERVIEW
@@ -923,7 +924,11 @@ class EdgeEditor extends UNISYS.Component {
               <FormText onClick={this.onEdgeClick}><b>EDGE {formData.id}</b></FormText>
               <FormGroup row>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
-                  <Label for="source" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.source.label}<span className="tooltiptext">{this.helpText(edgePrompts.source)}</span></Label>
+                  <Label for="source" className="tooltipAnchor small text-muted">
+                    <div className="badge">?</div>
+                    {edgePrompts.source.label}
+                    <span className="tooltiptext">{this.helpText(edgePrompts.source)}</span>
+                  </Label>
                 </Col>
                 <Col sm={9}>
                   <AutoComplete
@@ -944,7 +949,11 @@ class EdgeEditor extends UNISYS.Component {
               </FormGroup>
               <FormGroup row hidden={edgePrompts.type.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
-                  <Label for="relationship" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.type.label}<span className="tooltiptext">{this.helpText(edgePrompts.type)}</span></Label>
+                  <Label for="relationship" className="tooltipAnchor small text-muted">
+                    <div className="badge">?</div>
+                    {edgePrompts.type.label}
+                    <span className="tooltiptext">{this.helpText(edgePrompts.type)}</span>
+                  </Label>
                 </Col>
                 <Col sm={9}>
                   <Input type="select" name="relationship"
@@ -960,7 +969,11 @@ class EdgeEditor extends UNISYS.Component {
               </FormGroup>
               <FormGroup row>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
-                  <Label for="nodeLabel" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.target.label}<span className="tooltiptext">{this.helpText(edgePrompts.target)}</span></Label>
+                  <Label for="nodeLabel" className="tooltipAnchor small text-muted">
+                    <div className="badge">?</div>
+                    {edgePrompts.target.label}
+                    <span className="tooltiptext">{this.helpText(edgePrompts.target)}</span>
+                  </Label>
                 </Col>
                 <Col sm={9}>
                   <AutoComplete
@@ -989,7 +1002,11 @@ class EdgeEditor extends UNISYS.Component {
               </FormGroup>
               <FormGroup row hidden={edgePrompts.category.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
-                  <Label for="category" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.category.label}<span className="tooltiptext">{this.helpText(edgePrompts.category)}</span></Label>
+                  <Label for="category" className="tooltipAnchor small text-muted">
+                    <div className="badge">?</div>
+                    {edgePrompts.category.label}
+                    <span className="tooltiptext">{this.helpText(edgePrompts.category)}</span>
+                  </Label>
                 </Col>
                 <Col sm={9}>
                   <Input type="text" name="category"
@@ -1000,7 +1017,11 @@ class EdgeEditor extends UNISYS.Component {
                 </Col>
               </FormGroup><FormGroup row hidden={edgePrompts.citation.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
-                  <Label for="citation" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.citation.label}<span className="tooltiptext">{this.helpText(edgePrompts.citation)}</span></Label>
+                  <Label for="citation" className="tooltipAnchor small text-muted">
+                    <div className="badge">?</div>
+                    {edgePrompts.citation.label}
+                    <span className="tooltiptext">{this.helpText(edgePrompts.citation)}</span>
+                  </Label>
                 </Col>
                 <Col sm={9}>
                   <Input type="text" name="citation"
@@ -1012,7 +1033,11 @@ class EdgeEditor extends UNISYS.Component {
               </FormGroup>
               <FormGroup row hidden={edgePrompts.notes.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
-                  <Label for="notes" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.notes.label}<span className="tooltiptext">{this.helpText(edgePrompts.notes)}</span></Label>
+                  <Label for="notes" className="tooltipAnchor small text-muted">
+                    <div className="badge">?</div>
+                    {edgePrompts.notes.label}
+                    <span className="tooltiptext">{this.helpText(edgePrompts.notes)}</span>
+                  </Label>
                 </Col>
                 <Col sm={9}>
                   <Input type="textarea" name="notes"
@@ -1026,7 +1051,11 @@ class EdgeEditor extends UNISYS.Component {
               </FormGroup>
               <FormGroup row hidden={edgePrompts.info.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
-                  <Label for="info" className="tooltipAnchor small text-muted"><i className="fas fa-question-circle"></i>{edgePrompts.info.label}<span className="tooltiptext">{this.helpText(edgePrompts.info)}</span></Label>
+                  <Label for="info" className="tooltipAnchor small text-muted">
+                    <div className="badge">?</div>
+                    {edgePrompts.info.label}
+                    <span className="tooltiptext">{this.helpText(edgePrompts.info)}</span>
+                  </Label>
                 </Col>
                 <Col sm={9}>
                   <Input type="text" name="info"
