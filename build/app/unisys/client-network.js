@@ -162,7 +162,11 @@ function m_HandleRegistrationMessage(msgEvent) {
     know that we're still alive.
 /*/
 function m_RespondToHeartbeat() {
-  NETSOCK.ws.send('pong');
+  if (NETSOCK.ws.readyState === NETSOCK.ws.OPEN) {
+    NETSOCK.ws.send("pong", (err) => {
+      if (err) console.log(PR, 'error "', err, '" while sending response pong');
+    });
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ If a 'hearbeat' message is not received from the server every 5 seconds
