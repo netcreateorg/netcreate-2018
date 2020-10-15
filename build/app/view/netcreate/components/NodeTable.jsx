@@ -151,8 +151,8 @@ countEdges(edges) {
 /*/ sortByLabel (nodes) {
       if (nodes) {
         return nodes.sort( (a,b) => {
-          let akey = a.label,
-              bkey = b.label;
+          let akey = a.label?a.label:'',
+              bkey = b.label?b.label:'';
           return (akey.localeCompare(bkey)*this.sortDirection);
         });
       }

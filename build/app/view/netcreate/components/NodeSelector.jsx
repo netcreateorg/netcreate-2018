@@ -877,7 +877,7 @@ class NodeSelector extends UNISYS.Component {
       // Update the data with the selectedNode
       let formData = this.state.formData;
       let node = {
-        label : formData.label,
+        label : formData.label?formData.label:'',
         id    : formData.id,
         attributes: {
           'Node_Type'  : formData.type,
