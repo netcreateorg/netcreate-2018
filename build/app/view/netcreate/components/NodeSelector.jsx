@@ -582,7 +582,7 @@ class NodeSelector extends UNISYS.Component {
       let isValid = false;
       let formData = this.state.formData;
 
-      if (formData.label!=='') isValid=true;
+      if (formData.label!=='' && formData.label!==undefined) isValid=true;
       if (DBG) console.log('NodeSElector.validateForm: Validating',isValid,'because label is',formData.label,'!');
       this.setState({
         isValid: isValid
