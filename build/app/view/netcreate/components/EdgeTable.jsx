@@ -359,12 +359,14 @@ class EdgeTable extends UNISYS.Component {
                     >ID {this.sortSymbol("id")}</Button></th>
                 <th hidden={!DBG}>Size</th>
                 <th width="5%"><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
+                <th hidden={!DBG}>Src ID</th>
                 <th  width="10%"><Button size="sm"
                       onClick={()=>this.setSortKey("source")}
                     >{edgePrompts.source.label} {this.sortSymbol("source")}</Button></th>
                 <th width="10%"><Button size="sm"
                       onClick={()=>this.setSortKey("Relationship")}
                     >{edgePrompts.type.label} {this.sortSymbol("Relationship")}</Button></th>
+                <th hidden={!DBG}>Target ID</th>
                 <th width="10%"><Button size="sm"
                       onClick={()=>this.setSortKey("target")}
                     >{edgePrompts.target.label} {this.sortSymbol("target")}</Button></th>
@@ -383,6 +385,7 @@ class EdgeTable extends UNISYS.Component {
                 <th  width="16%"hidden={!isLocalHost}><Button size="sm"
                       onClick={()=>this.setSortKey("Updated")}
                     >Updated {this.sortSymbol("Updated")}</Button></th>
+
               </tr>
             </thead>
             <tbody style={{ maxHeight: tableHeight }}>
@@ -395,9 +398,11 @@ class EdgeTable extends UNISYS.Component {
                       onClick={this.onButtonClick}
                     >Edit</Button>
                 </td>
+                <td hidden={!DBG}>{edge.source.id}</td>
                 <td><a href="#" onClick={(e)=>this.selectNode(edge.source.id,e)}
                     >{edge.source.label || edge.source}</a></td>
                 <td>{edge.attributes["Relationship"]}</td>
+                <td hidden={!DBG}>{edge.target.id}</td>
                 <td><a href="#" onClick={(e)=>this.selectNode(edge.target.id,e)}
                     >{edge.target.label || edge.target}</a></td>
                 <td hidden={edgePrompts.category.hidden}>{edge.attributes["Category"]}</td>
