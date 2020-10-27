@@ -108,7 +108,7 @@ OnTemplateUpdate(data) {
 /*/ Build table of counts
 /*/
 countEdges(edges) {
-  let edgeCounts = this.state.edgeCounts;
+  let edgeCounts = {}; // this.state.edgeCounts;
   edges.forEach(edge => {
     edgeCounts[edge.source.id] = edgeCounts[edge.source.id] !== undefined ? edgeCounts[edge.source.id] + 1 : 1;
     edgeCounts[edge.target.id] = edgeCounts[edge.target.id] !== undefined ? edgeCounts[edge.target.id] + 1 : 1;
