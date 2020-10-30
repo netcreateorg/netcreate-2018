@@ -93,7 +93,7 @@ class NodeTable extends UNISYS.Component {
 
     if (data.nodes) {
       const edgeCounts = this.countEdges(data.edges);
-      const nodes = this.sortTable('label', data.nodes);
+      const nodes = this.sortTable(this.state.sortkey, data.nodes);
       this.setState({
         nodes: nodes,
         edgeCounts: edgeCounts
