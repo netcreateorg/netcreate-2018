@@ -240,7 +240,7 @@ class NodeSelector extends UNISYS.Component {
       Ignore the request if we're already editing a node.
   /*/
       UDATA.HandleMessage("NODE_EDIT", (data) => {
-        if ( (data.nodeID!==undefined) && (typeof data.nodeID==="number") && !this.state.isEditable ) {
+        if ( (data.nodeID!==undefined) && (typeof data.nodeID==="number") && !this.state.isEditable && !this.state.isLocked ) {
           this.requestEditNode(data.nodeID);
         } else {
           console.error("NodeSelector.NODE_EDIT called with bad data.nodeID:", data.nodeID);
