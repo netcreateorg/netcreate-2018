@@ -107,6 +107,10 @@ class D3NetGraph {
       // Joshua added for the tooltips
       this.nodePrompts = nodePrompts;
 
+      // Joshua added to allow changes in how things are displayed when filtered out
+      this.filteredNode = .3;
+      this.filteredEdge = .1;
+
 
       /// Initialize UNISYS DATA LINK for REACT
       UDATA = UNISYS.NewDataLink(this);
@@ -325,7 +329,7 @@ class D3NetGraph {
           return COLORMAP[d.attributes["Node_Type"]];
         })
         .style("opacity", d => {
-          return d.isFilteredOut ? 0 : 1.0
+          return d.isFilteredOut ? this.filteredNode : 1.0
         });
 
       // enter node: also append 'text' element
@@ -337,7 +341,7 @@ class D3NetGraph {
           .attr("dy", "0.35em") // ".15em")
           .text((d) => { return d.label })
           .style("opacity", d => {
-            return d.isFilteredOut ? 0 : 1.0
+            return d.isFilteredOut ? this.filteredNode : 1.0
           });
 
       // enter node: also append a 'title' tag
@@ -415,7 +419,7 @@ class D3NetGraph {
           .duration(500)
           .style("opacity", d => {
             // console.log(d);
-            return d.isFilteredOut ? 0 : 1.0
+            return d.isFilteredOut ? this.filteredNode : 1.0
           });
 
       // UPDATE text in each node for all nodes
@@ -436,7 +440,7 @@ class D3NetGraph {
           .transition()
           .duration(500)
           .style("opacity", d => {
-            return d.isFilteredOut ? 0 : 1.0
+            return d.isFilteredOut ? this.filteredNode : 1.0
           });
 
       nodeElements.merge(nodeElements)
@@ -464,7 +468,7 @@ class D3NetGraph {
         //   this.edgeClickFn( d )
         // })
         .style("opacity", d => {
-          return d.isFilteredOut ? 0 : 1.0
+          return d.isFilteredOut ? this.filteredEdge : 1.0
         });
 
       // .merge() updates the visuals whenever the data is updated.
@@ -475,7 +479,7 @@ class D3NetGraph {
         .transition()
         .duration(500)
         .style("opacity", d => {
-          return d.isFilteredOut ? 0 : 1.0
+          return d.isFilteredOut ? this.filteredEdge : 1.0
         });
 
       linkElements.exit().remove()
