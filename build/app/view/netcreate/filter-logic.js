@@ -159,6 +159,16 @@ function m_ImportFilters() {
 function m_ImportPrompts(prompts) {
   let filters = [];
   let counter = 0;
+
+  // GLOBAL ADDED AS A HACK
+  // force global into the list (at the end) ... this is a hack and is not ideal, but allows us to test the functionality
+  // ideally this somehow comes from the template, perhaps a list of any global types
+  // or we have all of them hard-coded somewhere
+  // perhaps the ideal is to have a group and sub-group so that we can still add the HR in the middle and could
+  // in the future easily drop in more things just like transparency
+  // though if we do that, we need a better way of translating them into code
+  // perhaps just have an external javascript that handles it?
+
   for (const [key, prompt] of Object.entries(prompts)) {
     let operator;
     switch (prompt.type) {
@@ -219,15 +229,27 @@ function m_ImportPrompts(prompts) {
 function m_FilterDefine(data) {
   const FDATA = UDATA.AppState("FDATA");
   if (data.group === "nodes") {
-    let nodeFilters = FDATA.nodes.filters;
-    const index = nodeFilters.findIndex(f => f.id === data.filter.id);
-    nodeFilters.splice(index, 1, data.filter);
-    FDATA.nodes.filters = nodeFilters;
+    if(data.type === "global")
+    {
+      console.log("setting node transparency maybe");
+    }
+    else{
+      let nodeFilters = FDATA.nodes.filters;
+      const index = nodeFilters.findIndex(f => f.id === data.filter.id);
+      nodeFilters.splice(index, 1, data.filter);
+      FDATA.nodes.filters = nodeFilters;
+    }
   } else if (data.group === "edges") {
-    let edgeFilters = FDATA.edges.filters;
-    const index = edgeFilters.findIndex(f => f.id === data.filter.id);
-    edgeFilters.splice(index, 1, data.filter);
-    FDATA.edges.filters = edgeFilters;
+    if(data.type === "global")
+    {
+      console.log("setting node transparency maybe");
+    }
+    else{
+      let edgeFilters = FDATA.edges.filters;
+      const index = edgeFilters.findIndex(f => f.id === data.filter.id);
+      edgeFilters.splice(index, 1, data.filter);
+      FDATA.edges.filters = edgeFilters;
+    }
   } else {
     throw `FILTER_DEFINE called with unknown group: ${data.group}`;
   }
