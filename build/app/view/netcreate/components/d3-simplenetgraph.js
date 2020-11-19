@@ -415,6 +415,7 @@ class D3NetGraph {
 
               d.weight = radius
               d.size = radius // save the calculated size
+              d.degrees = radius - 1
               return this.defaultSize + (this.defaultSize * d.weight / 2)
           })
           .transition()

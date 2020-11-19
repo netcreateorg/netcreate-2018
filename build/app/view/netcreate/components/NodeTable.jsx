@@ -92,11 +92,11 @@ class NodeTable extends UNISYS.Component {
     // {}
 
     if (data.nodes) {
-      const edgeCounts = this.countEdges(data.edges);
+      // const edgeCounts = this.countEdges(data.edges);
       const nodes = this.sortTable(this.state.sortkey, data.nodes);
       this.setState({
         nodes: nodes,
-        edgeCounts: edgeCounts
+        // edgeCounts: edgeCounts
       });
     }
   }
@@ -107,6 +107,7 @@ OnTemplateUpdate(data) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Build table of counts
 /*/
+// JD removed because "size" seemed to work just fine? (I added a degrees that is size - 1)
 countEdges(edges) {
   let edgeCounts = {}; // this.state.edgeCounts;
   edges.forEach(edge => {
@@ -343,7 +344,7 @@ render() {
                 >Edit</Button>
             </td>
             <td hidden={!DBG}>{node.id}</td>
-            <td>{this.state.edgeCounts[node.id]}</td>
+            <td>{node.degrees}</td>
             <td><a href="#" onClick={(e)=>this.selectNode(node.id,e)}
                 >{node.label}</a></td>
             <td hidden={nodePrompts.type.hidden}>{node.attributes["Node_Type"]}</td>
