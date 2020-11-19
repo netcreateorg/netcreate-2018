@@ -472,7 +472,6 @@ function m_FiltersApplyToEdge(edge, filters, transparency) {
   } else {
     // edge is filtered out if it fails ANY filter tests
     edge.isFilteredOut = !matched;
-    const D3DATA = UDATA.AppState("D3DATA");
     edge.filteredTransparency = transparency;; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
 
   }

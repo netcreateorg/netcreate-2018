@@ -16,6 +16,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 var DBG = false;
+var UDATA = null;
 
 /// UNISYS INITIALIZE REQUIRES for REACT ROOT /////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -59,8 +60,9 @@ class InfoPanel extends UNISYS.Component {
     this.endDrag = this.endDrag.bind(this);
     this.handleDrag = this.handleDrag.bind(this);
     this.UpdateFilterSummary = this.UpdateFilterSummary.bind(this);
+    this.OnClearBtnClick = this.OnClearBtnClick.bind(this);
 
-    var UDATA = UNISYS.NewDataLink(this);
+    UDATA = UNISYS.NewDataLink(this);
     UDATA.HandleMessage("FILTER_SUMMARY_UPDATE", this.UpdateFilterSummary);
 
   } // constructor
@@ -129,6 +131,10 @@ class InfoPanel extends UNISYS.Component {
 
   UpdateFilterSummary(data) {
     this.setState({ filtersSummary: data.filtersSummary });
+  }
+
+   OnClearBtnClick() {
+    UDATA.LocalCall('FILTER_CLEAR');
   }
 
 
@@ -259,7 +265,7 @@ class InfoPanel extends UNISYS.Component {
         <div hidden={!hideDragger || filtersSummary===''}
           style={{ padding: '3px', fontSize: '0.8em', color:'#999', backgroundColor:'#eef'}}
         >
-          FILTERED BY: {filtersSummary}
+          FILTERED BY: {filtersSummary} <Button size="sm" outline onClick={this.OnClearBtnClick}>Clear Filters</Button>
         </div>
       </div>
     );
