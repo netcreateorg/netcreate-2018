@@ -316,6 +316,7 @@ class D3NetGraph {
 
           d.weight = radius
           d.size = radius // save the calculated size
+          d.degrees = radius - 1 // hack for filters that read degrees
           return this.defaultSize + (this.defaultSize * d.weight / 2)
         })
         //        .attr("r", (d) => { return this.defaultSize }) // d.size ?  d.size/10 : this.defaultSize; })
