@@ -152,13 +152,13 @@ function m_ImportFilters() {
       group: "nodes", // this needs to be passed to StringFilter
       label: "Node Filters",
       filters: m_ImportPrompts(nodePrompts),
-      transparency: 0
+      transparency: isNaN(nodePrompts.defaultTransparency)?0.2:nodePrompts.defaultTransparency // default to barely visible for backwards compatibility
     },
     edges: {
       group: "edges", // this needs to be passed to StringFilter
       label: "Edge Filters",
       filters: m_ImportPrompts(edgePrompts),
-      transparency: 0
+      transparency: isNaN(edgePrompts.defaultTransparency)?0.2:edgePrompts.defaultTransparency // default to barely visible for backwards compatibility
     }
   };
 
