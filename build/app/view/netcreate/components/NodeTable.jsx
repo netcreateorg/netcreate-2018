@@ -310,6 +310,7 @@ render() {
         <thead>
           <tr>
             <th width="4%"><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
+            <th hidden={!DBG}>ID</th>
             <th width="12%"><Button size="sm"
                   onClick={() => this.setSortKey("edgeCount")}
                 >{nodePrompts.degrees.label} {this.sortSymbol("edgeCount")}</Button></th>
@@ -341,6 +342,7 @@ render() {
                   onClick={this.onButtonClick}
                 >Edit</Button>
             </td>
+            <td hidden={!DBG}>{node.id}</td>
             <td>{this.state.edgeCounts[node.id]}</td>
             <td><a href="#" onClick={(e)=>this.selectNode(node.id,e)}
                 >{node.label}</a></td>

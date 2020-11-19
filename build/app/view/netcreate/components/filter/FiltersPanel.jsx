@@ -75,6 +75,7 @@ class FiltersPanel extends UNISYS.Component {
             group={def.group}
             label={def.label}
             filters={def.filters}
+            transparency={def.transparency}
             onFiltersChange={this.OnFilterChange}
           />)}
         </div>

@@ -1,4 +1,5 @@
 import FILTER from './FilterEnums';
+import FilterGroupProperties from './FilterGroupProperties';
 import NumberFilter from './NumberFilter';
 import React from 'react';
 import SelectFilter from './SelectFilter';
@@ -7,7 +8,7 @@ const ReactStrap = require('reactstrap');
 const { Input, Label } = ReactStrap;
 
 export default function FilterGroup({
-  group, label, filters
+  group, label, filters, transparency
 }) {
   return (
     <div className="filter-group" style={{margin:'5px 5px 5px 0',padding:'10px',backgroundColor:'rgba(0,0,0,0)'}}>
@@ -30,6 +31,8 @@ export default function FilterGroup({
         }
         return '';
       })}
+      <hr/>
+      <FilterGroupProperties group={group} transparency={transparency} />
     </div>
   );
 }

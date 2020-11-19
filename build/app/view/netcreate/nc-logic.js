@@ -140,7 +140,7 @@ const PR = PROMPTS.Pad("NCLOGIC");
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DESELECTED_COLOR = "";
 const SEARCH_COLOR = "#008800";
-const SOURCE_COLOR = "#0000DD";
+const SOURCE_COLOR = "#FFa500";
 const TARGET_COLOR = "#FF0000";
 
 const DATASET = window.NC_CONFIG.dataset || "netcreate";

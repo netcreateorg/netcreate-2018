@@ -50,6 +50,15 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+/* JD added some global settins for filters
+    Settings
+      Transparency
+        Nodes
+        Edges
+
+        NOTE: Default is hand-set to 0 for now, but this should be in a / the template
+    */
+
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -130,6 +139,7 @@ MOD.Hook("INITIALIZE", () => {
 
 /**
  * Loads filters from template file
+ * NOTE: Setting transparency defaults here, which we shouldn't be
  */
 function m_ImportFilters() {
   TEMPLATE = UDATA.AppState("TEMPLATE");
@@ -141,12 +151,14 @@ function m_ImportFilters() {
     nodes: {
       group: "nodes", // this needs to be passed to StringFilter
       label: "Node Filters",
-      filters: m_ImportPrompts(nodePrompts)
+      filters: m_ImportPrompts(nodePrompts),
+      transparency: 0
     },
     edges: {
       group: "edges", // this needs to be passed to StringFilter
       label: "Edge Filters",
-      filters: m_ImportPrompts(edgePrompts)
+      filters: m_ImportPrompts(edgePrompts),
+      transparency: 0
     }
   };
 
@@ -159,15 +171,6 @@ function m_ImportFilters() {
 function m_ImportPrompts(prompts) {
   let filters = [];
   let counter = 0;
-
-  // GLOBAL ADDED AS A HACK
-  // force global into the list (at the end) ... this is a hack and is not ideal, but allows us to test the functionality
-  // ideally this somehow comes from the template, perhaps a list of any global types
-  // or we have all of them hard-coded somewhere
-  // perhaps the ideal is to have a group and sub-group so that we can still add the HR in the middle and could
-  // in the future easily drop in more things just like transparency
-  // though if we do that, we need a better way of translating them into code
-  // perhaps just have an external javascript that handles it?
 
   for (const [key, prompt] of Object.entries(prompts)) {
     let operator;
@@ -229,9 +232,11 @@ function m_ImportPrompts(prompts) {
 function m_FilterDefine(data) {
   const FDATA = UDATA.AppState("FDATA");
   if (data.group === "nodes") {
-    if(data.type === "global")
+
+    if (data.type === "transparency")
     {
-      console.log("setting node transparency maybe");
+      FDATA.nodes.transparency = data.transparency;
+
     }
     else{
       let nodeFilters = FDATA.nodes.filters;
@@ -240,9 +245,10 @@ function m_FilterDefine(data) {
       FDATA.nodes.filters = nodeFilters;
     }
   } else if (data.group === "edges") {
-    if(data.type === "global")
+
+    if (data.type === "transparency")
     {
-      console.log("setting node transparency maybe");
+      FDATA.edges.transparency = data.transparency;
     }
     else{
       let edgeFilters = FDATA.edges.filters;
@@ -250,7 +256,8 @@ function m_FilterDefine(data) {
       edgeFilters.splice(index, 1, data.filter);
       FDATA.edges.filters = edgeFilters;
     }
-  } else {
+  }
+  else {
     throw `FILTER_DEFINE called with unknown group: ${data.group}`;
   }
   UDATA.SetAppState("FDATA", FDATA);
@@ -262,8 +269,8 @@ function m_FilterDefine(data) {
  */
 function m_FiltersApply() {
   const FDATA = UDATA.AppState("FDATA");
-  m_FiltersApplyToNodes(FDATA.nodes.filters);
-  m_FiltersApplyToEdges(FDATA.edges.filters);
+  m_FiltersApplyToNodes(FDATA.nodes.filters, FDATA.nodes.transparency);
+  m_FiltersApplyToEdges(FDATA.edges.filters, FDATA.edges.transparency);
 }
 
 function m_ClearFilters() {
@@ -362,15 +369,15 @@ function m_MatchNumber(operator, filterVal, objVal) {
  *
  * @param {Array} filters
  */
-function m_FiltersApplyToNodes(filters) {
+function m_FiltersApplyToNodes(filters, transparency) {
   const D3DATA = UDATA.AppState("D3DATA");
   D3DATA.nodes.forEach(node => {
-    m_FiltersApplyToNode(node, filters);
+    m_FiltersApplyToNode(node, filters, transparency);
   });
   UDATA.SetAppState("D3DATA", D3DATA);
 }
 
-function m_FiltersApplyToNode(node, filters) {
+function m_FiltersApplyToNode(node, filters, transparency) {
   let all_no_op = true;
   let matched = true;
   // implicit AND.  ALL filters must return true.
@@ -387,6 +394,9 @@ function m_FiltersApplyToNode(node, filters) {
   } else {
     // node is filtered out if it fails any filter tests
     node.isFilteredOut = !matched;
+
+    node.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
+
   }
 }
 
@@ -429,19 +439,20 @@ function m_IsNodeMatchedByFilter(node, filter) {
 /*/ EDGE FILTERS
 /*/
 
-function m_FiltersApplyToEdges(filters) {
+function m_FiltersApplyToEdges(filters, transparency) {
   const D3DATA = UDATA.AppState("D3DATA");
   D3DATA.edges.forEach(edge => {
-    m_FiltersApplyToEdge(edge, filters);
+    m_FiltersApplyToEdge(edge, filters, transparency);
   });
   UDATA.SetAppState("D3DATA", D3DATA);
 }
 
-function m_FiltersApplyToEdge(edge, filters) {
+function m_FiltersApplyToEdge(edge, filters, transparency) {
   // regardless of filter definition,
   // always hide edge if it's attached to a filtered node
   if (edge.source.isFilteredOut || edge.target.isFilteredOut) {
     edge.isFilteredOut = true;  // no filters, revert
+    edge.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
     return;
   }
 
@@ -461,6 +472,9 @@ function m_FiltersApplyToEdge(edge, filters) {
   } else {
     // edge is filtered out if it fails ANY filter tests
     edge.isFilteredOut = !matched;
+    const D3DATA = UDATA.AppState("D3DATA");
+    edge.filteredTransparency = transparency;; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
+
   }
 }
 
