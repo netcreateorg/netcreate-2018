@@ -298,7 +298,7 @@ render() {
                 `
   return (
       <div style={{overflow:'auto',
-                  position:'relative',display: 'block', right:'10px',maxHeight: tableHeight, backgroundColor:'#eafcff'
+                  position:'relative',display: 'block', left: '1px', right:'10px',maxHeight: tableHeight, backgroundColor:'#eafcff'
       }}>
       <style>{styles}</style>
       <Button size="sm" outline hidden

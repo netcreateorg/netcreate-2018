@@ -342,7 +342,7 @@ class EdgeTable extends UNISYS.Component {
 `
       return (
            <div style={{overflow:'auto',
-                     position:'relative',display: 'block', right:'10px',maxHeight: tableHeight, backgroundColor:'#f3f3ff'
+                     position:'relative',display: 'block',  left: '1px', right:'10px',maxHeight: tableHeight, backgroundColor:'#f3f3ff'
              }}>
           <style>{styles}</style>
           <Button size="sm" outline hidden
