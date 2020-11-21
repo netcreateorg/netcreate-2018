@@ -139,8 +139,11 @@ const PR = PROMPTS.Pad("NCLOGIC");
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DESELECTED_COLOR = "";
-const SEARCH_COLOR = "#008800";
-const SOURCE_COLOR = "#FFa500";
+// For backwards compatability, if the template is not setting these
+// Ideally we want to centralize the backwards compatability at some point into one spot
+// OR just remove it, but this was easier to test and shouldn't impact performance substantively
+const DEFAULT_SEARCH_COLOR = "#008800";
+const DEFAULT_SOURCE_COLOR = "#FFa500";
 const TARGET_COLOR = "#FF0000";
 
 const DATASET = window.NC_CONFIG.dataset || "netcreate";
@@ -363,7 +366,7 @@ MOD.Hook("INITIALIZE", () => {
     // NODE LIST UPDATE
     if (nodes !== undefined) {
       if (nodes.length > 0) {
-        let color = SEARCH_COLOR;
+        let color = TEMPLATE.searchColor != undefined? TEMPLATE.searchColor : DEFAULT_SEARCH_COLOR;
         nodes.forEach(node => m_MarkNodeById(node.id, color));
       } else {
         m_UnMarkAllNodes();
@@ -375,7 +378,7 @@ MOD.Hook("INITIALIZE", () => {
       if (searchLabel === "") {
         m_UnStrokeAllNodes();
       } else if (searchLabel !== undefined) {
-         m_SetStrokeColorThatMatch(searchLabel, SEARCH_COLOR);
+         m_SetStrokeColorThatMatch(searchLabel, TEMPLATE.searchColor != undefined? TEMPLATE.searchColor : DEFAULT_SEARCH_COLOR);
       }
     }
   }); // StateChange SELECTION
@@ -505,7 +508,7 @@ MOD.Hook("INITIALIZE", () => {
       if(D3DATA.nodes.length < 250) // JD to speedup processing for large
       {
         m_UnMarkAllNodes();
-        m_MarkNodeByLabel(nodeLabel, SOURCE_COLOR);
+        m_MarkNodeByLabel(nodeLabel, TEMPLATE.sourceColor != undefined? TEMPLATE.sourceColor : DEFAULT_SOURCE_COLOR);
       }
     }
     if (nodeID) {
@@ -513,7 +516,7 @@ MOD.Hook("INITIALIZE", () => {
       if(D3DATA.nodes.length < 250) // JD to speedup processing for large
       {
         m_UnMarkAllNodes();
-        m_MarkNodeById(nodeID, SOURCE_COLOR);
+        m_MarkNodeById(nodeID, TEMPLATE.sourceColor != undefined? TEMPLATE.sourceColor : DEFAULT_SOURCE_COLOR);
       }
     }
 
@@ -983,7 +986,7 @@ function m_UnStrokeAllNodes() {
 /*/ Sets the `node.selected` property to `color` so it is hilited on graph
 /*/
 function m_MarkNodeById(id, color) {
-  let marked = { selected: SOURCE_COLOR };
+  let marked = { selected: TEMPLATE.sourceColor != undefined? TEMPLATE.sourceColor : DEFAULT_SOURCE_COLOR };
   let normal = { selected: DESELECTED_COLOR };
   // NOTE: this.getSelectedNodeColor(node,color) and
   // this.getDeselectedNodeColor(node,color) are not yet implemented
