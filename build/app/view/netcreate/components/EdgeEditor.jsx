@@ -292,6 +292,14 @@ class EdgeEditor extends UNISYS.Component {
         this.handleEdgeEdit(data);
       });
 
+
+        /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        UDATA.HandleMessage('EDGE_CLOSE',(data) => {
+          if (this.state.isExpanded)
+            this.setState({ isExpanded: false });
+        });
+
+
       // Template handler
       this.OnAppStateChange('TEMPLATE', this.setTemplate);
 
