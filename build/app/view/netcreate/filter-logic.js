@@ -187,6 +187,9 @@ function m_ImportPrompts(prompts) {
       case FILTER.TYPES.NODE:
         operator = FILTER.OPERATORS.NO_OP.key; // default to no_op
         break;
+      case FILTER.TYPES.DATE:
+        operator = FILTER.OPERATORS.NO_OP.key; // default to no_op
+        break;
       case FILTER.TYPES.HIDDEN:
         break;
       default:
