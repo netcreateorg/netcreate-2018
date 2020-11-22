@@ -410,7 +410,7 @@ class AutoComplete extends UNISYS.Component {
       } else if (this.props.inactiveMode === MODE_DISABLED) {
         jsx = (<Input type="text" value={this.props.disabledValue} readOnly={true} />);
       } else if (this.props.inactiveMode === MODE_LINK){
-      jsx = (<a href="#" onClick={(e)=>this.selectNode(this.props.targetID,e)}>{this.props.disabledValue}</a>);
+      jsx = (<a href="#" onClick={(e)=>this.selectNode(this.props.linkID,e)}>{this.props.disabledValue}</a>);
       } else {
         throw Error(`AutoComplete: Unhandled mode '${this.state.mode}'`);
       }

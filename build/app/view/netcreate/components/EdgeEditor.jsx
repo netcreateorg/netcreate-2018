@@ -935,7 +935,7 @@ class EdgeEditor extends UNISYS.Component {
                     identifier={'edge'+edgeID+'source'}
                     disabledValue={sourceNode.label}
                     inactiveMode={parentNodeLabel===sourceNode.label ? 'static' : 'link'}
-                    targetID={sourceNode.id}
+                    linkID={sourceNode.id}
                     shouldIgnoreSelection={!this.state.sourceIsEditable}
                     placeholder={this.state.placeholder}
                   />
@@ -981,7 +981,7 @@ class EdgeEditor extends UNISYS.Component {
                     identifier={'edge'+edgeID+'target'}
                     disabledValue={targetNode.label}
                     inactiveMode={ ( parentNodeLabel===targetNode.label && !sameSourceAndTarget ) ? 'static' : 'link'}
-                    targetID={targetNode.id}
+                    linkID={targetNode.id}
                     shouldIgnoreSelection={!this.state.targetIsEditable}
                     placeholder={this.state.placeholder}
                   />
