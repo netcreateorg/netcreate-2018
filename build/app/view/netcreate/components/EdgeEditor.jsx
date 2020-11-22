@@ -934,7 +934,7 @@ class EdgeEditor extends UNISYS.Component {
                   <AutoComplete
                     identifier={'edge'+edgeID+'source'}
                     disabledValue={sourceNode.label}
-                    inactiveMode={parentNodeLabel===sourceNode.label ? 'static' : 'link'}
+                    inactiveMode={parentNodeLabel===sourceNode.label ? 'static' : this.state.isEditable ? 'disabled' : 'link'}
                     linkID={sourceNode.id}
                     shouldIgnoreSelection={!this.state.sourceIsEditable}
                     placeholder={this.state.placeholder}
@@ -980,7 +980,7 @@ class EdgeEditor extends UNISYS.Component {
                   <AutoComplete
                     identifier={'edge'+edgeID+'target'}
                     disabledValue={targetNode.label}
-                    inactiveMode={ ( parentNodeLabel===targetNode.label && !sameSourceAndTarget ) ? 'static' : 'link'}
+                    inactiveMode={ ( parentNodeLabel===targetNode.label && !sameSourceAndTarget ) ? 'static' : this.state.isEditable ? 'disabled' : 'link'}
                     linkID={targetNode.id}
                     shouldIgnoreSelection={!this.state.targetIsEditable}
                     placeholder={this.state.placeholder}

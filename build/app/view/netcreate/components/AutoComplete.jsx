@@ -452,7 +452,6 @@ class AutoComplete extends UNISYS.Component {
 
     selectNode (id, event) {
       event.preventDefault();
-
       // REVIEW: For some reason React converts the integer IDs into string
       // values when returned in event.target.value.  So we have to convert
       // it here.
