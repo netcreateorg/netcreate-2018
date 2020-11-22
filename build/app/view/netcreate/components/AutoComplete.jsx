@@ -140,6 +140,7 @@ const UNISYS      = require('unisys/client');
 
 const MODE_STATIC   = 'static';   // Can't be edited ever
 const MODE_DISABLED = 'disabled'; // Can be edited, but not at the moment
+const MODE_LINK     = 'link';     // Can be edited, but not at the moment, and it links to a view until then
 const MODE_ACTIVE   = 'active';   // Currently able to edit
 
 var   _IsMounted  = false;
@@ -408,6 +409,8 @@ class AutoComplete extends UNISYS.Component {
         jsx = (<p>{this.props.disabledValue}</p>);
       } else if (this.props.inactiveMode === MODE_DISABLED) {
         jsx = (<Input type="text" value={this.props.disabledValue} readOnly={true} />);
+      } else if (this.props.inactiveMode === MODE_LINK){
+      jsx = (<a href="#" onClick={(e)=>this.selectNode(this.props.targetID,e)}>{this.props.disabledValue}</a>);
       } else {
         throw Error(`AutoComplete: Unhandled mode '${this.state.mode}'`);
       }
@@ -446,6 +449,17 @@ class AutoComplete extends UNISYS.Component {
 
       return jsx;
     } // render()
+
+    selectNode (id, event) {
+      event.preventDefault();
+
+      // REVIEW: For some reason React converts the integer IDs into string
+      // values when returned in event.target.value.  So we have to convert
+      // it here.
+      // Load Source
+      var UDATA = UNISYS.NewDataLink(this);
+      UDATA.LocalCall('SOURCE_SELECT',{ nodeIDs: [parseInt(id)] });
+    }
 
 /// END OF CLASS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
