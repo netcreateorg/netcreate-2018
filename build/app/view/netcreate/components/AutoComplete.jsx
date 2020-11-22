@@ -457,6 +457,8 @@ class AutoComplete extends UNISYS.Component {
       // it here.
       // Load Source
       var UDATA = UNISYS.NewDataLink(this);
+      this.AppCall('AUTOCOMPLETE_SELECT', { id: 'search' });
+
       UDATA.LocalCall('SOURCE_SELECT',{ nodeIDs: [parseInt(id)] });
     }
 
