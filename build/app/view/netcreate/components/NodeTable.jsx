@@ -136,10 +136,10 @@ countEdges(edges) {
 /*/
 /*/ sortByEdgeCount(nodes) {
       if (nodes) {
-        let edgeCounts = this.state.edgeCounts;
+        // let edgeCounts = this.state.edgeCounts;
         return nodes.sort( (a, b) => {
-          let akey = edgeCounts[a.id] || 0,
-            bkey = edgeCounts[b.id] || 0;
+            let akey = a.degrees || 0,
+              bkey = b.degrees || 0;
           // sort descending
           if (akey > bkey) return 1*this.sortDirection;
           if (akey < bkey) return -1*this.sortDirection;
