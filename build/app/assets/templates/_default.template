@@ -1,6 +1,7 @@
 {
 
   "_comments":  [ "/// NetCreate Template File                                                             ///",
+                  "/// RELEASE NOTES: As of 12-7/2020 added default colors and transparency (for filters)  ///",
                   "/// RELEASE NOTES: As of 8/13/2020, a 'type' specification needs to added to each       ///",
                   "///     nodePrompt and edgePrompt for filters to work.  Valid types are:                ///",
                   "///     'string', 'number', 'select', and 'node'.  The 'node' type is only valid for    ///",
@@ -21,14 +22,17 @@
 
   "name":        "Blank",
 
-  "description": "This graph left intentionally blank for serving static files.",
+  "description": "The graph description would go here.",
 
-  "requireLogin": true,
+  "requireLogin": false,
 
   "citationPrompts":{
                 "citation": "Citation Text",
                 "hidden": false
     },
+
+  "searchColor":"#FFa500",
+  "sourceColor":"#008800",
 
   "nodePrompts": {
     "label": {
@@ -80,6 +84,7 @@
                   }
                 ]
              },
+    "defaultTransparency": "0.1",
     "degrees": {
       "type": "number",
       "label": "Degrees",
@@ -117,6 +122,7 @@
 
   "edgePrompts": {
     "edgeIsLockedMessage": "This edge is currently being edited by someone else, please try again later.",
+    "defaultTransparency": "0.3",
     "source":   {
                   "type": "node",
                   "label": "Source",
