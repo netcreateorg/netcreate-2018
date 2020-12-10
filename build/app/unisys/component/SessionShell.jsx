@@ -265,14 +265,11 @@ class SessionShell extends UNISYS.Component {
     if (UNISYS.IsStandaloneMode()) {
       const { prompt, timestamp } = window.NC_UNISYS.standalone;
       return (
-        <FormGroup row style={GROUP_STYLE}>
-          <Col sm={9}>
+        <div style={NAV_LOGIN_STYLE}>
+          <Col sm={16}>
             <Label style={LABEL_STYLE} className="small">{prompt}</Label>
           </Col>
-          <Col sm={3} className="text-right">
-            <Label style={LABEL_STYLE} className="small">{timestamp}</Label>
-          </Col>
-        </FormGroup>
+          </div>
       );
     }
 
