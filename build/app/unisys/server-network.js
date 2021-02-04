@@ -198,7 +198,11 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       m_heartbeat_interval = setInterval(function sendHeartbeat() {
         mu_sockets.forEach((socket, key, map) => {
           if (DBG) console.log(PR, 'sending heartbeat to', socket.UADDR);
-          socket.send('ping');
+          if (socket.readyState === socket.OPEN) {
+            socket.send("ping", (err) => {
+              if (err) console.log(PR, 'error "', err, '" while sending heartbeat to', socket.UADDR);
+            });
+          }
         });
       }, DEFS.SERVER_HEARTBEAT_INTERVAL);
     }
@@ -237,7 +241,10 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
 /*/ function m_SocketMessage(socket, json) {
         // Check Heartbeat
         if (json === 'pong') {
-          if (socket.UADDR === undefined) return; // Don't start the timer if we get a bad UADDR
+          if (socket.UADDR === undefined) {
+            console.log(PR, '!!!!!!!!!!!!!!!!!! Bad socket.UADDR', socket.UADDR, '! Skipping pong timer reset.');
+            return; // Don't start the timer if we get a bad UADDR
+          }
           m_ResetPongTimer(socket.UADDR);
           return;
         }

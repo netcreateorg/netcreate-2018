@@ -92,11 +92,11 @@ class NodeTable extends UNISYS.Component {
     // {}
 
     if (data.nodes) {
-      const edgeCounts = this.countEdges(data.edges);
-      const nodes = this.sortTable('label', data.nodes);
+      // const edgeCounts = this.countEdges(data.edges);
+      const nodes = this.sortTable(this.state.sortkey, data.nodes);
       this.setState({
         nodes: nodes,
-        edgeCounts: edgeCounts
+        // edgeCounts: edgeCounts
       });
     }
   }
@@ -107,8 +107,9 @@ OnTemplateUpdate(data) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Build table of counts
 /*/
+// JD removed because "size" seemed to work just fine? (I added a degrees that is size - 1)
 countEdges(edges) {
-  let edgeCounts = this.state.edgeCounts;
+  let edgeCounts = {}; // this.state.edgeCounts;
   edges.forEach(edge => {
     edgeCounts[edge.source.id] = edgeCounts[edge.source.id] !== undefined ? edgeCounts[edge.source.id] + 1 : 1;
     edgeCounts[edge.target.id] = edgeCounts[edge.target.id] !== undefined ? edgeCounts[edge.target.id] + 1 : 1;
@@ -135,10 +136,10 @@ countEdges(edges) {
 /*/
 /*/ sortByEdgeCount(nodes) {
       if (nodes) {
-        let edgeCounts = this.state.edgeCounts;
+        // let edgeCounts = this.state.edgeCounts;
         return nodes.sort( (a, b) => {
-          let akey = edgeCounts[a.id] || 0,
-            bkey = edgeCounts[b.id] || 0;
+            let akey = a.degrees || 0,
+              bkey = b.degrees || 0;
           // sort descending
           if (akey > bkey) return 1*this.sortDirection;
           if (akey < bkey) return -1*this.sortDirection;
@@ -151,8 +152,8 @@ countEdges(edges) {
 /*/ sortByLabel (nodes) {
       if (nodes) {
         return nodes.sort( (a,b) => {
-          let akey = a.label,
-              bkey = b.label;
+          let akey = a.label?a.label:'',
+              bkey = b.label?b.label:'';
           return (akey.localeCompare(bkey)*this.sortDirection);
         });
       }
@@ -297,7 +298,7 @@ render() {
                 `
   return (
       <div style={{overflow:'auto',
-                  position:'relative',display: 'block', right:'10px',maxHeight: tableHeight, backgroundColor:'#eafcff'
+                  position:'relative',display: 'block', left: '1px', right:'10px',maxHeight: tableHeight, backgroundColor:'#eafcff'
       }}>
       <style>{styles}</style>
       <Button size="sm" outline hidden
@@ -310,6 +311,7 @@ render() {
         <thead>
           <tr>
             <th width="4%"><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
+            <th hidden={!DBG}>ID</th>
             <th width="12%"><Button size="sm"
                   onClick={() => this.setSortKey("edgeCount")}
                 >{nodePrompts.degrees.label} {this.sortSymbol("edgeCount")}</Button></th>
@@ -341,7 +343,8 @@ render() {
                   onClick={this.onButtonClick}
                 >Edit</Button>
             </td>
-            <td>{this.state.edgeCounts[node.id]}</td>
+            <td hidden={!DBG}>{node.id}</td>
+            <td>{node.degrees}</td>
             <td><a href="#" onClick={(e)=>this.selectNode(node.id,e)}
                 >{node.label}</a></td>
             <td hidden={nodePrompts.type.hidden}>{node.attributes["Node_Type"]}</td>

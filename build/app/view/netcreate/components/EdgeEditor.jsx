@@ -292,6 +292,14 @@ class EdgeEditor extends UNISYS.Component {
         this.handleEdgeEdit(data);
       });
 
+
+        /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        UDATA.HandleMessage('EDGE_CLOSE',(data) => {
+          if (this.state.isExpanded)
+            this.setState({ isExpanded: false });
+        });
+
+
       // Template handler
       this.OnAppStateChange('TEMPLATE', this.setTemplate);
 
@@ -934,7 +942,8 @@ class EdgeEditor extends UNISYS.Component {
                   <AutoComplete
                     identifier={'edge'+edgeID+'source'}
                     disabledValue={sourceNode.label}
-                    inactiveMode={parentNodeLabel===sourceNode.label ? 'static' : 'disabled'}
+                    inactiveMode={parentNodeLabel===sourceNode.label ? 'static' : this.state.isEditable ? 'disabled' : 'link'}
+                    linkID={sourceNode.id}
                     shouldIgnoreSelection={!this.state.sourceIsEditable}
                     placeholder={this.state.placeholder}
                   />
@@ -979,7 +988,8 @@ class EdgeEditor extends UNISYS.Component {
                   <AutoComplete
                     identifier={'edge'+edgeID+'target'}
                     disabledValue={targetNode.label}
-                    inactiveMode={ ( parentNodeLabel===targetNode.label && !sameSourceAndTarget ) ? 'static' : 'disabled'}
+                    inactiveMode={ ( parentNodeLabel===targetNode.label && !sameSourceAndTarget ) ? 'static' : this.state.isEditable ? 'disabled' : 'link'}
+                    linkID={targetNode.id}
                     shouldIgnoreSelection={!this.state.targetIsEditable}
                     placeholder={this.state.placeholder}
                   />

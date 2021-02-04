@@ -5,9 +5,9 @@ FILTER.TYPES = {};
 FILTER.TYPES.STRING = 'string';
 FILTER.TYPES.NUMBER = 'number';
 FILTER.TYPES.SELECT = 'select';
+FILTER.TYPES.NODE   = 'node'; // edge source / target
+FILTER.TYPES.DATE   = 'date';
 FILTER.TYPES.HIDDEN = 'hidden';
-FILTER.TYPES.NODE = 'node'; // edge source / target
-
 
 // Special Edge Keys mapped to node objects
 // Used by m_IsEdgeMatchedByFilter to find node labels

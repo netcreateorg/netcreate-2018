@@ -50,6 +50,15 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+/* JD added some global settins for filters
+    Settings
+      Transparency
+        Nodes
+        Edges
+
+        NOTE: Default is hand-set to 0 for now, but this should be in a / the template
+    */
+
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -130,6 +139,7 @@ MOD.Hook("INITIALIZE", () => {
 
 /**
  * Loads filters from template file
+ * NOTE: Setting transparency defaults here, which we shouldn't be
  */
 function m_ImportFilters() {
   TEMPLATE = UDATA.AppState("TEMPLATE");
@@ -141,12 +151,14 @@ function m_ImportFilters() {
     nodes: {
       group: "nodes", // this needs to be passed to StringFilter
       label: "Node Filters",
-      filters: m_ImportPrompts(nodePrompts)
+      filters: m_ImportPrompts(nodePrompts),
+      transparency: isNaN(nodePrompts.defaultTransparency)?0.2:nodePrompts.defaultTransparency // default to barely visible for backwards compatibility
     },
     edges: {
       group: "edges", // this needs to be passed to StringFilter
       label: "Edge Filters",
-      filters: m_ImportPrompts(edgePrompts)
+      filters: m_ImportPrompts(edgePrompts),
+      transparency: isNaN(edgePrompts.defaultTransparency)?0.2:edgePrompts.defaultTransparency // default to barely visible for backwards compatibility
     }
   };
 
@@ -159,6 +171,7 @@ function m_ImportFilters() {
 function m_ImportPrompts(prompts) {
   let filters = [];
   let counter = 0;
+
   for (const [key, prompt] of Object.entries(prompts)) {
     let operator;
     switch (prompt.type) {
@@ -172,6 +185,9 @@ function m_ImportPrompts(prompts) {
         operator = FILTER.OPERATORS.NO_OP.key; // default to no_op
         break;
       case FILTER.TYPES.NODE:
+        operator = FILTER.OPERATORS.NO_OP.key; // default to no_op
+        break;
+      case FILTER.TYPES.DATE:
         operator = FILTER.OPERATORS.NO_OP.key; // default to no_op
         break;
       case FILTER.TYPES.HIDDEN:
@@ -219,16 +235,32 @@ function m_ImportPrompts(prompts) {
 function m_FilterDefine(data) {
   const FDATA = UDATA.AppState("FDATA");
   if (data.group === "nodes") {
-    let nodeFilters = FDATA.nodes.filters;
-    const index = nodeFilters.findIndex(f => f.id === data.filter.id);
-    nodeFilters.splice(index, 1, data.filter);
-    FDATA.nodes.filters = nodeFilters;
+
+    if (data.type === "transparency")
+    {
+      FDATA.nodes.transparency = data.transparency;
+
+    }
+    else{
+      let nodeFilters = FDATA.nodes.filters;
+      const index = nodeFilters.findIndex(f => f.id === data.filter.id);
+      nodeFilters.splice(index, 1, data.filter);
+      FDATA.nodes.filters = nodeFilters;
+    }
   } else if (data.group === "edges") {
-    let edgeFilters = FDATA.edges.filters;
-    const index = edgeFilters.findIndex(f => f.id === data.filter.id);
-    edgeFilters.splice(index, 1, data.filter);
-    FDATA.edges.filters = edgeFilters;
-  } else {
+
+    if (data.type === "transparency")
+    {
+      FDATA.edges.transparency = data.transparency;
+    }
+    else{
+      let edgeFilters = FDATA.edges.filters;
+      const index = edgeFilters.findIndex(f => f.id === data.filter.id);
+      edgeFilters.splice(index, 1, data.filter);
+      FDATA.edges.filters = edgeFilters;
+    }
+  }
+  else {
     throw `FILTER_DEFINE called with unknown group: ${data.group}`;
   }
   UDATA.SetAppState("FDATA", FDATA);
@@ -240,8 +272,8 @@ function m_FilterDefine(data) {
  */
 function m_FiltersApply() {
   const FDATA = UDATA.AppState("FDATA");
-  m_FiltersApplyToNodes(FDATA.nodes.filters);
-  m_FiltersApplyToEdges(FDATA.edges.filters);
+  m_FiltersApplyToNodes(FDATA.nodes.filters, FDATA.nodes.transparency);
+  m_FiltersApplyToEdges(FDATA.edges.filters, FDATA.edges.transparency);
 }
 
 function m_ClearFilters() {
@@ -340,15 +372,15 @@ function m_MatchNumber(operator, filterVal, objVal) {
  *
  * @param {Array} filters
  */
-function m_FiltersApplyToNodes(filters) {
+function m_FiltersApplyToNodes(filters, transparency) {
   const D3DATA = UDATA.AppState("D3DATA");
   D3DATA.nodes.forEach(node => {
-    m_FiltersApplyToNode(node, filters);
+    m_FiltersApplyToNode(node, filters, transparency);
   });
   UDATA.SetAppState("D3DATA", D3DATA);
 }
 
-function m_FiltersApplyToNode(node, filters) {
+function m_FiltersApplyToNode(node, filters, transparency) {
   let all_no_op = true;
   let matched = true;
   // implicit AND.  ALL filters must return true.
@@ -365,6 +397,9 @@ function m_FiltersApplyToNode(node, filters) {
   } else {
     // node is filtered out if it fails any filter tests
     node.isFilteredOut = !matched;
+
+    node.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
+
   }
 }
 
@@ -407,19 +442,20 @@ function m_IsNodeMatchedByFilter(node, filter) {
 /*/ EDGE FILTERS
 /*/
 
-function m_FiltersApplyToEdges(filters) {
+function m_FiltersApplyToEdges(filters, transparency) {
   const D3DATA = UDATA.AppState("D3DATA");
   D3DATA.edges.forEach(edge => {
-    m_FiltersApplyToEdge(edge, filters);
+    m_FiltersApplyToEdge(edge, filters, transparency);
   });
   UDATA.SetAppState("D3DATA", D3DATA);
 }
 
-function m_FiltersApplyToEdge(edge, filters) {
+function m_FiltersApplyToEdge(edge, filters, transparency) {
   // regardless of filter definition,
   // always hide edge if it's attached to a filtered node
   if (edge.source.isFilteredOut || edge.target.isFilteredOut) {
     edge.isFilteredOut = true;  // no filters, revert
+    edge.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
     return;
   }
 
@@ -439,6 +475,8 @@ function m_FiltersApplyToEdge(edge, filters) {
   } else {
     // edge is filtered out if it fails ANY filter tests
     edge.isFilteredOut = !matched;
+    edge.filteredTransparency = transparency;; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
+
   }
 }
 

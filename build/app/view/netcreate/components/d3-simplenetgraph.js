@@ -104,9 +104,8 @@ class D3NetGraph {
 
       this.defaultSize  = 5;
 
-      // Joshua added for the tooltips
+      // To handled tooltips
       this.nodePrompts = nodePrompts;
-
 
       /// Initialize UNISYS DATA LINK for REACT
       UDATA = UNISYS.NewDataLink(this);
@@ -197,6 +196,12 @@ class D3NetGraph {
         if (DBG) console.log(PR, 'ZOOM_OUT got state D3DATA', data);
         this._Transition(0.8);
       });
+
+
+      UDATA.HandleMessage('GROUP_PROPS', (data) => {
+        console.log('GROUP_PROPS got ... ');
+      });
+
 
   }
 
@@ -311,6 +316,7 @@ class D3NetGraph {
 
           d.weight = radius
           d.size = radius // save the calculated size
+          d.degrees = radius - 1 // hack for filters that read degrees
           return this.defaultSize + (this.defaultSize * d.weight / 2)
         })
         //        .attr("r", (d) => { return this.defaultSize }) // d.size ?  d.size/10 : this.defaultSize; })
@@ -325,7 +331,7 @@ class D3NetGraph {
           return COLORMAP[d.attributes["Node_Type"]];
         })
         .style("opacity", d => {
-          return d.isFilteredOut ? 0 : 1.0
+          return d.isFilteredOut ? d.filteredTransparency : 1.0
         });
 
       // enter node: also append 'text' element
@@ -337,7 +343,7 @@ class D3NetGraph {
           .attr("dy", "0.35em") // ".15em")
           .text((d) => { return d.label })
           .style("opacity", d => {
-            return d.isFilteredOut ? 0 : 1.0
+            return d.isFilteredOut ? d.filteredTransparency : 1.0
           });
 
       // enter node: also append a 'title' tag
@@ -409,13 +415,14 @@ class D3NetGraph {
 
               d.weight = radius
               d.size = radius // save the calculated size
+              d.degrees = radius - 1
               return this.defaultSize + (this.defaultSize * d.weight / 2)
           })
           .transition()
           .duration(500)
           .style("opacity", d => {
             // console.log(d);
-            return d.isFilteredOut ? 0 : 1.0
+            return d.isFilteredOut ? d.filteredTransparency : 1.0
           });
 
       // UPDATE text in each node for all nodes
@@ -436,7 +443,7 @@ class D3NetGraph {
           .transition()
           .duration(500)
           .style("opacity", d => {
-            return d.isFilteredOut ? 0 : 1.0
+            return d.isFilteredOut ? d.filteredTransparency : 1.0
           });
 
       nodeElements.merge(nodeElements)
@@ -464,7 +471,7 @@ class D3NetGraph {
         //   this.edgeClickFn( d )
         // })
         .style("opacity", d => {
-          return d.isFilteredOut ? 0 : 1.0
+          return d.isFilteredOut ? d.filteredTransparency : 1.0
         });
 
       // .merge() updates the visuals whenever the data is updated.
@@ -475,7 +482,7 @@ class D3NetGraph {
         .transition()
         .duration(500)
         .style("opacity", d => {
-          return d.isFilteredOut ? 0 : 1.0
+          return d.isFilteredOut ? d.filteredTransparency : 1.0
         });
 
       linkElements.exit().remove()

@@ -240,7 +240,7 @@ class NodeSelector extends UNISYS.Component {
       Ignore the request if we're already editing a node.
   /*/
       UDATA.HandleMessage("NODE_EDIT", (data) => {
-        if ( (data.nodeID!==undefined) && (typeof data.nodeID==="number") && !this.state.isEditable ) {
+        if ( (data.nodeID!==undefined) && (typeof data.nodeID==="number") && !this.state.isEditable && !this.state.isLocked ) {
           this.requestEditNode(data.nodeID);
         } else {
           console.error("NodeSelector.NODE_EDIT called with bad data.nodeID:", data.nodeID);
@@ -582,7 +582,7 @@ class NodeSelector extends UNISYS.Component {
       let isValid = false;
       let formData = this.state.formData;
 
-      if (formData.label!=='') isValid=true;
+      if (formData.label!=='' && formData.label!==undefined) isValid=true;
       if (DBG) console.log('NodeSElector.validateForm: Validating',isValid,'because label is',formData.label,'!');
       this.setState({
         isValid: isValid
@@ -877,7 +877,7 @@ class NodeSelector extends UNISYS.Component {
       // Update the data with the selectedNode
       let formData = this.state.formData;
       let node = {
-        label : formData.label,
+        label : formData.label?formData.label:'',
         id    : formData.id,
         attributes: {
           'Node_Type'  : formData.type,
