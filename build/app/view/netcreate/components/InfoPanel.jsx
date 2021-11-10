@@ -181,7 +181,7 @@ class InfoPanel extends UNISYS.Component {
                 className={classnames({ active: activeTab === '2' })}
                 onClick={() => { this.toggle('2'); this.sendGA('Filter', window.location); }}
               >
-                Filters
+                Highlight
               </NavLink>
             </NavItem>
             <NavItem>
