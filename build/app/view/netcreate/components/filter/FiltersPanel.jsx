@@ -69,6 +69,12 @@ class FiltersPanel extends UNISYS.Component {
           display: 'flex', flexDirection: 'column',
           maxHeight: tableHeight
         }}>
+        <Label className="small text-muted" style={{ padding: '0.5em 0 0 0.5em', marginBottom: '0' }}>
+          {filterAction === FILTER.ACTION.HIGHLIGHT
+            ? 'Highlight nodes/edges that match criteria. (Fade others)'
+            : 'Remove nodes/edges that match criteria.'
+          }
+        </Label>
         <div style={{ display: 'flex', flexGrow: `1`, justifyContent: 'space-evenly' }}>
           {defs.map(def => <FilterGroup
             key={def.label}
