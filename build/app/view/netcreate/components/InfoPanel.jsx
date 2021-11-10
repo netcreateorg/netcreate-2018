@@ -29,6 +29,7 @@ const ReactStrap = require('reactstrap');
 const { TabContent, TabPane, Nav, NavItem, NavLink, Row, Col, Button } = ReactStrap;
 const classnames = require('classnames');
 
+import FILTER from './filter/FilterEnums';
 const FiltersPanel = require('./filter/FiltersPanel');
 const NodeTable = require('./NodeTable');
 const EdgeTable = require('./EdgeTable');
@@ -179,7 +180,7 @@ class InfoPanel extends UNISYS.Component {
             <NavItem>
               <NavLink
                 className={classnames({ active: activeTab === '2' })}
-                onClick={() => { this.toggle('2'); this.sendGA('Filter', window.location); }}
+                onClick={() => { this.toggle('2'); this.sendGA('Highlight', window.location); }}
               >
                 Highlight
               </NavLink>
@@ -187,31 +188,39 @@ class InfoPanel extends UNISYS.Component {
             <NavItem>
               <NavLink
                 className={classnames({ active: activeTab === '3' })}
-                onClick={() => { this.toggle('3'); this.sendGA('Nodes Table', window.location); }}
+                onClick={() => { this.toggle('3'); this.sendGA('Filter', window.location); }}
+              >
+                Filter
+              </NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink
+                className={classnames({ active: activeTab === '4' })}
+                onClick={() => { this.toggle('4'); this.sendGA('Nodes Table', window.location); }}
               >
                 Nodes Table
               </NavLink>
             </NavItem>
             <NavItem>
               <NavLink
-                className={classnames({ active: activeTab === '4' })}
-                onClick={() => { this.toggle('4'); this.sendGA('Edges Table', window.location); }}
+                className={classnames({ active: activeTab === '5' })}
+                onClick={() => { this.toggle('5'); this.sendGA('Edges Table', window.location); }}
               >
                 Edges Table
               </NavLink>
             </NavItem>
             <NavItem>
               <NavLink
-                className={classnames({ active: activeTab === '5' })}
-                onClick={() => { this.toggle('5'); this.sendGA('Vocabulary', window.location); }}
+                className={classnames({ active: activeTab === '6' })}
+                onClick={() => { this.toggle('6'); this.sendGA('Vocabulary', window.location); }}
               >
                 Vocabulary
               </NavLink>
             </NavItem>
             <NavItem>
               <NavLink
-                className={classnames({ active: activeTab === '6' })}
-                onClick={() => { this.toggle('6'); this.sendGA('Help', window.location); }}
+                className={classnames({ active: activeTab === '7' })}
+                onClick={() => { this.toggle('7'); this.sendGA('Help', window.location); }}
               >
                 Help
               </NavLink>
@@ -221,30 +230,33 @@ class InfoPanel extends UNISYS.Component {
             <TabPane tabId="1">
             </TabPane>
             <TabPane tabId="2">
-              <FiltersPanel tableHeight={tableHeight} />
+              <FiltersPanel tableHeight={tableHeight} filterAction={FILTER.ACTION.HIGHLIGHT}/>
             </TabPane>
             <TabPane tabId="3">
-              <Row>
-                <Col sm="12">
-                  {activeTab==="3" && <NodeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates}/> }
-                </Col>
-              </Row>
+              <FiltersPanel tableHeight={tableHeight} filterAction={FILTER.ACTION.FILTER}/>
             </TabPane>
             <TabPane tabId="4">
               <Row>
                 <Col sm="12">
-                  {activeTab==="4" && <EdgeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates} /> }
+                  {activeTab==="4" && <NodeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates}/> }
                 </Col>
               </Row>
             </TabPane>
             <TabPane tabId="5">
               <Row>
                 <Col sm="12">
-                  <Vocabulary tableHeight={tableHeight} />
+                  {activeTab==="5" && <EdgeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates} /> }
                 </Col>
               </Row>
             </TabPane>
             <TabPane tabId="6">
+              <Row>
+                <Col sm="12">
+                  <Vocabulary tableHeight={tableHeight} />
+                </Col>
+              </Row>
+            </TabPane>
+            <TabPane tabId="7">
               <Row>
                 <Col sm="12">
                   <Help />
