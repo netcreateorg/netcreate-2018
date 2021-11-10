@@ -92,6 +92,7 @@ class SelectFilter extends React.Component {
   }
 
   TriggerChangeHandler() {
+    const { filterAction } = this.props;
     const { id, type, key, keylabel, options } = this.props.filter;
     const filter = {
       id,
@@ -104,7 +105,8 @@ class SelectFilter extends React.Component {
     };
     UDATA.LocalCall('FILTER_DEFINE', {
       group: this.props.group,
-      filter
+      filter,
+      filterAction
     }); // set a SINGLE filter
   }
 
@@ -116,6 +118,7 @@ class SelectFilter extends React.Component {
   }
 
   render() {
+    const { filterAction } = this.props;
     const { id, key, keylabel, operator, value, options } = this.props.filter;
     return (
       <Form inline className="filter-item" key={id}>

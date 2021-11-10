@@ -60,7 +60,7 @@ class FiltersPanel extends UNISYS.Component {
   }
 
   render() {
-    const { tableHeight } = this.props;
+    const { tableHeight, filterAction } = this.props;
     const defs = [this.state.nodes, this.state.edges];
     return (
       <div className="filterPanel"
@@ -75,6 +75,7 @@ class FiltersPanel extends UNISYS.Component {
             group={def.group}
             label={def.label}
             filters={def.filters}
+            filterAction={filterAction}
             transparency={def.transparency}
             onFiltersChange={this.OnFilterChange}
           />)}

@@ -8,7 +8,7 @@ const ReactStrap = require('reactstrap');
 const { Input, Label } = ReactStrap;
 
 export default function FilterGroup({
-  group, label, filters, transparency
+  group, label, filters, filterAction, transparency
 }) {
   return (
     <div className="filter-group" style={{margin:'5px 5px 5px 0',padding:'10px',backgroundColor:'rgba(0,0,0,0)'}}>
@@ -17,13 +17,13 @@ export default function FilterGroup({
         switch (filter.type) {
           case FILTER.TYPES.STRING:
           case FILTER.TYPES.NODE:
-            return <StringFilter key={filter.id} group={group} filter={filter} />
+            return <StringFilter key={filter.id} group={group} filter={filter} filterAction={filterAction}/>
             break;
           case FILTER.TYPES.NUMBER:
-            return <NumberFilter key={filter.id} group={group} filter={filter} />
+            return <NumberFilter key={filter.id} group={group} filter={filter} filterAction={filterAction}/>
             break;
           case FILTER.TYPES.SELECT:
-            return <SelectFilter key={filter.id} group={group} filter={filter} />
+            return <SelectFilter key={filter.id} group={group} filter={filter} filterAction={filterAction}/>
             break;
           default:
             console.error(`FilterGroup: Filter Type not found ${filter.type} for filter`, filter);

@@ -87,6 +87,7 @@ class StringFilter extends React.Component {
   }
 
   TriggerChangeHandler() {
+    const { filterAction } = this.props;
     const { id, type, key, keylabel } = this.props.filter;
     const filter = {
       id,
@@ -98,11 +99,13 @@ class StringFilter extends React.Component {
     };
     UDATA.LocalCall('FILTER_DEFINE', {
       group: this.props.group,
-      filter
+      filter,
+      filterAction
     }); // set a SINGLE filter
   }
 
   render() {
+    const { filterAction } = this.props;
     const { id, key, keylabel, operator, value } = this.props.filter;
     return (
       <Form inline className="filter-item" key={id}>
