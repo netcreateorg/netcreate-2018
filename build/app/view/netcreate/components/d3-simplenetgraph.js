@@ -403,20 +403,20 @@ class D3NetGraph {
             if (d.selected || d.strokeColor) return '5px';
             return undefined // don't set stroke width
           })
-// this "r" is necessary to resize after a link is added
           .attr("fill", (d) => {
             // REVIEW: Using label match.  Should we use id instead?
             return COLORMAP[d.attributes["Node_Type"]];
           })
           .attr("r", (d) => {
-              let radius = this.data.edges.reduce((acc,ed)=>{
-                return (ed.source.id===d.id || ed.target.id===d.id) ? acc+1 : acc
-              },1);
+            // this "r" is necessary to resize after a link is added
+            let radius = this.data.edges.reduce((acc,ed)=>{
+              return (ed.source.id===d.id || ed.target.id===d.id) ? acc+1 : acc
+            },1);
 
-              d.weight = radius
-              d.size = radius // save the calculated size
-              d.degrees = radius - 1
-              return this.defaultSize + (this.defaultSize * d.weight / 2)
+            d.weight = radius
+            d.size = radius // save the calculated size
+            d.degrees = radius - 1
+            return this.defaultSize + (this.defaultSize * d.weight / 2)
           })
           .transition()
           .duration(500)
