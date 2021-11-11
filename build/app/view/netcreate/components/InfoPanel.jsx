@@ -187,7 +187,7 @@ class InfoPanel extends UNISYS.Component {
             <NavItem>
               <NavLink
                 className={classnames({ active: activeTab === '3' })}
-                onClick={() => { this.toggle('4'); this.sendGA('Nodes Table', window.location); }}
+                onClick={() => { this.toggle('3'); this.sendGA('Nodes Table', window.location); }}
               >
                 Nodes Table
               </NavLink>
@@ -195,7 +195,7 @@ class InfoPanel extends UNISYS.Component {
             <NavItem>
               <NavLink
                 className={classnames({ active: activeTab === '4' })}
-                onClick={() => { this.toggle('5'); this.sendGA('Edges Table', window.location); }}
+                onClick={() => { this.toggle('4'); this.sendGA('Edges Table', window.location); }}
               >
                 Edges Table
               </NavLink>
@@ -203,7 +203,7 @@ class InfoPanel extends UNISYS.Component {
             <NavItem>
               <NavLink
                 className={classnames({ active: activeTab === '5' })}
-                onClick={() => { this.toggle('6'); this.sendGA('Vocabulary', window.location); }}
+                onClick={() => { this.toggle('5'); this.sendGA('Vocabulary', window.location); }}
               >
                 Vocabulary
               </NavLink>
@@ -211,7 +211,7 @@ class InfoPanel extends UNISYS.Component {
             <NavItem>
               <NavLink
                 className={classnames({ active: activeTab === '6' })}
-                onClick={() => { this.toggle('7'); this.sendGA('Help', window.location); }}
+                onClick={() => { this.toggle('6'); this.sendGA('Help', window.location); }}
               >
                 Help
               </NavLink>
