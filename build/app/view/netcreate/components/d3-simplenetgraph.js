@@ -331,7 +331,7 @@ class D3NetGraph {
           return COLORMAP[d.attributes["Node_Type"]];
         })
         .style("opacity", d => {
-          return d.isFilteredOut ? d.filteredTransparency : 1.0
+          return d.filteredTransparency
         });
 
       // enter node: also append 'text' element
@@ -343,7 +343,7 @@ class D3NetGraph {
           .attr("dy", "0.35em") // ".15em")
           .text((d) => { return d.label })
           .style("opacity", d => {
-            return d.isFilteredOut ? d.filteredTransparency : 1.0
+            return d.filteredTransparency
           });
 
       // enter node: also append a 'title' tag
@@ -422,7 +422,7 @@ class D3NetGraph {
           .duration(500)
           .style("opacity", d => {
             // console.log(d);
-            return d.isFilteredOut ? d.filteredTransparency : 1.0
+            return d.filteredTransparency
           });
 
       // UPDATE text in each node for all nodes
@@ -443,7 +443,7 @@ class D3NetGraph {
           .transition()
           .duration(500)
           .style("opacity", d => {
-            return d.isFilteredOut ? d.filteredTransparency : 1.0
+            return d.filteredTransparency
           });
 
       nodeElements.merge(nodeElements)
@@ -471,7 +471,7 @@ class D3NetGraph {
         //   this.edgeClickFn( d )
         // })
         .style("opacity", d => {
-          return d.isFilteredOut ? d.filteredTransparency : 1.0
+          return d.filteredTransparency
         });
 
       // .merge() updates the visuals whenever the data is updated.
@@ -482,7 +482,7 @@ class D3NetGraph {
         .transition()
         .duration(500)
         .style("opacity", d => {
-          return d.isFilteredOut ? d.filteredTransparency : 1.0
+          return d.filteredTransparency
         });
 
       linkElements.exit().remove()

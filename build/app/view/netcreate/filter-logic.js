@@ -392,13 +392,16 @@ function m_FiltersApplyToNode(node, filters, transparency) {
     }
   });
   if (all_no_op) {
-    // no filters defined, undo isFilteredOut
-    node.isFilteredOut = false;
+    // all filters are "no_op", so no filters defined, don't filter anything
+    node.filteredTransparency = 1.0; // opaque, not tranparent
   } else {
     // node is filtered out if it fails any filter tests
-    node.isFilteredOut = !matched;
-
-    node.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
+    if (!matched) {
+      node.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
+    } else {
+      node.filteredTransparency = 1.0; // opaque
+    }
+  }
 
   }
 }
@@ -471,11 +474,16 @@ function m_FiltersApplyToEdge(edge, filters, transparency) {
   });
   if (all_no_op) {
     // no filters defined, undo isFilteredOut
-    edge.isFilteredOut = false;
+    edge.filteredTransparency = 1.0;
   } else {
     // edge is filtered out if it fails ANY filter tests
-    edge.isFilteredOut = !matched;
-    edge.filteredTransparency = transparency;; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
+    if (!matched) {
+      edge.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
+    } else {
+      edge.filteredTransparency = 1.0; // opaque
+    }
+  }
+
 
   }
 }
