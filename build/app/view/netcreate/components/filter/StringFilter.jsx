@@ -122,8 +122,9 @@ class StringFilter extends React.Component {
             )}
           </Input>
           <Input type="text" value={value} placeholder="..."
-            style={{maxWidth:'12em', height:'1.5em'}}
-            onChange={this.OnChangeValue} bsSize="sm" />
+            style={{ maxWidth: '12em', height: '1.5em' }}
+            onChange={this.OnChangeValue} bsSize="sm"
+            disabled={operator === FILTER.OPERATORS.NO_OP.key}/>
         </FormGroup>
       </Form>
     );

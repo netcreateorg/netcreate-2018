@@ -129,7 +129,8 @@ class NumberFilter extends React.Component {
             )}
           </Input>
           <Input type="text" value={value} placeholder="..."
-            onChange={this.OnChangeValue} bsSize="sm" />
+            onChange={this.OnChangeValue} bsSize="sm"
+            disabled={operator === FILTER.OPERATORS.NO_OP.key}/>
         </FormGroup>
       </Form>
     );
