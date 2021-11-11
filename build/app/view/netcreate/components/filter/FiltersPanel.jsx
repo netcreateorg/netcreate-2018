@@ -46,6 +46,9 @@ class FiltersPanel extends UNISYS.Component {
     UDATA.OnAppStateChange("FDATA", this.UpdateFilterDefs);
   } // constructor
 
+  componentWillUnmount() {
+    // console.error('TBD: gracefully unsubscribe!')
+  }
 
   UpdateFilterDefs(data) {
     this.setState(data);
@@ -55,8 +58,6 @@ class FiltersPanel extends UNISYS.Component {
     UDATA.LocalCall('FILTER_CLEAR');
   }
 
-  componentWillUnmount() {
-    // console.error('TBD: gracefully unsubscribe!')
   }
 
   render() {
