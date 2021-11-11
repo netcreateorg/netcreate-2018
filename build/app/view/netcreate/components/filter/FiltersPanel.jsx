@@ -20,7 +20,7 @@ import React from 'react';
 import StringFilter from './StringFilter';
 const ReactStrap = require('reactstrap');
 
-const { Button, Input, Label } = ReactStrap;
+const { Button, ButtonGroup, Input, Label } = ReactStrap;
 
 const UNISYS = require('unisys/client');
 var UDATA  = null;
@@ -32,8 +32,9 @@ class FiltersPanel extends UNISYS.Component {
 
     this.UpdateFilterDefs = this.UpdateFilterDefs.bind(this);
     this.OnClearBtnClick = this.OnClearBtnClick.bind(this);
+    this.SelectFilterAction = this.SelectFilterAction.bind(this);
 
-     /// Initialize UNISYS DATA LINK for REACT
+    /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
 
     // Load Templates
@@ -58,10 +59,14 @@ class FiltersPanel extends UNISYS.Component {
     UDATA.LocalCall('FILTER_CLEAR');
   }
 
+  SelectFilterAction(filterAction) {
+    this.setState({ filterAction });
+    UDATA.LocalCall('FILTERS_UPDATE', { filterAction });
   }
 
   render() {
-    const { tableHeight, filterAction } = this.props;
+    const { filterAction } = this.state;
+    const { tableHeight } = this.props;
     const defs = [this.state.nodes, this.state.edges];
     return (
       <div className="filterPanel"
@@ -70,10 +75,24 @@ class FiltersPanel extends UNISYS.Component {
           display: 'flex', flexDirection: 'column',
           maxHeight: tableHeight
         }}>
+        <ButtonGroup>
+          <Button
+            onClick={() => this.SelectFilterAction(FILTER.ACTION.HIGHLIGHT)}
+            active={filterAction === FILTER.ACTION.HIGHLIGHT}
+            outline={filterAction === FILTER.ACTION.HIGHLIGHT}
+            disabled={filterAction === FILTER.ACTION.HIGHLIGHT}
+          >Highlight</Button>
+          <Button
+            onClick={() => this.SelectFilterAction(FILTER.ACTION.FILTER)}
+            active={filterAction === FILTER.ACTION.FILTER}
+            outline={filterAction === FILTER.ACTION.FILTER}
+            disabled={filterAction === FILTER.ACTION.FILTER}
+          >Filter</Button>
+        </ButtonGroup>
         <Label className="small text-muted" style={{ padding: '0.5em 0 0 0.5em', marginBottom: '0' }}>
           {filterAction === FILTER.ACTION.HIGHLIGHT
             ? 'Highlight nodes/edges that match criteria. (Fade others)'
-            : 'Remove nodes/edges that match criteria.'
+            : 'Filter (remove) nodes/edges that match criteria.'
           }
         </Label>
         <div style={{ display: 'flex', flexGrow: `1`, justifyContent: 'space-evenly' }}>

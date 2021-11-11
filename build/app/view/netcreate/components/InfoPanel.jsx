@@ -29,7 +29,6 @@ const ReactStrap = require('reactstrap');
 const { TabContent, TabPane, Nav, NavItem, NavLink, Row, Col, Button } = ReactStrap;
 const classnames = require('classnames');
 
-import FILTER from './filter/FilterEnums';
 const FiltersPanel = require('./filter/FiltersPanel');
 const NodeTable = require('./NodeTable');
 const EdgeTable = require('./EdgeTable');
@@ -182,20 +181,12 @@ class InfoPanel extends UNISYS.Component {
                 className={classnames({ active: activeTab === '2' })}
                 onClick={() => { this.toggle('2'); this.sendGA('Highlight', window.location); }}
               >
-                Highlight
+                Highlight / Filter
               </NavLink>
             </NavItem>
             <NavItem>
               <NavLink
                 className={classnames({ active: activeTab === '3' })}
-                onClick={() => { this.toggle('3'); this.sendGA('Filter', window.location); }}
-              >
-                Filter
-              </NavLink>
-            </NavItem>
-            <NavItem>
-              <NavLink
-                className={classnames({ active: activeTab === '4' })}
                 onClick={() => { this.toggle('4'); this.sendGA('Nodes Table', window.location); }}
               >
                 Nodes Table
@@ -203,7 +194,7 @@ class InfoPanel extends UNISYS.Component {
             </NavItem>
             <NavItem>
               <NavLink
-                className={classnames({ active: activeTab === '5' })}
+                className={classnames({ active: activeTab === '4' })}
                 onClick={() => { this.toggle('5'); this.sendGA('Edges Table', window.location); }}
               >
                 Edges Table
@@ -211,7 +202,7 @@ class InfoPanel extends UNISYS.Component {
             </NavItem>
             <NavItem>
               <NavLink
-                className={classnames({ active: activeTab === '6' })}
+                className={classnames({ active: activeTab === '5' })}
                 onClick={() => { this.toggle('6'); this.sendGA('Vocabulary', window.location); }}
               >
                 Vocabulary
@@ -219,7 +210,7 @@ class InfoPanel extends UNISYS.Component {
             </NavItem>
             <NavItem>
               <NavLink
-                className={classnames({ active: activeTab === '7' })}
+                className={classnames({ active: activeTab === '6' })}
                 onClick={() => { this.toggle('7'); this.sendGA('Help', window.location); }}
               >
                 Help
@@ -230,33 +221,30 @@ class InfoPanel extends UNISYS.Component {
             <TabPane tabId="1">
             </TabPane>
             <TabPane tabId="2">
-              <FiltersPanel tableHeight={tableHeight} filterAction={FILTER.ACTION.HIGHLIGHT}/>
+              <FiltersPanel tableHeight={tableHeight}/>
             </TabPane>
             <TabPane tabId="3">
-              <FiltersPanel tableHeight={tableHeight} filterAction={FILTER.ACTION.FILTER}/>
+              <Row>
+                <Col sm="12">
+                  {activeTab==="3" && <NodeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates}/> }
+                </Col>
+              </Row>
             </TabPane>
             <TabPane tabId="4">
               <Row>
                 <Col sm="12">
-                  {activeTab==="4" && <NodeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates}/> }
+                  {activeTab==="4" && <EdgeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates} /> }
                 </Col>
               </Row>
             </TabPane>
             <TabPane tabId="5">
               <Row>
                 <Col sm="12">
-                  {activeTab==="5" && <EdgeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates} /> }
-                </Col>
-              </Row>
-            </TabPane>
-            <TabPane tabId="6">
-              <Row>
-                <Col sm="12">
                   <Vocabulary tableHeight={tableHeight} />
                 </Col>
               </Row>
             </TabPane>
-            <TabPane tabId="7">
+            <TabPane tabId="6">
               <Row>
                 <Col sm="12">
                   <Help />
@@ -277,7 +265,7 @@ class InfoPanel extends UNISYS.Component {
         <div hidden={!hideDragger || filtersSummary===''}
           style={{ padding: '3px', fontSize: '0.8em', color:'#999', backgroundColor:'#eef'}}
         >
-          FILTERED BY: {filtersSummary} <Button size="sm" outline onClick={this.OnClearBtnClick}>Clear Filters</Button>
+          {filtersSummary} <Button size="sm" outline onClick={this.OnClearBtnClick}>Clear Filters</Button>
         </div>
       </div>
     );
