@@ -286,9 +286,16 @@ function m_FilterDefine(data) {
  * @param {Object} data A UDATA pkt {defs}
  */
 function m_FiltersApply() {
+  const FILTERED_D3DATA = UDATA.AppState("D3DATA");
   const FDATA = UDATA.AppState("FDATA");
-  m_FiltersApplyToNodes(FDATA.nodes.filters, FDATA.nodes.transparency);
-  m_FiltersApplyToEdges(FDATA.edges.filters, FDATA.edges.transparency);
+
+  // skip if FDATA has not been defined yet
+  if (Object.keys(FDATA).length < 1) return;
+
+  m_FiltersApplyToNodes(FDATA, FILTERED_D3DATA);
+  m_FiltersApplyToEdges(FDATA, FILTERED_D3DATA);
+  // Update FILTERED_D3DATA
+  UDATA.Call("FILTERED_D3DATA", FILTERED_D3DATA);
 }
 
 function m_ClearFilters() {
@@ -300,10 +307,14 @@ function m_ClearFilters() {
 function m_UpdateFilterSummary() {
   const FDATA = UDATA.AppState("FDATA");
 
+  // skip if FDATA has not been defined yet
+  if (Object.keys(FDATA).length < 1) return;
+
   const nodeFilters = FDATA.nodes.filters;
   const edgeFilters = FDATA.edges.filters;
 
-  let summary = '';
+  let summary = FDATA.filterAction === FILTER.ACTION.HIGHLIGHT
+    ? 'HIGHLIGHTING ' : 'FILTERING ';
   summary += m_FiltersToString(FDATA.nodes.filters);
   summary += m_FiltersToString(FDATA.edges.filters);
 
@@ -389,19 +400,19 @@ function m_MatchNumber(operator, filterVal, objVal) {
 
 /**
  * Side effect:
- *   D3DATA.nodes are updated with `isFilteredOut` flags.
+ *   FILTERED_D3DATA.nodes are updated with `isFilteredOut` flags.
  *
  * @param {Array} filters
  */
-function m_FiltersApplyToNodes(filters, transparency) {
-  const D3DATA = UDATA.AppState("D3DATA");
-  D3DATA.nodes.forEach(node => {
-    m_FiltersApplyToNode(node, filters, transparency);
+function m_FiltersApplyToNodes(FDATA, FILTERED_D3DATA) {
+  const { filterAction } = FDATA;
+  const { filters, transparency } = FDATA.nodes;
+  FILTERED_D3DATA.nodes = FILTERED_D3DATA.nodes.filter(node => {
+    return m_FiltersApplyToNode(node, filters, transparency, filterAction);
   });
-  UDATA.SetAppState("D3DATA", D3DATA);
 }
 
-function m_FiltersApplyToNode(node, filters, transparency) {
+function m_FiltersApplyToNode(node, filters, transparency, filterAction) {
   let all_no_op = true;
   let matched = true;
   // implicit AND.  ALL filters must return true.
@@ -424,7 +435,14 @@ function m_FiltersApplyToNode(node, filters, transparency) {
     }
   }
 
+  // FILTER.ACTION.FILTER
+  if (filterAction === FILTER.ACTION.FILTER) {
+    if (matched) return true;
+    return false;
   }
+
+  // FILTER.ACTION.HIGHLIGHT, so don't filter
+  return true;
 }
 
 function m_IsNodeMatchedByFilter(node, filter) {
@@ -455,7 +473,6 @@ function m_IsNodeMatchedByFilter(node, filter) {
       break;
     default:
       // Else assume it's a number
-      console.log('NUMBER', filter, node);
       return m_MatchNumber(filter.operator, filter.value, nodeValue)
       break;
   }
@@ -466,25 +483,29 @@ function m_IsNodeMatchedByFilter(node, filter) {
 /*/ EDGE FILTERS
 /*/
 
-function m_FiltersApplyToEdges(filters, transparency) {
-  const D3DATA = UDATA.AppState("D3DATA");
-  D3DATA.edges.forEach(edge => {
-    m_FiltersApplyToEdge(edge, filters, transparency);
+function m_FiltersApplyToEdges(FDATA, FILTERED_D3DATA) {
+  const { filterAction } = FDATA;
+  const { filters, transparency } = FDATA.edges;
+  FILTERED_D3DATA.edges = FILTERED_D3DATA.edges.filter(edge => {
+    return m_FiltersApplyToEdge(edge, filters, transparency, filterAction);
   });
-  UDATA.SetAppState("D3DATA", D3DATA);
 }
 
-function m_FiltersApplyToEdge(edge, filters, transparency) {
-  // regardless of filter definition,
-  // always hide edge if it's attached to a filtered node
-  if (edge.source.isFilteredOut || edge.target.isFilteredOut) {
-    edge.isFilteredOut = true;  // no filters, revert
-    edge.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
-    return;
-  }
-
+function m_FiltersApplyToEdge(edge, filters, transparency, filterAction) {
   let all_no_op = true;
   let matched = true;
+  if (edge.source.filteredTransparency < 1.0 || edge.target.filteredTransparency < 1.0) {
+    // regardless of filter definition,
+    // always hide edge if it's attached to a filtered node
+    // FILTER.ACTION.FILTER
+    if (filterAction === FILTER.ACTION.FILTER) return false;
+    // else
+    // FILTER.ACTION.HIGHLIGHT, so don't filter, just fade
+    edge.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
+    return true;
+  }
+
+  // otherwise, look for matches
   // implicit AND.  ALL filters must return true.
   filters.forEach(filter => {
     if (filter.operator === FILTER.OPERATORS.NO_OP.key) return; // skip no_op
@@ -506,7 +527,14 @@ function m_FiltersApplyToEdge(edge, filters, transparency) {
   }
 
 
+  // FILTER.ACTION.FILTER
+  if (filterAction === FILTER.ACTION.FILTER) {
+    if (matched) return true;
+    return false;
   }
+
+  // FILTER.ACTION.HIGHLIGHT, so don't filter
+  return true;
 }
 
 function m_IsEdgeMatchedByFilter(edge, filter) {
