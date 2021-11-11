@@ -41,9 +41,12 @@ class FiltersPanel extends UNISYS.Component {
     // The intial `OnAppStateChange("FDATA")` event when the template is
     // first loaded is called well before FiltersPanel is
     // even constructed.  So we need to explicitly load it here.
-    let FDATA = UDATA.AppState("FDATA");
-    this.state = FDATA;
-
+    const FDATA = UDATA.AppState("FDATA");
+    this.state = {
+      nodes: FDATA.nodes,
+      edges: FDATA.edges,
+      filterAction: FILTER.ACTION.HIGHLIGHT
+    };
     UDATA.OnAppStateChange("FDATA", this.UpdateFilterDefs);
   } // constructor
 

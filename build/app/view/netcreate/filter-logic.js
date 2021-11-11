@@ -113,8 +113,7 @@ MOD.Hook("INITIALIZE", () => {
   UDATA.OnAppStateChange("FDATA", data => {
     if (DBG) console.log(PR + 'OnAppStateChange: FDATA', data);
     // The filter defs have been updated, so apply the filters.
-    m_FiltersApply();
-    m_UpdateFilterSummary();
+    m_UpdateFilters();
   });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -130,6 +129,22 @@ MOD.Hook("INITIALIZE", () => {
   UDATA.HandleMessage("FILTER_CLEAR", () => {
     m_ClearFilters();
   });
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ FILTERS_UPDATE is called by FiltersPanel switches between filters and highlights
+  /*/
+  UDATA.HandleMessage("FILTERS_UPDATE", data => {
+    const FDATA = UDATA.AppState("FDATA");
+    FDATA.filterAction = data.filterAction;
+    UDATA.SetAppState("FDATA", FDATA);
+  });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/     // Listen for D3DATA updates so we know to trigger change?
+  /*/
+  UDATA.OnAppStateChange('D3DATA',(data)=>{
+    m_UpdateFilters();
+  });
+
 
 }); // end UNISYS_INIT
 
@@ -234,12 +249,12 @@ function m_ImportPrompts(prompts) {
  */
 function m_FilterDefine(data) {
   const FDATA = UDATA.AppState("FDATA");
+  FDATA.filterAction = data.filterAction;
   if (data.group === "nodes") {
 
     if (data.type === "transparency")
     {
       FDATA.nodes.transparency = data.transparency;
-
     }
     else{
       let nodeFilters = FDATA.nodes.filters;
@@ -295,6 +310,11 @@ function m_UpdateFilterSummary() {
   UDATA.LocalCall('FILTER_SUMMARY_UPDATE', { filtersSummary: summary });
 }
 
+function m_UpdateFilters() {
+  m_FiltersApply();
+  m_UpdateFilterSummary();
+}
+
 function m_FiltersToString(filters) {
   let summary = ''
   filters.forEach(filter => {
@@ -310,6 +330,7 @@ function m_FiltersToString(filters) {
 function m_OperatorToString(operator) {
   return FILTER.OPERATORS[operator].label;
 }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ UTILITY FUNCTIONS
 /*/
