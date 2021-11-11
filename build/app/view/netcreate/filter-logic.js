@@ -40,6 +40,19 @@
 
   FEATURES
 
+  * "Highlight" vs "Filter"
+    --  Version 1.4 introduces two different types of filtering:
+        "Highlight" highlights the matching nodes/edges and fades the others
+        "Filter" shows matching nodes/edges and removes the non-matching
+        nodes/edges from the display without affecting the underlying data.
+
+  * With Version 1.4, the only data that is graphed is FILTERED_D3DATA.
+    --  d3-simplenetgraph no longer plots on D3DATA changes.
+    --  Instead, FILTERED_D3DATA changes are pushed via an AppCall.
+    --  This way there is only one source of truth: all draw updates
+        are routed through filter-logic.
+    --  If filters have not been defined, we just pass the raw D3DATA
+
   * Filters can be stacked.
         You can define two "Label" filters, for example.
         The only reason you can't do it right now is because the filter template
