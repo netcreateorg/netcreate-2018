@@ -40,6 +40,8 @@
 
   FEATURES
 
+  * See Whimiscal [diagram](https://whimsical.com/d3-data-flow-B2tTGnQYPSNviUhsPL64Dz)
+
   * "Highlight" vs "Filter"
     --  Version 1.4 introduces two different types of filtering:
         "Highlight" highlights the matching nodes/edges and fades the others
@@ -326,10 +328,12 @@ function m_UpdateFilterSummary() {
   const nodeFilters = FDATA.nodes.filters;
   const edgeFilters = FDATA.edges.filters;
 
-  let summary = FDATA.filterAction === FILTER.ACTION.HIGHLIGHT
+  const typeSummary = FDATA.filterAction === FILTER.ACTION.HIGHLIGHT
     ? 'HIGHLIGHTING ' : 'FILTERING ';
-  summary += m_FiltersToString(FDATA.nodes.filters);
-  summary += m_FiltersToString(FDATA.edges.filters);
+  const nodeSummary = m_FiltersToString(FDATA.nodes.filters);
+  const edgeSummary = m_FiltersToString(FDATA.edges.filters);
+  let summary = '';
+  if (nodeSummary || edgeSummary) summary = `${typeSummary} NODES: ${nodeSummary} EDGES: ${edgeSummary}`;
 
   UDATA.LocalCall('FILTER_SUMMARY_UPDATE', { filtersSummary: summary });
 }
