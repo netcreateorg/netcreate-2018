@@ -136,10 +136,14 @@ class SelectFilter extends React.Component {
           </Input>
           <Input type="select" value={value}
             style={{maxWidth:'12em', height:'1.5em', padding: '0'}}
-            onChange={this.OnChangeValue} bsSize="sm">
-            {options.map(op =>
-              <option value={op} key={`${id}${op}`} size="sm">{op}</option>
-            )}
+            onChange={this.OnChangeValue} bsSize="sm"
+            disabled={operator === FILTER.OPERATORS.NO_OP.key}>
+            {operator !== FILTER.OPERATORS.NO_OP.key
+              ? options.map(op =>
+                  <option value={op} key={`${id}${op}`} size="sm">{op}</option>
+                )
+              : ''
+            }
           </Input>
         </FormGroup>
       </Form>
