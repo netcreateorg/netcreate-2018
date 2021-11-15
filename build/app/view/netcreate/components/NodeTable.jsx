@@ -172,8 +172,9 @@ countEdges(edges) {
       }
     }
 
-    /// ---
-    sortByUpdated(nodes)
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ sortByUpdated(nodes)
     {
       if (nodes) {
         return nodes.sort( (a,b) => {
@@ -371,13 +372,12 @@ render() {
       this.handleDataUpdate(D3DATA);
     }
 
-  componentWillUnmount() {
-    this.AppStateChangeOff('D3DATA', this.handleDataUpdate);
-    this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
-  }
+    componentWillUnmount() {
+      this.AppStateChangeOff('D3DATA', this.handleDataUpdate);
+      this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
+    }
 
-displayUpdated(nodeEdge)
-  {
+    displayUpdated(nodeEdge) {
       var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
 
       var year = "" + d.getFullYear();

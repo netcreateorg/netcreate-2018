@@ -42,7 +42,7 @@
 
   * See Whimiscal [diagram](https://whimsical.com/d3-data-flow-B2tTGnQYPSNviUhsPL64Dz)
 
-  * "Highlight" vs "Filter"
+  * filterAction: "Highlight" vs "Filter"
     --  Version 1.4 introduces two different types of filtering:
         "Highlight" highlights the matching nodes/edges and fades the others
         "Filter" shows matching nodes/edges and removes the non-matching
