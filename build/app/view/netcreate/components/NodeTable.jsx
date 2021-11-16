@@ -49,7 +49,6 @@ class NodeTable extends UNISYS.Component {
     this.state = {
       nodePrompts: this.AppState('TEMPLATE').nodePrompts,
       nodes: [],
-      // edgeCounts: {},         // {nodeID:count,...}
       filteredNodes: [],
       isExpanded: true,
       sortkey: 'label'
@@ -138,7 +137,6 @@ class NodeTable extends UNISYS.Component {
     // {}
 
     if (data.nodes) {
-      // const edgeCounts = this.countEdges(data.edges);
       const nodes = this.sortTable(this.state.sortkey, data.nodes);
       this.setState({
         nodes: nodes,
@@ -172,7 +170,6 @@ class NodeTable extends UNISYS.Component {
 /*/
 /*/ sortByEdgeCount(nodes) {
       if (nodes) {
-        // let edgeCounts = this.state.edgeCounts;
         return nodes.sort( (a, b) => {
             let akey = a.degrees || 0,
               bkey = b.degrees || 0;
