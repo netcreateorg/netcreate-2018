@@ -430,37 +430,45 @@ function m_FiltersApplyToNodes(FDATA, FILTEREDD3DATA) {
   });
 }
 
-function m_FiltersApplyToNode(node, filters, transparency, filterAction) {
-  let all_no_op = true;
-  let matched = true;
+function m_NodeIsFiltered(node, filters, transparency, filterAction) {
+  // let all_no_op = true;
+  let keepNode = true;
+
+  // 1. Look for matches
   // implicit AND.  ALL filters must return true.
   filters.forEach(filter => {
     if (filter.operator === FILTER.OPERATORS.NO_OP.key) return; // skip no_op
-    all_no_op = false;
+    // all_no_op = false;
     if (!m_IsNodeMatchedByFilter(node, filter)) {
-      matched = false;
+      keepNode = false;
     }
   });
-  if (all_no_op) {
-    // all filters are "no_op", so no filters defined, don't filter anything
+
+  // 2. Decide based on filterAction
+  if (filterAction === FILTER.ACTION.FILTER) {
+    // not using highlight, so restore transparency
     node.filteredTransparency = 1.0; // opaque, not tranparent
+    if (keepNode) return true;
+    return false; // remove from array
   } else {
-    // node is filtered out if it fails any filter tests
-    if (!matched) {
+    // FILTER.ACTION.HIGHLIGHT
+    if (!keepNode) {
       node.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
     } else {
       node.filteredTransparency = 1.0; // opaque
     }
+    return true; // don't filter out
   }
 
-  // FILTER.ACTION.FILTER
-  if (filterAction === FILTER.ACTION.FILTER) {
-    if (matched) return true;
-    return false;
-  }
-
-  // FILTER.ACTION.HIGHLIGHT, so don't filter
-  return true;
+  // all_no_op
+  // Thjs is currently redundant because matchesFilter will always
+  // be true if there are no filters.  If matchesFilter is true,
+  // then the node will not be removed/faded.
+  //
+  // if (all_no_op) {
+  //   // all filters are "no_op", so no filters defined, don't filter anything
+  //   node.filteredTransparency = 1.0; // opaque, not tranparent
+  // }
 }
 
 function m_IsNodeMatchedByFilter(node, filter) {

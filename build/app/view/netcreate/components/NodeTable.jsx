@@ -4,6 +4,8 @@
 
     NodeTable is used to to display a table of nodes for review.
 
+    It displays D3DATA.
+    But also checks FILTEREDD3DATA to show highlight/filtered state
 
   ## TO USE
 
@@ -123,8 +125,7 @@ class NodeTable extends UNISYS.Component {
   /*/ Handle updated SELECTION
   /*/
   handleDataUpdate(data) {
-    if (DBG)
-      console.log('handle data update')
+    if (DBG) console.log('handle data update')
 
     // 2020-09-09 Removing this check and relying on other NodeTable optimizations. BL
     // if (data.bMarkedNode)
@@ -137,20 +138,29 @@ class NodeTable extends UNISYS.Component {
     // {}
 
     if (data.nodes) {
-      const nodes = this.sortTable(this.state.sortkey, data.nodes);
-      this.setState({
-        nodes: nodes,
-        // edgeCounts: edgeCounts
-      });
+      let nodes = this.sortTable(this.state.sortkey, data.nodes);
+      const { filteredNodes } = this.state;
+      // add highlight/filter status
+      if (filteredNodes.length > 0) {
+        nodes = nodes.map(node => {
+          const filteredNode = filteredNodes.find(n => n.id === node.id);
+          if (!filteredNode) node.isFiltered = true; // not in filteredNode, so it's been removed
+          return node
+        });
+      }
+      this.setState({ nodes });
     }
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  handleFilterDataUpdate(data) {
+    if (data.nodes) this.setState( { filteredNodes: data.nodes } );
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   OnTemplateUpdate(data) {
     this.setState({nodePrompts: data.nodePrompts});
   }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -370,7 +380,11 @@ render() {
         </thead>
         <tbody style={{maxHeight: tableHeight}}>
         {this.state.nodes.map( (node,i) => (
-          <tr key={i}>
+          <tr key={i}
+            style={{
+              color: node.isFiltered ? 'red' : 'black',
+              opacity: node.filteredTransparency
+            }}>
             <td><Button size="sm" outline
                   value={node.id}
                   onClick={this.onButtonClick}
