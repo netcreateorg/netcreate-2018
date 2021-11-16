@@ -43,42 +43,88 @@ var   UDATA    = null;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
 class NodeTable extends UNISYS.Component {
-    constructor (props) {
-      super(props);
+  constructor(props) {
+    super(props);
 
-      this.state = {
-        nodePrompts:  this.AppState('TEMPLATE').nodePrompts,
-        nodes: [],
-        edgeCounts: {},         // {nodeID:count,...}
-        isExpanded:   true,
-        sortkey:      'label'
-      };
+    this.state = {
+      nodePrompts: this.AppState('TEMPLATE').nodePrompts,
+      nodes: [],
+      // edgeCounts: {},         // {nodeID:count,...}
+      filteredNodes: [],
+      isExpanded: true,
+      sortkey: 'label'
+    };
 
-      this.handleDataUpdate = this.handleDataUpdate.bind(this);
-      this.OnTemplateUpdate = this.OnTemplateUpdate.bind(this);
-      this.onButtonClick = this.onButtonClick.bind(this);
-      this.onToggleExpanded         = this.onToggleExpanded.bind(this);
-      this.setSortKey               = this.setSortKey.bind(this);
-      this.sortSymbol               = this.sortSymbol.bind(this);
+    this.handleDataUpdate = this.handleDataUpdate.bind(this);
+    this.handleFilterDataUpdate = this.handleFilterDataUpdate.bind(this);
+    this.OnTemplateUpdate = this.OnTemplateUpdate.bind(this);
+    this.onButtonClick = this.onButtonClick.bind(this);
+    this.onToggleExpanded = this.onToggleExpanded.bind(this);
+    this.setSortKey = this.setSortKey.bind(this);
+    this.sortSymbol = this.sortSymbol.bind(this);
 
-      this.sortDirection = -1;
+    this.sortDirection = -1;
 
-      /// Initialize UNISYS DATA LINK for REACT
-      UDATA = UNISYS.NewDataLink(this);
+    /// Initialize UNISYS DATA LINK for REACT
+    UDATA = UNISYS.NewDataLink(this);
 
-      // Always make sure class methods are bind()'d before using them
-      // as a handler, otherwise object context is lost
-      this.OnAppStateChange('D3DATA', this.handleDataUpdate);
+    // Always make sure class methods are bind()'d before using them
+    // as a handler, otherwise object context is lost
+    this.OnAppStateChange('D3DATA', this.handleDataUpdate);
 
-      // Handle Template updates
-      this.OnAppStateChange('TEMPLATE', this.OnTemplateUpdate);
-    } // constructor
+    // Handle Template updates
+    this.OnAppStateChange('TEMPLATE', this.OnTemplateUpdate);
+
+    // Track Filtered Data Updates too
+    // UDATA.HandleMessage('FILTEREDD3DATA', (data) => {
+    this.OnAppStateChange('FILTEREDD3DATA', this.handleFilterDataUpdate);
+
+  } // constructor
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ componentDidMount () {
+      if (DBG) console.error('NodeTable.componentDidMount!');
+      // Explicitly retrieve data because we may not have gotten a D3DATA
+      // update while we were hidden.
+
+      // filtered data needs to be set before D3Data
+      const FILTEREDD3DATA = UDATA.AppState('FILTEREDD3DATA');
+      this.setState({ filteredNodes: FILTEREDD3DATA.nodes },
+        () => {
+          let D3DATA = this.AppState('D3DATA');
+          this.handleDataUpdate(D3DATA);
+        }
+      )
+    }
+
+    componentWillUnmount() {
+      this.AppStateChangeOff('D3DATA', this.handleDataUpdate);
+      this.AppStateChangeOff('FILTEREDD3DATA', this.handleFilterDataUpdate);
+      this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
+    }
+
+    displayUpdated(nodeEdge) {
+      var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
+
+      var year = "" + d.getFullYear();
+      var date = (d.getMonth()+1)+"/"+d.getDate()+"/"+ year.substr(2,4);
+      var time = d.toTimeString().substr(0,5);
+      var dateTime = date+' at '+time;
+      var titleString = "v" + nodeEdge.meta.revision;
+      if(nodeEdge._nlog)
+        titleString += " by " + nodeEdge._nlog[nodeEdge._nlog.length-1];
+      var tag = <span title={titleString}> {dateTime} </span>;
+
+      return tag;
+
+    }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Handle updated SELECTION
   /*/
   handleDataUpdate(data) {
-    if(DBG)
+    if (DBG)
       console.log('handle data update')
 
     // 2020-09-09 Removing this check and relying on other NodeTable optimizations. BL
@@ -100,11 +146,13 @@ class NodeTable extends UNISYS.Component {
       });
     }
   }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-OnTemplateUpdate(data) {
-  this.setState({nodePrompts: data.nodePrompts});
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  OnTemplateUpdate(data) {
+    this.setState({nodePrompts: data.nodePrompts});
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Build table of counts
 /*/
 // JD removed because "size" seemed to work just fine? (I added a degrees that is size - 1)
@@ -288,8 +336,6 @@ countEdges(edges) {
 /*/
 /*/
 render() {
-  if(DBG)
-  console.log('nodetablerender!')
   if (this.state.nodes === undefined) return "";
   let { nodePrompts } = this.state;
   let { tableHeight } = this.props;
@@ -362,36 +408,6 @@ render() {
   );
 
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ componentDidMount () {
-      if (DBG) console.error('NodeTable.componentDidMount!');
-      // Explicitly retrieve data because we may not have gotten a D3DATA
-      // update while we were hidden.
-      let D3DATA = this.AppState('D3DATA');
-      this.handleDataUpdate(D3DATA);
-    }
-
-    componentWillUnmount() {
-      this.AppStateChangeOff('D3DATA', this.handleDataUpdate);
-      this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
-    }
-
-    displayUpdated(nodeEdge) {
-      var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
-
-      var year = "" + d.getFullYear();
-      var date = (d.getMonth()+1)+"/"+d.getDate()+"/"+ year.substr(2,4);
-      var time = d.toTimeString().substr(0,5);
-      var dateTime = date+' at '+time;
-      var titleString = "v" + nodeEdge.meta.revision;
-      if(nodeEdge._nlog)
-        titleString += " by " + nodeEdge._nlog[nodeEdge._nlog.length-1];
-      var tag = <span title={titleString}> {dateTime} </span>;
-
-      return tag;
-
-  }
 
 } // class NodeTable
 
