@@ -301,16 +301,17 @@ function m_FilterDefine(data) {
  * @param {Object} data A UDATA pkt {defs}
  */
 function m_FiltersApply() {
-  const FILTERED_D3DATA = UDATA.AppState("D3DATA");
+  const FILTEREDD3DATA = UDATA.AppState("D3DATA");
   const FDATA = UDATA.AppState("FDATA");
 
   // skip if FDATA has not been defined yet
   if (Object.keys(FDATA).length < 1) return;
 
-  m_FiltersApplyToNodes(FDATA, FILTERED_D3DATA);
-  m_FiltersApplyToEdges(FDATA, FILTERED_D3DATA);
-  // Update FILTERED_D3DATA
-  UDATA.Call("FILTERED_D3DATA", FILTERED_D3DATA);
+  m_FiltersApplyToNodes(FDATA, FILTEREDD3DATA);
+  m_FiltersApplyToEdges(FDATA, FILTEREDD3DATA);
+  // Update FILTEREDD3DATA
+  UDATA.SetAppState("FILTEREDD3DATA", FILTEREDD3DATA);
+
 }
 
 function m_ClearFilters() {
@@ -417,15 +418,15 @@ function m_MatchNumber(operator, filterVal, objVal) {
 
 /**
  * Side effect:
- *   FILTERED_D3DATA.nodes are updated with `isFilteredOut` flags.
+ *   FILTEREDD3DATA.nodes are updated with `isFilteredOut` flags.
  *
  * @param {Array} filters
  */
-function m_FiltersApplyToNodes(FDATA, FILTERED_D3DATA) {
+function m_FiltersApplyToNodes(FDATA, FILTEREDD3DATA) {
   const { filterAction } = FDATA;
   const { filters, transparency } = FDATA.nodes;
-  FILTERED_D3DATA.nodes = FILTERED_D3DATA.nodes.filter(node => {
-    return m_FiltersApplyToNode(node, filters, transparency, filterAction);
+  FILTEREDD3DATA.nodes = FILTEREDD3DATA.nodes.filter(node => {
+    return m_NodeIsFiltered(node, filters, transparency, filterAction);
   });
 }
 
@@ -500,11 +501,11 @@ function m_IsNodeMatchedByFilter(node, filter) {
 /*/ EDGE FILTERS
 /*/
 
-function m_FiltersApplyToEdges(FDATA, FILTERED_D3DATA) {
+function m_FiltersApplyToEdges(FDATA, FILTEREDD3DATA) {
   const { filterAction } = FDATA;
   const { filters, transparency } = FDATA.edges;
-  FILTERED_D3DATA.edges = FILTERED_D3DATA.edges.filter(edge => {
-    return m_FiltersApplyToEdge(edge, filters, transparency, filterAction);
+  FILTEREDD3DATA.edges = FILTEREDD3DATA.edges.filter(edge => {
+    return m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3DATA);
   });
 }
 

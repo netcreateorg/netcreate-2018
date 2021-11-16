@@ -166,7 +166,7 @@ class D3NetGraph {
       this._Dragended         = this._Dragended.bind(this);
 
       // V1.4 CHANGE
-      // Ignore D3DATA Updates!!!  Only listen to FILTERED_D3DATA Updates
+      // Ignore D3DATA Updates!!!  Only listen to FILTEREDD3DATA Updates
       //
       // watch for updates to the D3DATA data object
       // UDATA.OnAppStateChange('D3DATA',(data)=>{
@@ -176,9 +176,9 @@ class D3NetGraph {
       // });
 
       // Special handler for the remove filter
-      UDATA.HandleMessage('FILTERED_D3DATA',(data)=>{
+      UDATA.OnAppStateChange('FILTEREDD3DATA',(data)=>{
         // expect { nodes, edges } for this namespace
-        if (DBG) console.log(PR,'got state FILTERED_D3DATA',data);
+        if (DBG) console.log(PR,'got state FILTEREDD3DATA',data);
         this._SetData(data);
       });
 
