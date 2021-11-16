@@ -48,9 +48,10 @@
         "Filter" shows matching nodes/edges and removes the non-matching
         nodes/edges from the display without affecting the underlying data.
 
-  * With Version 1.4, the only data that is graphed is FILTERED_D3DATA.
+  * With Version 1.4, the only data that is graphed is FILTEREDD3DATA.
     --  d3-simplenetgraph no longer plots on D3DATA changes.
-    --  Instead, FILTERED_D3DATA changes are pushed via an AppCall.
+    --  Instead, it plots the new FILTEREDD3DATA state.  Whenever D3DATA changes,
+        FILTERDD3DATA is udpated.
     --  This way there is only one source of truth: all draw updates
         are routed through filter-logic.
     --  If filters have not been defined, we just pass the raw D3DATA
@@ -461,7 +462,7 @@ function m_NodeIsFiltered(node, filters, transparency, filterAction) {
   }
 
   // all_no_op
-  // Thjs is currently redundant because matchesFilter will always
+  // This is currently redundant because matchesFilter will always
   // be true if there are no filters.  If matchesFilter is true,
   // then the node will not be removed/faded.
   //
