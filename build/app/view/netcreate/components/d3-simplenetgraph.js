@@ -425,6 +425,8 @@ class D3NetGraph {
 
             d.weight = radius
             d.size = radius // save the calculated size
+            // radius is calculated by counting the number of edges attached
+            // (+ 1 for a minimum radius), so we hack degrees by using radius-1
             d.degrees = radius - 1
             return this.defaultSize + (this.defaultSize * d.weight / 2)
           })

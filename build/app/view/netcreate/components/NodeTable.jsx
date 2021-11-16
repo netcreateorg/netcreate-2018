@@ -153,18 +153,6 @@ class NodeTable extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Build table of counts
-/*/
-// JD removed because "size" seemed to work just fine? (I added a degrees that is size - 1)
-countEdges(edges) {
-  let edgeCounts = {}; // this.state.edgeCounts;
-  edges.forEach(edge => {
-    edgeCounts[edge.source.id] = edgeCounts[edge.source.id] !== undefined ? edgeCounts[edge.source.id] + 1 : 1;
-    edgeCounts[edge.target.id] = edgeCounts[edge.target.id] !== undefined ? edgeCounts[edge.target.id] + 1 : 1;
-  });
-  return edgeCounts;
-}
-
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
