@@ -339,45 +339,46 @@ render() {
   if (this.state.nodes === undefined) return "";
   let { nodePrompts } = this.state;
   let { tableHeight } = this.props;
-  let styles = `thead, tbody {  }
+  let styles = `thead, tbody { font-size: 0.8em }
                 thead { position: relative; }
                 tbody { overflow: auto; }
+                .btn-sm { font-size: 0.6rem; padding: 0.1rem 0.2rem }
                 `
   return (
-      <div style={{overflow:'auto',
-                  position:'relative',display: 'block', left: '1px', right:'10px',maxHeight: tableHeight, backgroundColor:'#eafcff'
-      }}>
+    <div style={{overflow:'auto',
+      position:'relative',display: 'block', left: '1px', right:'10px',maxHeight: tableHeight, backgroundColor:'#eafcff'
+    }}>
       <style>{styles}</style>
       <Button size="sm" outline hidden
         onClick={this.onToggleExpanded}
       >{this.state.isExpanded ? "Hide Node Table" : "Show Node Table"}</Button>
       <Table hidden={!this.state.isExpanded} hover size="sm"
-              responsive striped
-              className="nodetable w-auto"
+        responsive striped
+        className="nodetable w-auto"
       >
         <thead>
           <tr>
             <th width="4%"><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
-            <th hidden={!DBG}>ID</th>
-            <th width="12%"><Button size="sm"
+            <th width="4%" hidden={!DBG}>ID</th>
+            <th width="4%"><Button size="sm"
                   onClick={() => this.setSortKey("edgeCount")}
                 >{nodePrompts.degrees.label} {this.sortSymbol("edgeCount")}</Button></th>
             <th width="15%"><Button size="sm"
                   onClick={()=>this.setSortKey("label")}
                 >{nodePrompts.label.label} {this.sortSymbol("label")}</Button></th>
-            <th width="15%"hidden={nodePrompts.type.hidden}>
+            <th width="10%"hidden={nodePrompts.type.hidden}>
                 <Button size="sm"
                   onClick={()=>this.setSortKey("type")}
                 >{nodePrompts.type.label} {this.sortSymbol("type")}</Button></th>
-            <th width="26%"hidden={nodePrompts.info.hidden}>
+            <th width="20%"hidden={nodePrompts.info.hidden}>
                 <Button size="sm"
                   onClick={()=>this.setSortKey("info")}
                 >{nodePrompts.info.label} {this.sortSymbol("info")}</Button></th>
-            <th width="26%" hidden={nodePrompts.notes.hidden}>
+            <th width="30%" hidden={nodePrompts.notes.hidden}>
                 <Button size="sm"
                   onClick={()=>this.setSortKey("notes")}
                 >{nodePrompts.notes.label} {this.sortSymbol("notes")}</Button></th>
-            <th  width="20%"hidden={!isLocalHost}><Button size="sm"
+            <th  width="10%"hidden={!isLocalHost}><Button size="sm"
                   onClick={()=>this.setSortKey("Updated")}
                 >Updated {this.sortSymbol("Updated")}</Button></th>
           </tr>

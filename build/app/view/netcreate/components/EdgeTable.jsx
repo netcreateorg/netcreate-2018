@@ -335,11 +335,11 @@ class EdgeTable extends UNISYS.Component {
 
 
       let { tableHeight } = this.props;
-      let styles = `
-                    thead, tbody { }
+      let styles = `thead, tbody { font-size: 0.8em }
                     thead { position: relative; }
                     tbody { overflow: auto; }
-`
+                    .btn-sm { font-size: 0.6rem; padding: 0.1rem 0.2rem }
+                    `
       return (
            <div style={{overflow:'auto',
                      position:'relative',display: 'block',  left: '1px', right:'10px',maxHeight: tableHeight, backgroundColor:'#f3f3ff'
@@ -354,11 +354,11 @@ class EdgeTable extends UNISYS.Component {
           >
             <thead>
               <tr>
-                <th width="5%" hidden={!DBG}><Button size="sm"
+                <th width="4%" hidden={!DBG}><Button size="sm"
                       onClick={()=>this.setSortKey("id")}
                     >ID {this.sortSymbol("id")}</Button></th>
                 <th hidden={!DBG}>Size</th>
-                <th width="5%"><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
+                <th width="4%"><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
                 <th hidden={!DBG}>Src ID</th>
                 <th  width="10%"><Button size="sm"
                       onClick={()=>this.setSortKey("source")}
@@ -376,13 +376,13 @@ class EdgeTable extends UNISYS.Component {
                 <th width="10%" hidden={edgePrompts.citation.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Citations")}
                     >{edgePrompts.citation.label} {this.sortSymbol("Citations")}</Button></th>
-                <th width="16%" hidden={edgePrompts.notes.hidden}><Button size="sm"
+                <th width="20%" hidden={edgePrompts.notes.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Notes")}
                     >{edgePrompts.notes.label} {this.sortSymbol("Notes")}</Button></th>
-                <th  width="16%"hidden={edgePrompts.info.hidden}><Button size="sm"
+                <th  width="10%"hidden={edgePrompts.info.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Info")}
                     >{edgePrompts.info.label} {this.sortSymbol("Info")}</Button></th>
-                <th  width="16%"hidden={!isLocalHost}><Button size="sm"
+                <th  width="10%"hidden={!isLocalHost}><Button size="sm"
                       onClick={()=>this.setSortKey("Updated")}
                     >Updated {this.sortSymbol("Updated")}</Button></th>
 
