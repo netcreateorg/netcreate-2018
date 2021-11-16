@@ -4,6 +4,9 @@
 
     EdgeTable is used to to display a table of edges for review.
 
+    It displays D3DATA.
+    But also read FILTEREDD3DATA to show highlight/filtered state
+
 
   ## TO USE
 
@@ -78,6 +81,42 @@ class EdgeTable extends UNISYS.Component {
       // Handle Template updates
       this.OnAppStateChange('TEMPLATE', this.OnTemplateUpdate);
     } // constructor
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ componentDidMount () {
+      if (DBG) console.log('EdgeTable.componentDidMount!');
+      // Explicitly retrieve data because we may not have gotten a D3DATA
+      // update while we were hidden.
+      // filtered data needs to be set before D3Data
+      const FILTEREDD3DATA = UDATA.AppState('FILTEREDD3DATA');
+      this.setState({ filteredEdges: FILTEREDD3DATA.edges },
+        () => {
+          let D3DATA = this.AppState('D3DATA');
+          this.handleDataUpdate(D3DATA);
+        }
+      )
+}
+
+    componentWillUnmount() {
+      this.AppStateChangeOff('D3DATA', this.handleDataUpdate);
+      this.AppStateChangeOff('FILTEREDD3DATA', this.handleFilterDataUpdate);
+      this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
+    }
+
+  displayUpdated(nodeEdge) {
+      var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
+
+      var year = "" + d.getFullYear();
+      var date = (d.getMonth()+1)+"/"+d.getDate()+"/"+ year.substr(2,4);
+      var time = d.toTimeString().substr(0,5);
+      var dateTime = date+' at '+time;
+      var titleString = "v" + nodeEdge.meta.revision;
+      if(nodeEdge._nlog)
+        titleString += " by " + nodeEdge._nlog[nodeEdge._nlog.length-1];
+      var tag = <span title={titleString}> {dateTime} </span>;
+
+      return tag;
+  }
 
 
 
@@ -419,36 +458,6 @@ class EdgeTable extends UNISYS.Component {
         </div>
       );
     }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ componentDidMount () {
-      if (DBG) console.log('EdgeTable.componentDidMount!');
-      // Explicitly retrieve data because we may not have gotten a D3DATA
-      // update while we were hidden.
-      let D3DATA = this.AppState('D3DATA');
-      this.handleDataUpdate(D3DATA);
-    }
-
-    componentWillUnmount() {
-      this.AppStateChangeOff('D3DATA', this.handleDataUpdate);
-      this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
-    }
-
-  displayUpdated(nodeEdge)
-  {
-      var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
-
-      var year = "" + d.getFullYear();
-      var date = (d.getMonth()+1)+"/"+d.getDate()+"/"+ year.substr(2,4);
-      var time = d.toTimeString().substr(0,5);
-      var dateTime = date+' at '+time;
-      var titleString = "v" + nodeEdge.meta.revision;
-      if(nodeEdge._nlog)
-        titleString += " by " + nodeEdge._nlog[nodeEdge._nlog.length-1];
-      var tag = <span title={titleString}> {dateTime} </span>;
-
-      return tag;
-  }
 } // class EdgeTable
 
 
