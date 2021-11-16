@@ -517,50 +517,66 @@ function m_FiltersApplyToEdges(FDATA, FILTEREDD3DATA) {
   });
 }
 
-function m_FiltersApplyToEdge(edge, filters, transparency, filterAction) {
-  let all_no_op = true;
-  let matched = true;
-  if (edge.source.filteredTransparency < 1.0 || edge.target.filteredTransparency < 1.0) {
-    // regardless of filter definition,
+/*/ Side effect: Sets `isFiltered`
+/*/
+function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3DATA) {
+  // let all_no_op = true; // all filters are no_op
+  let keepEdge = true;
+
+  const source = FILTEREDD3DATA.nodes.find(e => e.id === edge.source.id);
+  const target = FILTEREDD3DATA.nodes.find(e => e.id === edge.target.id);
+  // 1. if source or target is filtered, then we are filtered too
+  if (source === undefined || target === undefined ||
+    source.filteredTransparency < 1.0 ||
+    target.filteredTransparency < 1.0) {
+    // regardless of filter definition...
+    // ...if filterAction is FILTER
     // always hide edge if it's attached to a filtered node
-    // FILTER.ACTION.FILTER
     if (filterAction === FILTER.ACTION.FILTER) return false;
-    // else
-    // FILTER.ACTION.HIGHLIGHT, so don't filter, just fade
+    // ...else if filterAction is HIGHLIGHT
+    // don't filter, just fade
     edge.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
     return true;
   }
 
-  // otherwise, look for matches
+  // 2. otherwise, look for matches
   // implicit AND.  ALL filters must return true.
+  // edge is filtered out if it fails ANY filter tests
   filters.forEach(filter => {
     if (filter.operator === FILTER.OPERATORS.NO_OP.key) return; // skip no_op
-    all_no_op = false;
+    // Found a filter!  Apply it!
+    // all_no_op = false;
     if (!m_IsEdgeMatchedByFilter(edge, filter)) {
-      matched = false;
+      keepEdge = false;
     }
   });
-  if (all_no_op) {
-    // no filters defined, undo isFilteredOut
-    edge.filteredTransparency = 1.0;
+
+  // 3. Decide how to filter based on filterAction
+  if (filterAction === FILTER.ACTION.FILTER) {
+    // not using highlight, so restore transparency
+    edge.filteredTransparency = 1.0; // opaque
+    if (keepEdge) return true; // keep in array
+    return false; // remove from array
   } else {
-    // edge is filtered out if it fails ANY filter tests
-    if (!matched) {
+    // FILTER.ACTION.HIGHLIGHT, so don't filter
+    if (!keepEdge) {
       edge.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
     } else {
       edge.filteredTransparency = 1.0; // opaque
     }
+    return true; // always keep in array
   }
 
-
-  // FILTER.ACTION.FILTER
-  if (filterAction === FILTER.ACTION.FILTER) {
-    if (matched) return true;
-    return false;
-  }
-
-  // FILTER.ACTION.HIGHLIGHT, so don't filter
-  return true;
+  // all_no_op
+  // This is currently redundant because matchesFilter will always
+  // be true if there are no filters.  If matchesFilter is true,
+  // then the node will not be removed/faded.
+  //
+  // if (all_no_op) {
+  //   // no filters defined, undo isFilteredOut
+  //   edge.filteredTransparency = 1.0;
+  // } else {
+  // }
 }
 
 function m_IsEdgeMatchedByFilter(edge, filter) {

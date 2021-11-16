@@ -54,11 +54,13 @@ class EdgeTable extends UNISYS.Component {
       this.state = {
         edgePrompts:  this.AppState('TEMPLATE').edgePrompts,
         edges:        [],
+        filteredEdges: [],
         isExpanded:   true,
         sortkey:      'Relationship'
       };
 
       this.handleDataUpdate = this.handleDataUpdate.bind(this);
+      this.handleFilterDataUpdate = this.handleFilterDataUpdate.bind(this);
       this.OnTemplateUpdate = this.OnTemplateUpdate.bind(this);
       this.onButtonClick            = this.onButtonClick.bind(this);
       this.onToggleExpanded         = this.onToggleExpanded.bind(this);
@@ -80,7 +82,12 @@ class EdgeTable extends UNISYS.Component {
 
       // Handle Template updates
       this.OnAppStateChange('TEMPLATE', this.OnTemplateUpdate);
-    } // constructor
+
+      // Track Filtered Data Updates too
+      this.OnAppStateChange('FILTEREDD3DATA', this.handleFilterDataUpdate);
+
+  } // constructor
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ componentDidMount () {
@@ -133,9 +140,23 @@ class EdgeTable extends UNISYS.Component {
     // {
 
     if (data && data.edges) {
-      const edges = this.sortTable(this.state.sortkey, data.edges);
+      let edges = this.sortTable(this.state.sortkey, data.edges);
+      const { filteredEdges } = this.state;
+      // add highlight/filter status
+      if (filteredEdges.length > 0) {
+        edges = edges.map(edge => {
+          const filteredEdge = filteredEdges.find(n => n.id === edge.id);
+          if (!filteredEdge) edge.isFiltered = true;
+          return edge;
+        });
+      }
       this.setState({edges});
     }
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  handleFilterDataUpdate(data) {
+    if (data.edges) this.setState( { filteredEdges: data.edges } );
   }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -429,7 +450,11 @@ class EdgeTable extends UNISYS.Component {
             </thead>
             <tbody style={{ maxHeight: tableHeight }}>
             {this.state.edges.map( (edge,i) => (
-              <tr key={i}>
+              <tr key={i}
+                style={{
+                  color: edge.isFiltered ? 'red' : 'black',
+                  opacity: edge.filteredTransparency
+                }}>
                 <td hidden={!DBG}>{edge.id}</td>
                 <td hidden={!DBG}>{edge.size}</td>
                 <td><Button size="sm" outline
