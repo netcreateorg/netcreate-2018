@@ -127,7 +127,7 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Define the component structure of the web application
   /*/ render() {
-    const { isLoggedIn, disconnectMsg } = this.state;
+        const { isLoggedIn, disconnectMsg } = this.state;
 
         // show or hide graph
         // Use 'visibiliity' css NOT React's 'hidden' so size is properly
