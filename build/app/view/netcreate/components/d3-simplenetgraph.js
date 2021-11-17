@@ -2,6 +2,8 @@
 
     D3 Simple NetGraph
 
+    This uses D3 Version 4.0.
+
     This is designed to work with the NetGraph React component.
 
     NetGraph calls SetData whenever it receives an updated data object.
@@ -192,6 +194,7 @@ class D3NetGraph {
 
       UDATA.HandleMessage('ZOOM_RESET', (data) => {
         if (DBG) console.log(PR, 'ZOOM_RESET got state D3DATA', data);
+        // NOTE: The transition/duration call means _HandleZoom will be called multiple times
         this.d3svg.transition()
           .duration(200)
           .call(this.zoom.scaleTo, 1);
@@ -207,6 +210,13 @@ class D3NetGraph {
         this._Transition(0.8);
       });
 
+      // Pan to 0,0 and zoom scale to 1
+      // (Currently not used)
+      UDATA.HandleMessage('ZOOM_PAN_RESET', (data) => {
+        if (DBG) console.log(PR, 'ZOOM_PAN_RESET got state D3DATA', data);
+        const transform = d3.zoomIdentity.translate(0, 0).scale(1);
+        this.d3svg.call(this.zoom.transform, transform);
+      });
 
       UDATA.HandleMessage('GROUP_PROPS', (data) => {
         console.log('GROUP_PROPS got ... ');
