@@ -43,6 +43,7 @@ const SETTINGS = require("settings");
 const UNISYS = require("unisys/client");
 const JSCLI = require("system/util/jscli");
 const D3 = require("d3");
+const EXPORT = require("./export-logic");
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -673,6 +674,13 @@ MOD.Hook("INITIALIZE", () => {
   /*/
   UDATA.HandleMessage("AUTOCOMPLETE_SELECT", function(data) {
     m_HandleAutoCompleteSelect(data);
+  });
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/
+  /*/
+  UDATA.HandleMessage("EXPORT", data => {
+    EXPORT.ExportData();
   });
 
 }); // end UNISYS_INIT
