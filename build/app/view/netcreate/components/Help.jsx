@@ -9,6 +9,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 var DBG = false;
+var UDATA = null;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,6 +28,9 @@ class Help extends UNISYS.Component {
       super(props);
       this.state = {isExpanded: true};
       this.onToggleExpanded = this.onToggleExpanded.bind(this);
+      this.onSelectExport = this.onSelectExport.bind(this);
+
+      UDATA = UNISYS.NewDataLink(this);
     } // constructor
 
 
@@ -38,7 +42,11 @@ class Help extends UNISYS.Component {
       this.setState({
         isExpanded: !this.state.isExpanded
       })
-    }
+}
+
+  onSelectExport() {
+    UDATA.LocalCall('EXPORT');
+  }
 
 
 
@@ -63,6 +71,10 @@ class Help extends UNISYS.Component {
           >{this.state.isExpanded ? "Hide Help" : "Help"}</Button>
           <div hidden={!this.state.isExpanded}
             style={{backgroundColor:'rgba(240,240,240,0.95)',padding:'10px'}}>
+            <Button size="sm" outline onClick={this.onSelectExport}>
+              Export Data
+            </Button>
+            <hr />
             <h1>Why Net.Create</h1>
             <p>In Net.Create, users can simultaneously do data entry on nodes and the edges between them.</p>
             <h1>Navigation</h1>
