@@ -523,9 +523,18 @@ function m_FiltersApplyToEdges(FDATA, FILTEREDD3DATA) {
 function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3DATA) {
   // let all_no_op = true; // all filters are no_op
   let keepEdge = true;
-
-  const source = FILTEREDD3DATA.nodes.find(e => e.id === edge.source.id);
-  const target = FILTEREDD3DATA.nodes.find(e => e.id === edge.target.id);
+  const source = FILTEREDD3DATA.nodes.find(e => {
+    // on init, edge.source is just an id.  only with d3 processing does it
+    // get transformed into a node object.  so we have to check the type.
+    const sourceId = (typeof edge.source === 'number') ? edge.source : edge.source.id;
+    return e.id === sourceId;
+  });
+  const target = FILTEREDD3DATA.nodes.find(e => {
+    // on init, edge.target is just an id.  only with d3 processing does it
+    // get transformed into a node object.  so we have to check the type.
+    const targetId = (typeof edge.target === 'number') ? edge.target : edge.target.id;
+    return e.id === targetId;
+  });
   // 1. if source or target is filtered, then we are filtered too
   if (source === undefined || target === undefined ||
     source.filteredTransparency < 1.0 ||
