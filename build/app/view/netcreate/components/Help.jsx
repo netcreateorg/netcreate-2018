@@ -63,7 +63,7 @@ class Help extends UNISYS.Component {
       return (
         <div className="help"
              style={{maxWidth:'50%',overflow:'scroll',
-                     position:'fixed',right:'10px',zIndex:2000
+                     position:'fixed',right:'10px',zIndex:'3000'
              }}>
           <Button size="sm" outline hidden
             style={{float:'right'}}
