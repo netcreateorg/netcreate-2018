@@ -106,9 +106,9 @@ class NetGraph extends UNISYS.Component {
             </div>
           </div>
           <div style={{ position: 'absolute', right: '10px', width: '50px', zIndex:1001 }}>
-            <Button outline onClick={this.onZoomIn} style={{width:'35px'}}>+</Button>&nbsp;
-            <Button outline onClick={this.onZoomReset} style={{ width: '35px' }}>&bull;</Button>&nbsp;
-            <Button outline onClick={this.onZoomOut} style={{ width: '35px' }}>-</Button>
+            <Button outline onClick={this.onZoomIn} style={{ width:'35px', backgroundColor: '#fff', opacity: '0.8' }}>+</Button>&nbsp;
+            <Button outline onClick={this.onZoomReset} style={{ width: '35px', backgroundColor: '#fff', opacity: '0.8'  }}>&bull;</Button>&nbsp;
+            <Button outline onClick={this.onZoomOut} style={{ width: '35px', backgroundColor: '#fff', opacity: '0.8'  }}>-</Button>
           </div>
           <div style={{ position: 'absolute', bottom: '40px', marginLeft: '10px', marginBottom: '15px',fontSize: '10px' }}>
 
