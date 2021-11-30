@@ -58,15 +58,15 @@ class Vocabulary extends UNISYS.Component {
 
       return (
         <div className="help"
-             style={{overflow:'auto',
-                     position:'relative',display: 'block', right:'10px',maxHeight: tableHeight
+             style={{ overflow:'auto',
+                      position:'relative', display: 'block', maxHeight: tableHeight
              }}>
           <Button size="sm" outline hidden
             style={{float:'right'}}
             onClick={this.onToggleExpanded}
           >{this.state.isExpanded ? "Hide Vocabulary" : "Vocabulary"}</Button>
           <div hidden={!this.state.isExpanded}
-            style={{backgroundColor:'rgba(240,240,240,0.95)',padding:'10px'}}>
+            style={{backgroundColor:'rgba(240,240,240,0.95)',padding:'10px 20px'}}>
 
             <dl>
              <dt>Network</dt>
