@@ -62,22 +62,21 @@ class FilterGroupProperties extends React.Component {
     e.stopPropagation();
   }
 
-  render (){
+  render () {
     const { group, transparency } = this.props;
-
-    return(
-    <div>
-      <div className="small text-muted" style={{fontWeight:'bold',textTransform:'uppercase',marginBottom:'0.4em'}}>Settings for {group}</div>
-           <Form inline className="filter-item" key={group} onSubmit={this.OnSubmit}>
-            <FormGroup><Label size="sm" className="small text-muted"
-              style={{ fontSize: '0.75em', lineHeight: '1em', width: `5em`, marginLeft: '0em'}}>
-              Transparency&nbsp;</Label>
-              <Input type="text" value={transparency}
-              style={{maxWidth:'9em', height:'1.5em', marginLeft: '1em'}}
-              onChange={this.OnChangeValue} bsSize="sm" />
-              </FormGroup>
-            </Form>
-        </div>
+    return (
+      <div>
+        <br/>
+        <Form inline className="filter-item" key={group} onSubmit={this.OnSubmit}>
+        <FormGroup><Label size="sm" className="small text-muted"
+          style={{ fontSize: '0.75em', lineHeight: '1em', width: `5em`, marginLeft: '0em'}}>
+          Transparency&nbsp;</Label>
+          <Input type="text" value={transparency}
+          style={{maxWidth:'9em', height:'1.5em', marginLeft: '1em'}}
+          onChange={this.OnChangeValue} bsSize="sm" />
+          </FormGroup>
+        </Form>
+      </div>
 );
   }
 

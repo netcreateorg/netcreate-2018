@@ -251,9 +251,9 @@ class InfoPanel extends UNISYS.Component {
         ></div>
 
         <div hidden={!hideDragger || filtersSummary===''}
-          style={{ padding: '3px', fontSize: '0.8em', color:'#999', backgroundColor:'#eef'}}
+          style={{ padding: '3px 5px', fontSize: '0.8em', textAlign: 'right', color:'#fff', backgroundColor:'#3339'}}
         >
-          {filtersSummary} <Button size="sm" outline onClick={this.OnClearBtnClick}>Clear Filters</Button>
+          {filtersSummary}&nbsp;<Button size="sm" outline onClick={this.OnClearBtnClick} style={{ color: '#eee', borderColor: '#ddd', fontSize: '0.8em', padding: '0.1rem 0.2rem' }}>Clear Filters</Button>
         </div>
       </div>
     );

@@ -70,14 +70,15 @@ class FiltersPanel extends UNISYS.Component {
 
   render() {
     const { filterAction } = this.state;
-    const { tableHeight } = this.props;
     const defs = [this.state.nodes, this.state.edges];
     return (
       <div className="filterPanel"
         style={{
-          overflow: 'auto', position: 'relative',
+          overflow: 'auto',
+          marginTop: '6px', padding: '5px',
           display: 'flex', flexDirection: 'column',
-          maxHeight: tableHeight
+          backgroundColor: '#EEE',
+          zIndex: '2000'
         }}>
         <ButtonGroup>
           <Button
@@ -85,12 +86,14 @@ class FiltersPanel extends UNISYS.Component {
             active={filterAction === FILTER.ACTION.HIGHLIGHT}
             outline={filterAction === FILTER.ACTION.HIGHLIGHT}
             disabled={filterAction === FILTER.ACTION.HIGHLIGHT}
+            style={{ color: filterAction === FILTER.ACTION.HIGHLIGHT ? '#333' : '#fff' }}
           >Highlight</Button>
           <Button
             onClick={() => this.SelectFilterAction(FILTER.ACTION.FILTER)}
             active={filterAction === FILTER.ACTION.FILTER}
             outline={filterAction === FILTER.ACTION.FILTER}
             disabled={filterAction === FILTER.ACTION.FILTER}
+            style={{ color: filterAction === FILTER.ACTION.FILTER ? '#333' : '#fff' }}
           >Filter</Button>
         </ButtonGroup>
         <Label className="small text-muted" style={{ padding: '0.5em 0 0 0.5em', marginBottom: '0' }}>
@@ -99,7 +102,8 @@ class FiltersPanel extends UNISYS.Component {
             : 'Filter shows only nodes/edges that match criteria.  (Removes others)'
           }
         </Label>
-        <div style={{ display: 'flex', flexGrow: `1`, justifyContent: 'space-evenly' }}>
+        <hr/>
+        <div style={{ display: 'flex', flexDirection: 'column', flexGrow: `1`, justifyContent: 'space-evenly' }}>
           {defs.map(def => <FilterGroup
             key={def.label}
             group={def.group}
@@ -111,7 +115,7 @@ class FiltersPanel extends UNISYS.Component {
           />)}
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-evenly', padding: '10px' }}>
-          <Button size="sm" onClick={this.OnClearBtnClick}>Clear Filters</Button>
+          <Button size="sm" onClick={this.OnClearBtnClick} >Clear Filters</Button>
         </div>
       </div>
     )

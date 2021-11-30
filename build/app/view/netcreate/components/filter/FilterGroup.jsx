@@ -31,8 +31,8 @@ export default function FilterGroup({
         }
         return '';
       })}
-      <hr/>
       <FilterGroupProperties group={group} transparency={transparency} />
+      <hr/>
     </div>
   );
 }
