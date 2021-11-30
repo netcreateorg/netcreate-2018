@@ -193,7 +193,7 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
                   }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'end' }}>
                       <Button onClick={this.onFilterBtnClick}
-                        style={{ width: '100px' }}
+                        style={{ width: '90px' }}
                       >
                         FILTER &gt;
                       </Button>
@@ -207,7 +207,7 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
                 }}>
                   <Button
                     onClick={this.onFilterBtnClick}
-                    style={{ width: '90px', height: '51px', float: 'right' }}
+                    style={{ width: '90px', float: 'right' }}
                   >&lt; FILTER</Button>
                   </div>
               }
