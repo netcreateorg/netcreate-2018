@@ -104,7 +104,7 @@ class SelectFilter extends React.Component {
       value: this.state.value,
       options
     };
-    UDATA.LocalCall('FILTER_DEFINE', {
+    if (UDATA) UDATA.LocalCall('FILTER_DEFINE', {
       group: this.props.group,
       filter,
       filterAction

@@ -98,7 +98,7 @@ class StringFilter extends React.Component {
       operator: this.state.operator,
       value: this.state.value
     };
-    UDATA.LocalCall('FILTER_DEFINE', {
+    if (UDATA) UDATA.LocalCall('FILTER_DEFINE', {
       group: this.props.group,
       filter,
       filterAction
