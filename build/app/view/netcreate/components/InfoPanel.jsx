@@ -29,7 +29,6 @@ const ReactStrap = require('reactstrap');
 const { TabContent, TabPane, Nav, NavItem, NavLink, Row, Col, Button } = ReactStrap;
 const classnames = require('classnames');
 
-const FiltersPanel = require('./filter/FiltersPanel');
 const NodeTable = require('./NodeTable');
 const EdgeTable = require('./EdgeTable');
 const Vocabulary = require('./Vocabulary');
@@ -178,14 +177,6 @@ class InfoPanel extends UNISYS.Component {
             </NavItem>
             <NavItem>
               <NavLink
-                className={classnames({ active: activeTab === '2' })}
-                onClick={() => { this.toggle('2'); this.sendGA('Highlight', window.location); }}
-              >
-                Highlight / Filter
-              </NavLink>
-            </NavItem>
-            <NavItem>
-              <NavLink
                 className={classnames({ active: activeTab === '3' })}
                 onClick={() => { this.toggle('3'); this.sendGA('Nodes Table', window.location); }}
               >
@@ -219,9 +210,6 @@ class InfoPanel extends UNISYS.Component {
           </Nav>
           <TabContent activeTab={activeTab} style={{height:'100%',overflow: 'hidden', backgroundColor: 'rgba(0,0,0,0.1)'}}>
             <TabPane tabId="1">
-            </TabPane>
-            <TabPane tabId="2">
-              <FiltersPanel tableHeight={tableHeight}/>
             </TabPane>
             <TabPane tabId="3">
               <Row>
