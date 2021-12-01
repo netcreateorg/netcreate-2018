@@ -32,7 +32,7 @@ const classnames = require('classnames');
 const NodeTable = require('./NodeTable');
 const EdgeTable = require('./EdgeTable');
 const Vocabulary = require('./Vocabulary');
-const Help = require('./Help');
+const More = require('./More');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -204,7 +204,7 @@ class InfoPanel extends UNISYS.Component {
                 className={classnames({ active: activeTab === '6' })}
                 onClick={() => { this.toggle('6'); this.sendGA('Help', window.location); }}
               >
-                Help
+                More...
               </NavLink>
             </NavItem>
           </Nav>
@@ -235,7 +235,7 @@ class InfoPanel extends UNISYS.Component {
             <TabPane tabId="6">
               <Row>
                 <Col sm="12">
-                  <Help />
+                  <More />
                 </Col>
               </Row>
             </TabPane>
