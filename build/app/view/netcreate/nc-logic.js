@@ -679,8 +679,11 @@ MOD.Hook("INITIALIZE", () => {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/
   /*/
-  UDATA.HandleMessage("EXPORT", data => {
-    EXPORT.ExportData();
+  UDATA.HandleMessage("EXPORT_NODES", data => {
+    EXPORT.ExportNodes();
+  });
+  UDATA.HandleMessage("EXPORT_EDGES", data => {
+    EXPORT.ExportEdges();
   });
 
 }); // end UNISYS_INIT

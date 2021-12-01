@@ -111,9 +111,13 @@ function m_GenerateEdgesArray(edges, edgekeys) {
 ///////////////////////////////////////////////////////////////////////////////
 /// MODULE IMPORT / EXPORT METHODS ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-MOD.ExportData = () => {
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// EXPORT NODES //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+MOD.ExportNodes = () => {
   const DATA = UDATA.AppState('FILTEREDD3DATA');
-  const { nodes, edges } = DATA;
+  const { nodes } = DATA;
   let EXPORT = '';
 
   /// 1. Export Nodes
@@ -128,19 +132,7 @@ MOD.ExportData = () => {
   ];
   const nodesArr = m_GenerateNodesArray(nodes, nodekeys);
 
-  /// 2. Export Edges
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// Define Node KEYS
-  const edgekeys = [
-    'id',
-    'source',
-    'target',
-    { 'attributes': ['Relationship', 'Info', 'Citations', 'Category', 'Notes'] },
-    { 'meta': ['created', 'updated']}
-  ];
-  const edgesArr = m_GenerateEdgesArray(edges, edgekeys);
-
-  /// 3. Expand to CSV
+  /// 2. Expand to CSV
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ///    3.1. NODES
   ///    3.1.1. Create headers
@@ -160,8 +152,45 @@ MOD.ExportData = () => {
   EXPORT += 'NODES\n';
   EXPORT += commaDelimitedNodes.join('\n')
 
-  ///   3.2. EDGES
-  ///   3.2.1. Create headers
+  /// 3. Save to File
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // const encodedURI = encodeURI(EXPORT);
+  const link = document.createElement('a');
+  const blob = new Blob(["\ufeff", EXPORT]);
+  const url = URL.createObjectURL(blob);
+  link.href = url;
+  const DATASET = window.NC_CONFIG.dataset || "netcreate";
+  link.download = `${DATASET}_nodes.csv`;
+  // link.setAttribute('href', encodedURI);
+  // link.setAttribute('download', 'netcreate_export.csv');
+  document.body.appendChild(link); // Required for FF
+  link.click();
+  document.body.removeChild(link);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// EXPORT EDGES //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+MOD.ExportEdges = () => {
+  const DATA = UDATA.AppState('FILTEREDD3DATA');
+  const { edges } = DATA;
+  let EXPORT = '';
+
+  /// 1. Export Edges
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Define Edge KEYS
+  const edgekeys = [
+    'id',
+    'source',
+    'target',
+    { 'attributes': ['Relationship', 'Info', 'Citations', 'Category', 'Notes'] },
+    { 'meta': ['created', 'updated']}
+  ];
+  const edgesArr = m_GenerateEdgesArray(edges, edgekeys);
+
+  /// 3. Expand to CSV
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ///   3.1. EDGES
+  ///   3.1.1. Create headers
   const edgeHeadersArr = edgekeys.map(key => {
     // eslint-disable-next-line prefer-reflect
     if (Object.prototype.toString.call(key) === '[object Object]') {
@@ -175,7 +204,7 @@ MOD.ExportData = () => {
   edgesArr.unshift(edgeHeaders); // add headers
   ///   3.2.2 Expand Edges to CSV
   const commaDelimitedEdges = edgesArr.map(e => e.join(','));
-  EXPORT += '\n\nEDGES\n';
+  EXPORT += 'EDGES\n';
   EXPORT += commaDelimitedEdges.join('\n');
 
   /// 4. Save to File
@@ -186,14 +215,13 @@ MOD.ExportData = () => {
   const url = URL.createObjectURL(blob);
   link.href = url;
   const DATASET = window.NC_CONFIG.dataset || "netcreate";
-  link.download = `${DATASET}_export.csv`;
+  link.download = `${DATASET}_edges.csv`;
   // link.setAttribute('href', encodedURI);
   // link.setAttribute('download', 'netcreate_export.csv');
   document.body.appendChild(link); // Required for FF
   link.click();
   document.body.removeChild(link);
 }
-
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = MOD;
