@@ -18,6 +18,8 @@
 var DBG = false;
 var UDATA = null;
 
+const defaultTabPanelHeight = '42px'; // show only tab buttons, no gap
+
 /// UNISYS INITIALIZE REQUIRES for REACT ROOT /////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS = require('unisys/client');
@@ -46,7 +48,7 @@ class InfoPanel extends UNISYS.Component {
       tabpanelTop: '0',
       draggerMouseOffsetY: '0',   // Mouse click position inside dragger
                                   // Allows user to grab dragger from the middle
-      tabpanelHeight: '50px',
+      tabpanelHeight: defaultTabPanelHeight,
       tableHeight: '350px',
       savedTabpanelHeight: '350px',
       draggerTop: 'inherit',
@@ -78,7 +80,7 @@ class InfoPanel extends UNISYS.Component {
       this.setState({ activeTab: tab });
       if ((tab === `1`) || (tab === '6')) { // graph or help
         this.setState({
-          tabpanelHeight: '50px', // show only tab buttons
+          tabpanelHeight: defaultTabPanelHeight, // show only tab buttons
           hideDragger: true,
           bIgnoreTableUpdates: true
         });
@@ -94,7 +96,7 @@ class InfoPanel extends UNISYS.Component {
       // so select tab 1
       this.setState({ activeTab: `1` });
       this.setState({
-        tabpanelHeight: '50px', // show only tab buttons
+        tabpanelHeight: defaultTabPanelHeight, // show only tab buttons
         hideDragger: true,
         bIgnoreTableUpdates: true
       });
@@ -166,7 +168,7 @@ class InfoPanel extends UNISYS.Component {
       <div>
         <div id='tabpanel'
           style={{ height: tabpanelHeight, overflow: 'hidden', backgroundColor: '#eee'}}>
-          <Nav tabs>
+          <Nav tabs className='nav-fill'>
             <NavItem>
               <NavLink
                 className={classnames({ active: activeTab === '1' })}
@@ -189,14 +191,6 @@ class InfoPanel extends UNISYS.Component {
                 onClick={() => { this.toggle('4'); this.sendGA('Edges Table', window.location); }}
               >
                 Edges Table
-              </NavLink>
-            </NavItem>
-            <NavItem>
-              <NavLink
-                className={classnames({ active: activeTab === '5' })}
-                onClick={() => { this.toggle('5'); this.sendGA('Vocabulary', window.location); }}
-              >
-                Vocabulary
               </NavLink>
             </NavItem>
             <NavItem>
@@ -225,19 +219,8 @@ class InfoPanel extends UNISYS.Component {
                 </Col>
               </Row>
             </TabPane>
-            <TabPane tabId="5">
-              <Row>
-                <Col sm="12">
-                  <Vocabulary tableHeight={tableHeight} />
-                </Col>
-              </Row>
-            </TabPane>
             <TabPane tabId="6">
-              <Row>
-                <Col sm="12">
-                  <More />
-                </Col>
-              </Row>
+              <More />
             </TabPane>
           </TabContent>
         </div>

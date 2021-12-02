@@ -50,45 +50,32 @@ class ImportExport extends UNISYS.Component {
   render() {
     return (
       <div
-        className="help"
         style={{
-          width: '50%',
-          maxWidth: '50%',
-          overflow: 'scroll',
-          position: 'fixed',
-          right: '10px',
-          zIndex: '3000'
+          backgroundColor: 'rgba(240,240,240,0.95)',
+          padding: '10px 20px'
         }}
       >
-        <div
-          hidden={!this.state.isExpanded}
-          style={{
-            backgroundColor: 'rgba(240,240,240,0.95)',
-            padding: '10px 20px'
-          }}
-        >
-          <h1>Export Data</h1>
+        <h1>Export Data</h1>
 
-          <Button size="sm" outline onClick={this.onSelectExportNodes}>
-            Export Nodes
-          </Button>&nbsp;
-          <Button size="sm" outline onClick={this.onSelectExportEdges}>
-            Export Edges
-          </Button>&nbsp;
-          <i className="small text-muted">Export data in .csv format.</i>
+        <Button size="sm" outline onClick={this.onSelectExportNodes}>
+          Export Nodes
+        </Button>&nbsp;
+        <Button size="sm" outline onClick={this.onSelectExportEdges}>
+          Export Edges
+        </Button>&nbsp;
+        <i className="small text-muted">Export data in .csv format.</i>
 
-          <hr />
+        <hr />
 
-          <h1>Import Data</h1>
+        <h1>Import Data</h1>
 
-          <Button size="sm" outline onClick={this.onSelectExportNodes}>
-            Import Nodes
-          </Button>&nbsp;
-          <Button size="sm" outline onClick={this.onSelectExportNodes}>
-            Import Edges
-          </Button>&nbsp;
-          <i className="small text-muted">Import .csv data</i>
-        </div>
+        <Button size="sm" outline disabled onClick={this.onSelectExportNodes}>
+          Import Nodes
+        </Button>&nbsp;
+        <Button size="sm" outline disabled onClick={this.onSelectExportNodes}>
+          Import Edges
+        </Button>&nbsp;
+        <i className="small text-muted">Import .csv data</i>
       </div>
     );
   }

@@ -38,7 +38,6 @@ class More extends UNISYS.Component {
       activeTab: '1'
     };
     this.toggleTab = this.toggleTab.bind(this);
-    this.onToggleExpanded = this.onToggleExpanded.bind(this);
 
     UDATA = UNISYS.NewDataLink(this);
   } // constructor
@@ -51,12 +50,6 @@ class More extends UNISYS.Component {
     if (this.state.activeTab !== tab) {
       this.setState({ activeTab: tab });
     }
-  }
-
-  onToggleExpanded(event) {
-    this.setState({
-      isExpanded: !this.state.isExpanded
-    })
   }
 
 /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
@@ -73,21 +66,24 @@ class More extends UNISYS.Component {
     return (
       <div className="help"
         style={{
-          overflow: 'scroll',
           position: 'fixed',
           right: '10px',
           width: '50%',
-          zIndex: '3000'
+          height: '90%',
+          overflow: 'hidden',
+          zIndex: '3000',
+          padding: '10px',
+          backgroundColor: '#fff', // match tab
+          border: '1px solid #999',
+          borderTop: 'none'
         }}
       >
-        <Button size="sm" outline hidden
-          style={{float:'right'}}
-          onClick={this.onToggleExpanded}
-        >{this.state.isExpanded ? "Hide Help" : "Help"}</Button>
-        <div hidden={!this.state.isExpanded}
-          style={{backgroundColor:'rgba(240,240,240,0.95)',padding:'10px'}}>
-          <div id='tabpanel'
-            style={{ overflow: 'hidden', backgroundColor: '#eee'}}>
+        <div style={{
+          height: '100%',
+          overflow: 'hidden',
+          padding: '10px'
+        }}>
+          <div id='tabpanel' >
             <Nav tabs>
               <NavItem>
                 <NavLink
@@ -115,27 +111,18 @@ class More extends UNISYS.Component {
               </NavItem>
             </Nav>
           </div>
-          <TabContent activeTab={activeTab} style={{height:'100%',overflow: 'hidden', backgroundColor: 'rgba(0,0,0,0.1)'}}>
+          <TabContent activeTab={activeTab} style={{
+            height: '100%',
+            overflow: 'scroll'
+          }}>
             <TabPane tabId="1">
-              <Row>
-                <Col sm="12">
-                  {activeTab==="1" && <Help /> }
-                </Col>
-              </Row>
+              {activeTab==="1" && <Help /> }
             </TabPane>
             <TabPane tabId="2">
-              <Row>
-                <Col sm="12">
-                  {activeTab==="2" && <Vocabulary /> }
-                </Col>
-              </Row>
+              {activeTab==="2" && <Vocabulary /> }
             </TabPane>
             <TabPane tabId="3">
-              <Row>
-                <Col sm="12">
-                  {activeTab==="3" && <ImportExport /> }
-                </Col>
-              </Row>
+              {activeTab==="3" && <ImportExport /> }
             </TabPane>
           </TabContent>
         </div>
