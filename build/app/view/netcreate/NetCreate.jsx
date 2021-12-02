@@ -188,7 +188,7 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
               {layoutFiltersOpen
                 // OPEN
                 ? <div id="right" style={{
-                    marginTop: '38px', padding: '0 5px', backgroundColor: '#5c656d',
+                    marginTop: '38px', padding: '0 5px', backgroundColor: '#6c757d',
                     borderTopLeftRadius: '10px', width: 'auto'
                   }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'end' }}>
@@ -202,13 +202,13 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
                   </div>
                 // CLOSED
                 : <div id="right" style={{
-                  marginTop: '38px', paddingTop: '0px', backgroundColor: '#5c656d',
-                  width: '10px', height: '100%'
-                }}>
-                  <Button
-                    onClick={this.onFilterBtnClick}
-                    style={{ width: '90px', float: 'right' }}
-                  >&lt; FILTER</Button>
+                    marginTop: '38px', paddingTop: '0px', backgroundColor: '#6c757d',
+                    width: '10px', height: '100%'
+                  }}>
+                    <Button
+                      onClick={this.onFilterBtnClick}
+                      style={{ width: '90px', float: 'right' }}
+                    >&lt; FILTER</Button>
                   </div>
               }
             </div>

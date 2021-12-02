@@ -56,7 +56,13 @@ class FiltersPanel extends UNISYS.Component {
   }
 
   UpdateFilterDefs(data) {
-    this.setState(data);
+    this.setState(state => {
+      return {
+        nodes: data.nodes,
+        edges: data.edges,
+        filterAction: data.filterAction || state.filterAction
+      }
+    });
   }
 
   OnClearBtnClick() {
@@ -86,14 +92,20 @@ class FiltersPanel extends UNISYS.Component {
             active={filterAction === FILTER.ACTION.HIGHLIGHT}
             outline={filterAction === FILTER.ACTION.HIGHLIGHT}
             disabled={filterAction === FILTER.ACTION.HIGHLIGHT}
-            style={{ color: filterAction === FILTER.ACTION.HIGHLIGHT ? '#333' : '#fff' }}
+            style={{
+              color: filterAction === FILTER.ACTION.HIGHLIGHT ? '#333' : '#fff',
+              backgroundColor: filterAction === FILTER.ACTION.HIGHLIGHT ? 'transparent' : '#6c757d88'
+            }}
           >Highlight</Button>
           <Button
             onClick={() => this.SelectFilterAction(FILTER.ACTION.FILTER)}
             active={filterAction === FILTER.ACTION.FILTER}
             outline={filterAction === FILTER.ACTION.FILTER}
             disabled={filterAction === FILTER.ACTION.FILTER}
-            style={{ color: filterAction === FILTER.ACTION.FILTER ? '#333' : '#fff' }}
+            style={{
+              color: filterAction === FILTER.ACTION.FILTER ? '#333' : '#fff',
+              backgroundColor: filterAction === FILTER.ACTION.FILTER ? 'transparent' : '#6c757d88'
+            }}
           >Filter</Button>
         </ButtonGroup>
         <Label className="small text-muted" style={{ padding: '0.5em 0 0 0.5em', marginBottom: '0' }}>
