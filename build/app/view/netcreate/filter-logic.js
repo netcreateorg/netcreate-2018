@@ -265,7 +265,7 @@ function m_ImportPrompts(prompts) {
  */
 function m_FilterDefine(data) {
   const FDATA = UDATA.AppState("FDATA");
-  FDATA.filterAction = data.filterAction;
+  FDATA.filterAction = data.filterAction || FDATA.filterAction; // if 'transparency' then filterAction is not passed, so default to existing
   if (data.group === "nodes") {
 
     if (data.type === "transparency")
