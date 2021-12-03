@@ -115,6 +115,7 @@ function m_GenerateEdgesArray(edges, edgekeys) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// EXPORT NODES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Exports FILTERED data, not the full data set.
 MOD.ExportNodes = () => {
   const DATA = UDATA.AppState('FILTEREDD3DATA');
   const { nodes } = DATA;
@@ -122,7 +123,8 @@ MOD.ExportNodes = () => {
 
   /// 1. Export Nodes
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// Define Node KEYS
+  /// Define Node KEYS to export
+  /// REVIEW: Should this be defined in the Template?
   const nodekeys = [
     'id',
     'label',
@@ -170,6 +172,7 @@ MOD.ExportNodes = () => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// EXPORT EDGES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Exports FILTERED data, not the full data set.
 MOD.ExportEdges = () => {
   const DATA = UDATA.AppState('FILTEREDD3DATA');
   const { edges } = DATA;
