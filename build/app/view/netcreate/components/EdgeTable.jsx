@@ -59,6 +59,7 @@ class EdgeTable extends UNISYS.Component {
         sortkey:      'Relationship'
       };
 
+      this.updateEdgeFilterState = this.updateEdgeFilterState.bind(this);
       this.handleDataUpdate = this.handleDataUpdate.bind(this);
       this.handleFilterDataUpdate = this.handleFilterDataUpdate.bind(this);
       this.OnTemplateUpdate = this.OnTemplateUpdate.bind(this);
@@ -126,37 +127,40 @@ class EdgeTable extends UNISYS.Component {
   }
 
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Set edge filtered status based on current filteredNodes
+  updateEdgeFilterState(edges, filteredEdges) {
+    // add highlight/filter status
+    if (filteredEdges.length > 0) {
+      edges = edges.map(edge => {
+        const filteredEdge = filteredEdges.find(n => n.id === edge.id);
+        edge.isFiltered = !filteredEdge;
+        return edge;
+      });
+    }
+    this.setState({edges});
+  }
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Handle updated SELECTION
-/*/
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Handle updated SELECTION
+  /*/
   handleDataUpdate(data) {
-    // 2020-09-09 Removing this check and relying on other NodeTable optimizations. BL
-    // if(data.bMarkedNode)
-    // {
-    //     data.bMarkedNode = false;
-    // }
-    // else
-    // {
-
     if (data && data.edges) {
-      let edges = this.sortTable(this.state.sortkey, data.edges);
+      const edges = this.sortTable(this.state.sortkey, data.edges);
       const { filteredEdges } = this.state;
-      // add highlight/filter status
-      if (filteredEdges.length > 0) {
-        edges = edges.map(edge => {
-          const filteredEdge = filteredEdges.find(n => n.id === edge.id);
-          if (!filteredEdge) edge.isFiltered = true;
-          return edge;
-        });
-      }
-      this.setState({edges});
+      this.updateEdgeFilterState(edges, filteredEdges);
     }
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   handleFilterDataUpdate(data) {
-    if (data.edges) this.setState( { filteredEdges: data.edges } );
+    if (data.edges) {
+      const filteredEdges = data.edges;
+      this.setState({ filteredEdges }, () => {
+        const edges = this.sortTable(this.state.sortkey, this.state.edges);
+        this.updateEdgeFilterState(edges, filteredEdges);
+      });
+    }
   }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -25,7 +25,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-var DBG = false;
+var DBG = true;
 
 const SETTINGS     = require('settings');
 const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1') || (location.href.includes('admin=true'));
@@ -56,6 +56,8 @@ class NodeTable extends UNISYS.Component {
       sortkey: 'label'
     };
 
+    this.displayUpdated = this.displayUpdated.bind(this);
+    this.updateNodeFilterState = this.updateNodeFilterState.bind(this);
     this.handleDataUpdate = this.handleDataUpdate.bind(this);
     this.handleFilterDataUpdate = this.handleFilterDataUpdate.bind(this);
     this.OnTemplateUpdate = this.OnTemplateUpdate.bind(this);
@@ -73,12 +75,11 @@ class NodeTable extends UNISYS.Component {
     // as a handler, otherwise object context is lost
     this.OnAppStateChange('D3DATA', this.handleDataUpdate);
 
+    // Track Filtered Data Updates too
+    this.OnAppStateChange('FILTEREDD3DATA', this.handleFilterDataUpdate);
+
     // Handle Template updates
     this.OnAppStateChange('TEMPLATE', this.OnTemplateUpdate);
-
-    // Track Filtered Data Updates too
-    // UDATA.HandleMessage('FILTEREDD3DATA', (data) => {
-    this.OnAppStateChange('FILTEREDD3DATA', this.handleFilterDataUpdate);
 
   } // constructor
 
@@ -122,39 +123,40 @@ class NodeTable extends UNISYS.Component {
     }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Set node filtered status based on current filteredNodes
+  updateNodeFilterState(nodes, filteredNodes) {
+    // set filter status
+    if (filteredNodes.length > 0) {
+      nodes = nodes.map(node => {
+        const filteredNode = filteredNodes.find(n => n.id === node.id);
+        node.isFiltered = !filteredNode; // not in filteredNode, so it's been removed
+        return node
+      });
+    }
+    this.setState({ nodes });
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Handle updated SELECTION
   /*/
   handleDataUpdate(data) {
     if (DBG) console.log('handle data update')
-
-    // 2020-09-09 Removing this check and relying on other NodeTable optimizations. BL
-    // if (data.bMarkedNode)
-    //   {
-    //     //data.bMarkedNode = false;
-    //     // counting on the edge table going second, which is sloppy
-    //     // but we are in a rush, so ... do it that way for now
-    //   }
-    // else
-    // {}
-
     if (data.nodes) {
-      let nodes = this.sortTable(this.state.sortkey, data.nodes);
+      const nodes = this.sortTable(this.state.sortkey, data.nodes);
       const { filteredNodes } = this.state;
-      // add highlight/filter status
-      if (filteredNodes.length > 0) {
-        nodes = nodes.map(node => {
-          const filteredNode = filteredNodes.find(n => n.id === node.id);
-          if (!filteredNode) node.isFiltered = true; // not in filteredNode, so it's been removed
-          return node
-        });
-      }
-      this.setState({ nodes });
+      this.updateNodeFilterState(nodes, filteredNodes);
     }
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   handleFilterDataUpdate(data) {
-    if (data.nodes) this.setState( { filteredNodes: data.nodes } );
+    if (data.nodes) {
+      const filteredNodes = data.nodes;
+      this.setState({ filteredNodes }, () => {
+        const nodes = this.sortTable(this.state.sortkey, this.state.nodes);
+        this.updateNodeFilterState(nodes, filteredNodes);
+      });
+    }
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
