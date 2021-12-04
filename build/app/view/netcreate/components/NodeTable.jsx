@@ -66,7 +66,7 @@ class NodeTable extends UNISYS.Component {
     this.setSortKey = this.setSortKey.bind(this);
     this.sortSymbol = this.sortSymbol.bind(this);
 
-    this.sortDirection = -1;
+    this.sortDirection = 1; // alphabetical A-Z
 
     /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
@@ -268,7 +268,7 @@ class NodeTable extends UNISYS.Component {
       if(key != this.state.sortkey) // this is not the current sort, so don't show anything
         return "";
       else
-        return this.sortDirection==-1?"▼":"▲"; // default to "decreasing" and flip if clicked again
+        return this.sortDirection==1?"▼":"▲"; // default to "decreasing" and flip if clicked again
     }
 
 
