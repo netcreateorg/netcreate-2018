@@ -24,6 +24,11 @@ function m_formatDate(date) {
   return '';
 }
 
+function m_encode(data) {
+  // double quotes need to be escaped
+  return String(data).replace(/"/g, '""');
+}
+
 /// IMPORT / EXPORT METHODS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -49,7 +54,7 @@ function m_getNodeValues(node, keys) {
       return;
     }
     // Else, normal processing
-    if (node.hasOwnProperty(key)) RESULT.push(`"${node[key]}"`); // enclose in quotes to support commas
+    if (node.hasOwnProperty(key)) RESULT.push(`"${m_encode(node[key])}"`); // enclose in quotes to support commas
   })
   return RESULT;
 }
