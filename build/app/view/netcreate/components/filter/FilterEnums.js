@@ -1,5 +1,10 @@
 const FILTER = {};
 
+// Determines whether filter action is to highlight/fade or remove (filter) nodes and edges
+FILTER.ACTION = {};
+FILTER.ACTION.HIGHLIGHT = 'highlight';
+FILTER.ACTION.FILTER = 'filter';
+
 // Types of filters definable in template files.
 FILTER.TYPES = {};
 FILTER.TYPES.STRING = 'string';

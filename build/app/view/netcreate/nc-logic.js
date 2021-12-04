@@ -221,6 +221,7 @@ MOD.Hook("LOADASSETS", () => {
 /*/ CONFIGURE fires after LOADASSETS, so this is a good place to put TEMPLATE
     validation.
 /*/
+// eslint-disable-next-line complexity
 MOD.Hook("CONFIGURE", () => {
   // Process Node, NodeColorMap and Edge options
 

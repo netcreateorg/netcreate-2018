@@ -20,6 +20,7 @@ class FilterGroupProperties extends React.Component {
     super();
     this.OnChangeValue = this.OnChangeValue.bind(this);
     this.TriggerChangeHandler = this.TriggerChangeHandler.bind(this);
+    this.OnSubmit = this.OnSubmit.bind(this);
 
     this.state = {
       group: group,
@@ -55,13 +56,19 @@ class FilterGroupProperties extends React.Component {
 
   }
 
+  OnSubmit(e) {
+    // Prevent "ENTER" from triggering form submission!
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
   render (){
     const { group, transparency } = this.props;
 
     return(
     <div>
       <div className="small text-muted" style={{fontWeight:'bold',textTransform:'uppercase',marginBottom:'0.4em'}}>Settings for {group}</div>
-           <Form inline className="filter-item" key={group}>
+           <Form inline className="filter-item" key={group} onSubmit={this.OnSubmit}>
             <FormGroup><Label size="sm" className="small text-muted"
               style={{ fontSize: '0.75em', lineHeight: '1em', width: `5em`, marginLeft: '0em'}}>
               Transparency&nbsp;</Label>

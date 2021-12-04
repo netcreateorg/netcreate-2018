@@ -2,6 +2,8 @@
 
     D3 Simple NetGraph
 
+    This uses D3 Version 4.0.
+
     This is designed to work with the NetGraph React component.
 
     NetGraph calls SetData whenever it receives an updated data object.
@@ -165,10 +167,20 @@ class D3NetGraph {
       this._Dragged           = this._Dragged.bind(this);
       this._Dragended         = this._Dragended.bind(this);
 
+      // V1.4 CHANGE
+      // Ignore D3DATA Updates!!!  Only listen to FILTEREDD3DATA Updates
+      //
       // watch for updates to the D3DATA data object
-      UDATA.OnAppStateChange('D3DATA',(data)=>{
+      // UDATA.OnAppStateChange('D3DATA',(data)=>{
+      //   // expect { nodes, edges } for this namespace
+      //   if (DBG) console.error(PR,'got state D3DATA',data);
+      //   this._SetData(data);
+      // });
+
+      // Special handler for the remove filter
+      UDATA.OnAppStateChange('FILTEREDD3DATA',(data)=>{
         // expect { nodes, edges } for this namespace
-        if (DBG) console.log(PR,'got state D3DATA',data);
+        if (DBG) console.log(PR,'got state FILTEREDD3DATA',data);
         this._SetData(data);
       });
 
@@ -182,6 +194,7 @@ class D3NetGraph {
 
       UDATA.HandleMessage('ZOOM_RESET', (data) => {
         if (DBG) console.log(PR, 'ZOOM_RESET got state D3DATA', data);
+        // NOTE: The transition/duration call means _HandleZoom will be called multiple times
         this.d3svg.transition()
           .duration(200)
           .call(this.zoom.scaleTo, 1);
@@ -197,6 +210,13 @@ class D3NetGraph {
         this._Transition(0.8);
       });
 
+      // Pan to 0,0 and zoom scale to 1
+      // (Currently not used)
+      UDATA.HandleMessage('ZOOM_PAN_RESET', (data) => {
+        if (DBG) console.log(PR, 'ZOOM_PAN_RESET got state D3DATA', data);
+        const transform = d3.zoomIdentity.translate(0, 0).scale(1);
+        this.d3svg.call(this.zoom.transform, transform);
+      });
 
       UDATA.HandleMessage('GROUP_PROPS', (data) => {
         console.log('GROUP_PROPS got ... ');
@@ -331,7 +351,7 @@ class D3NetGraph {
           return COLORMAP[d.attributes["Node_Type"]];
         })
         .style("opacity", d => {
-          return d.isFilteredOut ? d.filteredTransparency : 1.0
+          return d.filteredTransparency
         });
 
       // enter node: also append 'text' element
@@ -343,7 +363,7 @@ class D3NetGraph {
           .attr("dy", "0.35em") // ".15em")
           .text((d) => { return d.label })
           .style("opacity", d => {
-            return d.isFilteredOut ? d.filteredTransparency : 1.0
+            return d.filteredTransparency
           });
 
       // enter node: also append a 'title' tag
@@ -403,26 +423,28 @@ class D3NetGraph {
             if (d.selected || d.strokeColor) return '5px';
             return undefined // don't set stroke width
           })
-// this "r" is necessary to resize after a link is added
           .attr("fill", (d) => {
             // REVIEW: Using label match.  Should we use id instead?
             return COLORMAP[d.attributes["Node_Type"]];
           })
           .attr("r", (d) => {
-              let radius = this.data.edges.reduce((acc,ed)=>{
-                return (ed.source.id===d.id || ed.target.id===d.id) ? acc+1 : acc
-              },1);
+            // this "r" is necessary to resize after a link is added
+            let radius = this.data.edges.reduce((acc,ed)=>{
+              return (ed.source.id===d.id || ed.target.id===d.id) ? acc+1 : acc
+            },1);
 
-              d.weight = radius
-              d.size = radius // save the calculated size
-              d.degrees = radius - 1
-              return this.defaultSize + (this.defaultSize * d.weight / 2)
+            d.weight = radius
+            d.size = radius // save the calculated size
+            // radius is calculated by counting the number of edges attached
+            // (+ 1 for a minimum radius), so we hack degrees by using radius-1
+            d.degrees = radius - 1
+            return this.defaultSize + (this.defaultSize * d.weight / 2)
           })
           .transition()
           .duration(500)
           .style("opacity", d => {
             // console.log(d);
-            return d.isFilteredOut ? d.filteredTransparency : 1.0
+            return d.filteredTransparency
           });
 
       // UPDATE text in each node for all nodes
@@ -443,7 +465,7 @@ class D3NetGraph {
           .transition()
           .duration(500)
           .style("opacity", d => {
-            return d.isFilteredOut ? d.filteredTransparency : 1.0
+            return d.filteredTransparency
           });
 
       nodeElements.merge(nodeElements)
@@ -471,7 +493,7 @@ class D3NetGraph {
         //   this.edgeClickFn( d )
         // })
         .style("opacity", d => {
-          return d.isFilteredOut ? d.filteredTransparency : 1.0
+          return d.filteredTransparency
         });
 
       // .merge() updates the visuals whenever the data is updated.
@@ -482,7 +504,7 @@ class D3NetGraph {
         .transition()
         .duration(500)
         .style("opacity", d => {
-          return d.isFilteredOut ? d.filteredTransparency : 1.0
+          return d.filteredTransparency
         });
 
       linkElements.exit().remove()

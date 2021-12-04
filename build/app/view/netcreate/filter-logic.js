@@ -40,6 +40,22 @@
 
   FEATURES
 
+  * See Whimiscal [diagram](https://whimsical.com/d3-data-flow-B2tTGnQYPSNviUhsPL64Dz)
+
+  * filterAction: "Highlight" vs "Filter"
+    --  Version 1.4 introduces two different types of filtering:
+        "Highlight" highlights the matching nodes/edges and fades the others
+        "Filter" shows matching nodes/edges and removes the non-matching
+        nodes/edges from the display without affecting the underlying data.
+
+  * With Version 1.4, the only data that is graphed is FILTEREDD3DATA.
+    --  d3-simplenetgraph no longer plots on D3DATA changes.
+    --  Instead, it plots the new FILTEREDD3DATA state.  Whenever D3DATA changes,
+        FILTERDD3DATA is udpated.
+    --  This way there is only one source of truth: all draw updates
+        are routed through filter-logic.
+    --  If filters have not been defined, we just pass the raw D3DATA
+
   * Filters can be stacked.
         You can define two "Label" filters, for example.
         The only reason you can't do it right now is because the filter template
@@ -113,8 +129,7 @@ MOD.Hook("INITIALIZE", () => {
   UDATA.OnAppStateChange("FDATA", data => {
     if (DBG) console.log(PR + 'OnAppStateChange: FDATA', data);
     // The filter defs have been updated, so apply the filters.
-    m_FiltersApply();
-    m_UpdateFilterSummary();
+    m_UpdateFilters();
   });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -130,6 +145,22 @@ MOD.Hook("INITIALIZE", () => {
   UDATA.HandleMessage("FILTER_CLEAR", () => {
     m_ClearFilters();
   });
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ FILTERS_UPDATE is called by FiltersPanel switches between filters and highlights
+  /*/
+  UDATA.HandleMessage("FILTERS_UPDATE", data => {
+    const FDATA = UDATA.AppState("FDATA");
+    FDATA.filterAction = data.filterAction;
+    UDATA.SetAppState("FDATA", FDATA);
+  });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/     // Listen for D3DATA updates so we know to trigger change?
+  /*/
+  UDATA.OnAppStateChange('D3DATA',(data)=>{
+    m_UpdateFilters();
+  });
+
 
 }); // end UNISYS_INIT
 
@@ -234,12 +265,12 @@ function m_ImportPrompts(prompts) {
  */
 function m_FilterDefine(data) {
   const FDATA = UDATA.AppState("FDATA");
+  FDATA.filterAction = data.filterAction;
   if (data.group === "nodes") {
 
     if (data.type === "transparency")
     {
       FDATA.nodes.transparency = data.transparency;
-
     }
     else{
       let nodeFilters = FDATA.nodes.filters;
@@ -271,9 +302,17 @@ function m_FilterDefine(data) {
  * @param {Object} data A UDATA pkt {defs}
  */
 function m_FiltersApply() {
+  const FILTEREDD3DATA = UDATA.AppState("D3DATA");
   const FDATA = UDATA.AppState("FDATA");
-  m_FiltersApplyToNodes(FDATA.nodes.filters, FDATA.nodes.transparency);
-  m_FiltersApplyToEdges(FDATA.edges.filters, FDATA.edges.transparency);
+
+  // skip if FDATA has not been defined yet
+  if (Object.keys(FDATA).length < 1) return;
+
+  m_FiltersApplyToNodes(FDATA, FILTEREDD3DATA);
+  m_FiltersApplyToEdges(FDATA, FILTEREDD3DATA);
+  // Update FILTEREDD3DATA
+  UDATA.SetAppState("FILTEREDD3DATA", FILTEREDD3DATA);
+
 }
 
 function m_ClearFilters() {
@@ -285,14 +324,25 @@ function m_ClearFilters() {
 function m_UpdateFilterSummary() {
   const FDATA = UDATA.AppState("FDATA");
 
+  // skip if FDATA has not been defined yet
+  if (Object.keys(FDATA).length < 1) return;
+
   const nodeFilters = FDATA.nodes.filters;
   const edgeFilters = FDATA.edges.filters;
 
+  const typeSummary = FDATA.filterAction === FILTER.ACTION.HIGHLIGHT
+    ? 'HIGHLIGHTING ' : 'FILTERING ';
+  const nodeSummary = m_FiltersToString(FDATA.nodes.filters);
+  const edgeSummary = m_FiltersToString(FDATA.edges.filters);
   let summary = '';
-  summary += m_FiltersToString(FDATA.nodes.filters);
-  summary += m_FiltersToString(FDATA.edges.filters);
+  if (nodeSummary || edgeSummary) summary = `${typeSummary} NODES: ${nodeSummary} EDGES: ${edgeSummary}`;
 
   UDATA.LocalCall('FILTER_SUMMARY_UPDATE', { filtersSummary: summary });
+}
+
+function m_UpdateFilters() {
+  m_FiltersApply();
+  m_UpdateFilterSummary();
 }
 
 function m_FiltersToString(filters) {
@@ -310,6 +360,7 @@ function m_FiltersToString(filters) {
 function m_OperatorToString(operator) {
   return FILTER.OPERATORS[operator].label;
 }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ UTILITY FUNCTIONS
 /*/
@@ -368,39 +419,57 @@ function m_MatchNumber(operator, filterVal, objVal) {
 
 /**
  * Side effect:
- *   D3DATA.nodes are updated with `isFilteredOut` flags.
+ *   FILTEREDD3DATA.nodes are updated with `isFilteredOut` flags.
  *
  * @param {Array} filters
  */
-function m_FiltersApplyToNodes(filters, transparency) {
-  const D3DATA = UDATA.AppState("D3DATA");
-  D3DATA.nodes.forEach(node => {
-    m_FiltersApplyToNode(node, filters, transparency);
+function m_FiltersApplyToNodes(FDATA, FILTEREDD3DATA) {
+  const { filterAction } = FDATA;
+  const { filters, transparency } = FDATA.nodes;
+  FILTEREDD3DATA.nodes = FILTEREDD3DATA.nodes.filter(node => {
+    return m_NodeIsFiltered(node, filters, transparency, filterAction);
   });
-  UDATA.SetAppState("D3DATA", D3DATA);
 }
 
-function m_FiltersApplyToNode(node, filters, transparency) {
-  let all_no_op = true;
-  let matched = true;
+function m_NodeIsFiltered(node, filters, transparency, filterAction) {
+  // let all_no_op = true;
+  let keepNode = true;
+
+  // 1. Look for matches
   // implicit AND.  ALL filters must return true.
   filters.forEach(filter => {
     if (filter.operator === FILTER.OPERATORS.NO_OP.key) return; // skip no_op
-    all_no_op = false;
+    // all_no_op = false;
     if (!m_IsNodeMatchedByFilter(node, filter)) {
-      matched = false;
+      keepNode = false;
     }
   });
-  if (all_no_op) {
-    // no filters defined, undo isFilteredOut
-    node.isFilteredOut = false;
+
+  // 2. Decide based on filterAction
+  if (filterAction === FILTER.ACTION.FILTER) {
+    // not using highlight, so restore transparency
+    node.filteredTransparency = 1.0; // opaque, not tranparent
+    if (keepNode) return true;
+    return false; // remove from array
   } else {
-    // node is filtered out if it fails any filter tests
-    node.isFilteredOut = !matched;
-
-    node.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
-
+    // FILTER.ACTION.HIGHLIGHT
+    if (!keepNode) {
+      node.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
+    } else {
+      node.filteredTransparency = 1.0; // opaque
+    }
+    return true; // don't filter out
   }
+
+  // all_no_op
+  // This is currently redundant because matchesFilter will always
+  // be true if there are no filters.  If matchesFilter is true,
+  // then the node will not be removed/faded.
+  //
+  // if (all_no_op) {
+  //   // all filters are "no_op", so no filters defined, don't filter anything
+  //   node.filteredTransparency = 1.0; // opaque, not tranparent
+  // }
 }
 
 function m_IsNodeMatchedByFilter(node, filter) {
@@ -431,7 +500,6 @@ function m_IsNodeMatchedByFilter(node, filter) {
       break;
     default:
       // Else assume it's a number
-      console.log('NUMBER', filter, node);
       return m_MatchNumber(filter.operator, filter.value, nodeValue)
       break;
   }
@@ -442,42 +510,83 @@ function m_IsNodeMatchedByFilter(node, filter) {
 /*/ EDGE FILTERS
 /*/
 
-function m_FiltersApplyToEdges(filters, transparency) {
-  const D3DATA = UDATA.AppState("D3DATA");
-  D3DATA.edges.forEach(edge => {
-    m_FiltersApplyToEdge(edge, filters, transparency);
+function m_FiltersApplyToEdges(FDATA, FILTEREDD3DATA) {
+  const { filterAction } = FDATA;
+  const { filters, transparency } = FDATA.edges;
+  FILTEREDD3DATA.edges = FILTEREDD3DATA.edges.filter(edge => {
+    return m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3DATA);
   });
-  UDATA.SetAppState("D3DATA", D3DATA);
 }
 
-function m_FiltersApplyToEdge(edge, filters, transparency) {
-  // regardless of filter definition,
-  // always hide edge if it's attached to a filtered node
-  if (edge.source.isFilteredOut || edge.target.isFilteredOut) {
-    edge.isFilteredOut = true;  // no filters, revert
+/*/ Side effect: Sets `isFiltered`
+/*/
+function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3DATA) {
+  // let all_no_op = true; // all filters are no_op
+  let keepEdge = true;
+  const source = FILTEREDD3DATA.nodes.find(e => {
+    // on init, edge.source is just an id.  only with d3 processing does it
+    // get transformed into a node object.  so we have to check the type.
+    const sourceId = (typeof edge.source === 'number') ? edge.source : edge.source.id;
+    return e.id === sourceId;
+  });
+  const target = FILTEREDD3DATA.nodes.find(e => {
+    // on init, edge.target is just an id.  only with d3 processing does it
+    // get transformed into a node object.  so we have to check the type.
+    const targetId = (typeof edge.target === 'number') ? edge.target : edge.target.id;
+    return e.id === targetId;
+  });
+  // 1. if source or target is filtered, then we are filtered too
+  if (source === undefined || target === undefined ||
+    source.filteredTransparency < 1.0 ||
+    target.filteredTransparency < 1.0) {
+    // regardless of filter definition...
+    // ...if filterAction is FILTER
+    // always hide edge if it's attached to a filtered node
+    if (filterAction === FILTER.ACTION.FILTER) return false;
+    // ...else if filterAction is HIGHLIGHT
+    // don't filter, just fade
     edge.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
-    return;
+    return true;
   }
 
-  let all_no_op = true;
-  let matched = true;
+  // 2. otherwise, look for matches
   // implicit AND.  ALL filters must return true.
+  // edge is filtered out if it fails ANY filter tests
   filters.forEach(filter => {
     if (filter.operator === FILTER.OPERATORS.NO_OP.key) return; // skip no_op
-    all_no_op = false;
+    // Found a filter!  Apply it!
+    // all_no_op = false;
     if (!m_IsEdgeMatchedByFilter(edge, filter)) {
-      matched = false;
+      keepEdge = false;
     }
   });
-  if (all_no_op) {
-    // no filters defined, undo isFilteredOut
-    edge.isFilteredOut = false;
-  } else {
-    // edge is filtered out if it fails ANY filter tests
-    edge.isFilteredOut = !matched;
-    edge.filteredTransparency = transparency;; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
 
+  // 3. Decide how to filter based on filterAction
+  if (filterAction === FILTER.ACTION.FILTER) {
+    // not using highlight, so restore transparency
+    edge.filteredTransparency = 1.0; // opaque
+    if (keepEdge) return true; // keep in array
+    return false; // remove from array
+  } else {
+    // FILTER.ACTION.HIGHLIGHT, so don't filter
+    if (!keepEdge) {
+      edge.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
+    } else {
+      edge.filteredTransparency = 1.0; // opaque
+    }
+    return true; // always keep in array
   }
+
+  // all_no_op
+  // This is currently redundant because matchesFilter will always
+  // be true if there are no filters.  If matchesFilter is true,
+  // then the node will not be removed/faded.
+  //
+  // if (all_no_op) {
+  //   // no filters defined, undo isFilteredOut
+  //   edge.filteredTransparency = 1.0;
+  // } else {
+  // }
 }
 
 function m_IsEdgeMatchedByFilter(edge, filter) {

@@ -4,6 +4,8 @@
 
     NodeTable is used to to display a table of nodes for review.
 
+    It displays D3DATA.
+    But also checks FILTEREDD3DATA to show highlight/filtered state
 
   ## TO USE
 
@@ -43,43 +45,87 @@ var   UDATA    = null;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
 class NodeTable extends UNISYS.Component {
-    constructor (props) {
-      super(props);
+  constructor(props) {
+    super(props);
 
-      this.state = {
-        nodePrompts:  this.AppState('TEMPLATE').nodePrompts,
-        nodes: [],
-        edgeCounts: {},         // {nodeID:count,...}
-        isExpanded:   true,
-        sortkey:      'label'
-      };
+    this.state = {
+      nodePrompts: this.AppState('TEMPLATE').nodePrompts,
+      nodes: [],
+      filteredNodes: [],
+      isExpanded: true,
+      sortkey: 'label'
+    };
 
-      this.handleDataUpdate = this.handleDataUpdate.bind(this);
-      this.OnTemplateUpdate = this.OnTemplateUpdate.bind(this);
-      this.onButtonClick = this.onButtonClick.bind(this);
-      this.onToggleExpanded         = this.onToggleExpanded.bind(this);
-      this.setSortKey               = this.setSortKey.bind(this);
-      this.sortSymbol               = this.sortSymbol.bind(this);
+    this.handleDataUpdate = this.handleDataUpdate.bind(this);
+    this.handleFilterDataUpdate = this.handleFilterDataUpdate.bind(this);
+    this.OnTemplateUpdate = this.OnTemplateUpdate.bind(this);
+    this.onButtonClick = this.onButtonClick.bind(this);
+    this.onToggleExpanded = this.onToggleExpanded.bind(this);
+    this.setSortKey = this.setSortKey.bind(this);
+    this.sortSymbol = this.sortSymbol.bind(this);
 
-      this.sortDirection = -1;
+    this.sortDirection = -1;
 
-      /// Initialize UNISYS DATA LINK for REACT
-      UDATA = UNISYS.NewDataLink(this);
+    /// Initialize UNISYS DATA LINK for REACT
+    UDATA = UNISYS.NewDataLink(this);
 
-      // Always make sure class methods are bind()'d before using them
-      // as a handler, otherwise object context is lost
-      this.OnAppStateChange('D3DATA', this.handleDataUpdate);
+    // Always make sure class methods are bind()'d before using them
+    // as a handler, otherwise object context is lost
+    this.OnAppStateChange('D3DATA', this.handleDataUpdate);
 
-      // Handle Template updates
-      this.OnAppStateChange('TEMPLATE', this.OnTemplateUpdate);
-    } // constructor
+    // Handle Template updates
+    this.OnAppStateChange('TEMPLATE', this.OnTemplateUpdate);
+
+    // Track Filtered Data Updates too
+    // UDATA.HandleMessage('FILTEREDD3DATA', (data) => {
+    this.OnAppStateChange('FILTEREDD3DATA', this.handleFilterDataUpdate);
+
+  } // constructor
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ componentDidMount () {
+      if (DBG) console.error('NodeTable.componentDidMount!');
+      // Explicitly retrieve data because we may not have gotten a D3DATA
+      // update while we were hidden.
+
+      // filtered data needs to be set before D3Data
+      const FILTEREDD3DATA = UDATA.AppState('FILTEREDD3DATA');
+      this.setState({ filteredNodes: FILTEREDD3DATA.nodes },
+        () => {
+          let D3DATA = this.AppState('D3DATA');
+          this.handleDataUpdate(D3DATA);
+        }
+      )
+    }
+
+    componentWillUnmount() {
+      this.AppStateChangeOff('D3DATA', this.handleDataUpdate);
+      this.AppStateChangeOff('FILTEREDD3DATA', this.handleFilterDataUpdate);
+      this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
+    }
+
+    displayUpdated(nodeEdge) {
+      var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
+
+      var year = "" + d.getFullYear();
+      var date = (d.getMonth()+1)+"/"+d.getDate()+"/"+ year.substr(2,4);
+      var time = d.toTimeString().substr(0,5);
+      var dateTime = date+' at '+time;
+      var titleString = "v" + nodeEdge.meta.revision;
+      if(nodeEdge._nlog)
+        titleString += " by " + nodeEdge._nlog[nodeEdge._nlog.length-1];
+      var tag = <span title={titleString}> {dateTime} </span>;
+
+      return tag;
+
+    }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Handle updated SELECTION
   /*/
   handleDataUpdate(data) {
-    if(DBG)
-      console.log('handle data update')
+    if (DBG) console.log('handle data update')
 
     // 2020-09-09 Removing this check and relying on other NodeTable optimizations. BL
     // if (data.bMarkedNode)
@@ -92,31 +138,29 @@ class NodeTable extends UNISYS.Component {
     // {}
 
     if (data.nodes) {
-      // const edgeCounts = this.countEdges(data.edges);
-      const nodes = this.sortTable(this.state.sortkey, data.nodes);
-      this.setState({
-        nodes: nodes,
-        // edgeCounts: edgeCounts
-      });
+      let nodes = this.sortTable(this.state.sortkey, data.nodes);
+      const { filteredNodes } = this.state;
+      // add highlight/filter status
+      if (filteredNodes.length > 0) {
+        nodes = nodes.map(node => {
+          const filteredNode = filteredNodes.find(n => n.id === node.id);
+          if (!filteredNode) node.isFiltered = true; // not in filteredNode, so it's been removed
+          return node
+        });
+      }
+      this.setState({ nodes });
     }
   }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-OnTemplateUpdate(data) {
-  this.setState({nodePrompts: data.nodePrompts});
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Build table of counts
-/*/
-// JD removed because "size" seemed to work just fine? (I added a degrees that is size - 1)
-countEdges(edges) {
-  let edgeCounts = {}; // this.state.edgeCounts;
-  edges.forEach(edge => {
-    edgeCounts[edge.source.id] = edgeCounts[edge.source.id] !== undefined ? edgeCounts[edge.source.id] + 1 : 1;
-    edgeCounts[edge.target.id] = edgeCounts[edge.target.id] !== undefined ? edgeCounts[edge.target.id] + 1 : 1;
-  });
-  return edgeCounts;
-}
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  handleFilterDataUpdate(data) {
+    if (data.nodes) this.setState( { filteredNodes: data.nodes } );
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  OnTemplateUpdate(data) {
+    this.setState({nodePrompts: data.nodePrompts});
+  }
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -136,7 +180,6 @@ countEdges(edges) {
 /*/
 /*/ sortByEdgeCount(nodes) {
       if (nodes) {
-        // let edgeCounts = this.state.edgeCounts;
         return nodes.sort( (a, b) => {
             let akey = a.degrees || 0,
               bkey = b.degrees || 0;
@@ -172,8 +215,9 @@ countEdges(edges) {
       }
     }
 
-    /// ---
-    sortByUpdated(nodes)
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ sortByUpdated(nodes)
     {
       if (nodes) {
         return nodes.sort( (a,b) => {
@@ -287,57 +331,60 @@ countEdges(edges) {
 /*/
 /*/
 render() {
-  if(DBG)
-  console.log('nodetablerender!')
   if (this.state.nodes === undefined) return "";
   let { nodePrompts } = this.state;
   let { tableHeight } = this.props;
-  let styles = `thead, tbody {  }
+  let styles = `thead, tbody { font-size: 0.8em }
                 thead { position: relative; }
                 tbody { overflow: auto; }
+                .btn-sm { font-size: 0.6rem; padding: 0.1rem 0.2rem }
                 `
   return (
-      <div style={{overflow:'auto',
-                  position:'relative',display: 'block', left: '1px', right:'10px',maxHeight: tableHeight, backgroundColor:'#eafcff'
-      }}>
+    <div style={{overflow:'auto',
+      position:'relative',display: 'block', left: '1px', right:'10px',maxHeight: tableHeight, backgroundColor:'#eafcff'
+    }}>
       <style>{styles}</style>
       <Button size="sm" outline hidden
         onClick={this.onToggleExpanded}
       >{this.state.isExpanded ? "Hide Node Table" : "Show Node Table"}</Button>
       <Table hidden={!this.state.isExpanded} hover size="sm"
-              responsive striped
-              className="nodetable w-auto"
+        responsive striped
+        className="nodetable w-auto"
       >
         <thead>
           <tr>
             <th width="4%"><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
-            <th hidden={!DBG}>ID</th>
-            <th width="12%"><Button size="sm"
+            <th width="4%" hidden={!DBG}>ID</th>
+            <th width="4%"><Button size="sm"
                   onClick={() => this.setSortKey("edgeCount")}
                 >{nodePrompts.degrees.label} {this.sortSymbol("edgeCount")}</Button></th>
             <th width="15%"><Button size="sm"
                   onClick={()=>this.setSortKey("label")}
                 >{nodePrompts.label.label} {this.sortSymbol("label")}</Button></th>
-            <th width="15%"hidden={nodePrompts.type.hidden}>
+            <th width="10%"hidden={nodePrompts.type.hidden}>
                 <Button size="sm"
                   onClick={()=>this.setSortKey("type")}
                 >{nodePrompts.type.label} {this.sortSymbol("type")}</Button></th>
-            <th width="26%"hidden={nodePrompts.info.hidden}>
+            <th width="20%"hidden={nodePrompts.info.hidden}>
                 <Button size="sm"
                   onClick={()=>this.setSortKey("info")}
                 >{nodePrompts.info.label} {this.sortSymbol("info")}</Button></th>
-            <th width="26%" hidden={nodePrompts.notes.hidden}>
+            <th width="30%" hidden={nodePrompts.notes.hidden}>
                 <Button size="sm"
                   onClick={()=>this.setSortKey("notes")}
                 >{nodePrompts.notes.label} {this.sortSymbol("notes")}</Button></th>
-            <th  width="20%"hidden={!isLocalHost}><Button size="sm"
+            <th  width="10%"hidden={!isLocalHost}><Button size="sm"
                   onClick={()=>this.setSortKey("Updated")}
                 >Updated {this.sortSymbol("Updated")}</Button></th>
           </tr>
         </thead>
         <tbody style={{maxHeight: tableHeight}}>
         {this.state.nodes.map( (node,i) => (
-          <tr key={i}>
+          <tr key={i}
+            style={{
+              color: node.isFiltered ? 'red' : 'black',
+              opacity: node.filteredTransparency
+            }}>
             <td><Button size="sm" outline
                   value={node.id}
                   onClick={this.onButtonClick}
@@ -361,37 +408,6 @@ render() {
   );
 
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ componentDidMount () {
-      if (DBG) console.error('NodeTable.componentDidMount!');
-      // Explicitly retrieve data because we may not have gotten a D3DATA
-      // update while we were hidden.
-      let D3DATA = this.AppState('D3DATA');
-      this.handleDataUpdate(D3DATA);
-    }
-
-  componentWillUnmount() {
-    this.AppStateChangeOff('D3DATA', this.handleDataUpdate);
-    this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
-  }
-
-displayUpdated(nodeEdge)
-  {
-      var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
-
-      var year = "" + d.getFullYear();
-      var date = (d.getMonth()+1)+"/"+d.getDate()+"/"+ year.substr(2,4);
-      var time = d.toTimeString().substr(0,5);
-      var dateTime = date+' at '+time;
-      var titleString = "v" + nodeEdge.meta.revision;
-      if(nodeEdge._nlog)
-        titleString += " by " + nodeEdge._nlog[nodeEdge._nlog.length-1];
-      var tag = <span title={titleString}> {dateTime} </span>;
-
-      return tag;
-
-  }
 
 } // class NodeTable
 

@@ -179,9 +179,9 @@ class InfoPanel extends UNISYS.Component {
             <NavItem>
               <NavLink
                 className={classnames({ active: activeTab === '2' })}
-                onClick={() => { this.toggle('2'); this.sendGA('Filter', window.location); }}
+                onClick={() => { this.toggle('2'); this.sendGA('Highlight', window.location); }}
               >
-                Filters
+                Highlight / Filter
               </NavLink>
             </NavItem>
             <NavItem>
@@ -221,7 +221,7 @@ class InfoPanel extends UNISYS.Component {
             <TabPane tabId="1">
             </TabPane>
             <TabPane tabId="2">
-              <FiltersPanel tableHeight={tableHeight} />
+              <FiltersPanel tableHeight={tableHeight}/>
             </TabPane>
             <TabPane tabId="3">
               <Row>
@@ -265,7 +265,7 @@ class InfoPanel extends UNISYS.Component {
         <div hidden={!hideDragger || filtersSummary===''}
           style={{ padding: '3px', fontSize: '0.8em', color:'#999', backgroundColor:'#eef'}}
         >
-          FILTERED BY: {filtersSummary} <Button size="sm" outline onClick={this.OnClearBtnClick}>Clear Filters</Button>
+          {filtersSummary} <Button size="sm" outline onClick={this.OnClearBtnClick}>Clear Filters</Button>
         </div>
       </div>
     );

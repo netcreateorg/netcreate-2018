@@ -72,6 +72,7 @@ class NumberFilter extends React.Component {
     this.OnChangeOperator = this.OnChangeOperator.bind(this);
     this.OnChangeValue = this.OnChangeValue.bind(this);
     this.TriggerChangeHandler = this.TriggerChangeHandler.bind(this);
+    this.OnSubmit = this.OnSubmit.bind(this);
 
     this.state = {
       operator: FILTER.OPERATORS.NO_OP, // Used locally to define result
@@ -95,6 +96,7 @@ class NumberFilter extends React.Component {
   }
 
   TriggerChangeHandler() {
+    const { filterAction } = this.props;
     const { id, type, key, keylabel } = this.props.filter;
     const filter = {
       id,
@@ -106,14 +108,22 @@ class NumberFilter extends React.Component {
     };
     UDATA.LocalCall('FILTER_DEFINE', {
       group: this.props.group,
-      filter
+      filter,
+      filterAction
     }); // set a SINGLE filter
   }
 
+  OnSubmit(e) {
+    // Prevent "ENTER" from triggering form submission!
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
   render() {
+    const { filterAction } = this.props;
     const { id, key, keylabel, operator, value } = this.props.filter;
     return (
-      <Form inline className="filter-item" key={id}>
+      <Form inline className="filter-item" key={id} onSubmit={this.OnSubmit}>
         <FormGroup>
           <Label size="sm" className="small text-muted"
             style={{ fontSize: '0.75em', lineHeight: '1em', width: `6em`, justifyContent: 'flex-end' }}>
@@ -126,7 +136,8 @@ class NumberFilter extends React.Component {
             )}
           </Input>
           <Input type="text" value={value} placeholder="..."
-            onChange={this.OnChangeValue} bsSize="sm" />
+            onChange={this.OnChangeValue} bsSize="sm"
+            disabled={operator === FILTER.OPERATORS.NO_OP.key}/>
         </FormGroup>
       </Form>
     );

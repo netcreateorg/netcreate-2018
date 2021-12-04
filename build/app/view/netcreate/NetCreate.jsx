@@ -127,9 +127,14 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Define the component structure of the web application
   /*/ render() {
-    const { isLoggedIn, disconnectMsg } = this.state;
-        let hideGraph = false;
-        if (this.state.requireLogin && !isLoggedIn) hideGraph = true;
+        const { isLoggedIn, disconnectMsg } = this.state;
+
+        // show or hide graph
+        // Use 'visibiliity' css NOT React's 'hidden' so size is properly
+        // calculated on init
+        let hideGraph = 'visible';
+        if (this.state.requireLogin && !isLoggedIn) hideGraph = 'hidden';
+
         return (
           <div>
             <div hidden={this.state.isConnected} style={{ width:'100%',height:'38px',position:'fixed',backgroundColor:'rgba(256,0,0,0.5',display:'flex',flexDirection:'column',justifyContent:'space-evenly',alignItems:'center',zIndex:'3000'}}>
@@ -140,8 +145,10 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
             <Route path='/edit/:token' exact={true} component={SessionShell}/>
             <Route path='/edit' exact={true} component={SessionShell}/>
             <Route path='/' exact={true} component={SessionShell}/>
-            <div hidden={hideGraph} style={{display:'flex', flexFlow:'row nowrap',
-                width:'100%', height:'100vh',overflow:'hidden'}}>
+            <div style={{display:'flex', flexFlow:'row nowrap',
+              width: '100%', height: '100vh', overflow: 'hidden',
+              visibility: hideGraph
+            }}>
               <div id="left" style={{backgroundColor:'#EEE',flex:'1 1 25%',maxWidth:'400px',padding:'10px',overflow:'scroll',marginTop:'38px'}}>
                 <div style={{display:'flex',flexFlow:'column nowrap'}}>
                   <Search/>
