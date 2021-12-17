@@ -18,7 +18,7 @@
 var DBG = false;
 var UDATA = null;
 
-const defaultTabPanelHeight = '42px'; // show only tab buttons, no gap
+const defaultTabPanelHeight = 42; // show only tab buttons, no gap
 
 /// UNISYS INITIALIZE REQUIRES for REACT ROOT /////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -48,8 +48,8 @@ class InfoPanel extends UNISYS.Component {
       tabpanelTop: '0',
       draggerMouseOffsetY: '0',   // Mouse click position inside dragger
                                   // Allows user to grab dragger from the middle
-      tabpanelHeight: defaultTabPanelHeight,
-      tableHeight: '350px',
+      tabpanelHeight: `${defaultTabPanelHeight}px`,
+      tableHeight: '308px', // 350 - defaultTabPanelHeight
       savedTabpanelHeight: '350px',
       draggerTop: 'inherit',
       hideDragger: true,
@@ -80,7 +80,7 @@ class InfoPanel extends UNISYS.Component {
       this.setState({ activeTab: tab });
       if ((tab === `1`) || (tab === '6')) { // graph or help
         this.setState({
-          tabpanelHeight: defaultTabPanelHeight, // show only tab buttons
+          tabpanelHeight: `${defaultTabPanelHeight}px`, // show only tab buttons
           hideDragger: true
         });
       } else {
@@ -94,7 +94,7 @@ class InfoPanel extends UNISYS.Component {
       // so select tab 1
       this.setState({ activeTab: `1` });
       this.setState({
-        tabpanelHeight: defaultTabPanelHeight, // show only tab buttons
+        tabpanelHeight: `${defaultTabPanelHeight}px`, // show only tab buttons
         hideDragger: true
       });
     }
@@ -111,12 +111,12 @@ class InfoPanel extends UNISYS.Component {
   }
   handleDrag(e) {
     e.stopPropagation();
-    // limit to 120 to keep from dragging up past the tabpanel
-    // 120 = navbar + tabpanel height
-    let top = Math.max(120, e.clientY + this.state.draggerMouseOffsetY);
+    // limit to 122 to keep from dragging up past the tabpanel
+    // 122 = navbar + tabpanel height
+    let top = Math.max(122, e.clientY + this.state.draggerMouseOffsetY + defaultTabPanelHeight);
     this.setState({
       tabpanelHeight: (top - this.state.tabpanelTop - 40) + 'px',
-      tableHeight: (top - this.state.tabpanelTop) + 'px',
+      tableHeight: (top - this.state.tabpanelTop - 40 - defaultTabPanelHeight) + 'px',
       savedTabpanelHeight: (top - this.state.tabpanelTop - 40) + 'px'  // remember height when switching tabs
     });
   }
