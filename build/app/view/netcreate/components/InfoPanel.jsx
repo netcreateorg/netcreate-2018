@@ -81,14 +81,12 @@ class InfoPanel extends UNISYS.Component {
       if ((tab === `1`) || (tab === '6')) { // graph or help
         this.setState({
           tabpanelHeight: defaultTabPanelHeight, // show only tab buttons
-          hideDragger: true,
-          bIgnoreTableUpdates: true
+          hideDragger: true
         });
       } else {
         this.setState({
           tabpanelHeight: this.state.savedTabpanelHeight,
-          hideDragger: false,
-          bIgnoreTableUpdates: true
+          hideDragger: false
         });
       }
     } else {
@@ -97,8 +95,7 @@ class InfoPanel extends UNISYS.Component {
       this.setState({ activeTab: `1` });
       this.setState({
         tabpanelHeight: defaultTabPanelHeight, // show only tab buttons
-        hideDragger: true,
-        bIgnoreTableUpdates: true
+        hideDragger: true
       });
     }
   }
@@ -120,12 +117,10 @@ class InfoPanel extends UNISYS.Component {
     this.setState({
       tabpanelHeight: (top - this.state.tabpanelTop - 40) + 'px',
       tableHeight: (top - this.state.tabpanelTop) + 'px',
-      savedTabpanelHeight: (top - this.state.tabpanelTop - 40) + 'px',  // remember height when switching tabs
-      bIgnoreTableUpdates: true // ignore this update at the table level if it is a large data set
+      savedTabpanelHeight: (top - this.state.tabpanelTop - 40) + 'px'  // remember height when switching tabs
     });
   }
   endDrag() {
-    this.setState({bIgnoreTableUpdates: false})
     document.onmouseup = null;
     document.onmousemove = null;
   }
@@ -162,7 +157,9 @@ class InfoPanel extends UNISYS.Component {
   /*/
   /*/
   render() {
-    let { activeTab, tabpanelHeight, tableHeight, hideDragger, draggerTop, bIgnoreTableUpdates, filtersSummary} = this.state;
+    const {
+      activeTab, tabpanelHeight, tableHeight, hideDragger, draggerTop, filtersSummary
+    } = this.state;
     //send flag in with tableheight
     return (
       <div>
@@ -208,14 +205,14 @@ class InfoPanel extends UNISYS.Component {
             <TabPane tabId="3">
               <Row>
                 <Col sm="12">
-                  {activeTab==="3" && <NodeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates}/> }
+                  {activeTab==="3" && <NodeTable tableHeight={tableHeight} /> }
                 </Col>
               </Row>
             </TabPane>
             <TabPane tabId="4">
               <Row>
                 <Col sm="12">
-                  {activeTab==="4" && <EdgeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates} /> }
+                  {activeTab==="4" && <EdgeTable tableHeight={tableHeight} /> }
                 </Col>
               </Row>
             </TabPane>
