@@ -334,21 +334,35 @@ render() {
   const { nodePrompts } = this.state;
   const { tableHeight } = this.props;
   const styles = `thead, tbody { font-size: 0.8em }
-                thead { position: relative; }
-                tbody { overflow: auto; }
+                .table {
+                  display: table; /* override bootstrap for fixed header */
+                  border-spacing: 0;
+                 }
+                .table th {
+                  position: -webkit-sticky;
+                  position: sticky;
+                  top: 0;
+                  background-color: #eafcff;
+                  border-top: none;
+                }
+                xtbody { overflow: auto; }
                 .btn-sm { font-size: 0.6rem; padding: 0.1rem 0.2rem }
                 `
   return (
-    <div style={{overflow:'auto',
-      position:'relative',display: 'block', left: '1px', right:'10px', maxHeight: tableHeight, backgroundColor:'#eafcff'
+    <div style={{
+      overflow: 'auto',
+      position: 'relative',
+      display: 'block',
+      left: '1px', right: '10px',
+      height: tableHeight,
+      backgroundColor: '#eafcff'
     }}>
       <style>{styles}</style>
-      <Button size="sm" outline hidden
-        onClick={this.onToggleExpanded}
-      >{this.state.isExpanded ? "Hide Node Table" : "Show Node Table"}</Button>
-      <Table hidden={!this.state.isExpanded} hover size="sm"
-        responsive striped
-        className="nodetable w-auto"
+      <table hidden={!this.state.isExpanded}
+        // size="sm" hover responsive striped // ReactStrap properties
+        // Need to use a standard 'table' not ReactStrap so that we can set
+        // the container div height and support non-scrolling headers
+        className="table table-striped table-responsive table-hover table-sm nodetable w-auto"
       >
         <thead>
           <tr>
@@ -402,7 +416,7 @@ render() {
           </tr>
         ))}
         </tbody>
-      </Table>
+      </table>
     </div>
   );
 
