@@ -397,9 +397,8 @@ class EdgeTable extends UNISYS.Component {
         edgePrompts.category.hidden = true;
       }
 
-
-      let { tableHeight } = this.props;
-      let styles = `thead, tbody { font-size: 0.8em }
+      const { tableHeight } = this.props;
+      const styles = `thead, tbody { font-size: 0.8em }
                     thead { position: relative; }
                     tbody { overflow: auto; }
                     .btn-sm { font-size: 0.6rem; padding: 0.1rem 0.2rem }

@@ -331,16 +331,16 @@ class NodeTable extends UNISYS.Component {
 /*/
 render() {
   if (this.state.nodes === undefined) return "";
-  let { nodePrompts } = this.state;
-  let { tableHeight } = this.props;
-  let styles = `thead, tbody { font-size: 0.8em }
+  const { nodePrompts } = this.state;
+  const { tableHeight } = this.props;
+  const styles = `thead, tbody { font-size: 0.8em }
                 thead { position: relative; }
                 tbody { overflow: auto; }
                 .btn-sm { font-size: 0.6rem; padding: 0.1rem 0.2rem }
                 `
   return (
     <div style={{overflow:'auto',
-      position:'relative',display: 'block', left: '1px', right:'10px',maxHeight: tableHeight, backgroundColor:'#eafcff'
+      position:'relative',display: 'block', left: '1px', right:'10px', maxHeight: tableHeight, backgroundColor:'#eafcff'
     }}>
       <style>{styles}</style>
       <Button size="sm" outline hidden
