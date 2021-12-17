@@ -114,13 +114,12 @@ class EdgeTable extends UNISYS.Component {
   displayUpdated(nodeEdge) {
       var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
 
-      var year = "" + d.getFullYear();
+      var year = String(d.getFullYear());
       var date = (d.getMonth()+1)+"/"+d.getDate()+"/"+ year.substr(2,4);
       var time = d.toTimeString().substr(0,5);
       var dateTime = date+' at '+time;
       var titleString = "v" + nodeEdge.meta.revision;
-      if(nodeEdge._nlog)
-        titleString += " by " + nodeEdge._nlog[nodeEdge._nlog.length-1];
+      if (nodeEdge._nlog) titleString += " by " + nodeEdge._nlog[nodeEdge._nlog.length-1];
       var tag = <span title={titleString}> {dateTime} </span>;
 
       return tag;
@@ -177,8 +176,8 @@ class EdgeTable extends UNISYS.Component {
         return edges.sort( (a,b) => {
           let akey = a.id,
               bkey = b.id;
-          if (akey<bkey) return -1*this.sortDirection;
-          if (akey>bkey) return 1*this.sortDirection;
+          if (akey<bkey) return -1*Number(this.sortDirection);
+          if (akey>bkey) return 1*Number(this.sortDirection);
           return 0;
         });
       }
@@ -217,14 +216,14 @@ class EdgeTable extends UNISYS.Component {
         return edges.sort( (a,b) => {
           let akey = a.attributes[key],
               bkey = b.attributes[key];
-          if (akey<bkey) return -1*this.sortDirection;
-          if (akey>bkey) return 1*this.sortDirection;
+          if (akey<bkey) return -1*Number(this.sortDirection);
+          if (akey>bkey) return 1*Number(this.sortDirection);
           if (akey===bkey) {
             // Secondary sort on Source label
             let source_a = a.source.label;
             let source_b = b.source.label;
-            if (source_a<source_b) return -1*this.sortDirection;
-            if (source_a>source_b) return 1*this.sortDirection;
+            if (source_a<source_b) return -1*Number(this.sortDirection);
+            if (source_a>source_b) return 1*Number(this.sortDirection);
           }
           return 0;
         });
@@ -233,19 +232,17 @@ class EdgeTable extends UNISYS.Component {
     }
 
     /// ---
-    sortByUpdated(edges)
-    {
+    sortByUpdated(edges) {
       if (edges) {
         return edges.sort( (a,b) => {
           let akey = (a.meta.revision > 0 ? a.meta.updated : a.meta.created),
               bkey = (b.meta.revision > 0 ? b.meta.updated : b.meta.created);
-          if (akey<bkey) return -1*this.sortDirection;
-          if (akey>bkey) return 1*this.sortDirection;
+          if (akey<bkey) return -1*Number(this.sortDirection);
+          if (akey>bkey) return 1*Number(this.sortDirection);
           return 0;
         });
       }
       return undefined;
-
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ If no `sortkey` is passed, the sort will use the existing state.sortkey
@@ -259,9 +256,6 @@ class EdgeTable extends UNISYS.Component {
           break;
         case 'target':
           return this.sortByTargetLabel(edges);
-          break;
-        case 'Relationship':
-          return this.sortByAttribute(edges, 'Relationship');
           break;
         case 'Info':
           return this.sortByAttribute(edges, 'Info');
@@ -285,12 +279,9 @@ class EdgeTable extends UNISYS.Component {
       }
     }
 
-    sortSymbol(key)
-    {
-      if(key != this.state.sortkey) // this is not the current sort, so don't show anything
-        return "";
-      else
-        return this.sortDirection==1?"▼":"▲"; // default to "decreasing" and flip if clicked again
+    sortSymbol(key) {
+      if (key !== this.state.sortkey) return ""; // this is not the current sort, so don't show anything
+      else return this.sortDirection===1?"▼":"▲"; // default to "decreasing" and flip if clicked again
     }
 
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
@@ -321,11 +312,8 @@ class EdgeTable extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ setSortKey (key) {
-
-      if(key == this.state.sortkey)
-        this.sortDirection = (-1 * this.sortDirection);// if this was already the key, flip the direction
-      else
-          this.sortDirection = 1;
+      if (key === this.state.sortkey) this.sortDirection = (-1 * this.sortDirection);// if this was already the key, flip the direction
+      else this.sortDirection = 1;
 
       const edges = this.sortTable(key, this.state.edges);
       this.setState({
@@ -390,8 +378,7 @@ class EdgeTable extends UNISYS.Component {
 /*/ render () {
       let { edgePrompts } = this.state;
 
-      if(edgePrompts.category == undefined) // for backwards compatability
-      {
+      if (edgePrompts.category === undefined) { // for backwards compatability
         edgePrompts.category = {};
         edgePrompts.category.label = "";
         edgePrompts.category.hidden = true;
