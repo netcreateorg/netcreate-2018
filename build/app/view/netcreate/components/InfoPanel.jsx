@@ -7,8 +7,7 @@
   * Filters
   * Nodes Table
   * Edges Table
-  * Vocabulary
-  * Help
+  * More -- Export/Import, Vocabulary, Help
 
   The panel itself can be resized vertically.
 
@@ -33,7 +32,6 @@ const classnames = require('classnames');
 
 const NodeTable = require('./NodeTable');
 const EdgeTable = require('./EdgeTable');
-const Vocabulary = require('./Vocabulary');
 const More = require('./More');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
