@@ -924,7 +924,7 @@ class NodeSelector extends UNISYS.Component {
       }
         return (
         <div>
-          <FormGroup className="text-right" style={{marginTop:'-35px',paddingRight:'5px'}}>
+          <FormGroup className="text-right" style={{marginTop:'-20px',paddingRight:'5px'}}>
             <Button outline size="sm"
               hidden={this.state.isLocked || this.state.isEditable}
               onClick={this.onNewNodeButtonClick}
@@ -1085,10 +1085,6 @@ class NodeSelector extends UNISYS.Component {
               >Add New Edge</Button>
             </FormGroup>
           </div>
-
-
-
-
         </div>
 
       )
