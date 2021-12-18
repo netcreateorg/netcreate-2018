@@ -163,7 +163,7 @@ class InfoPanel extends UNISYS.Component {
       <div>
         <div id='tabpanel'
           style={{ height: tabpanelHeight, overflow: 'hidden', backgroundColor: '#eee'}}>
-          <Nav tabs className='nav-fill'>
+          <Nav tabs className=''>
             <NavItem>
               <NavLink
                 className={classnames({ active: activeTab === '1' })}
