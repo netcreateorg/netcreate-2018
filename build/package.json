@@ -58,7 +58,7 @@
     "ip": "^1.1.5",
     "jquery": "^3.5.0",
     "lokijs": "^1.5.8",
-    "markdown-it": "^8.4.2",
+    "markdown-it": "^12.3.2",
     "markdown-it-emoji": "^1.4.0",
     "markdown-react-js": "^1.0.2",
     "minimist": "^1.2.2",
