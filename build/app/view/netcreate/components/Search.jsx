@@ -76,7 +76,7 @@ class Search extends UNISYS.Component {
               disabledValue={this.state.searchString}
               inactiveMode={'disabled'}
             />
-            <Label style={{ float: 'left' }} className="small text-muted">Type to search or add a node:</Label>
+            <Label className="small text-muted">Type to search or add a node:</Label>
           </Col>
         </FormGroup>
       )

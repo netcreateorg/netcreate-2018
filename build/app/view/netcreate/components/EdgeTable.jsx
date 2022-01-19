@@ -37,7 +37,7 @@ const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1') || (locatio
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React        = require('react');
 const ReactStrap   = require('reactstrap');
-const { Button, Table }    = ReactStrap;
+const { Button }    = ReactStrap;
 const MarkdownNote = require('./MarkdownNote');
 
 const UNISYS   = require('unisys/client');
@@ -59,6 +59,7 @@ class EdgeTable extends UNISYS.Component {
         sortkey:      'Relationship'
       };
 
+      this.updateEdgeFilterState = this.updateEdgeFilterState.bind(this);
       this.handleDataUpdate = this.handleDataUpdate.bind(this);
       this.handleFilterDataUpdate = this.handleFilterDataUpdate.bind(this);
       this.OnTemplateUpdate = this.OnTemplateUpdate.bind(this);
@@ -70,7 +71,7 @@ class EdgeTable extends UNISYS.Component {
       this.setSortKey               = this.setSortKey.bind(this);
       this.sortSymbol               = this.sortSymbol.bind(this);
 
-      this.sortDirection = -1;
+      this.sortDirection = 1;
 
 
       /// Initialize UNISYS DATA LINK for REACT
@@ -113,50 +114,52 @@ class EdgeTable extends UNISYS.Component {
   displayUpdated(nodeEdge) {
       var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
 
-      var year = "" + d.getFullYear();
+      var year = String(d.getFullYear());
       var date = (d.getMonth()+1)+"/"+d.getDate()+"/"+ year.substr(2,4);
       var time = d.toTimeString().substr(0,5);
       var dateTime = date+' at '+time;
       var titleString = "v" + nodeEdge.meta.revision;
-      if(nodeEdge._nlog)
-        titleString += " by " + nodeEdge._nlog[nodeEdge._nlog.length-1];
+      if (nodeEdge._nlog) titleString += " by " + nodeEdge._nlog[nodeEdge._nlog.length-1];
       var tag = <span title={titleString}> {dateTime} </span>;
 
       return tag;
   }
 
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Set edge filtered status based on current filteredNodes
+  updateEdgeFilterState(edges, filteredEdges) {
+    // add highlight/filter status
+    if (filteredEdges.length > 0) {
+      edges = edges.map(edge => {
+        const filteredEdge = filteredEdges.find(n => n.id === edge.id);
+        edge.isFiltered = !filteredEdge;
+        return edge;
+      });
+    }
+    this.setState({edges});
+  }
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Handle updated SELECTION
-/*/
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Handle updated SELECTION
+  /*/
   handleDataUpdate(data) {
-    // 2020-09-09 Removing this check and relying on other NodeTable optimizations. BL
-    // if(data.bMarkedNode)
-    // {
-    //     data.bMarkedNode = false;
-    // }
-    // else
-    // {
-
     if (data && data.edges) {
-      let edges = this.sortTable(this.state.sortkey, data.edges);
+      const edges = this.sortTable(this.state.sortkey, data.edges);
       const { filteredEdges } = this.state;
-      // add highlight/filter status
-      if (filteredEdges.length > 0) {
-        edges = edges.map(edge => {
-          const filteredEdge = filteredEdges.find(n => n.id === edge.id);
-          if (!filteredEdge) edge.isFiltered = true;
-          return edge;
-        });
-      }
-      this.setState({edges});
+      this.updateEdgeFilterState(edges, filteredEdges);
     }
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   handleFilterDataUpdate(data) {
-    if (data.edges) this.setState( { filteredEdges: data.edges } );
+    if (data.edges) {
+      const filteredEdges = data.edges;
+      this.setState({ filteredEdges }, () => {
+        const edges = this.sortTable(this.state.sortkey, this.state.edges);
+        this.updateEdgeFilterState(edges, filteredEdges);
+      });
+    }
   }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -173,8 +176,8 @@ class EdgeTable extends UNISYS.Component {
         return edges.sort( (a,b) => {
           let akey = a.id,
               bkey = b.id;
-          if (akey<bkey) return -1*this.sortDirection;
-          if (akey>bkey) return 1*this.sortDirection;
+          if (akey<bkey) return -1*Number(this.sortDirection);
+          if (akey>bkey) return 1*Number(this.sortDirection);
           return 0;
         });
       }
@@ -213,14 +216,14 @@ class EdgeTable extends UNISYS.Component {
         return edges.sort( (a,b) => {
           let akey = a.attributes[key],
               bkey = b.attributes[key];
-          if (akey<bkey) return -1*this.sortDirection;
-          if (akey>bkey) return 1*this.sortDirection;
+          if (akey<bkey) return -1*Number(this.sortDirection);
+          if (akey>bkey) return 1*Number(this.sortDirection);
           if (akey===bkey) {
             // Secondary sort on Source label
             let source_a = a.source.label;
             let source_b = b.source.label;
-            if (source_a<source_b) return -1*this.sortDirection;
-            if (source_a>source_b) return 1*this.sortDirection;
+            if (source_a<source_b) return -1*Number(this.sortDirection);
+            if (source_a>source_b) return 1*Number(this.sortDirection);
           }
           return 0;
         });
@@ -229,19 +232,17 @@ class EdgeTable extends UNISYS.Component {
     }
 
     /// ---
-    sortByUpdated(edges)
-    {
+    sortByUpdated(edges) {
       if (edges) {
         return edges.sort( (a,b) => {
           let akey = (a.meta.revision > 0 ? a.meta.updated : a.meta.created),
               bkey = (b.meta.revision > 0 ? b.meta.updated : b.meta.created);
-          if (akey<bkey) return -1*this.sortDirection;
-          if (akey>bkey) return 1*this.sortDirection;
+          if (akey<bkey) return -1*Number(this.sortDirection);
+          if (akey>bkey) return 1*Number(this.sortDirection);
           return 0;
         });
       }
       return undefined;
-
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ If no `sortkey` is passed, the sort will use the existing state.sortkey
@@ -255,9 +256,6 @@ class EdgeTable extends UNISYS.Component {
           break;
         case 'target':
           return this.sortByTargetLabel(edges);
-          break;
-        case 'Relationship':
-          return this.sortByAttribute(edges, 'Relationship');
           break;
         case 'Info':
           return this.sortByAttribute(edges, 'Info');
@@ -281,12 +279,9 @@ class EdgeTable extends UNISYS.Component {
       }
     }
 
-    sortSymbol(key)
-    {
-      if(key != this.state.sortkey) // this is not the current sort, so don't show anything
-        return "";
-      else
-        return this.sortDirection==-1?"▼":"▲"; // default to "decreasing" and flip if clicked again
+    sortSymbol(key) {
+      if (key !== this.state.sortkey) return ""; // this is not the current sort, so don't show anything
+      else return this.sortDirection===1?"▼":"▲"; // default to "decreasing" and flip if clicked again
     }
 
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
@@ -317,11 +312,8 @@ class EdgeTable extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ setSortKey (key) {
-
-      if(key == this.state.sortkey)
-        this.sortDirection = (-1 * this.sortDirection);// if this was already the key, flip the direction
-      else
-          this.sortDirection = 1;
+      if (key === this.state.sortkey) this.sortDirection = (-1 * this.sortDirection);// if this was already the key, flip the direction
+      else this.sortDirection = 1;
 
       const edges = this.sortTable(key, this.state.edges);
       this.setState({
@@ -386,32 +378,47 @@ class EdgeTable extends UNISYS.Component {
 /*/ render () {
       let { edgePrompts } = this.state;
 
-      if(edgePrompts.category == undefined) // for backwards compatability
-      {
+      if (edgePrompts.category === undefined) { // for backwards compatability
         edgePrompts.category = {};
         edgePrompts.category.label = "";
         edgePrompts.category.hidden = true;
       }
 
-
-      let { tableHeight } = this.props;
-      let styles = `thead, tbody { font-size: 0.8em }
-                    thead { position: relative; }
-                    tbody { overflow: auto; }
-                    .btn-sm { font-size: 0.6rem; padding: 0.1rem 0.2rem }
-                    `
+      const { tableHeight } = this.props;
+      const styles = `thead, tbody { font-size: 0.8em }
+                      .table {
+                        display: table; /* override bootstrap for fixed header */
+                        border-spacing: 0;
+                      }
+                      .table th {
+                        position: -webkit-sticky;
+                        position: sticky;
+                        top: 0;
+                        background-color: #eafcff;
+                        border-top: none;
+                      }
+                      xtbody { overflow: auto; }
+                      .btn-sm { font-size: 0.6rem; padding: 0.1rem 0.2rem }
+                      `
       return (
-           <div style={{overflow:'auto',
-                     position:'relative',display: 'block',  left: '1px', right:'10px',maxHeight: tableHeight, backgroundColor:'#f3f3ff'
-             }}>
+        <div style={{
+          overflow: 'auto',
+          position: 'relative',
+          display: 'block',
+          left: '1px', right: '10px',
+          height: tableHeight,
+          backgroundColor: '#eafcff'
+        }}>
           <style>{styles}</style>
           <Button size="sm" outline hidden
             onClick={this.onToggleExpanded}
           >{this.state.isExpanded ? "Hide Edge Table" : "Show Edge Table"}</Button>
-          <Table hidden={!this.state.isExpanded} hover size="sm"
-                 responsive striped
-                 className="edgetable w-auto"
-          >
+      <table hidden={!this.state.isExpanded}
+        // size="sm" hover responsive striped // ReactStrap properties
+        // Need to use a standard 'table' not ReactStrap so that we can set
+        // the container div height and support non-scrolling headers
+        className="table table-striped table-responsive table-hover table-sm edgetable w-auto"
+      >
             <thead>
               <tr>
                 <th width="4%" hidden={!DBG}><Button size="sm"
@@ -479,7 +486,7 @@ class EdgeTable extends UNISYS.Component {
               </tr>
             ))}
             </tbody>
-          </Table>
+          </table>
         </div>
       );
     }

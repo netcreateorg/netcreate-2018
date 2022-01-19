@@ -7,8 +7,7 @@
   * Filters
   * Nodes Table
   * Edges Table
-  * Vocabulary
-  * Help
+  * More -- Export/Import, Vocabulary, Help
 
   The panel itself can be resized vertically.
 
@@ -17,6 +16,8 @@
 
 var DBG = false;
 var UDATA = null;
+
+const defaultTabPanelHeight = 42; // show only tab buttons, no gap
 
 /// UNISYS INITIALIZE REQUIRES for REACT ROOT /////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -29,11 +30,9 @@ const ReactStrap = require('reactstrap');
 const { TabContent, TabPane, Nav, NavItem, NavLink, Row, Col, Button } = ReactStrap;
 const classnames = require('classnames');
 
-const FiltersPanel = require('./filter/FiltersPanel');
 const NodeTable = require('./NodeTable');
 const EdgeTable = require('./EdgeTable');
-const Vocabulary = require('./Vocabulary');
-const Help = require('./Help');
+const More = require('./More');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,8 +46,8 @@ class InfoPanel extends UNISYS.Component {
       tabpanelTop: '0',
       draggerMouseOffsetY: '0',   // Mouse click position inside dragger
                                   // Allows user to grab dragger from the middle
-      tabpanelHeight: '50px',
-      tableHeight: '350px',
+      tabpanelHeight: `${defaultTabPanelHeight}px`,
+      tableHeight: '308px', // 350 - defaultTabPanelHeight
       savedTabpanelHeight: '350px',
       draggerTop: 'inherit',
       hideDragger: true,
@@ -79,15 +78,13 @@ class InfoPanel extends UNISYS.Component {
       this.setState({ activeTab: tab });
       if ((tab === `1`) || (tab === '6')) { // graph or help
         this.setState({
-          tabpanelHeight: '50px', // show only tab buttons
-          hideDragger: true,
-          bIgnoreTableUpdates: true
+          tabpanelHeight: `${defaultTabPanelHeight}px`, // show only tab buttons
+          hideDragger: true
         });
       } else {
         this.setState({
           tabpanelHeight: this.state.savedTabpanelHeight,
-          hideDragger: false,
-          bIgnoreTableUpdates: true
+          hideDragger: false
         });
       }
     } else {
@@ -95,9 +92,8 @@ class InfoPanel extends UNISYS.Component {
       // so select tab 1
       this.setState({ activeTab: `1` });
       this.setState({
-        tabpanelHeight: '50px', // show only tab buttons
-        hideDragger: true,
-        bIgnoreTableUpdates: true
+        tabpanelHeight: `${defaultTabPanelHeight}px`, // show only tab buttons
+        hideDragger: true
       });
     }
   }
@@ -113,18 +109,16 @@ class InfoPanel extends UNISYS.Component {
   }
   handleDrag(e) {
     e.stopPropagation();
-    // limit to 120 to keep from dragging up past the tabpanel
-    // 120 = navbar + tabpanel height
-    let top = Math.max(120, e.clientY + this.state.draggerMouseOffsetY);
+    // limit to 122 to keep from dragging up past the tabpanel
+    // 122 = navbar + tabpanel height
+    let top = Math.max(122, e.clientY + this.state.draggerMouseOffsetY + defaultTabPanelHeight);
     this.setState({
       tabpanelHeight: (top - this.state.tabpanelTop - 40) + 'px',
-      tableHeight: (top - this.state.tabpanelTop) + 'px',
-      savedTabpanelHeight: (top - this.state.tabpanelTop - 40) + 'px',  // remember height when switching tabs
-      bIgnoreTableUpdates: true // ignore this update at the table level if it is a large data set
+      tableHeight: (top - this.state.tabpanelTop - 40 - defaultTabPanelHeight) + 'px',
+      savedTabpanelHeight: (top - this.state.tabpanelTop - 40) + 'px'  // remember height when switching tabs
     });
   }
   endDrag() {
-    this.setState({bIgnoreTableUpdates: false})
     document.onmouseup = null;
     document.onmousemove = null;
   }
@@ -161,27 +155,21 @@ class InfoPanel extends UNISYS.Component {
   /*/
   /*/
   render() {
-    let { activeTab, tabpanelHeight, tableHeight, hideDragger, draggerTop, bIgnoreTableUpdates, filtersSummary} = this.state;
+    const {
+      activeTab, tabpanelHeight, tableHeight, hideDragger, draggerTop, filtersSummary
+    } = this.state;
     //send flag in with tableheight
     return (
       <div>
         <div id='tabpanel'
           style={{ height: tabpanelHeight, overflow: 'hidden', backgroundColor: '#eee'}}>
-          <Nav tabs>
+          <Nav tabs className=''>
             <NavItem>
               <NavLink
                 className={classnames({ active: activeTab === '1' })}
                 onClick={() => { this.toggle('1'); this.sendGA('Graph', window.location); } }
               >
                 Graph
-              </NavLink>
-            </NavItem>
-            <NavItem>
-              <NavLink
-                className={classnames({ active: activeTab === '2' })}
-                onClick={() => { this.toggle('2'); this.sendGA('Highlight', window.location); }}
-              >
-                Highlight / Filter
               </NavLink>
             </NavItem>
             <NavItem>
@@ -202,54 +190,32 @@ class InfoPanel extends UNISYS.Component {
             </NavItem>
             <NavItem>
               <NavLink
-                className={classnames({ active: activeTab === '5' })}
-                onClick={() => { this.toggle('5'); this.sendGA('Vocabulary', window.location); }}
-              >
-                Vocabulary
-              </NavLink>
-            </NavItem>
-            <NavItem>
-              <NavLink
                 className={classnames({ active: activeTab === '6' })}
                 onClick={() => { this.toggle('6'); this.sendGA('Help', window.location); }}
               >
-                Help
+                More...
               </NavLink>
             </NavItem>
           </Nav>
           <TabContent activeTab={activeTab} style={{height:'100%',overflow: 'hidden', backgroundColor: 'rgba(0,0,0,0.1)'}}>
             <TabPane tabId="1">
             </TabPane>
-            <TabPane tabId="2">
-              <FiltersPanel tableHeight={tableHeight}/>
-            </TabPane>
             <TabPane tabId="3">
               <Row>
                 <Col sm="12">
-                  {activeTab==="3" && <NodeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates}/> }
+                  {activeTab==="3" && <NodeTable tableHeight={tableHeight} /> }
                 </Col>
               </Row>
             </TabPane>
             <TabPane tabId="4">
               <Row>
                 <Col sm="12">
-                  {activeTab==="4" && <EdgeTable tableHeight={tableHeight} bIgnoreTableUpdates={bIgnoreTableUpdates} /> }
-                </Col>
-              </Row>
-            </TabPane>
-            <TabPane tabId="5">
-              <Row>
-                <Col sm="12">
-                  <Vocabulary tableHeight={tableHeight} />
+                  {activeTab==="4" && <EdgeTable tableHeight={tableHeight} /> }
                 </Col>
               </Row>
             </TabPane>
             <TabPane tabId="6">
-              <Row>
-                <Col sm="12">
-                  <Help />
-                </Col>
-              </Row>
+              <More />
             </TabPane>
           </TabContent>
         </div>
@@ -263,9 +229,9 @@ class InfoPanel extends UNISYS.Component {
         ></div>
 
         <div hidden={!hideDragger || filtersSummary===''}
-          style={{ padding: '3px', fontSize: '0.8em', color:'#999', backgroundColor:'#eef'}}
+          style={{ padding: '3px 5px', fontSize: '0.8em', textAlign: 'right', color:'#fff', backgroundColor:'#3339'}}
         >
-          {filtersSummary} <Button size="sm" outline onClick={this.OnClearBtnClick}>Clear Filters</Button>
+          {filtersSummary}&nbsp;<Button size="sm" outline onClick={this.OnClearBtnClick} style={{ color: '#eee', borderColor: '#ddd', fontSize: '0.8em', padding: '0.1rem 0.2rem' }}>Clear Filters</Button>
         </div>
       </div>
     );

@@ -35,7 +35,7 @@ const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1') || (locatio
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React        = require('react');
 const ReactStrap   = require('reactstrap');
-const { Button, Table }    = ReactStrap;
+const { Button }    = ReactStrap;
 const MarkdownNote = require('./MarkdownNote');
 const UNISYS   = require('unisys/client');
 var   UDATA    = null;
@@ -56,6 +56,8 @@ class NodeTable extends UNISYS.Component {
       sortkey: 'label'
     };
 
+    this.displayUpdated = this.displayUpdated.bind(this);
+    this.updateNodeFilterState = this.updateNodeFilterState.bind(this);
     this.handleDataUpdate = this.handleDataUpdate.bind(this);
     this.handleFilterDataUpdate = this.handleFilterDataUpdate.bind(this);
     this.OnTemplateUpdate = this.OnTemplateUpdate.bind(this);
@@ -64,7 +66,7 @@ class NodeTable extends UNISYS.Component {
     this.setSortKey = this.setSortKey.bind(this);
     this.sortSymbol = this.sortSymbol.bind(this);
 
-    this.sortDirection = -1;
+    this.sortDirection = 1; // alphabetical A-Z
 
     /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
@@ -73,12 +75,11 @@ class NodeTable extends UNISYS.Component {
     // as a handler, otherwise object context is lost
     this.OnAppStateChange('D3DATA', this.handleDataUpdate);
 
+    // Track Filtered Data Updates too
+    this.OnAppStateChange('FILTEREDD3DATA', this.handleFilterDataUpdate);
+
     // Handle Template updates
     this.OnAppStateChange('TEMPLATE', this.OnTemplateUpdate);
-
-    // Track Filtered Data Updates too
-    // UDATA.HandleMessage('FILTEREDD3DATA', (data) => {
-    this.OnAppStateChange('FILTEREDD3DATA', this.handleFilterDataUpdate);
 
   } // constructor
 
@@ -108,13 +109,12 @@ class NodeTable extends UNISYS.Component {
     displayUpdated(nodeEdge) {
       var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
 
-      var year = "" + d.getFullYear();
+      var year = String(d.getFullYear());
       var date = (d.getMonth()+1)+"/"+d.getDate()+"/"+ year.substr(2,4);
       var time = d.toTimeString().substr(0,5);
       var dateTime = date+' at '+time;
       var titleString = "v" + nodeEdge.meta.revision;
-      if(nodeEdge._nlog)
-        titleString += " by " + nodeEdge._nlog[nodeEdge._nlog.length-1];
+      if (nodeEdge._nlog) titleString += " by " + nodeEdge._nlog[nodeEdge._nlog.length-1];
       var tag = <span title={titleString}> {dateTime} </span>;
 
       return tag;
@@ -122,39 +122,40 @@ class NodeTable extends UNISYS.Component {
     }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Set node filtered status based on current filteredNodes
+  updateNodeFilterState(nodes, filteredNodes) {
+    // set filter status
+    if (filteredNodes.length > 0) {
+      nodes = nodes.map(node => {
+        const filteredNode = filteredNodes.find(n => n.id === node.id);
+        node.isFiltered = !filteredNode; // not in filteredNode, so it's been removed
+        return node
+      });
+    }
+    this.setState({ nodes });
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Handle updated SELECTION
   /*/
   handleDataUpdate(data) {
     if (DBG) console.log('handle data update')
-
-    // 2020-09-09 Removing this check and relying on other NodeTable optimizations. BL
-    // if (data.bMarkedNode)
-    //   {
-    //     //data.bMarkedNode = false;
-    //     // counting on the edge table going second, which is sloppy
-    //     // but we are in a rush, so ... do it that way for now
-    //   }
-    // else
-    // {}
-
     if (data.nodes) {
-      let nodes = this.sortTable(this.state.sortkey, data.nodes);
+      const nodes = this.sortTable(this.state.sortkey, data.nodes);
       const { filteredNodes } = this.state;
-      // add highlight/filter status
-      if (filteredNodes.length > 0) {
-        nodes = nodes.map(node => {
-          const filteredNode = filteredNodes.find(n => n.id === node.id);
-          if (!filteredNode) node.isFiltered = true; // not in filteredNode, so it's been removed
-          return node
-        });
-      }
-      this.setState({ nodes });
+      this.updateNodeFilterState(nodes, filteredNodes);
     }
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   handleFilterDataUpdate(data) {
-    if (data.nodes) this.setState( { filteredNodes: data.nodes } );
+    if (data.nodes) {
+      const filteredNodes = data.nodes;
+      this.setState({ filteredNodes }, () => {
+        const nodes = this.sortTable(this.state.sortkey, this.state.nodes);
+        this.updateNodeFilterState(nodes, filteredNodes);
+      });
+    }
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -170,11 +171,12 @@ class NodeTable extends UNISYS.Component {
         return nodes.sort( (a,b) => {
           let akey = a.id,
               bkey = b.id;
-          if (akey<bkey) return -1*this.sortDirection;
-          if (akey>bkey) return 1*this.sortDirection;
+          if (akey<bkey) return -1*Number(this.sortDirection);
+          if (akey>bkey) return 1*Number(this.sortDirection);
           return 0;
         });
       }
+      return 0;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -184,11 +186,12 @@ class NodeTable extends UNISYS.Component {
             let akey = a.degrees || 0,
               bkey = b.degrees || 0;
           // sort descending
-          if (akey > bkey) return 1*this.sortDirection;
-          if (akey < bkey) return -1*this.sortDirection;
+          if (akey > bkey) return 1*Number(this.sortDirection);
+          if (akey < bkey) return -1*Number(this.sortDirection);
           return 0;
         });
       }
+      return 0;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -200,6 +203,7 @@ class NodeTable extends UNISYS.Component {
           return (akey.localeCompare(bkey)*this.sortDirection);
         });
       }
+      return 0;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -208,23 +212,23 @@ class NodeTable extends UNISYS.Component {
         return nodes.sort( (a,b) => {
           let akey = a.attributes[key],
               bkey = b.attributes[key];
-          if (akey<bkey) return -1*this.sortDirection;
-          if (akey>bkey) return 1*this.sortDirection;
+          if (akey<bkey) return -1*Number(this.sortDirection);
+          if (akey>bkey) return 1*Number(this.sortDirection);
           return 0;
         });
       }
+      return 0;
     }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
-/*/ sortByUpdated(nodes)
-    {
+/*/ sortByUpdated(nodes) {
       if (nodes) {
         return nodes.sort( (a,b) => {
           let akey = (a.meta.revision > 0 ? a.meta.updated : a.meta.created),
               bkey = (b.meta.revision > 0 ? b.meta.updated : b.meta.created);
-          if (akey<bkey) return -1*this.sortDirection;
-          if (akey>bkey) return 1*this.sortDirection;
+          if (akey<bkey) return -1*Number(this.sortDirection);
+          if (akey>bkey) return 1*Number(this.sortDirection);
           return 0;
         });
       }
@@ -261,12 +265,9 @@ class NodeTable extends UNISYS.Component {
       }
     }
 
-    sortSymbol(key)
-    {
-      if(key != this.state.sortkey) // this is not the current sort, so don't show anything
-        return "";
-      else
-        return this.sortDirection==-1?"▼":"▲"; // default to "decreasing" and flip if clicked again
+    sortSymbol(key) {
+      if (key !== this.state.sortkey) return ""; // this is not the current sort, so don't show anything
+      else  return this.sortDirection === 1?"▼":"▲"; // default to "decreasing" and flip if clicked again
     }
 
 
@@ -298,10 +299,8 @@ class NodeTable extends UNISYS.Component {
 /*/
 /*/ setSortKey (key) {
 
-      if(key == this.state.sortkey)
-        this.sortDirection = (-1 * this.sortDirection);// if this was already the key, flip the direction
-      else
-          this.sortDirection = 1;
+      if (key === this.state.sortkey) this.sortDirection = (-1 * this.sortDirection);// if this was already the key, flip the direction
+      else this.sortDirection = 1;
 
       const nodes = this.sortTable(key, this.state.nodes);
       this.setState({ sortkey: key, nodes });
@@ -332,24 +331,38 @@ class NodeTable extends UNISYS.Component {
 /*/
 render() {
   if (this.state.nodes === undefined) return "";
-  let { nodePrompts } = this.state;
-  let { tableHeight } = this.props;
-  let styles = `thead, tbody { font-size: 0.8em }
-                thead { position: relative; }
-                tbody { overflow: auto; }
-                .btn-sm { font-size: 0.6rem; padding: 0.1rem 0.2rem }
-                `
+  const { nodePrompts } = this.state;
+  const { tableHeight } = this.props;
+  const styles = `thead, tbody { font-size: 0.8em }
+                  .table {
+                    display: table; /* override bootstrap for fixed header */
+                    border-spacing: 0;
+                  }
+                  .table th {
+                    position: -webkit-sticky;
+                    position: sticky;
+                    top: 0;
+                    background-color: #eafcff;
+                    border-top: none;
+                  }
+                  xtbody { overflow: auto; }
+                  .btn-sm { font-size: 0.6rem; padding: 0.1rem 0.2rem }
+                  `
   return (
-    <div style={{overflow:'auto',
-      position:'relative',display: 'block', left: '1px', right:'10px',maxHeight: tableHeight, backgroundColor:'#eafcff'
+    <div style={{
+      overflow: 'auto',
+      position: 'relative',
+      display: 'block',
+      left: '1px', right: '10px',
+      height: tableHeight,
+      backgroundColor: '#eafcff'
     }}>
       <style>{styles}</style>
-      <Button size="sm" outline hidden
-        onClick={this.onToggleExpanded}
-      >{this.state.isExpanded ? "Hide Node Table" : "Show Node Table"}</Button>
-      <Table hidden={!this.state.isExpanded} hover size="sm"
-        responsive striped
-        className="nodetable w-auto"
+      <table hidden={!this.state.isExpanded}
+        // size="sm" hover responsive striped // ReactStrap properties
+        // Need to use a standard 'table' not ReactStrap so that we can set
+        // the container div height and support non-scrolling headers
+        className="table table-striped table-responsive table-hover table-sm nodetable w-auto"
       >
         <thead>
           <tr>
@@ -403,7 +416,7 @@ render() {
           </tr>
         ))}
         </tbody>
-      </Table>
+      </table>
     </div>
   );
 

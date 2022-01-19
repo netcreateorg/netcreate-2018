@@ -44,10 +44,13 @@ const PR           = PROMPTS.Pad('ACD');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React        = require('react');
 const { Route }    = require('react-router-dom');
+const ReactStrap   = require('reactstrap');
+const { Button } = ReactStrap;
 const NetGraph     = require('./components/NetGraph');
 const Search       = require('./components/Search');
 const NodeSelector = require('./components/NodeSelector');
 const InfoPanel    = require('./components/InfoPanel');
+const FiltersPanel = require('./components/filter/FiltersPanel');
 const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
 const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
 
@@ -62,7 +65,9 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
           isConnected: true,
           isLoggedIn: false,
           requireLogin: this.AppState('TEMPLATE').requireLogin,
-          disconnectMsg: ''
+          disconnectMsg: '',
+          layoutNodesOpen: true,
+          layoutFiltersOpen: false
         };
         this.OnDOMReady(()=>{
           if (DBG) console.log(PR,'OnDOMReady');
@@ -85,8 +90,10 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
           // so that we can show a message explaining the cause of disconnect.
           // this.setState({ isConnected: false });
         });
+
         this.onStateChange_SESSION = this.onStateChange_SESSION.bind(this);
         this.onDisconnect = this.onDisconnect.bind(this);
+        this.onFilterBtnClick = this.onFilterBtnClick.bind(this);
 
         this.OnAppStateChange('SESSION', this.onStateChange_SESSION);
 
@@ -124,10 +131,18 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
         this.AppStateChangeOff('SESSION',this.onStateChange_SESSION);
       }
 
+    /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      onFilterBtnClick(e) {
+        this.setState(state => {
+          return {layoutFiltersOpen: !state.layoutFiltersOpen}
+        })
+      }
+
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Define the component structure of the web application
   /*/ render() {
-        const { isLoggedIn, disconnectMsg } = this.state;
+        const { isLoggedIn, disconnectMsg, layoutNodesOpen, layoutFiltersOpen } = this.state;
 
         // show or hide graph
         // Use 'visibiliity' css NOT React's 'hidden' so size is properly
@@ -137,7 +152,12 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
 
         return (
           <div>
-            <div hidden={this.state.isConnected} style={{ width:'100%',height:'38px',position:'fixed',backgroundColor:'rgba(256,0,0,0.5',display:'flex',flexDirection:'column',justifyContent:'space-evenly',alignItems:'center',zIndex:'3000'}}>
+            <div hidden={this.state.isConnected} style={{
+              width: '100%', height: '38px', position: 'fixed',
+              backgroundColor: 'rgba(256,0,0,0.5',
+              display: 'flex', flexDirection: 'column',
+              justifyContent: 'space-evenly', alignItems: 'center', zIndex: '3000'
+            }}>
               <div style={{color:'#fff',width:'100%',textAlign:'center'}}>
                 <b>{disconnectMsg}!</b> Your changes will not be saved!  Please report "{disconnectMsg}" to your administrator to restart the graph.
               </div>
@@ -165,6 +185,32 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
                 request information contained on this website in an accessible
                 format.</div>
               </div>
+              {layoutFiltersOpen
+                // OPEN
+                ? <div id="right" style={{
+                    marginTop: '38px', padding: '0 5px', backgroundColor: '#6c757d',
+                    borderTopLeftRadius: '10px', width: 'auto'
+                  }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'end' }}>
+                      <Button onClick={this.onFilterBtnClick}
+                        style={{ width: '90px' }}
+                      >
+                        FILTER &gt;
+                      </Button>
+                      <FiltersPanel />
+                    </div>
+                  </div>
+                // CLOSED
+                : <div id="right" style={{
+                    marginTop: '38px', paddingTop: '0px', backgroundColor: '#6c757d',
+                    width: '10px', height: '100%'
+                  }}>
+                    <Button
+                      onClick={this.onFilterBtnClick}
+                      style={{ width: '90px', float: 'right' }}
+                    >&lt; FILTER</Button>
+                  </div>
+              }
             </div>
           </div>
         ); // end return

@@ -265,7 +265,7 @@ function m_ImportPrompts(prompts) {
  */
 function m_FilterDefine(data) {
   const FDATA = UDATA.AppState("FDATA");
-  FDATA.filterAction = data.filterAction;
+  FDATA.filterAction = data.filterAction || FDATA.filterAction; // if 'transparency' then filterAction is not passed, so default to existing
   if (data.group === "nodes") {
 
     if (data.type === "transparency")
@@ -335,7 +335,8 @@ function m_UpdateFilterSummary() {
   const nodeSummary = m_FiltersToString(FDATA.nodes.filters);
   const edgeSummary = m_FiltersToString(FDATA.edges.filters);
   let summary = '';
-  if (nodeSummary || edgeSummary) summary = `${typeSummary} NODES: ${nodeSummary} EDGES: ${edgeSummary}`;
+  if (nodeSummary || edgeSummary) summary =
+    `${typeSummary} ${nodeSummary ? 'NODES: ' : ''}${nodeSummary} ${edgeSummary ? 'EDGES: ' : ''}${edgeSummary}`;
 
   UDATA.LocalCall('FILTER_SUMMARY_UPDATE', { filtersSummary: summary });
 }

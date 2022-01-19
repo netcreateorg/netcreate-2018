@@ -106,7 +106,7 @@ class NumberFilter extends React.Component {
       operator: this.state.operator,
       value: this.state.value
     };
-    UDATA.LocalCall('FILTER_DEFINE', {
+    if (UDATA) UDATA.LocalCall('FILTER_DEFINE', {
       group: this.props.group,
       filter,
       filterAction
@@ -124,18 +124,23 @@ class NumberFilter extends React.Component {
     const { id, key, keylabel, operator, value } = this.props.filter;
     return (
       <Form inline className="filter-item" key={id} onSubmit={this.OnSubmit}>
-        <FormGroup>
+        {/* FormGroup needs to unset flexFlow or fields will overflow
+            https://getbootstrap.com/docs/4.5/utilities/flex/
+        */}
+        <FormGroup className="flex-nowrap">
           <Label size="sm" className="small text-muted"
             style={{ fontSize: '0.75em', lineHeight: '1em', width: `6em`, justifyContent: 'flex-end' }}>
             {keylabel}&nbsp;
           </Label>
           <Input type="select" value={operator}
+            style={{maxWidth:'12em', height:'1.5em', padding: '0'}}
             onChange={this.OnChangeOperator} bsSize="sm">
             {OPERATORS.map(op =>
               <option value={op.key} key={`${id}${op.key}`} size="sm">{op.label}</option>
             )}
           </Input>
           <Input type="text" value={value} placeholder="..."
+            style={{maxWidth:'12em', height:'1.5em', padding: '0'}}
             onChange={this.OnChangeValue} bsSize="sm"
             disabled={operator === FILTER.OPERATORS.NO_OP.key}/>
         </FormGroup>
