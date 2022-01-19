@@ -35,7 +35,7 @@ const NODEKEY_LABELS = {
   'label': 'Label',
   'attributes:Node_Type': 'Attributes:Node_Type',
   'attributes:Extra Info': 'Attributes:Extra Info',
-  'attributes:Nodes': 'Attributes:Notes',
+  'attributes:Notes': 'Attributes:Notes',
   'degrees': 'Degrees',
   'meta:created': 'Meta:Created',
   'meta:updated': 'Meta:Updated'
