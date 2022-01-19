@@ -15,6 +15,39 @@ const UNISYS = require("unisys/client");
 var MOD = UNISYS.NewModule(module.id);
 var UDATA = UNISYS.NewDataLink(MOD);
 
+/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Define Node KEYS to export
+/// Subkeys are mapped with a `:`, e.g. attributes:Node_Type
+/// REVIEW: Should this be defined in the Template?
+const NODEKEYS = [
+  'id',
+  'label',
+  { 'attributes': ['Node_Type', 'Extra Info', 'Notes'] },
+  'degrees',
+  { 'meta': ['created', 'updated']}
+];
+/// Export Labels -- Exported data uses these labels as headers
+/// During the export, we do a simple key lookup to match the label
+/// e.g. 'id' becomes 'ID' in the exported file
+const NODEKEY_LABELS = {
+  'id': 'ID',
+  'label': 'Label',
+  'attributes:Node_Type': 'Attributes:Node_Type',
+  'attributes:Extra Info': 'Attributes:Extra Info',
+  'attributes:Nodes': 'Attributes:Notes',
+  'degrees': 'Degrees',
+  'meta:created': 'Meta:Created',
+  'meta:updated': 'Meta:Updated'
+}
+const EDGEKEYS = [
+  'id',
+  'source',
+  'target',
+  { 'attributes': ['Relationship', 'Info', 'Citations', 'Category', 'Notes'] },
+  { 'meta': ['created', 'updated']}
+];
+
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -29,11 +62,29 @@ function m_encode(data) {
   return String(data).replace(/"/g, '""');
 }
 
+// Converts nested key definitions into a flat array, e.g.
+//     from ['id', { attributes: ['type', 'info'] } ]
+//     into ['id', 'attributes:type', 'attributes:info']
+function m_flattenKeys(keys, prefix) {
+  if (!Array.isArray(keys)) {
+    // Recurse
+    const pre = Object.keys(keys)[0];
+    return m_flattenKeys(keys[pre], pre);
+  } else {
+    const flattenedKeys = keys.map(k => {
+      if (typeof k !== 'string') return m_flattenKeys(k);
+      if (prefix) return `${prefix}:${k}`;
+      else return k;
+    });
+    return flattenedKeys.flat();
+  }
+}
+
 /// IMPORT / EXPORT METHODS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Returns an array of values for a given node record
+/*/ Returns an array of export values for a given node record
     e.g. [1,'Tacitus','Person',...]
 /*/
 function m_getNodeValues(node, keys) {
@@ -114,7 +165,7 @@ function m_GenerateEdgesArray(edges, edgekeys) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/// MODULE IMPORT / EXPORT METHODS ////////////////////////////////////////////
+/// MODULE EXPORT METHODS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -129,34 +180,26 @@ MOD.ExportNodes = () => {
   /// 1. Export Nodes
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// Define Node KEYS to export
-  /// REVIEW: Should this be defined in the Template?
-  const nodekeys = [
-    'id',
-    'label',
-    { 'attributes': ['Node_Type', 'Extra Info', 'Notes'] },
-    'degrees',
-    { 'meta': ['created', 'updated']}
-  ];
-  const nodesArr = m_GenerateNodesArray(nodes, nodekeys);
+  const nodesArr = m_GenerateNodesArray(nodes, NODEKEYS);
 
   /// 2. Expand to CSV
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ///    3.1. NODES
   ///    3.1.1. Create headers
-  const nodeHeadersArr = nodekeys.map(key => {
+  const nodeHeadersArr = NODEKEYS.map(key => {
     // eslint-disable-next-line prefer-reflect
     if (Object.prototype.toString.call(key) === '[object Object]') {
       const subKeys = Object.keys(key); // can have multiple subKeys
-      return subKeys.map(sk => key[sk].map(k => `${sk}:${k}`)).flat();
+      const internalkeys = subKeys.map(sk => key[sk].map(k => `${sk}:${k}`)).flat();
+      return internalkeys.map(k => NODEKEY_LABELS[k]);
     } else {
-      return key;
+      return NODEKEY_LABELS[key];
     }
   });
   const nodeHeaders = nodeHeadersArr.flat();
   nodesArr.unshift(nodeHeaders); // add headers
   ///    3.1.2. Expand Nodes to CSV
   const commaDelimitedNodes = nodesArr.map(n => n.join(','));
-  EXPORT += 'NODES\n';
   EXPORT += commaDelimitedNodes.join('\n')
 
   /// 3. Save to File
@@ -186,20 +229,13 @@ MOD.ExportEdges = () => {
   /// 1. Export Edges
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// Define Edge KEYS
-  const edgekeys = [
-    'id',
-    'source',
-    'target',
-    { 'attributes': ['Relationship', 'Info', 'Citations', 'Category', 'Notes'] },
-    { 'meta': ['created', 'updated']}
-  ];
-  const edgesArr = m_GenerateEdgesArray(edges, edgekeys);
+  const edgesArr = m_GenerateEdgesArray(edges, EDGEKEYS);
 
   /// 3. Expand to CSV
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ///   3.1. EDGES
   ///   3.1.1. Create headers
-  const edgeHeadersArr = edgekeys.map(key => {
+  const edgeHeadersArr = EDGEKEYS.map(key => {
     // eslint-disable-next-line prefer-reflect
     if (Object.prototype.toString.call(key) === '[object Object]') {
       const subKeys = Object.keys(key); // can have multiple subKeys
@@ -212,7 +248,6 @@ MOD.ExportEdges = () => {
   edgesArr.unshift(edgeHeaders); // add headers
   ///   3.2.2 Expand Edges to CSV
   const commaDelimitedEdges = edgesArr.map(e => e.join(','));
-  EXPORT += 'EDGES\n';
   EXPORT += commaDelimitedEdges.join('\n');
 
   /// 4. Save to File
