@@ -23,6 +23,7 @@ const classnames = require('classnames');
 const Help = require('./Help');
 const Vocabulary = require('./Vocabulary');
 const ImportExport = require('./ImportExport');
+const Template = require('./Template');
 
 const UNISYS   = require('unisys/client');
 
@@ -109,6 +110,14 @@ class More extends UNISYS.Component {
                   Import / Export
                 </NavLink>
               </NavItem>
+              <NavItem>
+                <NavLink
+                  className={classnames({ active: activeTab === '4' })}
+                  onClick={() => { this.toggleTab('4') }}
+                >
+                  Edit Template
+                </NavLink>
+              </NavItem>
             </Nav>
           </div>
           <TabContent activeTab={activeTab} style={{
@@ -123,6 +132,9 @@ class More extends UNISYS.Component {
             </TabPane>
             <TabPane tabId="3">
               {activeTab==="3" && <ImportExport /> }
+            </TabPane>
+            <TabPane tabId="4">
+              {activeTab==="4" && <Template /> }
             </TabPane>
           </TabContent>
         </div>
