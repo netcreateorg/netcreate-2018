@@ -20,6 +20,7 @@ const React        = require('react');
 const ReactStrap   = require('reactstrap');
 const { TabContent, TabPane, Nav, NavItem, NavLink, Row, Col, Button } = ReactStrap;
 const classnames = require('classnames');
+const SETTINGS = require('settings');
 const Help = require('./Help');
 const Vocabulary = require('./Vocabulary');
 const ImportExport = require('./ImportExport');
@@ -63,7 +64,7 @@ class More extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   render() {
     const { activeTab } = this.state;
-
+    const ISADMIN = SETTINGS.IsAdmin();
     return (
       <div className="help"
         style={{
@@ -112,6 +113,7 @@ class More extends UNISYS.Component {
               </NavItem>
               <NavItem>
                 <NavLink
+                  hidden={!ISADMIN}
                   className={classnames({ active: activeTab === '4' })}
                   onClick={() => { this.toggleTab('4') }}
                 >
