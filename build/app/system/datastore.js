@@ -156,12 +156,12 @@ DSTOR.PromiseJSONFile = function(jsonFile) {
 /*/
 DSTOR.PromiseD3Data = function() {
   // UDATA.Call() returns a promise
-  return UDATA.Call("SRV_DBGET", {});
+  return UDATA.Call("SRV_DBGET", {}); // server.js
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: (WIP) write database from d3data-formatted object
 /*/
-DSTOR.OverwriteDataPromise = function(d3data) {
+DSTOR.OverwriteDataPromise = function (d3data) {
   return new Promise((resolve, reject) => {
     UDATA.Call("SRV_DBSET", d3data).then(res => {
       if (res.OK) {

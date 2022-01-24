@@ -166,7 +166,7 @@ DB.PKT_GetDatabase = function(pkt) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: reset database from scratch
 /*/
-DB.PKT_SetDatabase = function(pkt) {
+DB.PKT_SetDatabase = function (pkt) {
   if (DBG) console.log(PR, `PKT_SetDatabase`);
   let { nodes = [], edges = [] } = pkt.Data();
   if (!nodes.length) console.log(PR, "WARNING: empty nodes array");
