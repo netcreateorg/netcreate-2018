@@ -552,6 +552,34 @@ DB.GetTemplateTOMLFileName = () => {
   return { filename: m_GetTemplateTOMLFileName() };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ called by Template Editor to save TOML template changes to disk.
+/*/
+DB.WriteTemplateTOML = (pkt) => {
+  const templateFilePath = m_GetTemplateTOMLFilePath();
+  FS.ensureDirSync(PATH.dirname(templateFilePath));
+  // Does the template exist?  If so, rename the old version with curren timestamp.
+  if (FS.existsSync(templateFilePath)) {
+    const timestamp = new Date().toISOString()
+      .replace(/:/g, '.');
+    const backupFilePath = RUNTIMEPATH + NC_CONFIG.dataset + '_' + timestamp + TEMPLATE_EXT;
+    FS.copySync(templateFilePath, backupFilePath);
+    console.log(PR, 'Backed up template to', backupFilePath);
+  }
+  const toml = TOML.stringify(pkt.data.template);
+  return FS.outputFile(templateFilePath, toml)
+    .then(data => {
+      console.log(PR, 'Saved template to', templateFilePath)
+      // reload template
+      m_LoadTemplate();
+      return { OK: true, info: templateFilePath }
+    })
+    .catch(err => {
+      console.log(PR, 'Failed trying to save', templateFilePath, err);
+      return { OK: false, info: 'Failed trying to save', templateFilePath }
+    });
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// utility function for cleaning nodes with numeric id property
 function m_CleanObjID(prompt, obj) {
   if (typeof obj.id==='string') {

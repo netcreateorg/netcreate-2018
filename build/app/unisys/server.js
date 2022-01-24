@@ -63,6 +63,15 @@ var UNISYS = {};
         return UDB.PKT_SetDatabase(pkt);
       });
 
+      UNET.HandleMessage('SRV_TEMPLATESAVE', pkt => { // server-database
+        if (DBG) console.log(PR, sprint_message(pkt));
+        return UDB.WriteTemplateTOML(pkt);
+      });
+
+      UNET.HandleMessage('SRV_GET_TEMPLATETOML_FILENAME', () => {
+        return UDB.GetTemplateTOMLFileName();
+      })
+
       // receives a packet from a client
       UNET.HandleMessage('SRV_DBUPDATE',function(pkt) {
         if (DBG) console.log(PR,sprint_message(pkt));
