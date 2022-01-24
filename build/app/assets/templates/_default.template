@@ -113,6 +113,7 @@
                 "_cmt4": "//updated is included in the edge tables if in admin mode, and in the graph tooltip  if indicated here. Probably those should be more consistent."
               },
     "delete": {
+      "_cmt5": "// Only admins see the delete button.  This hides delete button even for admins.",
       "type": "hidden",
       "hidden": false
     }
