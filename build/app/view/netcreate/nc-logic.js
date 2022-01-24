@@ -157,6 +157,8 @@ const TEMPLATE_URL = `templates/${DATASET}.json`;
 /*/
 MOD.Hook("LOADASSETS", () => {
   if (UNISYS.IsStandaloneMode()) {
+    // STANDALONE MODE
+    // Load read-only database from exported db file.
 
     const USE_CACHE = false;
     if (USE_CACHE) {
@@ -201,7 +203,7 @@ MOD.Hook("LOADASSETS", () => {
       })();
     });
   }
-  // if got this far...
+
   // NOT STANDALONE MODE so load data into D3DATA
   let p1 = DATASTORE.PromiseD3Data()
   .then(data => {
@@ -384,7 +386,6 @@ MOD.Hook("INITIALIZE", () => {
       }
     }
   }); // StateChange SELECTION
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ User has clicked on a suggestion from the AutoCopmlete suggestion list.
       The source node should be loaded in NodeSelector.
