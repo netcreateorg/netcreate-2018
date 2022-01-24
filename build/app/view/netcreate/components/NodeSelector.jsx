@@ -142,9 +142,13 @@ var   UDATA        = null;
 class NodeSelector extends UNISYS.Component {
     constructor (props) {
       super(props);
+      const TEMPLATE = this.AppState('TEMPLATE');
       this.state = {
-        nodePrompts:   this.AppState('TEMPLATE').nodePrompts,
-        citationPrompts:   this.AppState('TEMPLATE').citationPrompts,
+        nodeDefs: TEMPLATE.nodeDefs,
+        citation: TEMPLATE.citation,
+        duplicateWarning: TEMPLATE.duplicateWarning,
+        nodeIsLockedMessage: TEMPLATE.nodeIsLockedMessage,
+        hideDeleteNodeButton: TEMPLATE.hideDeleteNodeButton,
         formData: {
             label:     '',
             type:      '',
@@ -380,7 +384,7 @@ class NodeSelector extends UNISYS.Component {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     setTemplate (data) {
-      this.setState({ nodePrompts: data.nodePrompts });
+      this.setState({ nodeDefs: data.nodeDefs });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return a new unique ID
@@ -916,11 +920,16 @@ class NodeSelector extends UNISYS.Component {
 /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
 /*/ REACT calls this to receive the component layout and data sources
 /*/ render () {
-      let { nodePrompts, citationPrompts } = this.state;
-      if(citationPrompts==undefined)
+      let { nodeDefs,
+        citation,
+        duplicateWarning,
+        nodeIsLockedMessage,
+        hideDeleteNodeButton
+      } = this.state;
+      if(citation==undefined)
       {
-          citationPrompts = {};
-          citationPrompts.hidden = true;
+          citation = {};
+          citation.hidden = true;
       }
         return (
         <div>
@@ -937,8 +946,8 @@ class NodeSelector extends UNISYS.Component {
               <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="nodeLabel" className="tooltipAnchor small text-muted">
                     <div className="badge">?</div>
-                    {nodePrompts.label.label}
-                    <span className="tooltiptext">{this.helpText(nodePrompts.label)}</span>
+                    {nodeDefs.label.displayLabel}
+                    <span className="tooltiptext">{this.helpText(nodeDefs.label)}</span>
                   </Label>
               </Col>
               <Col sm={9}>
@@ -951,7 +960,7 @@ class NodeSelector extends UNISYS.Component {
               </Col>
               <div hidden={!this.state.isDuplicateNodeLabel}
                 style={{ width: '200px', height: '150px', backgroundColor: '#B8EDFF', position: 'fixed', left: '350px', zIndex: '1000', padding: '10px' }}>
-                <p className="text-danger small">{nodePrompts.label.duplicateWarning}</p>
+                <p className="text-danger small">{duplicateWarning}</p>
                 <Button size="sm" onClick={this.onEditOriginal}>View Existing</Button>
                 <Button outline size="sm" onClick={this.onCloseDuplicateDialog}>Continue</Button>
               </div>
@@ -959,12 +968,12 @@ class NodeSelector extends UNISYS.Component {
             <div style={{position:'absolute',left:'300px',maxWidth:'300px'}}>
               <NodeDetail/>
             </div>
-            <FormGroup row hidden={nodePrompts.type.hidden}>
+            <FormGroup row hidden={nodeDefs.type.hidden}>
               <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="type" className="tooltipAnchor small text-muted">
                     <div className="badge">?</div>
-                    {nodePrompts.type.label}
-                    <span className="tooltiptext">{this.helpText(nodePrompts.type)}</span>
+                    {nodeDefs.type.displayLabel}
+                    <span className="tooltiptext">{this.helpText(nodeDefs.type)}</span>
                   </Label>
               </Col>
               <Col sm={9}>
@@ -973,18 +982,18 @@ class NodeSelector extends UNISYS.Component {
                   onChange={this.onTypeChange}
                   disabled={!this.state.isEditable}
                   >
-                  {nodePrompts.type.options.map( (option,i) => (
+                  {nodeDefs.type.options.map( (option,i) => (
                     <option id={option.id} key={option.id}>{option.label}</option>
                   ))}
                 </Input>
               </Col>
             </FormGroup>
-            <FormGroup row hidden={nodePrompts.notes.hidden}>
+            <FormGroup row hidden={nodeDefs.notes.hidden}>
               <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="notes" className="tooltipAnchor small text-muted">
                     <div className="badge">?</div>
-                    {nodePrompts.notes.label}
-                    <span className="tooltiptext">{this.helpText(nodePrompts.notes)}</span>
+                    {nodeDefs.notes.displayLabel}
+                    <span className="tooltiptext">{this.helpText(nodeDefs.notes)}</span>
                   </Label>
               </Col>
               <Col sm={9}>
@@ -997,12 +1006,12 @@ class NodeSelector extends UNISYS.Component {
                   {this.markdownDisplay(this.state.formData.notes||'')}
               </Col>
             </FormGroup>
-            <FormGroup row hidden={nodePrompts.info.hidden}>
+            <FormGroup row hidden={nodeDefs.info.hidden}>
               <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="info" className="tooltipAnchor small text-muted">
                     <div className="badge">?</div>
-                    {nodePrompts.info.label}
-                    <span className="tooltiptext">{this.helpText(nodePrompts.info)}</span>
+                    {nodeDefs.info.displayLabel}
+                    <span className="tooltiptext">{this.helpText(nodeDefs.info)}</span>
                   </Label>
               </Col>
               <Col sm={9}>
@@ -1016,19 +1025,19 @@ class NodeSelector extends UNISYS.Component {
               <div id="citationWindow" hidden={this.state.hideModal} className="modal-content">
                 <span className="close" onClick={this.onCloseCiteClick}>&times;</span>
                 <p><em>Copy the text below:</em><br/><br/>
-                  NetCreate {this.AppState('TEMPLATE').name} network, Node: {this.state.formData.label} (ID {this.state.formData.id}). {citationPrompts.citation}. Last accessed at {this.dateFormatted()}.</p>
+                  NetCreate {this.AppState('TEMPLATE').name} network, Node: {this.state.formData.label} (ID {this.state.formData.id}). {citation.text}. Last accessed at {this.dateFormatted()}.</p>
               </div><br/>
             <FormGroup className="text-right" style={{ paddingRight: '5px' }}>
               <Button outline size="sm"
-                hidden={ citationPrompts.hidden || (this.state.formData.id==='') }
+                hidden={ citation.hidden || (this.state.formData.id==='') }
                 onClick={this.onCiteButtonClick}
               >Cite Node</Button>&nbsp;&nbsp;
               <Button outline size="sm"
                 hidden={this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
                 onClick={this.onEditButtonClick}
               >Edit Node</Button>
-              <p hidden={!this.state.dbIsLocked} className="small text-danger">{nodePrompts.label.sourceNodeIsLockedMessage}<br/>
-              <span hidden={!isLocalHost} >If you are absolutely sure this is an error, you can force the unlock:
+              <p hidden={!this.state.dbIsLocked} className="small text-danger">{nodeIsLockedMessage}<br/>
+              <span hidden={!isAdmin} >If you are absolutely sure this is an error, you can force the unlock:
               <Button className="small btn btn-outline-light" size="sm"
                   onClick={this.onForceUnlock}
                 >Force Unlock</Button></span>
@@ -1045,8 +1054,11 @@ class NodeSelector extends UNISYS.Component {
             <FormGroup row className="text-left" style={{
               padding: '10px 5px', margin: '0 -4px', backgroundColor: '#c5e0ef' }}
               hidden={
-                this.state.isLocked || (this.state.formData.id === '') || nodePrompts.delete.hidden}
                 !isAdmin ||
+                this.state.isLocked ||
+                (this.state.formData.id === '') ||
+                hideDeleteNodeButton
+              }
             >
               <Col sm={6}>
                 <FormText>Re-link edges to this Node ID (leave blank to delete edge)</FormText>

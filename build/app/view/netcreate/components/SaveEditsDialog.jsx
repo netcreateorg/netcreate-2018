@@ -48,7 +48,7 @@ class SaveChangesDialog extends UNISYS.Component {
     super(props);
 
     this.state = {
-      nodePrompts: this.AppState('TEMPLATE').nodePrompts,
+      nodeDefs: this.AppState('TEMPLATE').nodeDefs,
     }
 
     this.handleEdit = this.handleEdit.bind(this);
@@ -95,7 +95,7 @@ class SaveChangesDialog extends UNISYS.Component {
   /*/
   /*/
   render() {
-    let { nodePrompts } = this.state;
+    let { nodeDefs } = this.state;
     return (
       <Modal>
         <ModalBody>You've made changes to the Node.  Are you sure you want to </ModalBody>

@@ -78,7 +78,7 @@ class NetGraph extends UNISYS.Component {
 /*/ componentDidMount () {
       // D3NetGraph Constructor
       let el = ReactDOM.findDOMNode(this);
-      let d3NetGraph = new D3NetGraph(el, this.AppState('TEMPLATE').nodePrompts);
+      let d3NetGraph = new D3NetGraph(el, this.AppState('TEMPLATE').nodeDefs);
       this.setState({ d3NetGraph });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -93,7 +93,7 @@ class NetGraph extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ render() {
-      let nodeTypes = this.AppState('TEMPLATE').nodePrompts.type.options;
+      let nodeTypes = this.AppState('TEMPLATE').nodeDefs.type.options;
       return (
         <div style={{ height: '100%' }}>
           <div style={{ margin: '10px 0 0 10px' }}>

@@ -208,9 +208,11 @@ var   UDATA    = null;
 class EdgeEditor extends UNISYS.Component {
     constructor (props) {
       super(props);
+      const TEMPLATE = this.AppState('TEMPLATE');
       this.state = {
-        edgePrompts:    this.AppState('TEMPLATE').edgePrompts,
-        citationPrompts:   this.AppState('TEMPLATE').citationPrompts,
+        edgeDefs: TEMPLATE.edgeDefs,
+        citation: TEMPLATE.citation,
+        edgeIsLockedMessage: TEMPLATE.edgeIsLockedMessage,
         formData: {                 // Holds the state of the form fields
           sourceId:     '',
           targetId:     '',
@@ -358,7 +360,7 @@ class EdgeEditor extends UNISYS.Component {
   }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     setTemplate (data) {
-      this.setState({ edgePrompts: data.edgePrompts });
+      this.setState({ edgeDefs: data.edgeDefs });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ populate formdata from D3DATA
@@ -886,16 +888,16 @@ class EdgeEditor extends UNISYS.Component {
 /*/
 /*/ render () {
       const { edgeID, parentNodeLabel, parentNodeIsLocked } = this.props;
-      const { formData, sourceNode, targetNode, edgePrompts} = this.state;
-      let {citationPrompts} = this.state;
-      if (edgePrompts.category === undefined) { // for backwards compatability
-        edgePrompts.category = {};
-        edgePrompts.category.label = "";
-        edgePrompts.category.hidden = true;
+      const { formData, sourceNode, targetNode, edgeDefs, edgeIsLockedMessage} = this.state;
+      let {citation} = this.state;
+      if (edgeDefs.category === undefined) { // for backwards compatability
+        edgeDefs.category = {};
+        edgeDefs.category.label = "";
+        edgeDefs.category.hidden = true;
       }
-      if (citationPrompts === undefined) { // if citationPrompts were left out, simply make them hidden
-        citationPrompts = {};
-        citationPrompts.hidden = true;
+      if (citation === undefined) { // if citation were left out, simply make them hidden
+        citation = {};
+        citation.hidden = true;
       }
       const me = <span style={{ color: "rgba(0,0,0,0.2)", fontStyle: "italic" }}>this node</span>;
       // special override to allow editing an edge that has the same parent node for both source and target
@@ -934,8 +936,8 @@ class EdgeEditor extends UNISYS.Component {
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="source" className="tooltipAnchor small text-muted">
                     <div className="badge">?</div>
-                    {edgePrompts.source.label}
-                    <span className="tooltiptext">{this.helpText(edgePrompts.source)}</span>
+                    {edgeDefs.source.displayLabel}
+                    <span className="tooltiptext">{this.helpText(edgeDefs.source)}</span>
                   </Label>
                 </Col>
                 <Col sm={9}>
@@ -956,12 +958,12 @@ class EdgeEditor extends UNISYS.Component {
                   >Change Source</Button>
                 </Col>
               </FormGroup>
-              <FormGroup row hidden={edgePrompts.type.hidden}>
+              <FormGroup row hidden={edgeDefs.type.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="relationship" className="tooltipAnchor small text-muted">
                     <div className="badge">?</div>
-                    {edgePrompts.type.label}
-                    <span className="tooltiptext">{this.helpText(edgePrompts.type)}</span>
+                    {edgeDefs.type.displayLabel}
+                    <span className="tooltiptext">{this.helpText(edgeDefs.type)}</span>
                   </Label>
                 </Col>
                 <Col sm={9}>
@@ -970,7 +972,7 @@ class EdgeEditor extends UNISYS.Component {
                     onChange={this.onRelationshipChange}
                     disabled={!this.state.isEditable}
                     >
-                    {edgePrompts.type.options.map( (option,i) => (
+                    {edgeDefs.type.options.map( (option,i) => (
                       <option id={option.id} key={option.id}>{option.label}</option>
                     ))}
                   </Input>
@@ -980,8 +982,8 @@ class EdgeEditor extends UNISYS.Component {
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="nodeLabel" className="tooltipAnchor small text-muted">
                     <div className="badge">?</div>
-                    {edgePrompts.target.label}
-                    <span className="tooltiptext">{this.helpText(edgePrompts.target)}</span>
+                    {edgeDefs.target.displayLabel}
+                    <span className="tooltiptext">{this.helpText(edgeDefs.target)}</span>
                   </Label>
                 </Col>
                 <Col sm={9}>
@@ -1010,12 +1012,12 @@ class EdgeEditor extends UNISYS.Component {
                   >&uarr;&darr;</Button>
                 </Col>
               </FormGroup>
-              <FormGroup row hidden={edgePrompts.category.hidden}>
+              <FormGroup row hidden={edgeDefs.category.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="category" className="tooltipAnchor small text-muted">
                     <div className="badge">?</div>
-                    {edgePrompts.category.label}
-                    <span className="tooltiptext">{this.helpText(edgePrompts.category)}</span>
+                    {edgeDefs.category.displayLabel}
+                    <span className="tooltiptext">{this.helpText(edgeDefs.category)}</span>
                   </Label>
                 </Col>
                 <Col sm={9}>
@@ -1025,12 +1027,12 @@ class EdgeEditor extends UNISYS.Component {
                     readOnly={!this.state.isEditable}
                   />
                 </Col>
-              </FormGroup><FormGroup row hidden={edgePrompts.citation.hidden}>
+              </FormGroup><FormGroup row hidden={edgeDefs.citation.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="citation" className="tooltipAnchor small text-muted">
                     <div className="badge">?</div>
-                    {edgePrompts.citation.label}
-                    <span className="tooltiptext">{this.helpText(edgePrompts.citation)}</span>
+                    {edgeDefs.citation.displayLabel}
+                    <span className="tooltiptext">{this.helpText(edgeDefs.citation)}</span>
                   </Label>
                 </Col>
                 <Col sm={9}>
@@ -1041,12 +1043,12 @@ class EdgeEditor extends UNISYS.Component {
                   />
                 </Col>
               </FormGroup>
-              <FormGroup row hidden={edgePrompts.notes.hidden}>
+              <FormGroup row hidden={edgeDefs.notes.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="notes" className="tooltipAnchor small text-muted">
                     <div className="badge">?</div>
-                    {edgePrompts.notes.label}
-                    <span className="tooltiptext">{this.helpText(edgePrompts.notes)}</span>
+                    {edgeDefs.notes.displayLabel}
+                    <span className="tooltiptext">{this.helpText(edgeDefs.notes)}</span>
                   </Label>
                 </Col>
                 <Col sm={9}>
@@ -1059,12 +1061,12 @@ class EdgeEditor extends UNISYS.Component {
                   {this.markdownDisplay(this.state.formData.notes||'')}
                 </Col>
               </FormGroup>
-              <FormGroup row hidden={edgePrompts.info.hidden}>
+              <FormGroup row hidden={edgeDefs.info.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="info" className="tooltipAnchor small text-muted">
                     <div className="badge">?</div>
-                    {edgePrompts.info.label}
-                    <span className="tooltiptext">{this.helpText(edgePrompts.info)}</span>
+                    {edgeDefs.info.displayLabel}
+                    <span className="tooltiptext">{this.helpText(edgeDefs.info)}</span>
                   </Label>
                 </Col>
                 <Col sm={9}>
@@ -1078,7 +1080,7 @@ class EdgeEditor extends UNISYS.Component {
               <div id="citationWindow" hidden={this.state.hideModal} className="modal-content">
                 <span className="close" onClick={this.onCloseCiteClick}>&times;</span>
                 <p><em>Copy the text below:</em><br/><br/>
-                  NetCreate {this.AppState('TEMPLATE').name} network, Edge: {this.state.formData.label} (ID {this.state.formData.id}), from "{sourceNode.label}" to "{targetNode.label}". {citationPrompts.citation}. Last accessed at {this.dateFormatted()}.</p>
+                  NetCreate {this.AppState('TEMPLATE').name} network, Edge: {this.state.formData.label} (ID {this.state.formData.id}), from "{sourceNode.label}" to "{targetNode.label}". {citation.text}. Last accessed at {this.dateFormatted()}.</p>
               </div><br/>
               <FormGroup className="text-right" style={{paddingRight:'5px'}}>
                 <Button className="small float-left btn btn-outline-light" size="sm"
@@ -1086,7 +1088,7 @@ class EdgeEditor extends UNISYS.Component {
                  onClick={this.onDeleteButtonClick}
                 >Delete</Button>&nbsp;
                 <Button outline size="sm"
-                hidden={ citationPrompts.hidden}
+                hidden={ citation.hidden}
                 onClick={this.onCiteButtonClick}
               >Cite Edge</Button>&nbsp;&nbsp;
               <Button outline size="sm"
@@ -1101,7 +1103,7 @@ class EdgeEditor extends UNISYS.Component {
                   hidden={!this.state.isEditable}
                   disabled={ !(this.state.isEditable && this.state.hasValidTarget) }
                 >Save</Button>
-                <p hidden={!this.state.dbIsLocked} className="small text-danger">{edgePrompts.edgeIsLockedMessage}</p>
+                <p hidden={!this.state.dbIsLocked} className="small text-danger">{edgeIsLockedMessage}</p>
               </FormGroup>
             </Form>
           </div>

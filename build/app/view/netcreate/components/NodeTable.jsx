@@ -49,7 +49,7 @@ class NodeTable extends UNISYS.Component {
     super(props);
 
     this.state = {
-      nodePrompts: this.AppState('TEMPLATE').nodePrompts,
+      nodeDefs: this.AppState('TEMPLATE').nodeDefs,
       nodes: [],
       filteredNodes: [],
       isExpanded: true,
@@ -160,7 +160,7 @@ class NodeTable extends UNISYS.Component {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   OnTemplateUpdate(data) {
-    this.setState({nodePrompts: data.nodePrompts});
+    this.setState({nodeDefs: data.nodeDefs});
   }
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
@@ -331,7 +331,7 @@ class NodeTable extends UNISYS.Component {
 /*/
 render() {
   if (this.state.nodes === undefined) return "";
-  const { nodePrompts } = this.state;
+  const { nodeDefs } = this.state;
   const { tableHeight } = this.props;
   const styles = `thead, tbody { font-size: 0.8em }
                   .table {
@@ -370,22 +370,22 @@ render() {
             <th width="4%" hidden={!DBG}>ID</th>
             <th width="4%"><Button size="sm"
                   onClick={() => this.setSortKey("edgeCount")}
-                >{nodePrompts.degrees.label} {this.sortSymbol("edgeCount")}</Button></th>
+                >{nodeDefs.degrees.displayLabel} {this.sortSymbol("edgeCount")}</Button></th>
             <th width="15%"><Button size="sm"
                   onClick={()=>this.setSortKey("label")}
-                >{nodePrompts.label.label} {this.sortSymbol("label")}</Button></th>
-            <th width="10%"hidden={nodePrompts.type.hidden}>
+                >{nodeDefs.label.displayLabel} {this.sortSymbol("label")}</Button></th>
+            <th width="10%"hidden={nodeDefs.type.hidden}>
                 <Button size="sm"
                   onClick={()=>this.setSortKey("type")}
-                >{nodePrompts.type.label} {this.sortSymbol("type")}</Button></th>
-            <th width="20%"hidden={nodePrompts.info.hidden}>
+                >{nodeDefs.type.displayLabel} {this.sortSymbol("type")}</Button></th>
+            <th width="20%"hidden={nodeDefs.info.hidden}>
                 <Button size="sm"
                   onClick={()=>this.setSortKey("info")}
-                >{nodePrompts.info.label} {this.sortSymbol("info")}</Button></th>
-            <th width="30%" hidden={nodePrompts.notes.hidden}>
+                >{nodeDefs.info.displayLabel} {this.sortSymbol("info")}</Button></th>
+            <th width="30%" hidden={nodeDefs.notes.hidden}>
                 <Button size="sm"
                   onClick={()=>this.setSortKey("notes")}
-                >{nodePrompts.notes.label} {this.sortSymbol("notes")}</Button></th>
+                >{nodeDefs.notes.displayLabel} {this.sortSymbol("notes")}</Button></th>
             <th  width="10%"hidden={!isLocalHost}><Button size="sm"
                   onClick={()=>this.setSortKey("Updated")}
                 >Updated {this.sortSymbol("Updated")}</Button></th>
@@ -407,9 +407,9 @@ render() {
             <td>{node.degrees}</td>
             <td><a href="#" onClick={(e)=>this.selectNode(node.id,e)}
                 >{node.label}</a></td>
-            <td hidden={nodePrompts.type.hidden}>{node.attributes["Node_Type"]}</td>
-            <td hidden={nodePrompts.info.hidden}>{node.attributes["Extra Info"]}</td>
-            <td hidden={nodePrompts.notes.hidden}>
+            <td hidden={nodeDefs.type.hidden}>{node.attributes["Node_Type"]}</td>
+            <td hidden={nodeDefs.info.hidden}>{node.attributes["Extra Info"]}</td>
+            <td hidden={nodeDefs.notes.hidden}>
               {node.attributes["Notes"] ? <MarkdownNote text={node.attributes["Notes"]} /> : "" }
             </td>
             <td hidden={!isLocalHost}>{this.displayUpdated(node)}</td>

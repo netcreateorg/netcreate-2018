@@ -93,7 +93,7 @@ let m_forceProperties = {   // values for all forces
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class D3NetGraph {
 
-    constructor ( rootElement, nodePrompts ) {
+    constructor ( rootElement, nodeDefs ) {
 
       this.rootElement  = rootElement;
       this.d3svg        = {};
@@ -107,7 +107,7 @@ class D3NetGraph {
       this.defaultSize  = 5;
 
       // To handled tooltips
-      this.nodePrompts = nodePrompts;
+      this.nodeDefs = nodeDefs;
 
       /// Initialize UNISYS DATA LINK for REACT
       UDATA = UNISYS.NewDataLink(this);
@@ -520,32 +520,32 @@ class D3NetGraph {
 tooltipForNode(d)
 {
     let titleText =  "";
-    if(this.nodePrompts.label.includeInGraphTooltip != undefined)
+    if(this.nodeDefs.label.includeInGraphTooltip != undefined)
     {
         // Add Label
-          if(this.nodePrompts.label.includeInGraphTooltip)
-            titleText += this.nodePrompts.label.label + ": " + d.label + "\n";
+          if(this.nodeDefs.label.includeInGraphTooltip)
+            titleText += this.nodeDefs.label.displayLabel + ": " + d.label + "\n";
         // Add type
-          if(this.nodePrompts.type.includeInGraphTooltip)
-            titleText += this.nodePrompts.type.label + ": " + d.attributes.Node_Type + "\n";
+          if(this.nodeDefs.type.includeInGraphTooltip)
+            titleText += this.nodeDefs.type.displayLabel + ": " + d.attributes.Node_Type + "\n";
         // Add degrees
-          if(this.nodePrompts.degrees.includeInGraphTooltip)
-            titleText += this.nodePrompts.degrees.label + ": " + d.weight + "\n";
+          if(this.nodeDefs.degrees.includeInGraphTooltip)
+            titleText += this.nodeDefs.degrees.displayLabel + ": " + d.weight + "\n";
         // Add notes
-          if(this.nodePrompts.notes.includeInGraphTooltip)
-            titleText += this.nodePrompts.notes.label + ": " + d.attributes.Notes + "\n";
+          if(this.nodeDefs.notes.includeInGraphTooltip)
+            titleText += this.nodeDefs.notes.displayLabel + ": " + d.attributes.Notes + "\n";
         // Add info
-          if(this.nodePrompts.info.includeInGraphTooltip)
-            titleText += this.nodePrompts.info.label + ": " + d.attributes["Extra Info"] + "\n";
+          if(this.nodeDefs.info.includeInGraphTooltip)
+            titleText += this.nodeDefs.info.displayLabel + ": " + d.attributes["Extra Info"] + "\n";
         // Add updated info
-          if(this.nodePrompts.updated.includeInGraphTooltip)
-            titleText += this.nodePrompts.updated.label + ": " + this.displayUpdated(d);
+          if(this.nodeDefs.updated.includeInGraphTooltip)
+            titleText += this.nodeDefs.updated.displayLabel + ": " + this.displayUpdated(d);
     }
     else
     {
 
        // For backwards compatability
-       titleText += this.nodePrompts.label.label + ": " + d.label + "\n";
+       titleText += this.nodeDefs.displayLabel.label + ": " + d.label + "\n";
 
     }
     return titleText;
