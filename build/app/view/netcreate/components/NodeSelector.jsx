@@ -132,7 +132,7 @@ const SETTINGS     = require('settings');
 
 const thisIdentifier = 'nodeSelector';   // SELECTION identifier
 
-const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1') || (location.href.includes('admin=true'));
+const isAdmin  = SETTINGS.IsAdmin();
 
 var   UDATA        = null;
 
@@ -1045,8 +1045,8 @@ class NodeSelector extends UNISYS.Component {
             <FormGroup row className="text-left" style={{
               padding: '10px 5px', margin: '0 -4px', backgroundColor: '#c5e0ef' }}
               hidden={
-                !isLocalHost ||
                 this.state.isLocked || (this.state.formData.id === '') || nodePrompts.delete.hidden}
+                !isAdmin ||
             >
               <Col sm={6}>
                 <FormText>Re-link edges to this Node ID (leave blank to delete edge)</FormText>
