@@ -524,7 +524,8 @@ DB.WriteDbJSON = function (filePath) {
   );
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ called by brunch to generate an up-to-date Template file to path.
+/*/ DEPRECATED.  Replaced by WriteTemplateTOML
+    called by brunch to generate an up-to-date Template file to path.
     creates the path if it doesn't exist
 /*/
 DB.WriteTemplateJSON = function (filePath) {
