@@ -7,13 +7,13 @@
   with two options:
   * Edit the existing ndoe
   * Continue adding the new node
-  
+
   The dialog is displayed next to the node label so that the user can make
   a decision.
-  
+
   We allow duplicate nodes because there might be places/people with the
   same name.
-  
+
   ## PROPS
       nodeID
 
@@ -73,7 +73,7 @@ class SaveChangesDialog extends UNISYS.Component {
 
   handleCancel () {
     event.preventDefault();
-    
+
   }
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
