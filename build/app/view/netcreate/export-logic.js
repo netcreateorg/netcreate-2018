@@ -9,6 +9,7 @@ const DBG = false;
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS = require("unisys/client");
+const TOML = require("@iarna/toml");
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -265,6 +266,24 @@ MOD.ExportEdges = () => {
   link.click();
   document.body.removeChild(link);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Used when importing a TOML file
+    Makes sure TOML file is readable.
+    Returns JSON
+/*/
+MOD.ValidateTOMLFile = async data => {
+  const { tomlfile } = data;
+  try {
+    let tomlText = await tomlfile.text();
+    const json = TOML.parse(tomlText);
+    const isValid = true;
+    return {isValid, templateJSON: json};
+  }
+  catch (err) {
+    return { isValid: false, error: err };
+  }
+}
+
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = MOD;
