@@ -11,6 +11,7 @@ const DBG = false;
 const Loki = require("lokijs");
 const PATH = require("path");
 const FS = require("fs-extra");
+const TOML = require("@iarna/toml");
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -20,6 +21,7 @@ const PROMPTS = require("../system/util/prompts");
 const PR = PROMPTS.Pad("ServerDB");
 const RUNTIMEPATH = './runtime/';
 const TEMPLATEPATH = './app/assets/templates/';
+const TEMPLATE_EXT = '.template.toml'
 const DB_CLONEMASTER = "blank.loki";
 const NC_CONFIG = require("../assets/netcreate-config");
 
@@ -154,6 +156,27 @@ function m_LoadTemplate() {
     // // Now load it
     // TEMPLATE = FS.readJsonSync(templatePath);
     // console.log('### JSON TEMPLATE is', JSON.stringify(FS.readJsonSync(templatePath)))
+
+    // LOAD TOML TEMPLATE  - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const templateFilePath = m_GetTemplateTOMLFilePath();
+    FS.ensureDirSync(PATH.dirname(templateFilePath));
+    // Does the template exist?  If not, clone default.
+    if (!FS.existsSync(templateFilePath)) {
+      console.log(PR, `NO EXISTING TEMPLATE ${templateFilePath}, so cloning default template...`);
+      FS.copySync(TEMPLATEPATH+'_default'+TEMPLATE_EXT, templateFilePath);
+    }
+    // Now load it
+    const templateFile = FS.readFile(templateFilePath, 'utf8', (err, data) => {
+      if (err) throw err;
+      // Read TOML
+      const json = TOML.parse(data);
+      TEMPLATE = json;
+      console.log(PR, 'Template loaded', templateFilePath);
+      // Call complete callback
+      if (typeof m_options.onLoadComplete === 'function') {
+        m_options.onLoadComplete();
+      }
+    });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: load database
@@ -516,6 +539,18 @@ DB.WriteTemplateJSON = function (filePath) {
   }
 };
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ called by Template Editor and DB.WriteTemplateTOML
+/*/
+function m_GetTemplateTOMLFileName() {
+  return NC_CONFIG.dataset + TEMPLATE_EXT;
+}
+function m_GetTemplateTOMLFilePath() {
+  return RUNTIMEPATH + m_GetTemplateTOMLFileName();
+}
+DB.GetTemplateTOMLFileName = () => {
+  return { filename: m_GetTemplateTOMLFileName() };
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// utility function for cleaning nodes with numeric id property
 function m_CleanObjID(prompt, obj) {
