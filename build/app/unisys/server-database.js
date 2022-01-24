@@ -126,22 +126,8 @@ DB.InitializeDatabase = function (options = {}) {
     console.log(PR,`DATABASE LOADED! m_max_nodeID '${m_max_nodeID}', m_max_edgeID '${m_max_edgeID}'`);
     m_db.saveDatabase();
 
-    // LOAD TEMPLATE  - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    let templatePath = RUNTIMEPATH + NC_CONFIG.dataset + ".template";
-    FS.ensureDirSync(PATH.dirname(templatePath));
-    // Does the template exist?
-    if (!FS.existsSync(templatePath)) {
-      console.log(PR, `NO EXISTING TEMPLATE ${templatePath}, so cloning default template...`);
-      FS.copySync(TEMPLATEPATH+'_default.template', templatePath);
-    }
-    console.log(PR, `LOADING TEMPLATE ${templatePath}`);
-    // Now load it
-    TEMPLATE = FS.readJsonSync(templatePath);
+    m_LoadTemplate();
 
-    // Call complete callback
-    if (typeof m_options.onLoadComplete === 'function') {
-      m_options.onLoadComplete();
-    }
   } // end f_DatabaseInitialize
 
   // UTILITY FUNCTION
@@ -151,6 +137,24 @@ DB.InitializeDatabase = function (options = {}) {
     console.log(PR,`AUTOSAVING! ${nodeCount} NODES / ${edgeCount} EDGES <3`);
   }
 }; // InitializeDatabase()
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// utility function for loading template
+function m_LoadTemplate() {
+    // ORIG JSON TEMPLATE
+    //
+    // // LOAD TEMPLATE  - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // let templatePath = RUNTIMEPATH + NC_CONFIG.dataset + ".template";
+    // FS.ensureDirSync(PATH.dirname(templatePath));
+    // // Does the template exist?
+    // if (!FS.existsSync(templatePath)) {
+    //   console.log(PR, `NO EXISTING TEMPLATE ${templatePath}, so cloning default template...`);
+    //   FS.copySync(TEMPLATEPATH+'_default.template', templatePath);
+    // }
+    // console.log(PR, `LOADING TEMPLATE ${templatePath}`);
+    // // Now load it
+    // TEMPLATE = FS.readJsonSync(templatePath);
+    // console.log('### JSON TEMPLATE is', JSON.stringify(FS.readJsonSync(templatePath)))
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: load database
     note: InitializeDatabase() was already called on system initialization
