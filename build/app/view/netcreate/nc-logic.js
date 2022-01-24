@@ -148,7 +148,8 @@ const DEFAULT_SOURCE_COLOR = "#FFa500";
 const TARGET_COLOR = "#FF0000";
 
 const DATASET = window.NC_CONFIG.dataset || "netcreate";
-const TEMPLATE_URL = `templates/${DATASET}.json`;
+const TEMPLATE_URL = `templates/${DATASET}.toml`;
+
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -227,89 +228,8 @@ MOD.Hook("LOADASSETS", () => {
 // eslint-disable-next-line complexity
 MOD.Hook("CONFIGURE", () => {
   // Process Node, NodeColorMap and Edge options
-
-  // Validate the template file
-  try {
-    // nodePrompts
-    let nodePrompts = TEMPLATE.nodePrompts;
-    if (nodePrompts === undefined) {
-      throw "Missing `nodePrompts` nodePrompts=" + nodePrompts;
-    }
-    if (nodePrompts.label === undefined)
-      throw "Missing `nodePrompts.label` label=" + nodePrompts.label;
-    if (nodePrompts.type === undefined)
-      throw "Missing `nodePrompts.type` type= " + nodePrompts.type;
-    if (
-      nodePrompts.type.options === undefined ||
-      !Array.isArray(nodePrompts.type.options)
-    ) {
-      throw "Missing or bad `nodePrompts.type.options` options=" +
-        nodePrompts.type.options;
-    }
-    if (nodePrompts.notes === undefined)
-      throw "Missing `nodePrompts.notes` notes=" + nodePrompts.notes;
-    if (nodePrompts.info === undefined)
-      throw "Missing `nodePrompts.info` info=" + nodePrompts.info;
-
-    // edgePrompts
-    let edgePrompts = TEMPLATE.edgePrompts;
-    if (edgePrompts === undefined)
-      throw "Missing `edgePrompts` edgePrompts=" + edgePrompts;
-    if (edgePrompts.source === undefined)
-      throw "Missing `edgePrompts.source` source=" + edgePrompts.source;
-    if (edgePrompts.type === undefined)
-      throw "Missing `edgePrompts.type` type= " + edgePrompts.type;
-    if (
-      edgePrompts.type.options === undefined ||
-      !Array.isArray(edgePrompts.type.options)
-    ) {
-      throw "Missing or bad `edgePrompts.type.options` options=" +
-        edgePrompts.type.options;
-    }
-    if (edgePrompts.target === undefined)
-      throw "Missing `edgePrompts.target` label=" + edgePrompts.target;
-    if (edgePrompts.notes === undefined)
-      throw "Missing `edgePrompts.notes` notes=" + edgePrompts.notes;
-    if (edgePrompts.info === undefined)
-      throw "Missing `edgePrompts.info` info=" + edgePrompts.info;
-    if (edgePrompts.citation === undefined)
-      throw "Missing `edgePrompts.citation` info=" + edgePrompts.citation;
-    if (edgePrompts.category === undefined)
-      throw "Missing `edgePrompts.category` info=" + edgePrompts.category;
-  } catch (error) {
-    console.error(
-      PR + "Error loading template `",
-      TEMPLATE_URL,
-      "`::::",
-      error
-    );
-  }
-
-  // REVIEW: Load ColorMap in d3?  or elsewhere?  does it need its own state?
-  // Joshua added Edges in here ... it should either be renamed or kept separate
-  // but this was a proof of concept. Probably they should be kept separate in case
-  // someone ever chooses to use the same label twice, but ...
-  try {
-    let nodeColorMap = {};
-    TEMPLATE.nodePrompts.type.options.forEach(o => {
-      nodeColorMap[o.label] = o.color;
-    });
-
-    let defaultEdgeColor = TEMPLATE.edgePrompts.color || "#999" ; //for backwards compatability
-    TEMPLATE.edgePrompts.type.options.forEach(o => {
-      nodeColorMap[o.label] = o.color || defaultEdgeColor;
-    });
-
-    UDATA.SetAppState("NODECOLORMAP", nodeColorMap);
-  } catch (error) {
-    console.error(
-      PR,
-      "received bad TEMPLATE node options.  ERROR:",
-      error,
-      ". DATA:",
-      TEMPLATE
-    );
-  }
+  m_ValidateTemplate();
+  m_UpdateColorMap();
 }); // end CONFIGURE HOOK
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
@@ -687,6 +607,7 @@ MOD.Hook("INITIALIZE", () => {
     EXPORT.ExportEdges();
   });
 
+  UDATA.HandleMessage("VALIDATE_TOMLFILE", EXPORT.ValidateTOMLFile);
 }); // end UNISYS_INIT
 
 
@@ -811,6 +732,85 @@ MOD.SetAllObjs = m_SetAllObjs; // Expose for filter-logic.js
 
 /// NODE HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/*/ Validate Template File
+/*/
+function m_ValidateTemplate() {
+  try {
+    // nodeDefs
+    let nodeDefs = TEMPLATE.nodeDefs;
+    if (nodeDefs === undefined) {
+      throw "Missing `nodeDefs` nodeDefs=" + nodeDefs;
+    }
+    if (nodeDefs.label === undefined) throw "Missing `nodeDefs.label` label=" + nodeDefs.label;
+    if (nodeDefs.type === undefined) throw "Missing `nodeDefs.type` type= " + nodeDefs.type;
+    if (
+      nodeDefs.type.options === undefined ||
+      !Array.isArray(nodeDefs.type.options)
+    ) {
+      throw "Missing or bad `nodeDefs.type.options` options=" +
+        nodeDefs.type.options;
+    }
+    if (nodeDefs.notes === undefined) throw "Missing `nodeDefs.notes` notes=" + nodeDefs.notes;
+    if (nodeDefs.info === undefined) throw "Missing `nodeDefs.info` info=" + nodeDefs.info;
+
+    // edgeDefs
+    let edgeDefs = TEMPLATE.edgeDefs;
+    if (edgeDefs === undefined) throw "Missing `edgeDefs` edgeDefs=" + edgeDefs;
+    if (edgeDefs.source === undefined) throw "Missing `edgeDefs.source` source=" + edgeDefs.source;
+    if (edgeDefs.type === undefined) throw "Missing `edgeDefs.type` type= " + edgeDefs.type;
+    if (
+      edgeDefs.type.options === undefined ||
+      !Array.isArray(edgeDefs.type.options)
+    ) {
+      throw "Missing or bad `edgeDefs.type.options` options=" +
+        edgeDefs.type.options;
+    }
+    if (edgeDefs.target === undefined) throw "Missing `edgeDefs.target` label=" + edgeDefs.target;
+    if (edgeDefs.notes === undefined) throw "Missing `edgeDefs.notes` notes=" + edgeDefs.notes;
+    if (edgeDefs.info === undefined) throw "Missing `edgeDefs.info` info=" + edgeDefs.info;
+    if (edgeDefs.citation === undefined) throw "Missing `edgeDefs.citation` info=" + edgeDefs.citation;
+    if (edgeDefs.category === undefined) throw "Missing `edgeDefs.category` info=" + edgeDefs.category;
+  } catch (error) {
+    console.error(
+      PR + "Error loading template `",
+      TEMPLATE_URL,
+      "`::::",
+      error
+    );
+  }
+}
+
+/*/ Update ColorMap
+/*/
+function m_UpdateColorMap() {
+  // REVIEW: Load ColorMap in d3?  or elsewhere?  does it need its own state?
+  // Joshua added Edges in here ... it should either be renamed or kept separate
+  // but this was a proof of concept. Probably they should be kept separate in case
+  // someone ever chooses to use the same label twice, but ...
+  try {
+    let nodeColorMap = {};
+    TEMPLATE.nodeDefs.type.options.forEach(o => {
+      nodeColorMap[o.label] = o.color;
+    });
+
+    let defaultEdgeColor = TEMPLATE.edgeDefs.color || "#999" ; //for backwards compatability
+    TEMPLATE.edgeDefs.type.options.forEach(o => {
+      nodeColorMap[o.label] = o.color || defaultEdgeColor;
+    });
+
+    UDATA.SetAppState("NODECOLORMAP", nodeColorMap);
+  } catch (error) {
+    console.error(
+      PR,
+      "received bad TEMPLATE node options.  ERROR:",
+      error,
+      ". DATA:",
+      TEMPLATE
+    );
+  }
+}
+
 /*/ Return array of nodes that DON'T match del_me object keys/values
 /*/
 function m_DeleteMatchingNodesByProp(del_me = {}) {

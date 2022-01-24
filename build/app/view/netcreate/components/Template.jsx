@@ -152,7 +152,6 @@ class Template extends UNISYS.Component {
     const tomlfile = e.target.files[0];
     UDATA.LocalCall('VALIDATE_TOMLFILE', { tomlfile }) // nc-logic
       .then(result => {
-        console.error('result', result, 'tomlfile', tomlfile, 'templateJSON', result.templateJSON);
         if (result.isValid) {
           this.setState({
             editScope: 'root'
@@ -162,7 +161,7 @@ class Template extends UNISYS.Component {
             startval: result.templateJSON
           });
         } else {
-          const errorMsg = 'Missing keys: ' + result.missingKeys.join(', ');
+          const errorMsg = result.error;
           this.setState({
             tomlfile: undefined,
             tomlfileStatus: "Invalid template file!!!",
