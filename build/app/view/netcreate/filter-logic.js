@@ -60,7 +60,7 @@
         You can define two "Label" filters, for example.
         The only reason you can't do it right now is because the filter template
         is reading directly from the _default.template file.  You can easily
-        insert another filter into the mix programmatically.  So
+        insert another filter into the mix programmatically.
 
 
 
@@ -93,6 +93,10 @@ const NCLOGIC = require("./nc-logic");
 
 var TEMPLATE = null; // template definition for prompts
 var FDATA_RESTORE; // pristine FDATA for clearing
+
+let NODE_DEFAULT_TRANSPARENCY;
+let EDGE_DEFAULT_TRANSPARENCY;
+
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -170,26 +174,27 @@ MOD.Hook("INITIALIZE", () => {
 
 /**
  * Loads filters from template file
- * NOTE: Setting transparency defaults here, which we shouldn't be
  */
 function m_ImportFilters() {
   TEMPLATE = UDATA.AppState("TEMPLATE");
 
-  let nodePrompts = TEMPLATE.nodePrompts;
-  let edgePrompts = TEMPLATE.edgePrompts;
+  const nodeDefs = TEMPLATE.nodeDefs;
+  const edgeDefs = TEMPLATE.edgeDefs;
+  NODE_DEFAULT_TRANSPARENCY = TEMPLATE.nodeDefaultTransparency;
+  EDGE_DEFAULT_TRANSPARENCY = TEMPLATE.edgeDefaultTransparency;
 
   let fdata = {
     nodes: {
       group: "nodes", // this needs to be passed to StringFilter
       label: "Node Filters",
-      filters: m_ImportPrompts(nodePrompts),
-      transparency: isNaN(nodePrompts.defaultTransparency)?0.2:nodePrompts.defaultTransparency // default to barely visible for backwards compatibility
+      filters: m_ImportPrompts(nodeDefs),
+      transparency: 0.2 // Default transparency form for Highlight should be 0.2, not template default which is usu 1.0
     },
     edges: {
       group: "edges", // this needs to be passed to StringFilter
       label: "Edge Filters",
-      filters: m_ImportPrompts(edgePrompts),
-      transparency: isNaN(edgePrompts.defaultTransparency)?0.2:edgePrompts.defaultTransparency // default to barely visible for backwards compatibility
+      filters: m_ImportPrompts(edgeDefs),
+      transparency: 0.05 // Default transparency form for Highlight should be 0.05, not template default which is usu 0.3
     }
   };
 
@@ -235,7 +240,7 @@ function m_ImportPrompts(prompts) {
       id: counter++,
       key: key,
       type: prompt.type,
-      keylabel: prompt.label,
+      keylabel: prompt.displayLabel,
       operator: operator,
       value: ''
     };
@@ -449,7 +454,7 @@ function m_NodeIsFiltered(node, filters, transparency, filterAction) {
   // 2. Decide based on filterAction
   if (filterAction === FILTER.ACTION.FILTER) {
     // not using highlight, so restore transparency
-    node.filteredTransparency = 1.0; // opaque, not tranparent
+    node.filteredTransparency = NODE_DEFAULT_TRANSPARENCY; // opaque, not transparent
     if (keepNode) return true;
     return false; // remove from array
   } else {
@@ -457,7 +462,7 @@ function m_NodeIsFiltered(node, filters, transparency, filterAction) {
     if (!keepNode) {
       node.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
     } else {
-      node.filteredTransparency = 1.0; // opaque
+      node.filteredTransparency = NODE_DEFAULT_TRANSPARENCY; // opaque
     }
     return true; // don't filter out
   }
@@ -564,8 +569,9 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3D
 
   // 3. Decide how to filter based on filterAction
   if (filterAction === FILTER.ACTION.FILTER) {
+    // FILTER!
     // not using highlight, so restore transparency
-    edge.filteredTransparency = 1.0; // opaque
+    edge.filteredTransparency = EDGE_DEFAULT_TRANSPARENCY; // opaque
     if (keepEdge) return true; // keep in array
     return false; // remove from array
   } else {
@@ -573,7 +579,7 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3D
     if (!keepEdge) {
       edge.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
     } else {
-      edge.filteredTransparency = 1.0; // opaque
+      edge.filteredTransparency = EDGE_DEFAULT_TRANSPARENCY; // opaque
     }
     return true; // always keep in array
   }
