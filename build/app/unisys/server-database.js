@@ -165,14 +165,7 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
   }
   // convert nodePrompts
   const nodeDefs = {};
-  // 1. Add id
-  nodeDefs.id = {
-    type: 'number',
-    displayLabel: 'id',
-    exportLabel: 'ID',
-    help: 'System-generated unique id number'
-  };
-  // 2. Add fields
+  // 1. Add fields
   Object.keys(JSONtemplate.nodePrompts).forEach(k => {
     const field = JSONtemplate.nodePrompts[k];
     nodeDefs[k] = {
@@ -195,6 +188,13 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
       nodeDefs[k].options = options;
     }
   })
+  // 2. Add id -- clobbers any existing id
+  nodeDefs.id = {
+    type: 'number',
+    displayLabel: 'id',
+    exportLabel: 'ID',
+    help: 'System-generated unique id number'
+  };
   // 3. remove deprecated fields
   Reflect.deleteProperty(nodeDefs, 'delete'); // `delete` -- mapped to hideDeleteNodeButton
   Reflect.deleteProperty(nodeDefs, 'defaultTransparency'); // `nodeDefaultTransparency` -- moved to root
@@ -217,14 +217,7 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
 
   // convert edgePrompts
   const edgeDefs = {};
-  // 1. Add id
-  edgeDefs.id = {
-    type: 'number',
-    displayLabel: 'id',
-    exportLabel: 'ID',
-    help: 'System-generated unique id number'
-  };
-  // 2. Add fields
+  // 1. Add fields
   Object.keys(JSONtemplate.edgePrompts).forEach(k => {
     const field = JSONtemplate.edgePrompts[k];
     edgeDefs[k] = {
@@ -246,6 +239,13 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
       edgeDefs[k].options = options;
     }
   })
+  // 2. Add id
+  edgeDefs.id = { // will clobber any existing id
+    type: 'number',
+    displayLabel: 'id',
+    exportLabel: 'ID',
+    help: 'System-generated unique id number'
+  };
   // 3. remove deprecated fields
   Reflect.deleteProperty(edgeDefs, 'edgeIsLockedMessage'); // `edgeIsLockedMessage` -- moved to root
   Reflect.deleteProperty(edgeDefs, 'defaultTransparency'); // `edgeDefaultTransparency` -- moved to root
