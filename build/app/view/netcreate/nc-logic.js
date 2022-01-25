@@ -794,7 +794,7 @@ function m_UpdateColorMap() {
       nodeColorMap[o.label] = o.color;
     });
 
-    let defaultEdgeColor = TEMPLATE.edgeDefs.color || "#999" ; //for backwards compatability
+    let defaultEdgeColor = TEMPLATE.edgeDefs.color || "#999"; //for backwards compatability
     TEMPLATE.edgeDefs.type.options.forEach(o => {
       nodeColorMap[o.label] = o.color || defaultEdgeColor;
     });
