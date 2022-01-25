@@ -621,6 +621,37 @@ const SCHEMA = {
             }
           }
         },
+        "category": { // Signficance
+          type: 'object',
+          description: 'Display name of the node',
+          properties: {
+            "type": {
+              type: 'string',
+              description: '"category" data type',
+              default: 'string'
+            },
+            "displayLabel": {
+              type: 'string',
+              description: 'Label to use for system display',
+              default: 'Category'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Category'
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Node Editor form',
+              default: 'Category (deprecated)'
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              default: true
+            }
+          }
+        },
       }
     }
   }
