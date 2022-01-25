@@ -307,6 +307,15 @@ MOD.Hook("INITIALIZE", () => {
     }
   }); // StateChange SELECTION
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ TEMPLATE has been edited
+  /*/
+  UDATA.OnAppStateChange("TEMPLATE", stateChange => {
+    if (DBG) console.log(PR, 'TEMPLATE state change', stateChange)
+    TEMPLATE = stateChange;
+    m_UpdateColorMap();
+  });
+
+    /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ User has clicked on a suggestion from the AutoCopmlete suggestion list.
       The source node should be loaded in NodeSelector.
 
