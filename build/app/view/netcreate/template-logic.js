@@ -124,7 +124,7 @@ const SCHEMA = {
     "nodeDefaultTransparency": {
       type: 'number',
       description: 'Default transparency for nodes.',
-      default: 0.1
+      default: 1.0
     },
     "edgeDefaultTransparency": {
       type: 'number',

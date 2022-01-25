@@ -5,7 +5,7 @@ hideDeleteNodeButton = false
 duplicateWarning = "You’re entering a duplicate node.  Do you want to View the Existing node, or Continue creating?"
 nodeIsLockedMessage = "This node is currently being edited by someone else, please try again later."
 edgeIsLockedMessage = "This edge is currently being edited by someone else, please try again later."
-nodeDefaultTransparency = 1
+nodeDefaultTransparency = 1.0
 edgeDefaultTransparency = 0.3
 
 [citation]
