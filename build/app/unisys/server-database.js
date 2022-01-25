@@ -158,6 +158,8 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
     edgeIsLockedMessage: jt.edgePrompts && jt.edgePrompts.edgeIsLockedMessage,
     nodeDefaultTransparency: jt.nodePrompts && jt.nodePrompts.defaultTransparency,
     edgeDefaultTransparency: jt.edgePrompts && jt.edgePrompts.defaultTransparency,
+    searchColor: jt.searchColor,
+    sourceColor: jt.sourceColor,
     citation: {
       text: jt.citationPrompts && jt.citationPrompts.citation,
       hidden: jt.citationPrompts && jt.citationPrompts.hidden
@@ -203,14 +205,12 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
     displayLabel: 'Last Updated',
     exportLabel: 'Last Updated',
     help: 'Date and time of last update',
-    options: { hidden: true }, // hidden from json-editor
     includeInGraphTooltip: true // default to show tool tip
   }
   nodeDefs.created = {
     displayLabel: 'Created',
     exportLabel: 'Created',
     help: 'Date and time node was created',
-    options: { hidden: true }, // hidden from json-editor
     includeInGraphTooltip: true // default to show tool tip
   }
 

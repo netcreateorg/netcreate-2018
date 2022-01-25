@@ -84,14 +84,20 @@ includeInGraphTooltip = true
 hidden = false
 
 [nodeDefs.created]
+type = "string"
 displayLabel = "Created"
 exportLabel = "Created"
+help = "Date and time node was created"
 includeInGraphTooltip = true
+hidden = false
 
 [nodeDefs.updated]
+type = "string"
 displayLabel = "Last Updated"
 exportLabel = "Last Updated"
+help = "Date and time node was last modified"
 includeInGraphTooltip = true
+hidden = false
 
 [edgeDefs.id]
 type = "number"

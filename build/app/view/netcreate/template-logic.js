@@ -399,6 +399,16 @@ const SCHEMA = {
               format: 'checkbox',
               description: 'Show "created" value in tooltip on graph',
               default: true
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Node Editor form',
+              default: 'Date and time node was created'
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              default: false
             }
           }
         },
@@ -421,6 +431,16 @@ const SCHEMA = {
               format: 'checkbox',
               description: 'Show "updated" value in tooltip on graph',
               default: true
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Node Editor form',
+              default: 'Date and time node was last modified'
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              default: false
             }
           }
         }
