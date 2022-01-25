@@ -617,6 +617,11 @@ MOD.Hook("INITIALIZE", () => {
   });
 
   UDATA.HandleMessage("VALIDATE_TOMLFILE", EXPORT.ValidateTOMLFile);
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  UDATA.HandleMessage("EDIT_CURRENT_TEMPLATE", () => {
+    return { template: TEMPLATE }
+  })
+
 }); // end UNISYS_INIT
 
 
