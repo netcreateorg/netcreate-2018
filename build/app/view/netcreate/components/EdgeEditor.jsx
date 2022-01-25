@@ -972,8 +972,8 @@ class EdgeEditor extends UNISYS.Component {
                     onChange={this.onRelationshipChange}
                     disabled={!this.state.isEditable}
                     >
-                    {edgeDefs.type.options.map( (option,i) => (
-                      <option id={option.id} key={option.id}>{option.label}</option>
+                    {edgeDefs.type.options.map( option => (
+                      <option key={option.label}>{option.label}</option>
                     ))}
                   </Input>
                 </Col>

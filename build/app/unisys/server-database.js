@@ -180,7 +180,6 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
       // special handling for type options
       const options = field.options.map(o => {
         return {
-          id: o.id,
           label: o.label,
           color: o.color
         }
@@ -231,7 +230,6 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
       // special handling for type options
       const options = field.options.map(o => {
         return {
-          id: o.id,
           label: o.label,
           color: o.color
         }

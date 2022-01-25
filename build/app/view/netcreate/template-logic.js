@@ -34,9 +34,6 @@ const SCHEMA_NODETYPEOPTIONS = {
   items: {
     type: 'object',
     properties: {
-      'id': {
-        type: 'string'
-      },
       'label': {
         type: 'string'
       },
@@ -53,9 +50,6 @@ const SCHEMA_EDGETYPEOPTIONS = {
   items: {
     type: 'object',
     properties: {
-      'id': {
-        type: 'string'
-      },
       'label': {
         type: 'string'
       },

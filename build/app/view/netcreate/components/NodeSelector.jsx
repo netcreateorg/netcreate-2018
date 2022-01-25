@@ -982,8 +982,8 @@ class NodeSelector extends UNISYS.Component {
                   onChange={this.onTypeChange}
                   disabled={!this.state.isEditable}
                   >
-                  {nodeDefs.type.options.map( (option,i) => (
-                    <option id={option.id} key={option.id}>{option.label}</option>
+                  {nodeDefs.type.options.map( option => (
+                    <option key={option.label}>{option.label}</option>
                   ))}
                 </Input>
               </Col>
