@@ -166,6 +166,13 @@ const SCHEMA = {
               format: 'checkbox',
               description: 'Show "id" value in tooltip on graph',
               default: true
+            },
+            "hidden": {
+              type: 'boolean',
+              // not editable
+              options: { hidden: true },
+              format: 'checkbox',
+              default: false
             }
           }
         },
@@ -200,6 +207,13 @@ const SCHEMA = {
               format: 'checkbox',
               description: 'Show "label" value in tooltip on graph',
               default: true
+            },
+            "hidden": {
+              type: 'boolean',
+              // not editable
+              options: { hidden: true },
+              format: 'checkbox',
+              default: false
             }
           }
         },
@@ -430,6 +444,13 @@ const SCHEMA = {
               description: 'Help text to display on the Node Editor form',
               default: 'System-generated unique id number'
             },
+            "hidden": {
+              type: 'boolean',
+              // not editable
+              options: { hidden: true },
+              format: 'checkbox',
+              default: false
+            }
           }
         },
         "source": {
@@ -457,6 +478,13 @@ const SCHEMA = {
               type: 'string',
               description: 'Help text to display on the Node Editor form',
               default: 'Edge source node'
+            },
+            "hidden": {
+              type: 'boolean',
+              // not editable
+              options: { hidden: true },
+              format: 'checkbox',
+              default: false
             }
           }
         },
@@ -485,6 +513,13 @@ const SCHEMA = {
               type: 'string',
               description: 'Help text to display on the Node Editor form',
               default: 'Edge target node'
+            },
+            "hidden": {
+              type: 'boolean',
+              // not editable
+              options: { hidden: true },
+              format: 'checkbox',
+              default: false
             }
           }
         },
