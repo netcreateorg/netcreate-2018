@@ -360,6 +360,28 @@ const SCHEMA = {
             }
           }
         },
+        "created": { // HACK setting.  Only used in d3-simplenetgraph tooltip.  Does not define a new data field.
+          type: 'object',
+          description: 'System-generated date.  This setting only used to show/hide tooltip in graph',
+          properties: {
+            "displayLabel": {
+              type: 'string',
+              description: 'Label to use for system display',
+              default: 'Created'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Created'
+            },
+            "includeInGraphTooltip": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Show "created" value in tooltip on graph',
+              default: true
+            }
+          }
+        },
         "updated": { // HACK setting.  Only used in d3-simplenetgraph tooltip.  Does not define a new data field.
           type: 'object',
           description: 'System-generated date.  This setting only used to show/hide tooltip in graph',
@@ -367,12 +389,17 @@ const SCHEMA = {
             "displayLabel": {
               type: 'string',
               description: 'Label to use for system display',
-              default: 'Id'
+              default: 'Updated'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Updated'
             },
             "includeInGraphTooltip": {
               type: 'boolean',
               format: 'checkbox',
-              description: 'Show "id" value in tooltip on graph',
+              description: 'Show "updated" value in tooltip on graph',
               default: true
             }
           }

@@ -141,42 +141,163 @@ DB.InitializeDatabase = function (options = {}) {
 }; // InitializeDatabase()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// utility function for loading template
-function m_LoadTemplate() {
-    // ORIG JSON TEMPLATE
-    //
-    // // LOAD TEMPLATE  - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // let templatePath = RUNTIMEPATH + NC_CONFIG.dataset + ".template";
-    // FS.ensureDirSync(PATH.dirname(templatePath));
-    // // Does the template exist?
-    // if (!FS.existsSync(templatePath)) {
-    //   console.log(PR, `NO EXISTING TEMPLATE ${templatePath}, so cloning default template...`);
-    //   FS.copySync(TEMPLATEPATH+'_default.template', templatePath);
-    // }
-    // console.log(PR, `LOADING TEMPLATE ${templatePath}`);
-    // // Now load it
-    // TEMPLATE = FS.readJsonSync(templatePath);
-    // console.log('### JSON TEMPLATE is', JSON.stringify(FS.readJsonSync(templatePath)))
 
-    // LOAD TOML TEMPLATE  - - - - - - - - - - - - - - - - - - - - - - - - - -
-    const templateFilePath = m_GetTemplateTOMLFilePath();
-    FS.ensureDirSync(PATH.dirname(templateFilePath));
-    // Does the template exist?  If not, clone default.
-    if (!FS.existsSync(templateFilePath)) {
-      console.log(PR, `NO EXISTING TEMPLATE ${templateFilePath}, so cloning default template...`);
-      FS.copySync(TEMPLATEPATH+'_default'+TEMPLATE_EXT, templateFilePath);
+function m_MigrateJSONtoTOML(JSONtemplate) {
+  console.log(PR, 'Converting JSON to TOML...');
+  const jt = JSONtemplate;
+  const TOMLtemplate = {
+    name: jt.name,
+    description: jt.description,
+    requireLogin: jt.requireLogin,
+    hideDeleteNodeButton: jt.nodePrompts && jt.nodePrompts.delete && jt.nodePrompts.delete.hidden,
+    duplicateWarning: jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.duplicateWarning,
+    nodeIsLockedMessage: jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.sourceNodeIsLockedMessage,
+    edgeIsLockedMessage: jt.edgePrompts && jt.edgePrompts.edgeIsLockedMessage,
+    nodeDefaultTransparency: jt.nodePrompts && jt.nodePrompts.defaultTransparency,
+    edgeDefaultTransparency: jt.edgePrompts && jt.edgePrompts.defaultTransparency,
+    citation: {
+      text: jt.citationPrompts && jt.citationPrompts.citation,
+      hidden: jt.citationPrompts && jt.citationPrompts.hidden
     }
-    // Now load it
-    const templateFile = FS.readFile(templateFilePath, 'utf8', (err, data) => {
-      if (err) throw err;
-      // Read TOML
-      const json = TOML.parse(data);
-      TEMPLATE = json;
-      console.log(PR, 'Template loaded', templateFilePath);
-      // Call complete callback
-      if (typeof m_options.onLoadComplete === 'function') {
-        m_options.onLoadComplete();
-      }
+  }
+  // convert nodePrompts
+  const nodeDefs = {};
+  // 1. Add id
+  nodeDefs.id = {
+    type: 'number',
+    displayLabel: 'id',
+    exportLabel: 'ID',
+    help: 'System-generated unique id number'
+  };
+  // 2. Add fields
+  Object.keys(JSONtemplate.nodePrompts).forEach(k => {
+    const field = JSONtemplate.nodePrompts[k];
+    nodeDefs[k] = {
+      type: field.type || 'string', // default to 'string'
+      displayLabel: field.label,
+      exportLabel: field.label,
+      help: field.help,
+      includeInGraphTooltip: field.includeInGraphTooltip || true, // default to show tool tip
+      hidden: field.hidden || false // default to not hidden
+    }
+    if (k === 'type') {
+      // special handling for type options
+      const options = field.options.map(o => {
+        return {
+          id: o.id,
+          label: o.label,
+          color: o.color
+        }
+      })
+      nodeDefs[k].options = options;
+    }
+  })
+  // 3. remove `delete` -- mapped to hideDeleteNodeButton
+  Reflect.deleteProperty(nodeDefs, 'delete');
+  // 4. Add other built-ins
+  nodeDefs.updated = {
+    displayLabel: 'Last Updated',
+    exportLabel: 'Last Updated',
+    help: 'Date and time of last update',
+    options: { hidden: true }, // hidden from json-editor
+    includeInGraphTooltip: true // default to show tool tip
+  }
+  nodeDefs.created = {
+    displayLabel: 'Created',
+    exportLabel: 'Created',
+    help: 'Date and time node was created',
+    options: { hidden: true }, // hidden from json-editor
+    includeInGraphTooltip: true // default to show tool tip
+  }
+
+  // convert edgePrompts
+  const edgeDefs = {};
+  // 1. Add id
+  edgeDefs.id = {
+    type: 'number',
+    displayLabel: 'id',
+    exportLabel: 'ID',
+    help: 'System-generated unique id number'
+  };
+  // 2. Add fields
+  Object.keys(JSONtemplate.edgePrompts).forEach(k => {
+    const field = JSONtemplate.edgePrompts[k];
+    edgeDefs[k] = {
+      type: field.type || 'string', // default to 'string'
+      displayLabel: field.label,
+      exportLabel: field.label,
+      help: field.help,
+      hidden: field.hidden || false // default to not hidden
+    }
+    if (k === 'type') {
+      // special handling for type options
+      const options = field.options.map(o => {
+        return {
+          id: o.id,
+          label: o.label,
+          color: o.color
+        }
+      })
+      edgeDefs[k].options = options;
+    }
+  })
+
+  TOMLtemplate.nodeDefs = nodeDefs;
+  TOMLtemplate.edgeDefs = edgeDefs;
+  console.error('Imported TOML TEMPLATE', TOMLtemplate)
+
+  return TOMLtemplate;
+}
+
+function m_LoadJSONTemplate(templatePath) {
+  // ORIG JSON TEMPLATE ca version 1.3
+  console.log(PR, `LOADING JSON TEMPLATE ${templatePath}`);
+  const JSONTEMPLATE = FS.readJsonSync(templatePath);
+
+  // CONVERT to TOML
+  TEMPLATE = m_MigrateJSONtoTOML(JSONTEMPLATE);
+  // Save it
+  DB.WriteTemplateTOML({ data: { template: TEMPLATE } })
+    .then(() => {
+      // Load it
+      const templateFilePath = m_GetTemplateTOMLFilePath();
+      m_LoadTOMLTemplate(templateFilePath);
     });
+}
+
+function m_LoadTOMLTemplate(templateFilePath) {
+  const templateFile = FS.readFile(templateFilePath, 'utf8', (err, data) => {
+    if (err) throw err;
+    // Read TOML
+    const json = TOML.parse(data);
+    TEMPLATE = json;
+    console.log(PR, 'Template loaded', templateFilePath);
+  });
+}
+
+function m_LoadTemplate() {
+
+  // LOAD TOML TEMPLATE  - - - - - - - - - - - - - - - - - - - - - - - - - -
+  const TOMLtemplateFilePath = m_GetTemplateTOMLFilePath();
+  FS.ensureDirSync(PATH.dirname(TOMLtemplateFilePath));
+  // Does the TOML template exist?
+  if (FS.existsSync(TOMLtemplateFilePath)) {
+    // If TOML exists, load it
+    m_LoadTOMLTemplate(TOMLtemplateFilePath);
+  } else {
+    // Try falling back to JSON template
+    const JSONTemplatePath = RUNTIMEPATH + NC_CONFIG.dataset + ".template";
+    // Does the JSON template exist?
+    if (FS.existsSync(JSONTemplatePath)) {
+      m_LoadJSONTemplate(JSONTemplatePath);
+    } else {
+      // Else, no existing template, clone _default.template.toml
+      console.log(PR, `NO EXISTING TEMPLATE ${TOMLtemplateFilePath}, so cloning default template...`);
+      FS.copySync(TEMPLATEPATH + '_default' + TEMPLATE_EXT, TOMLtemplateFilePath);
+      // then load it
+      m_LoadTOMLTemplate(TOMLtemplateFilePath);
+    }
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: load database
@@ -554,6 +675,7 @@ DB.GetTemplateTOMLFileName = () => {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ called by Template Editor to save TOML template changes to disk.
+    parm {object} pkt.data.template
 /*/
 DB.WriteTemplateTOML = (pkt) => {
   const templateFilePath = m_GetTemplateTOMLFilePath();
