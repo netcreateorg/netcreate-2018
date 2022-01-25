@@ -290,19 +290,18 @@ MOD.Hook("INITIALIZE", () => {
     // NODE LIST UPDATE
     if (nodes !== undefined) {
       if (nodes.length > 0) {
-        let color = TEMPLATE.searchColor != undefined? TEMPLATE.searchColor : DEFAULT_SEARCH_COLOR;
+        const color = TEMPLATE.searchColor || DEFAULT_SEARCH_COLOR;
         nodes.forEach(node => m_MarkNodeById(node.id, color));
       } else {
         m_UnMarkAllNodes();
       }
     }
     // SEARCH LABEL UPDATE
-    if(D3DATA.nodes.length < 150) // JD to speedup processing for large sets
-    {
+    if (D3DATA.nodes.length < 150) { // JD to speedup processing for large sets
       if (searchLabel === "") {
         m_UnStrokeAllNodes();
       } else if (searchLabel !== undefined) {
-         m_SetStrokeColorThatMatch(searchLabel, TEMPLATE.searchColor != undefined? TEMPLATE.searchColor : DEFAULT_SEARCH_COLOR);
+         m_SetStrokeColorThatMatch(searchLabel, TEMPLATE.searchColor || DEFAULT_SEARCH_COLOR);
       }
     }
   }); // StateChange SELECTION
@@ -415,8 +414,8 @@ MOD.Hook("INITIALIZE", () => {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ SOURCE_HILITE updates the currently rolled-over node name in a list of
-      selections.  The hilite can be selected via either the label or
-      the node id.
+      node name selections when using AutoComplete.
+      The hilite can be selected via either the label or the node id.
   /*/
  /* ORIGINAL INQUIRIUM CODE
   UDATA.HandleMessage("SOURCE_HILITE", function(data) {
@@ -437,18 +436,16 @@ MOD.Hook("INITIALIZE", () => {
     let { nodeLabel, nodeID, color } = data;
     if (nodeLabel) {
       // Only mark nodes if something is selected
-      if(D3DATA.nodes.length < 250) // JD to speedup processing for large
-      {
+      if (D3DATA.nodes.length < 250) { // JD to speedup processing for large
         m_UnMarkAllNodes();
-        m_MarkNodeByLabel(nodeLabel, TEMPLATE.sourceColor != undefined? TEMPLATE.sourceColor : DEFAULT_SOURCE_COLOR);
+        m_MarkNodeByLabel(nodeLabel, TEMPLATE.sourceColor || DEFAULT_SOURCE_COLOR);
       }
     }
     if (nodeID) {
       // Only mark nodes if something is selected
-      if(D3DATA.nodes.length < 250) // JD to speedup processing for large
-      {
+      if (D3DATA.nodes.length < 250) { // JD to speedup processing for large
         m_UnMarkAllNodes();
-        m_MarkNodeById(nodeID, TEMPLATE.sourceColor != undefined? TEMPLATE.sourceColor : DEFAULT_SOURCE_COLOR);
+        m_MarkNodeById(nodeID, TEMPLATE.sourceColor || DEFAULT_SOURCE_COLOR);
       }
     }
 

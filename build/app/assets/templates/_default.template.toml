@@ -7,6 +7,8 @@ nodeIsLockedMessage = "This node is currently being edited by someone else, plea
 edgeIsLockedMessage = "This edge is currently being edited by someone else, please try again later."
 nodeDefaultTransparency = 1.0
 edgeDefaultTransparency = 0.3
+searchColor = "#FFFF00"
+sourceColor = "#FFa500"
 
 [citation]
 text = "No citation set"
