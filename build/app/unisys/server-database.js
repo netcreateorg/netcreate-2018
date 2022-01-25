@@ -195,8 +195,10 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
       nodeDefs[k].options = options;
     }
   })
-  // 3. remove `delete` -- mapped to hideDeleteNodeButton
-  Reflect.deleteProperty(nodeDefs, 'delete');
+  // 3. remove deprecated fields
+  Reflect.deleteProperty(nodeDefs, 'delete'); // `delete` -- mapped to hideDeleteNodeButton
+  Reflect.deleteProperty(nodeDefs, 'defaultTransparency'); // `nodeDefaultTransparency` -- moved to root
+
   // 4. Add other built-ins
   nodeDefs.updated = {
     displayLabel: 'Last Updated',
@@ -244,10 +246,13 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
       edgeDefs[k].options = options;
     }
   })
+  // 3. remove deprecated fields
+  Reflect.deleteProperty(edgeDefs, 'edgeIsLockedMessage'); // `edgeIsLockedMessage` -- moved to root
+  Reflect.deleteProperty(edgeDefs, 'defaultTransparency'); // `edgeDefaultTransparency` -- moved to root
 
   TOMLtemplate.nodeDefs = nodeDefs;
   TOMLtemplate.edgeDefs = edgeDefs;
-  console.error('Imported TOML TEMPLATE', TOMLtemplate)
+  if (DBG) console.log(PR, 'Imported TOML TEMPLATE', TOMLtemplate)
 
   return TOMLtemplate;
 }
