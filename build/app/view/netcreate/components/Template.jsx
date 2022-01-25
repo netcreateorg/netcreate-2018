@@ -236,7 +236,7 @@ class Template extends UNISYS.Component {
               New Template
             </Button>
             <div>
-              <i className="small text-muted">Import template (replace existing)</i><br/>
+              <i className="small text-muted">Import TOML template (replace existing)</i><br/>
               <label>
                 <input type="file" accept="text/toml" id="tomlfileInput" onChange={this.onTOMLfileSelect}/>
                 &nbsp;<i>{tomlfileStatus}</i><br />

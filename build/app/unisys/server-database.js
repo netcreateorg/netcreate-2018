@@ -142,6 +142,9 @@ DB.InitializeDatabase = function (options = {}) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// utility function for loading template
 
+
+/*/ Converts a version 1.3 JSON template to a version 1.4 TOML template
+/*/
 function m_MigrateJSONtoTOML(JSONtemplate) {
   console.log(PR, 'Converting JSON to TOML...');
   const jt = JSONtemplate;

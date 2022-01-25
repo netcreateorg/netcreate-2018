@@ -359,7 +359,7 @@ class EdgeEditor extends UNISYS.Component {
       });
   }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    setTemplate (data) {
+  setTemplate(data) {
       this.setState({ edgeDefs: data.edgeDefs });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
