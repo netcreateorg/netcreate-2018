@@ -157,7 +157,7 @@ const SCHEMA = {
             },
             "exportLabel": {
               type: 'string',
-              description: 'Label to use when exporting',
+              description: 'Label to use for exported csv file field name',
               default: 'ID'
             },
             "help": {
@@ -193,7 +193,7 @@ const SCHEMA = {
             },
             "exportLabel": {
               type: 'string',
-              description: 'Label to use when exporting',
+              description: 'Label to use for exported csv file field name',
               default: 'Label'
             },
             "help": {
@@ -227,7 +227,7 @@ const SCHEMA = {
             },
             "exportLabel": {
               type: 'string',
-              description: 'Label to use when exporting',
+              description: 'Label to use for exported csv file field name',
               default: 'NodeType' // matches Gephi
             },
             "help": {
@@ -265,7 +265,7 @@ const SCHEMA = {
             },
             "exportLabel": {
               type: 'string',
-              description: 'Label to use when exporting',
+              description: 'Label to use for exported csv file field name',
               default: 'Notes'
             },
             "help": {
@@ -302,7 +302,7 @@ const SCHEMA = {
             },
             "exportLabel": {
               type: 'string',
-              description: 'Label to use when exporting',
+              description: 'Label to use for exported csv file field name',
               default: 'Info'
             },
             "help": {
@@ -339,7 +339,7 @@ const SCHEMA = {
             },
             "exportLabel": {
               type: 'string',
-              description: 'Label to use when exporting',
+              description: 'Label to use for exported csv file field name',
               default: 'Weight'
             },
             "help": {
@@ -426,7 +426,7 @@ const SCHEMA = {
             },
             "exportLabel": {
               type: 'string',
-              description: 'Label to use when exporting',
+              description: 'Label to use for exported csv file field name',
               default: 'ID'
             },
             "help": {
@@ -456,7 +456,7 @@ const SCHEMA = {
             },
             "exportLabel": {
               type: 'string',
-              description: 'Label to use when exporting',
+              description: 'Label to use for exported csv file field name',
               default: 'Source'
             },
             "help": {
@@ -484,7 +484,7 @@ const SCHEMA = {
             },
             "exportLabel": {
               type: 'string',
-              description: 'Label to use when exporting',
+              description: 'Label to use for exported csv file field name',
               default: 'Target'
             },
             "help": {
@@ -512,7 +512,7 @@ const SCHEMA = {
             },
             "exportLabel": {
               type: 'string',
-              description: 'Label to use when exporting',
+              description: 'Label to use for exported csv file field name',
               default: 'EdgeType' // matches Gephi?
             },
             "help": {
@@ -544,7 +544,7 @@ const SCHEMA = {
             },
             "exportLabel": {
               type: 'string',
-              description: 'Label to use when exporting',
+              description: 'Label to use for exported csv file field name',
               default: 'Notes'
             },
             "help": {
@@ -575,7 +575,7 @@ const SCHEMA = {
             },
             "exportLabel": {
               type: 'string',
-              description: 'Label to use when exporting',
+              description: 'Label to use for exported csv file field name',
               default: 'Date'
             },
             "help": {
@@ -606,7 +606,7 @@ const SCHEMA = {
             },
             "exportLabel": {
               type: 'string',
-              description: 'Label to use when exporting',
+              description: 'Label to use for exported csv file field name',
               default: 'Citation'
             },
             "help": {
