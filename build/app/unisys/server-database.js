@@ -141,8 +141,6 @@ DB.InitializeDatabase = function (options = {}) {
 }; // InitializeDatabase()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// utility function for loading template
-
-
 /*/ Converts a version 1.3 JSON template to a version 1.4 TOML template
 /*/
 // eslint-disable-next-line complexity
@@ -256,21 +254,25 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
 
   return TOMLtemplate;
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Loads an original circa version 1.3 JSON template
+    and converts it to a TOML template
+/*/
 function m_LoadJSONTemplate(templatePath) {
-  // ORIG JSON TEMPLATE ca version 1.3
+  // 1. Load JSON
   console.log(PR, `LOADING JSON TEMPLATE ${templatePath}`);
   const JSONTEMPLATE = FS.readJsonSync(templatePath);
-
-  // CONVERT to TOML
+  // 2. Convert to TOML
   TEMPLATE = m_MigrateJSONtoTOML(JSONTEMPLATE);
-  // Save it
+  // 3. Save it (and load)
   DB.WriteTemplateTOML({ data: { template: TEMPLATE } })
     .then(() => {
       console.log(PR, '...converted JSON template saved!');
     });
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Loads a *.template.toml file from the server.
+/*/
 function m_LoadTOMLTemplate(templateFilePath) {
   const templateFile = FS.readFile(templateFilePath, 'utf8', (err, data) => {
     if (err) throw err;
@@ -280,24 +282,30 @@ function m_LoadTOMLTemplate(templateFilePath) {
     console.log(PR, 'Template loaded', templateFilePath);
   });
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Load Template
+    1. Tries to load a TOML template
+    2. If it can't be found, tries to load the JSON template and convert it
+    3. If that fails, clone the default TOML template and load it
+    Called by
+    * DB.InitializeDatabase
+    * DB.WriteTemplateTOML
+/*/
 function m_LoadTemplate() {
-
-  // LOAD TOML TEMPLATE  - - - - - - - - - - - - - - - - - - - - - - - - - -
   const TOMLtemplateFilePath = m_GetTemplateTOMLFilePath();
   FS.ensureDirSync(PATH.dirname(TOMLtemplateFilePath));
   // Does the TOML template exist?
   if (FS.existsSync(TOMLtemplateFilePath)) {
-    // If TOML exists, load it
+    // 1. If TOML exists, load it
     m_LoadTOMLTemplate(TOMLtemplateFilePath);
   } else {
-    // Try falling back to JSON template
+    // 2/ Try falling back to JSON template
     const JSONTemplatePath = RUNTIMEPATH + NC_CONFIG.dataset + ".template";
     // Does the JSON template exist?
     if (FS.existsSync(JSONTemplatePath)) {
       m_LoadJSONTemplate(JSONTemplatePath);
     } else {
-      // Else, no existing template, clone _default.template.toml
+      // 3. Else, no existing template, clone _default.template.toml
       console.log(PR, `NO EXISTING TEMPLATE ${TOMLtemplateFilePath}, so cloning default template...`);
       FS.copySync(TEMPLATEPATH + '_default' + TEMPLATE_EXT, TOMLtemplateFilePath);
       // then load it
