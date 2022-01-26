@@ -84,8 +84,10 @@ class Template extends UNISYS.Component {
 
     const options = {
       theme: 'bootstrap4', // spectre, bootstrap3, tailwind, html
-      disable_edit_json: true, // set to false for debugging
-      disable_properties: true, // set to false for debugging
+      disable_edit_json: true, // set to false allow direct viewing/editing of json for debugging
+      disable_properties: false, // needed to allow user to add missing properties
+      object_layout: 'table', // 'grid', 'grid-strict', 'categories'
+      no_additional_properties: true, // prevent users from adding new non-schema properties
       schema
       // iconlib: 'fontawesome5', // fontawesome is not currently loaded
     };
