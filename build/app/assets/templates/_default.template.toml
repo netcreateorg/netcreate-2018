@@ -1,6 +1,6 @@
 name = "Untitled"
 description = "Default empty template"
-requireLogin = true
+requireLogin = false
 hideDeleteNodeButton = false
 duplicateWarning = "You’re entering a duplicate node.  Do you want to View the Existing node, or Continue creating?"
 nodeIsLockedMessage = "This node is currently being edited by someone else, please try again later."
