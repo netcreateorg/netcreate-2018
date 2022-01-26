@@ -145,24 +145,26 @@ DB.InitializeDatabase = function (options = {}) {
 
 /*/ Converts a version 1.3 JSON template to a version 1.4 TOML template
 /*/
+// eslint-disable-next-line complexity
 function m_MigrateJSONtoTOML(JSONtemplate) {
   console.log(PR, 'Converting JSON to TOML...');
   const jt = JSONtemplate;
   const TOMLtemplate = {
     name: jt.name,
     description: jt.description,
-    requireLogin: jt.requireLogin,
-    hideDeleteNodeButton: jt.nodePrompts && jt.nodePrompts.delete && jt.nodePrompts.delete.hidden,
-    duplicateWarning: jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.duplicateWarning,
-    nodeIsLockedMessage: jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.sourceNodeIsLockedMessage,
-    edgeIsLockedMessage: jt.edgePrompts && jt.edgePrompts.edgeIsLockedMessage,
-    nodeDefaultTransparency: jt.nodePrompts && jt.nodePrompts.defaultTransparency,
-    edgeDefaultTransparency: jt.edgePrompts && jt.edgePrompts.defaultTransparency,
-    searchColor: jt.searchColor,
-    sourceColor: jt.sourceColor,
+    requireLogin: jt.requireLogin || false,
+    // REVIEW: These really ought to load the default values from the schema.
+    hideDeleteNodeButton: (jt.nodePrompts && jt.nodePrompts.delete && jt.nodePrompts.delete.hidden) || false,
+    duplicateWarning: (jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.duplicateWarning) || 'Warning: Duplicate',
+    nodeIsLockedMessage: (jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.sourceNodeIsLockedMessage) || 'Node is locked',
+    edgeIsLockedMessage: (jt.edgePrompts && jt.edgePrompts.edgeIsLockedMessage) || "Edge is locked",
+    nodeDefaultTransparency: (jt.nodePrompts && jt.nodePrompts.defaultTransparency) || 1.0,
+    edgeDefaultTransparency: (jt.edgePrompts && jt.edgePrompts.defaultTransparency) || 0.3,
+    searchColor: jt.searchColor || '#008800',
+    sourceColor: jt.sourceColor || '#FFa500',
     citation: {
-      text: jt.citationPrompts && jt.citationPrompts.citation,
-      hidden: jt.citationPrompts && jt.citationPrompts.hidden
+      text: (jt.citationPrompts && jt.citationPrompts.citation) || jt.name,
+      hidden: (jt.citationPrompts && jt.citationPrompts.hidden) || true
     }
   }
   // convert nodePrompts
