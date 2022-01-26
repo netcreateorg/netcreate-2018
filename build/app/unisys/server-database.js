@@ -265,9 +265,7 @@ function m_LoadJSONTemplate(templatePath) {
   // Save it
   DB.WriteTemplateTOML({ data: { template: TEMPLATE } })
     .then(() => {
-      // Load it
-      const templateFilePath = m_GetTemplateTOMLFilePath();
-      m_LoadTOMLTemplate(templateFilePath);
+      console.log(PR, '...converted JSON template saved!');
     });
 }
 
@@ -682,6 +680,7 @@ DB.GetTemplateTOMLFileName = () => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ called by Template Editor to save TOML template changes to disk.
     parm {object} pkt.data.template
+    Loads the template after saving!
 /*/
 DB.WriteTemplateTOML = (pkt) => {
   const templateFilePath = m_GetTemplateTOMLFilePath();
