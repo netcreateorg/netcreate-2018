@@ -293,15 +293,11 @@ class EdgeEditor extends UNISYS.Component {
       UDATA.HandleMessage('EDGE_EDIT',(data) => {
         this.handleEdgeEdit(data);
       });
-
-
-        /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        UDATA.HandleMessage('EDGE_CLOSE',(data) => {
-          if (this.state.isExpanded)
-            this.setState({ isExpanded: false });
-        });
-
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      UDATA.HandleMessage('EDGE_CLOSE',(data) => {
+        if (this.state.isExpanded) this.setState({ isExpanded: false });
+      });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // Template handler
       this.OnAppStateChange('TEMPLATE', this.setTemplate);
 
@@ -680,7 +676,7 @@ class EdgeEditor extends UNISYS.Component {
 
   } // onCiteButtonClick
 
-    onCloseCiteClick (event) {
+  onCloseCiteClick (event) {
     event.preventDefault();
 
     this.setState({ hideModal: true });
