@@ -39,7 +39,9 @@
       isLocked        Nodes can be selected for viewing, but editing
                       cannot be enabled.
 
-      isEditable      The form fields are active and can be edited.
+      disableEdit     Template is being edited, disable "Edit Node" button
+
+      isBeingEdited   The form fields are active and text can be changed.
 
 
     Delete Button
@@ -161,7 +163,8 @@ class NodeSelector extends UNISYS.Component {
         isLocked:       true,
         edgesAreLocked: false,
         dbIsLocked: false,
-        isEditable:    false,
+        disableEdit: false,
+        isBeingEdited: false,
         isValid:       false,
         isDuplicateNodeLabel: false,
         duplicateNodeID:   '',
@@ -172,6 +175,8 @@ class NodeSelector extends UNISYS.Component {
       // Bind functions to this component's object context
       this.clearForm                             = this.clearForm.bind(this);
       this.setTemplate = this.setTemplate.bind(this);
+      this.updateEditState = this.updateEditState.bind(this);
+      this.releaseOpenEditor = this.releaseOpenEditor.bind(this);
       this.getNewNodeID                          = this.getNewNodeID.bind(this);
       this.handleSelection                       = this.handleSelection.bind(this);
       this.onStateChange_SEARCH                  = this.onStateChange_SEARCH.bind(this);
@@ -217,7 +222,8 @@ class NodeSelector extends UNISYS.Component {
       this.OnAppStateChange('SEARCH', this.onStateChange_SEARCH);
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // Handle Template updates
-      this.OnAppStateChange('TEMPLATE',this.setTemplate);
+      this.OnAppStateChange('TEMPLATE', this.setTemplate);
+      this.OnAppStateChange('OPENEDITORS', this.updateEditState);
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ If someone on the network updates a node or edge, SOURCE_UPDATE is broadcast.
       We catch it here and update the selection if the node we're displaying matches
@@ -244,7 +250,7 @@ class NodeSelector extends UNISYS.Component {
       Ignore the request if we're already editing a node.
   /*/
       UDATA.HandleMessage("NODE_EDIT", (data) => {
-        if ( (data.nodeID!==undefined) && (typeof data.nodeID==="number") && !this.state.isEditable && !this.state.isLocked ) {
+        if ( (data.nodeID!==undefined) && (typeof data.nodeID==="number") && !this.state.isBeingEdited && !this.state.isLocked ) {
           this.requestEditNode(data.nodeID);
         } else {
           console.error("NodeSelector.NODE_EDIT called with bad data.nodeID:", data.nodeID);
@@ -360,7 +366,8 @@ class NodeSelector extends UNISYS.Component {
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Clear the form with optional label
-/*/ clearForm ( label='' ) {
+/*/ clearForm(label = '') {
+      this.releaseOpenEditor();
       this.setState({
         formData: {
             label,
@@ -372,7 +379,7 @@ class NodeSelector extends UNISYS.Component {
         },
         edges: [],
         dbIsLocked: false,
-        isEditable:      false,
+        isBeingEdited: false,
         isValid:         false,
         isDuplicateNodeLabel: false,
         duplicateNodeID:   '',
@@ -385,6 +392,24 @@ class NodeSelector extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     setTemplate (data) {
       this.setState({ nodeDefs: data.nodeDefs });
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Disable Node Edit if a Template is being edited
+/*/
+    updateEditState() {
+      let disableEdit = false;
+      const openEditors = UDATA.AppState("OPENEDITORS").editors;
+      if (openEditors.includes('template')) disableEdit = true;
+      this.setState({ disableEdit });
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Deregister as an open editor
+    Remove 'node' from OPENEDITORS
+/*/
+    releaseOpenEditor() {
+      // NOTE: We only deregister if we're currently actively editing
+      //       otherwise we might inadvertently deregister
+      if (this.state.isBeingEdited) UDATA.LocalCall("DEREGISTER_OPENEDITOR", { type: 'node' });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return a new unique ID
@@ -430,7 +455,7 @@ class NodeSelector extends UNISYS.Component {
       if ( (activeAutoCompleteId!==thisIdentifier) &&
            (activeAutoCompleteId!=='search')          ) return;
 
-      if (!this.state.isEditable && !this.state.edgesAreLocked) {
+      if (!this.state.isBeingEdited && !this.state.edgesAreLocked) {
         if (data.nodes && data.nodes.length>0) {
 
           // A node was selected, so load it
@@ -562,6 +587,7 @@ class NodeSelector extends UNISYS.Component {
       node.attributes["Extra Info"] = newNode.attributes["Extra Info"] || '';
       node.attributes["Notes"]      = newNode.attributes["Notes"]      || '';
       // Copy to form
+      this.releaseOpenEditor();
       this.setState({
         formData: {
           label:     node.label,
@@ -572,7 +598,7 @@ class NodeSelector extends UNISYS.Component {
           isNewNode: false
         },
         dbIsLocked: false,
-        isEditable: false,
+        isBeingEdited: false,
         isDuplicateNodeLabel: false,
         hideModal: true
       });
@@ -661,20 +687,20 @@ class NodeSelector extends UNISYS.Component {
       // HACK: call server to retrieve an unused node ID
       // FIXME: this kind of data manipulation should not be in a GUI component
       DATASTORE.PromiseNewNodeID()
-      .then((newNodeID)=>{
-        this.setState({
-          formData: {
-              label:     label,
-              type:      '',
-              info:      '',
-              notes:     '',
-              id:        newNodeID,
-              isNewNode: true
-          },
-          edges: [],
-          isEditable:      true,
-          isValid:         false
-        });
+        .then((newNodeID) => {
+          this.setState({
+            formData: {
+                label:     label,
+                type:      '',
+                info:      '',
+                notes:     '',
+                id:        newNodeID,
+                isNewNode: true
+            },
+            edges: [],
+            isBeingEdited: true,
+            isValid:         false
+          });
 
         this.validateForm();
       });
@@ -783,7 +809,6 @@ class NodeSelector extends UNISYS.Component {
   /*/
   /*/
   editNode() {
-    this.setState({ isEditable: true });
     // Add ID if one isn't already defined
     let formData = this.state.formData;
     if (formData.id==='') {
@@ -794,8 +819,14 @@ class NodeSelector extends UNISYS.Component {
       // might be displayed
       // this.AppCall('SOURCE_SEARCH', { searchString: formData.label }); // JD removed because I think it is redundant and slowing things down?
     });
-    this.setState({ formData });
+    this.setState({
+      formData,
+      isBeingEdited: true
+    });
     this.validateForm();
+
+    // Register as an open editor
+    UDATA.LocalCall("REGISTER_OPENEDITOR", { type: 'node' });
   } // editNode
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -828,15 +859,16 @@ class NodeSelector extends UNISYS.Component {
 /*/
 /*/ onCancelButtonClick () {
       // If we were editing, then revert and exit
-      if (this.state.isEditable) {
+      if (this.state.isBeingEdited) {
         let originalNode = this.AppState('D3DATA').nodes.filter( node => { return node.id === this.state.formData.id; } )[0];
         if (originalNode===undefined) {
           // user abandoned editing a new node that was never saved
           this.clearForm();
         } else {
           // restore original node
-          this.loadFormFromNode( originalNode );
-          this.setState({ isEditable: false });
+          this.loadFormFromNode(originalNode);
+          this.releaseOpenEditor();
+          this.setState({ isBeingEdited: false });
           // unlock
           this.NetCall('SRV_DBUNLOCKNODE', { nodeID: this.state.formData.id })
             .then((data) => {
@@ -858,8 +890,9 @@ class NodeSelector extends UNISYS.Component {
     event.preventDefault();
     let duplicateNodeID = parseInt(this.state.duplicateNodeID);
     this.clearForm();
+    this.releaseOpenEditor();
     this.setState({
-      isEditable: false,
+      isBeingEdited: false,
       isDuplicateNodeLabel: false
     }, () => {
         // Wait for the edit state to clear, then open up the original node
@@ -889,7 +922,8 @@ class NodeSelector extends UNISYS.Component {
           'Notes'      : formData.notes
         }
       };
-      this.setState({ isEditable: false });
+      this.releaseOpenEditor();
+      this.setState({ isBeingEdited: false });
       // clear AutoComplete form
       this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'})
       .then(()=>{
@@ -920,12 +954,14 @@ class NodeSelector extends UNISYS.Component {
 /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
 /*/ REACT calls this to receive the component layout and data sources
 /*/ render () {
-      let { nodeDefs,
-        citation,
+      const {
+        nodeDefs,
         duplicateWarning,
         nodeIsLockedMessage,
-        hideDeleteNodeButton
+        hideDeleteNodeButton,
+        disableEdit
       } = this.state;
+      let { citation } = this.state;
       if(citation==undefined)
       {
           citation = {};
@@ -935,7 +971,8 @@ class NodeSelector extends UNISYS.Component {
         <div>
           <FormGroup className="text-right" style={{marginTop:'-20px',paddingRight:'5px'}}>
             <Button outline size="sm"
-              hidden={this.state.isLocked || this.state.isEditable}
+              disabled={disableEdit}
+              hidden={this.state.isLocked || this.state.isBeingEdited}
               onClick={this.onNewNodeButtonClick}
             >{"Add New Node"}</Button>
           </FormGroup>
@@ -955,7 +992,7 @@ class NodeSelector extends UNISYS.Component {
                   identifier={thisIdentifier}
                   disabledValue={this.state.formData.label}
                   inactiveMode={'disabled'}
-                  shouldIgnoreSelection={this.state.isEditable}
+                  shouldIgnoreSelection={this.state.isBeingEdited}
                 />
               </Col>
               <div hidden={!this.state.isDuplicateNodeLabel}
@@ -980,7 +1017,7 @@ class NodeSelector extends UNISYS.Component {
                 <Input type="select" name="type" id="typeSelect"
                   value={this.state.formData.type||''}
                   onChange={this.onTypeChange}
-                  disabled={!this.state.isEditable}
+                  disabled={!this.state.isBeingEdited}
                   >
                   {nodeDefs.type.options.map( option => (
                     <option key={option.label}>{option.label}</option>
@@ -998,10 +1035,10 @@ class NodeSelector extends UNISYS.Component {
               </Col>
               <Col sm={9}>
                 <Input type="textarea" name="note" id="notesText"
-                  style={{display: this.state.isEditable ? 'block' : 'none'}}
+                  style={{display: this.state.isBeingEdited ? 'block' : 'none'}}
                   value={this.state.formData.notes||''}
                   onChange={this.onNotesChange}
-                  readOnly={!this.state.isEditable}
+                  readOnly={!this.state.isBeingEdited}
                   />
                   {this.markdownDisplay(this.state.formData.notes||'')}
               </Col>
@@ -1018,7 +1055,7 @@ class NodeSelector extends UNISYS.Component {
                 <Input type="text" name="info" id="info"
                   value={this.state.formData.info||''}
                   onChange={this.onInfoChange}
-                  readOnly={!this.state.isEditable}
+                  readOnly={!this.state.isBeingEdited}
                   />
               </Col>
             </FormGroup>
@@ -1033,7 +1070,8 @@ class NodeSelector extends UNISYS.Component {
                 onClick={this.onCiteButtonClick}
               >Cite Node</Button>&nbsp;&nbsp;
               <Button outline size="sm"
-                hidden={this.state.isLocked || this.state.isEditable || (this.state.formData.id==='') }
+                disabled={disableEdit}
+                hidden={this.state.isLocked || this.state.isBeingEdited || (this.state.formData.id==='') }
                 onClick={this.onEditButtonClick}
               >Edit Node</Button>
               <p hidden={!this.state.dbIsLocked} className="small text-danger">{nodeIsLockedMessage}<br/>
@@ -1043,12 +1081,12 @@ class NodeSelector extends UNISYS.Component {
                 >Force Unlock</Button></span>
               </p>
               <Button outline size="sm"
-                hidden={!this.state.isEditable}
+                hidden={!this.state.isBeingEdited}
                 onClick={this.onCancelButtonClick}
-              >{this.state.isEditable?'Cancel':'Close'}</Button>&nbsp;
+              >{this.state.isBeingEdited?'Cancel':'Close'}</Button>&nbsp;
               <Button color="primary" size="sm"
                 disabled={!this.state.isValid}
-                hidden={!this.state.isEditable}
+                hidden={!this.state.isBeingEdited}
               >Save</Button>
             </FormGroup>
             <FormGroup row className="text-left" style={{
@@ -1092,7 +1130,8 @@ class NodeSelector extends UNISYS.Component {
             ))}
             <FormGroup className="text-right">
               <Button outline size="sm"
-                hidden={this.state.isLocked || this.state.formData.id===''||this.state.isEditable}
+                disabled={disableEdit}
+                hidden={this.state.isLocked || this.state.formData.id===''||this.state.isBeingEdited}
                 onClick={this.onAddNewEdgeButtonClick}
               >Add New Edge</Button>
             </FormGroup>
@@ -1122,7 +1161,7 @@ helpText(obj)
 /*/
 markdownDisplay (text){
 
-  if(!this.state.isEditable)
+  if(!this.state.isBeingEdited)
       return mdReact({onIterate: this.markdownIterate,  markdownOptions:{ typographer: true, linkify: true}, plugins: [mdplugins.emoji]
     })(text);
 }
@@ -1150,7 +1189,7 @@ markdownIterate(Tag, props, children, level){
 
     checkUnload(e)
     {
-        if(this.state.isEditable)
+        if(this.state.isBeingEdited)
         {
           (e || window.event).returnValue = null;
           return null;
@@ -1159,7 +1198,7 @@ markdownIterate(Tag, props, children, level){
 
     doUnload(e)
     {
-          if(this.state.isEditable)
+          if(this.state.isBeingEdited)
           {
               this.NetCall('SRV_DBUNLOCKNODE', { nodeID: this.state.formData.id });
           }
@@ -1169,7 +1208,7 @@ markdownIterate(Tag, props, children, level){
 /*/ Release the lock if we're unmounting
 /*/ componentWillUnmount() {
       if (DBG) console.log('NodeEditor.componentWillUnMount!');
-      if (this.state.isEditable) {
+      if (this.state.isBeingEdited) {
         this.NetCall('SRV_DBUNLOCKNODE', { nodeID: this.state.formData.id })
           .then((data) => {
             if (data.NOP) {
@@ -1186,6 +1225,7 @@ markdownIterate(Tag, props, children, level){
       this.AppStateChangeOff('SELECTION', this.handleSelection);
       this.AppStateChangeOff('SEARCH', this.onStateChange_SEARCH);
       this.AppStateChangeOff('TEMPLATE', this.setTemplate);
+      this.AppStateChangeOff('OPENEDITORS', this.updateEditState);
     }
 
 } // class NodeSelector

@@ -43,13 +43,16 @@ class Template extends UNISYS.Component {
   constructor (props) {
     super(props);
     this.state = {
-      isEditing: false,
+      disableEdit: false,
+      isBeingEdited: false,
       editScope: undefined, // root, nodeTypeOptions, edgeTypeOptions
       tomlfile: undefined,
       tomlfileStatus: '',
       tomlfileErrors: undefined
     };
     this.loadEditor = this.loadEditor.bind(this);
+    this.updateEditState = this.updateEditState.bind(this);
+    this.releaseOpenEditor = this.releaseOpenEditor.bind(this);
     this.onNewTemplate = this.onNewTemplate.bind(this);
     this.onCurrentTemplateLoad = this.onCurrentTemplateLoad.bind(this);
     this.onEditNodeTypes = this.onEditNodeTypes.bind(this);
@@ -60,9 +63,13 @@ class Template extends UNISYS.Component {
     this.onCancelEdit = this.onCancelEdit.bind(this);
 
     UDATA = UNISYS.NewDataLink(this);
+    UDATA.OnAppStateChange("OPENEDITORS", this.updateEditState);
+
   } // constructor
 
-  componentDidMount() { }
+  componentDidMount() {
+    this.updateEditState();
+  }
 
   componentWillUnmount() {
     if (EDITOR) EDITOR.destroy();
@@ -95,11 +102,29 @@ class Template extends UNISYS.Component {
     if (EDITOR) EDITOR.destroy(); // clear any existing editor
     EDITOR = new JSONEditor(el, options);
 
-    this.setState({ isEditing: true });
+    this.setState({ isBeingEdited: true });
+
+    // Update OPENEDITORS
+    UDATA.LocalCall("REGISTER_OPENEDITOR", { type: 'template' });
   }
 
   /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  updateEditState() {
+    let disableEdit = false;
+    const openEditors = UDATA.AppState("OPENEDITORS").editors;
+    if (openEditors.includes('node') ||
+      openEditors.includes('edge')) {
+      disableEdit = true;
+    }
+    this.setState({ disableEdit });
+  }
+
+  releaseOpenEditor() {
+    // Remove 'template' from OPENEDITORS
+    UDATA.LocalCall("DEREGISTER_OPENEDITOR", { type: 'template' });
+  }
+
   onNewTemplate() {
     this.setState({
       editScope: 'root'
@@ -150,7 +175,7 @@ class Template extends UNISYS.Component {
       })
   }
 
-  onTOMLfileSelect(e) {
+  onTOMLfileSelect(e) { // import
     const tomlfile = e.target.files[0];
     UDATA.LocalCall('VALIDATE_TOMLFILE', { tomlfile }) // nc-logic
       .then(result => {
@@ -186,13 +211,15 @@ class Template extends UNISYS.Component {
         if (!result.OK) {
           alert(result.info);
         } else {
-          this.setState({ isEditing: false })
+          this.setState({ isBeingEdited: false })
         }
       });
+    this.releaseOpenEditor();
   }
 
   onCancelEdit() {
-    this.setState({ isEditing: false });
+    this.setState({ isBeingEdited: false });
+    this.releaseOpenEditor();
   }
 
 
@@ -201,20 +228,26 @@ class Template extends UNISYS.Component {
 
   render() {
     const {
-      isEditing,
+      disableEdit,
+      isBeingEdited,
       tomlfile,
       tomlfileStatus,
       tomlfileErrors
     } = this.state;
-    const importDisabled = tomlfile === undefined;
-    return (
-      <div
-        style={{
-          backgroundColor: 'rgba(240,240,240,0.95)',
-          padding: '10px 20px'
-        }}
-      >
-        <div hidden={isEditing}>
+    let jsx;
+    if (disableEdit) {
+      // Node or Edge is being edited, show disabled message
+      jsx = (
+        <div>
+          <p>Please finish editing the node or edge.</p>
+          <p>Templates cannot be edited while a node or edge
+            is being edited.  </p>
+        </div>
+      )
+    } else {
+      // OK to Edit, show edit buttons
+      jsx = (
+        <div hidden={isBeingEdited}>
           <div style={{
             display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
             columnGap: '10px', rowGap: '5px'
@@ -246,21 +279,31 @@ class Template extends UNISYS.Component {
               </label><br />
             </div>
           </div>
+          <hr />
         </div>
-        <hr />
-        <div>
+      )
+    }
+    return (
+      <div
+        style={{
+          backgroundColor: 'rgba(240,240,240,0.95)',
+          padding: '10px 20px'
+        }}
+      >
+        {jsx}
+        <div hidden={!isBeingEdited} >
           <Button
             onClick={this.onCancelEdit}
-            hidden={!isEditing} size="sm" outline
+            size="sm" outline
           >Cancel</Button>
           &nbsp;
           <Button
             onClick={this.onSaveEdit}
-            hidden={!isEditing} size="sm" color="primary"
+            size="sm" color="primary"
           >Save Changes</Button>
+          <hr />
         </div>
-        <hr />
-        <div id="editor" hidden={!isEditing}></div>
+        <div id="editor" hidden={!isBeingEdited}></div>
       </div>
     );
   }

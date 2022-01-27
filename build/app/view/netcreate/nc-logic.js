@@ -128,6 +128,19 @@ var UDATA = UNISYS.NewDataLink(MOD);
     * nodes: all nodes (not all may be actually changed)
     * edges: all edges (not all may be actually changed)
 
+
+    OPENEDITORS
+
+    Used to coordinate Template editing vs Node/Edge editing.  Since Nodes and
+    Edges should not be edited while the Template is being edited, any editor
+    that is opened registers as an OPENEDITOR and will check on the status of
+    existing open editors.
+
+    * When a Template editor is open, "Node Edit", "Edge Edit", and "Add New Edge"
+      buttons are all disabled.
+    * When "Node Edit", "Edge Edit", or "Add New Edge" has been triggered,
+      the Template buttons on the Template panel are all disabled.
+
 \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -/*/
 var D3DATA = null; // see above for description
 var TEMPLATE = null; // template definition for prompts
@@ -305,6 +318,7 @@ MOD.Hook("INITIALIZE", () => {
       }
     }
   }); // StateChange SELECTION
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ TEMPLATE has been edited
   /*/
@@ -314,7 +328,27 @@ MOD.Hook("INITIALIZE", () => {
     m_UpdateColorMap();
   });
 
-    /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ OPENEDITORS is an array of all the editors (node, edge, template) that are
+      currently open.  Used to coordinate template vs node/edge editing
+      because nodes and edges should not be edited while the template
+      is being edited.
+  /*/
+  UDATA.SetAppState("OPENEDITORS", { editors: [] });
+
+  UDATA.HandleMessage("REGISTER_OPENEDITOR", data => {
+    let openEditors = UDATA.AppState("OPENEDITORS").editors;
+    openEditors.push(data.type);
+    UDATA.SetAppState("OPENEDITORS", { editors: openEditors });
+  });
+  UDATA.HandleMessage("DEREGISTER_OPENEDITOR", data => {
+    let openEditors = UDATA.AppState("OPENEDITORS").editors;
+    const i = openEditors.findIndex(e => e === data.type);
+    if (i>-1) openEditors.splice(i, 1);
+    UDATA.SetAppState("OPENEDITORS", { editors: openEditors });
+  });
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ User has clicked on a suggestion from the AutoCopmlete suggestion list.
       The source node should be loaded in NodeSelector.
 
