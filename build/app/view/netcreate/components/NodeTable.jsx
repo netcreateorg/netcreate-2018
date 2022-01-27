@@ -206,7 +206,7 @@ class NodeTable extends UNISYS.Component {
       return 0;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
+/*/ DEPRECATED -- 'attributes' is no longer being used
 /*/ sortByAttribute (nodes, key) {
       if (nodes) {
         return nodes.sort( (a,b) => {
@@ -219,7 +219,20 @@ class NodeTable extends UNISYS.Component {
       }
       return 0;
     }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ sortByKey (nodes, key) {
+      if (nodes) {
+        return nodes.sort( (a,b) => {
+          let akey = a[key],
+              bkey = b[key];
+          if (akey<bkey) return -1*Number(this.sortDirection);
+          if (akey>bkey) return 1*Number(this.sortDirection);
+          return 0;
+        });
+      }
+      return 0;
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ sortByUpdated(nodes) {
@@ -247,15 +260,15 @@ class NodeTable extends UNISYS.Component {
           return this.sortByEdgeCount(nodes);
           break;
         case 'type':
-          return this.sortByAttribute(nodes, 'Node_Type');
+          return this.sortByKey(nodes, 'type');
           break;
         case 'notes':
-          return this.sortByAttribute(nodes, 'Notes');
+          return this.sortByKey(nodes, 'notes');
           break;
         case 'info':
-          return this.sortByAttribute(nodes, 'Extra Info');
+          return this.sortByKey(nodes, 'info');
           break;
-        case 'Updated':
+        case 'updated':
           return this.sortByUpdated(nodes);
           break;
         case 'label':
@@ -387,8 +400,8 @@ render() {
                   onClick={()=>this.setSortKey("notes")}
                 >{nodeDefs.notes.displayLabel} {this.sortSymbol("notes")}</Button></th>
             <th  width="10%"hidden={!isLocalHost}><Button size="sm"
-                  onClick={()=>this.setSortKey("Updated")}
-                >Updated {this.sortSymbol("Updated")}</Button></th>
+                  onClick={()=>this.setSortKey("updated")}
+                >Updated {this.sortSymbol("updated")}</Button></th>
           </tr>
         </thead>
         <tbody style={{maxHeight: tableHeight}}>
@@ -407,10 +420,10 @@ render() {
             <td>{node.degrees}</td>
             <td><a href="#" onClick={(e)=>this.selectNode(node.id,e)}
                 >{node.label}</a></td>
-            <td hidden={nodeDefs.type.hidden}>{node.attributes["Node_Type"]}</td>
-            <td hidden={nodeDefs.info.hidden}>{node.attributes["Extra Info"]}</td>
+            <td hidden={nodeDefs.type.hidden}>{node.type}</td>
+            <td hidden={nodeDefs.info.hidden}>{node.info}</td>
             <td hidden={nodeDefs.notes.hidden}>
-              {node.attributes["Notes"] ? <MarkdownNote text={node.attributes["Notes"]} /> : "" }
+              {node.notes ? <MarkdownNote text={node.notes} /> : "" }
             </td>
             <td hidden={!isLocalHost}>{this.displayUpdated(node)}</td>
           </tr>
