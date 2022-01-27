@@ -225,6 +225,10 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
       exportLabel: field.label,
       help: field.help,
       hidden: field.hidden || false // default to not hidden
+      // If necessary, user can edit template to hide it again.
+      // We want it visible by default, because of migrations
+      // the original field may not be defined.
+      // e.g. orig template uses "Relationship" not "type"
     }
     if (k === 'type') {
       // special handling for type options
