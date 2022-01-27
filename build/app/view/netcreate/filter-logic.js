@@ -106,20 +106,6 @@ const TEMPLATE_URL = `templates/${DATASET}.json`;
 const DBG = false;
 const PR = "filter-logic: ";
 
-
-const HACKMAP_NODES = { // Map to convert old 'attributes' data formats.
-  type: "Node_Type",    // Used in m_IsNodeMatchedByFilter
-  info: "Extra Info",
-  notes: "Notes"
-}
-const HACKMAP_EDGES = { // Map to convert old 'attributes' data formats.
-  type: "Relationship", // Used in m_IsEdgeMatchedByFilter
-  category: "Category",
-  citation: "Citations",
-  info: "Info",
-  notes: "Notes"
-}
-
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ lifecycle INITIALIZE handler
@@ -485,18 +471,8 @@ function m_IsNodeMatchedByFilter(node, filter) {
     return false; // nothing to filter
   }
 
-  let nodeValue;
-  // HACK
-  // The old data model has secondary keys stuffed
-  // into an `attributes` object.  This is a
-  // holdover from the original pre-netcreate
-  // data import.  If we ever change the data format
-  // this HACKMAP should be removed.
-  if (['type', 'info', 'notes'].includes(filter.key)) {
-    nodeValue = node.attributes[HACKMAP_NODES[filter.key]];
-  } else {
-    nodeValue = node[filter.key];
-  }
+  const nodeValue = node[filter.key];
+
   switch (filter.operator) {
     case FILTER.OPERATORS.CONTAINS.key:
       return m_MatchString(filter.value, nodeValue, true);
