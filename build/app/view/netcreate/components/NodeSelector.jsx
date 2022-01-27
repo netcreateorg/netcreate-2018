@@ -582,18 +582,19 @@ class NodeSelector extends UNISYS.Component {
       if (isNaN(newNode.id)) { newNode.id = parseInt(newNode.id); }
       //
       node.label                    = newNode.label || '';
-      node.id                       = newNode.id    || '';
-      node.attributes["Node_Type"]  = newNode.attributes["Node_Type"]  || '';
-      node.attributes["Extra Info"] = newNode.attributes["Extra Info"] || '';
-      node.attributes["Notes"]      = newNode.attributes["Notes"]      || '';
+      node.id                       = newNode.id || '';
+      node.type = newNode.type;
+      node.info = newNode.info;
+      node.notes = newNode.notes;
+
       // Copy to form
       this.releaseOpenEditor();
       this.setState({
         formData: {
-          label:     node.label,
-          type:      node.attributes["Node_Type"],     // HACK This needs to be updated when
-          info:      node.attributes["Extra Info"],    // the data format is updated
-          notes:     node.attributes["Notes"],         // These were bad keys from Fusion Tables.
+          label: node.label,
+          type:      node.type,
+          info:      node.info,
+          notes:     node.notes,
           id:        node.id,
           isNewNode: false
         },
@@ -915,12 +916,10 @@ class NodeSelector extends UNISYS.Component {
       let formData = this.state.formData;
       let node = {
         label : formData.label?formData.label:'',
-        id    : formData.id,
-        attributes: {
-          'Node_Type'  : formData.type,
-          'Extra Info' : formData.info,
-          'Notes'      : formData.notes
-        }
+        id: formData.id,
+        type: formData.type,
+        info: formData.info,
+        notes: formData.notes
       };
       this.releaseOpenEditor();
       this.setState({ isBeingEdited: false });
