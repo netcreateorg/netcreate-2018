@@ -210,7 +210,7 @@ class EdgeTable extends UNISYS.Component {
       return undefined;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
+/*/ DEPRECATED -- 'attributes' is no longer being used
 /*/ sortByAttribute (edges, key) {
       if (edges) {
         return edges.sort( (a,b) => {
@@ -230,9 +230,30 @@ class EdgeTable extends UNISYS.Component {
       }
       return undefined;
     }
-
-    /// ---
-    sortByUpdated(edges) {
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ sortByKey (edges, key) {
+      if (edges) {
+        return edges.sort( (a,b) => {
+          let akey = a[key],
+              bkey = b[key];
+          if (akey<bkey) return -1*Number(this.sortDirection);
+          if (akey>bkey) return 1*Number(this.sortDirection);
+          if (akey===bkey) {
+            // Secondary sort on Source label
+            let source_a = a.source.label;
+            let source_b = b.source.label;
+            if (source_a<source_b) return -1*Number(this.sortDirection);
+            if (source_a>source_b) return 1*Number(this.sortDirection);
+          }
+          return 0;
+        });
+      }
+      return undefined;
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ sortByUpdated(edges) {
       if (edges) {
         return edges.sort( (a,b) => {
           let akey = (a.meta.revision > 0 ? a.meta.updated : a.meta.created),
@@ -258,23 +279,23 @@ class EdgeTable extends UNISYS.Component {
           return this.sortByTargetLabel(edges);
           break;
         case 'Info':
-          return this.sortByAttribute(edges, 'Info');
+          return this.sortByKey(edges, 'info');
           break;
         case 'Notes':
-          return this.sortByAttribute(edges, 'Notes');
+          return this.sortByKey(edges, 'notes');
           break;
         case 'Category':
-          return this.sortByAttribute(edges, 'Category');
+          return this.sortByKey(edges, 'category');
           break;
         case 'Citations':
-          return this.sortByAttribute(edges, 'Citations');
+          return this.sortByKey(edges, 'citation');
           break;
         case 'Updated':
           return this.sortByUpdated(edges);
           break;
         case 'Relationship':
         default:
-          return this.sortByAttribute(edges, 'Relationship');
+          return this.sortByKey(edges, 'type');
           break;
       }
     }
@@ -472,16 +493,16 @@ class EdgeTable extends UNISYS.Component {
                 <td hidden={!DBG}>{edge.source.id}</td>
                 <td><a href="#" onClick={(e)=>this.selectNode(edge.source.id,e)}
                     >{edge.source.label || edge.source}</a></td>
-                <td>{edge.attributes["Relationship"]}</td>
+                <td>{edge.type}</td>
                 <td hidden={!DBG}>{edge.target.id}</td>
                 <td><a href="#" onClick={(e)=>this.selectNode(edge.target.id,e)}
                     >{edge.target.label || edge.target}</a></td>
-                <td hidden={edgeDefs.category.hidden}>{edge.attributes["Category"]}</td>
-                <td hidden={edgeDefs.citation.hidden}>{edge.attributes["Citations"]}</td>
+                <td hidden={edgeDefs.category.hidden}>{edge.category}</td>
+                <td hidden={edgeDefs.citation.hidden}>{edge.citation}</td>
                 <td hidden={edgeDefs.notes.hidden}>
-                  {edge.attributes["Notes"] ? <MarkdownNote text={edge.attributes["Notes"]} /> : "" }
+                  {edge.notes ? <MarkdownNote text={edge.notes} /> : "" }
                 </td>
-                <td hidden={edgeDefs.info.hidden}>{edge.attributes["Info"]}</td>
+                <td hidden={edgeDefs.info.hidden}>{edge.info}</td>
                 <td hidden={!isLocalHost}>{this.displayUpdated(edge)}</td>
               </tr>
             ))}
