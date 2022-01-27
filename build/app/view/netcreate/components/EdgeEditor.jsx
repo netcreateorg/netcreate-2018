@@ -220,7 +220,7 @@ class EdgeEditor extends UNISYS.Component {
         formData: {                 // Holds the state of the form fields
           sourceId:     '',
           targetId:     '',
-          relationship: '',
+          type: '',
           info:         '',
           notes:        '',
           citation:     '',
@@ -329,7 +329,7 @@ class EdgeEditor extends UNISYS.Component {
         formData: {
           sourceId:     '',
           targetId:     '',
-          relationship: '',
+          type: '',
           info:         '',
           notes:        '',
           citation:     '',
@@ -415,13 +415,11 @@ class EdgeEditor extends UNISYS.Component {
           source: parseInt(sourceNodes[0].id),  // REVIEW: d3data 'source' is id, rename this to 'sourceId'?
                                       // though after d3 processes, source does become an object.
           target: undefined,
-          attributes: {
-            Relationship: '',
-            Info: '',
-            Citations: '',
-            Category: '',
-            Notes: ''
-          }
+          type: '',
+          notes: '',
+          info: '',
+          citation: '',
+          category: ''
         }
         // Expand this EdgeEditor and set it to Edit mode.
         this.setState({
@@ -466,11 +464,11 @@ class EdgeEditor extends UNISYS.Component {
           id:           parseInt(edge.id) || '',
           sourceId:     edge.source,
           targetId:     edge.target,
-          relationship: edge.attributes["Relationship"] || '',   // Make sure there's valid data
-          info:         edge.attributes["Info"] || '',
-          citation:     edge.attributes["Citations"] || '',
-          category:     edge.attributes["Category"] || '',
-          notes:        edge.attributes["Notes"] || '',
+          type: edge.type || '',   // Make sure there's valid data
+          info: edge.info || '',
+          citation: edge.citation || '',
+          category: edge.category || '',
+          notes: edge.notes || '',
           isNewEdge:    false
         },
         sourceNode: sourceNode,
@@ -796,7 +794,7 @@ class EdgeEditor extends UNISYS.Component {
 /*/
 /*/ onRelationshipChange (event) {
       let formData = this.state.formData;
-      formData.relationship = event.target.value;
+      formData.type = event.target.value;
       this.setState({formData: formData});
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -840,13 +838,11 @@ class EdgeEditor extends UNISYS.Component {
         source:         this.state.sourceNode.id,   // REVIEW: d3data 'source' is id, rename this to 'sourceId'?
                                                     // though after d3 processes, source does become an object.
         target:         this.state.targetNode.id,   // REVIEW: d3data 'target' is id, rename this to 'targetId'?
-        attributes: {
-          Relationship: formData.relationship,
-          Info:         formData.info,
-          Citations:    formData.citation,
-          Category:     formData.category,
-          Notes:        formData.notes
-        }
+        type: formData.type,
+        info: formData.info,
+        citation: formData.citation,
+        category: formData.category,
+        notes: formData.notes
       }
       if (DBG) console.group('EdgeEntry.onSubmit submitting',edge)
 
@@ -937,7 +933,7 @@ class EdgeEditor extends UNISYS.Component {
               style={{ backgroundColor: "#a9d3ff", borderColor: 'transparent', width: '100%', marginBottom: '3px', textAlign: "left", overflow: "hidden" }}
               onClick={this.onEdgeClick}
             >{parentNodeLabel === sourceNode.label ? me : sourceNode.label}
-              &nbsp;<span title={formData.relationship}>&#x2794;</span>&nbsp;
+              &nbsp;<span title={formData.type}>&#x2794;</span>&nbsp;
               {parentNodeLabel === targetNode.label ? me : targetNode.label}
             </Button>
           </div>
@@ -988,7 +984,7 @@ class EdgeEditor extends UNISYS.Component {
                 </Col>
                 <Col sm={9}>
                   <Input type="select" name="relationship"
-                    value={formData.relationship}
+                    value={formData.type}
                     onChange={this.onRelationshipChange}
                     disabled={!this.state.isBeingEdited}
                     >
