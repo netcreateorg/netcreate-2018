@@ -201,7 +201,7 @@ MOD.Hook("LOADASSETS", () => {
       (async () => {
         let p1 = await DATASTORE.PromiseJSONFile("data/" + dataset + "-db.json")
           .then(data => {
-            m_ConvertData(data);
+            m_MigrateData(data);
             m_RecalculateAllEdgeWeights(data);
             UDATA.SetAppState("D3DATA", data);
             // Save off local reference because we don't have D3DATA AppStateChange handler
@@ -222,7 +222,7 @@ MOD.Hook("LOADASSETS", () => {
   let p1 = DATASTORE.PromiseD3Data()
   .then(data => {
     if (DBG) console.log(PR, "DATASTORE returned data", data);
-    m_ConvertData(data.d3data);
+    m_MigrateData(data.d3data);
     m_RecalculateAllEdgeWeights(data.d3data);
     UDATA.SetAppState("D3DATA", data.d3data);
     UDATA.SetAppState("TEMPLATE", data.template);
@@ -483,7 +483,7 @@ MOD.Hook("INITIALIZE", () => {
       }
     }
 
-    // NOTE: State is updated in the "MaryNodeBy*" functions above.
+    // NOTE: State is updated in the "MarkNodeBy*" functions above.
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ SOURCE_UPDATE is called when the properties of a node has changed
@@ -1001,25 +1001,54 @@ function u_EscapeRegexChars(string) {
 }
 MOD.EscapeRegexChars = u_EscapeRegexChars; // Expose for filter-logic.js
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Convert all IDs to integers
-    Node and Edge IDs should be integers.
-    This isn't a problem with newly created datasets as the network-generated IDs
-    are integers.  However, with older data sets, the IDs may have been strings.
-    e.g. exports from Gephi will have string IDs.
-    This mismatch is a problem when looking up nodes by ID.
-      `data` is passed by reference
-      This modifies `data`
-      data = { nodes: [], edges: [] }
+/*/ Migrate Data from older formats
+
+    1. Convert all IDs to integers
+        Node and Edge IDs should be integers.
+        This isn't a problem with newly created datasets as the network-generated IDs
+        are integers.  However, with older data sets, the IDs may have been strings.
+        e.g. exports from Gephi will have string IDs.
+        This mismatch is a problem when looking up nodes by ID.
+          `data` is passed by reference
+          This modifies `data`
+          data = { nodes: [], edges: [] }
+    2. Convert 'attributes' from pre v1.4 datasets
+        NODES
+          attributes.Node_type => type
+          attributes[Extra Info] => info
+          attributes.Notes => notes
+        EDGES
+          attributes.Relationship => type
+          attributes.Info => info
+          attributes.Citations = citation
+          attributes.Notes => notes
+    3. Remove the old `attributes` key
 /*/
-function m_ConvertData(data) {
+function m_MigrateData(data) {
   data.nodes.forEach(node => {
     node.id = parseInt(node.id);
+    if (node.attributes) { // don't clobber if value is already set
+      node.type = node.type || node.attributes.Node_Type;
+      node.info = node.info || node.attributes["Extra Info"];
+      node.notes = node.notes || node.attributes.Notes;
+      // clear it
+      Reflect.deleteProperty(node, 'attributes');
+    }
   });
   data.edges.forEach(edge => {
     edge.id = parseInt(edge.id);
     // before D3 processing, edge.source and edge.target are ids
     edge.source = parseInt(edge.source);
     edge.target = parseInt(edge.target);
+    if (edge.attributes) { // don't clobber if value is already set
+      edge.type = edge.type || edge.attributes.Relationship;
+      edge.info = edge.info || edge.attributes.Info;
+      edge.citation = edge.citation || edge.attributes.Citations;
+      edge.notes = edge.notes || edge.attributes.Notes;
+      edge.category = edge.category || edge.attributes.Category;
+      // clear it
+      Reflect.deleteProperty(edge, 'attributes');
+    }
   });
 }
 
