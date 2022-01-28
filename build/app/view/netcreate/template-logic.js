@@ -103,6 +103,7 @@ const SCHEMA = {
       // -- or has `?admin=true` GET parameter
       // This will force hide the delete button even if you're an admin
       type: 'boolean',
+      format: 'checkbox',
       description: 'Always hide Node delete button, even for admins.',
       default: false
     },
