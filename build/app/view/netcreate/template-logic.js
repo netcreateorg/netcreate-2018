@@ -66,7 +66,7 @@ const SCHEMA = {
   properties: {
     "name": {
       type: 'string',
-      description: 'Template Name',
+      description: 'A short descriptive title for the project.  This is displayed on the graph view.  It can contain spaces.  e.g. "Alexander the Great"',
       default: 'Untitled Template'
     },
     "description": {
