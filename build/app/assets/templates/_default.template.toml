@@ -16,13 +16,13 @@ hidden = false
 
 [nodeDefs.id]
 type = "number"
-displayLabel = "id"
+displayLabel = "Id"
 exportLabel = "ID"
 help = "System-generated unique id number"
 
 [nodeDefs.label]
 type = "string"
-displayLabel = "label"
+displayLabel = "Label"
 exportLabel = "Label"
 help = "Display name of the node"
 includeInGraphTooltip = true
@@ -101,7 +101,7 @@ hidden = false
 
 [edgeDefs.id]
 type = "number"
-displayLabel = "id"
+displayLabel = "Id"
 exportLabel = "ID"
 help = "System-generated unique id number"
 
