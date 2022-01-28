@@ -185,7 +185,10 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
           label: o.label,
           color: o.color
         }
-      })
+      });
+      // make sure field type is set to "select" -- older templates do not set type
+      nodeDefs[k].type = 'select';
+      console.log(PR,'...migrating nodeDefs field', k,'with options, forcing type to "select"')
       nodeDefs[k].options = options;
     }
   })
@@ -238,6 +241,9 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
           color: o.color
         }
       })
+      // make sure field type is set to "select" -- older templates do not set type
+      edgeDefs[k].type = 'select';
+      console.log(PR,'...migrating edgeDefs field', k,'with options, forcing type to "select"')
       edgeDefs[k].options = options;
     }
   })
