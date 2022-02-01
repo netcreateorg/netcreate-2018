@@ -145,9 +145,9 @@ MOD.Hook("INITIALIZE", () => {
     UDATA.SetAppState("FDATA", FDATA);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/     // Listen for D3DATA updates so we know to trigger change?
+  /*/ Listen for D3DATA updates so we know to trigger change?
   /*/
-  UDATA.OnAppStateChange('D3DATA',(data)=>{
+  UDATA.OnAppStateChange('D3DATA', (data) => {
     m_UpdateFilters();
   });
 
