@@ -356,6 +356,24 @@ DB.PKT_SetDatabase = function (pkt) {
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: Update all data in existing database.
+    Used to update node/edge types after template edit
+/*/
+DB.PKT_UpdateDatabase = function (pkt) {
+  if (DBG) console.log(PR, `PKT_UpdateDatabase`);
+  let { nodes = [], edges = [] } = pkt.Data();
+  if (!nodes.length) console.log(PR, "WARNING: empty nodes array");
+  else console.log(PR, `updating ${nodes.length} nodes...`);
+  if (!edges.length) console.log(PR, "WARNING: empty edges array");
+  else console.log(PR, `updating ${edges.length} edges...`);
+  NODES.update(nodes);
+  EDGES.update(edges);
+  console.log(PR, `PKT_UpdateDatabase complete. Disk db file updated.`);
+  m_db.saveDatabase();
+  LOGGER.Write(pkt.Info(), `updatedatabase`);
+  return { OK: true };
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_GetNewNodeID = function(pkt) {
   m_max_nodeID += 1;
   if (DBG) console.log(PR, `PKT_GetNewNodeID ${pkt.Info()} nodeID ${m_max_nodeID}`);

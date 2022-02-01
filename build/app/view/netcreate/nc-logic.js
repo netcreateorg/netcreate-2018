@@ -547,6 +547,82 @@ MOD.Hook("INITIALIZE", () => {
     // FIXME: Need to also trigger resize!
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ NODE_TYPES_UPDATE is called by template-logic after user has changed the
+      node type options.  This maps changed options to a new name,
+      and deleted type options to existing options.
+      This updates:
+      * The template file with new new node types
+      * D3DATA and the databse file with node type changes
+
+      @param {object} data
+      @param {object} data.nodeTypesChanges - { label, color, replacement, delete }
+      @param {string} data.nodeTypesChanges.label - orig label, used for matching to current node setting
+      @param {string} data.nodeTypesChanges.color
+      @param {string} data.nodeTypesChanges.replacement - text to replace label
+      @param {boolean} data.nodeTypesChanges.delete - option should be removed after mapping
+  /*/
+  UDATA.HandleMessage("NODE_TYPES_UPDATE", data => {
+    const { nodeTypesChanges } = data;
+    const changeMap = new Map();
+    nodeTypesChanges.forEach(c => {
+      changeMap.set(c.label, c);
+    });
+    D3DATA.nodes = D3DATA.nodes.map(n => {
+      const type = n.type;
+      const change = changeMap.get(n.type);
+      if (change && change.replacement) {
+        console.log('replacing',n.type,'with',change.replacement)
+        n.type = change.replacement;
+      }
+      return n;
+    });
+    // Convert D3 source/target nodes objects into ids
+    D3DATA.edges = m_ConvertSourceTarget2ID(D3DATA.edges);
+    // Write to database!
+    // IMPORTANT: We have to update the db BEFORE calling SetAppState
+    // because SetAppState will cause d3 to convert edge source/targets
+    // from ids back to node objects.
+    UDATA.LocalCall("DBUPDATE_ALL", D3DATA);
+    UDATA.SetAppState("D3DATA", D3DATA);
+  });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ EDGE_TYPES_UPDATE is called by template-logic after user has changed the
+      edge type options.  This maps changed options to a new name,
+      and deleted type options to existing options.
+      This updates:
+      * The template file with new new edge types
+      * D3DATA and the databse file with edge type changes
+
+      @param {object} data
+      @param {object} data.nodeTypesChanges - { label, color, replacement, delete }
+      @param {string} data.nodeTypesChanges.label - orig label, used for matching to current edge setting
+      @param {string} data.nodeTypesChanges.color
+      @param {string} data.nodeTypesChanges.replacement - text to replace label
+      @param {boolean} data.nodeTypesChanges.delete - option should be removed after mapping
+  /*/
+  UDATA.HandleMessage("EDGE_TYPES_UPDATE", data => {
+    const { edgeTypesChanges } = data;
+    const changeMap = new Map();
+    edgeTypesChanges.forEach(c => {
+      changeMap.set(c.label, c);
+    });
+    D3DATA.edges = D3DATA.edges.map(e => {
+      const type = e.type;
+      const change = changeMap.get(e.type);
+      if (change && change.replacement) {
+        console.log('replacing',e.type,'with',change.replacement)
+        e.type = change.replacement;
+      }
+      return e;
+    });
+    // Write to database!
+    // IMPORTANT: We have to update the db BEFORE calling SetAppState
+    // because SetAppState will cause d3 to convert edge source/targets
+    // from ids back to node objects.
+    UDATA.LocalCall("DBUPDATE_ALL", D3DATA);
+    UDATA.SetAppState("D3DATA", D3DATA);
+  });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ EDGE_UPDATE is called when the properties of an edge has changed
       NOTE: SOURCE_UPDATE can be invoked remotely by the server on a DATABASE
       update.
@@ -1049,6 +1125,19 @@ function m_MigrateData(data) {
       // clear it
       Reflect.deleteProperty(edge, 'attributes');
     }
+  });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Converts edge.source and edge.target from objects to ids
+    d3 converts edge.source and edget.target from ids to node objects
+    when it renders D3DATA.  When getting ready to save edges to the database
+    we need to convert them back to ids.
+/*/
+function m_ConvertSourceTarget2ID(edges) {
+  return edges.map(e => {
+    e.source = e.source.id;
+    e.target = e.target.id;
+    return e;
   });
 }
 

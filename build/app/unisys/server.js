@@ -72,6 +72,11 @@ var UNISYS = {};
         return UDB.GetTemplateTOMLFileName();
       })
 
+      UNET.HandleMessage('SRV_DBUPDATE_ALL', function (pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_UpdateDatabase(pkt);
+      });
+
       // receives a packet from a client
       UNET.HandleMessage('SRV_DBUPDATE',function(pkt) {
         if (DBG) console.log(PR,sprint_message(pkt));

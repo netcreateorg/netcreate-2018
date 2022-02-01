@@ -37,6 +37,7 @@ const SCHEMA = require("../template-schema");
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 
 let EDITOR; // json-editor object
+let typeOptions;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,7 +61,7 @@ class Template extends UNISYS.Component {
     this.onEditEdgeTypes = this.onEditEdgeTypes.bind(this);
     this.onTOMLfileSelect = this.onTOMLfileSelect.bind(this);
     this.onDownloadTemplate = this.onDownloadTemplate.bind(this);
-    this.onSaveEdit = this.onSaveEdit.bind(this);
+    this.onSaveChanges = this.onSaveChanges.bind(this);
     this.onCancelEdit = this.onCancelEdit.bind(this);
 
     UDATA = UNISYS.NewDataLink(this);
@@ -147,20 +148,66 @@ class Template extends UNISYS.Component {
   onEditNodeTypes() {
     UDATA.LocalCall('EDIT_CURRENT_TEMPLATE') // nc-logic
       .then(result => {
-        console.error('template is', result);
-        console.error('schema is', schemaNodeTypeOptions)
-        this.setState({
-          editScope: 'nodeTypeOptions'
         const schemaNodeTypeOptions = SCHEMA.NODETYPEOPTIONS;
         // Wrap options in custom Schema to show Delete management UI
         const nodeTypeEditorSchema = SCHEMA.GetTypeEditorSchema(schemaNodeTypeOptions);
+        // Remove default selected (blank) option
+        // This is added back in in template-logic.UpdateTemplate after saving
+        typeOptions = result.template.nodeDefs.type.options.filter(o => o.label !== '');
+        const startval = { options: typeOptions }
+        this.setState({ editScope: 'nodeTypeOptions' });
+        this.loadEditor({
+          schema: nodeTypeEditorSchema,
+          startval
         });
-        this.loadEditor(
-          {
-            schema: schemaNodeTypeOptions,
-            startval: result.template.nodeDefs.type.options
-          });
+        // HACK:  Lock edit fields so original labels are not changed
         // ClassName added in template-schema.GetTypeEditorSchema()
+        const origLabelFields = document.getElementsByClassName('disabledField');
+        origLabelFields.forEach(f => { f.disabled = true });
+
+        // Not needed anymore, but keep for reference
+        //
+        // // Handle Delete Events
+        // EDITOR.on('deleteRow', editor => {
+        //   const val = EDITOR.getValue();
+        //   const currentOptions = val ? val.options : [];
+        //   console.log('currentOptions', currentOptions);
+        //   typeOptionsRemoved = []; // start from scratch each time
+        //   typeOptions.forEach(o => {
+        //     if (!currentOptions.find(c => c.label === o.label)) typeOptionsRemoved.push(o);
+        //   });
+        //   console.log('removed options', typeOptionsRemoved);
+        //   const deletions = EDITOR.getEditor('root.deletions');
+        //   if (deletions) deletions.setValue(typeOptionsRemoved);
+        //
+        //   // key is 0 for first row
+        //   // editor and key are undefined for last row
+        //   // console.log('deleteRow', editor && editor.key)
+        //   // const deletions = EDITOR.getEditor('root.deletions');
+        //   // if (deletions) deletions.setValue([{ label: 'yo', color: '#ffffff' }]);
+        //   // EDITOR.setValue({ deleted: 'yes' });
+        // });
+        //
+        //
+        // watch one
+        // root.1 refers to second field, fields are 0-indexed
+        // EDITOR.watch('root.1.label', (e) => {
+        //   // `e` is undefined
+        //   console.log('change', e);
+        // });
+        //
+        // watch ALL
+        // works but watches too much?
+        // const watcherCallback = function (path) {
+        //   console.log(`field with path: [${path}] changed to [${JSON.stringify(this.getEditor(path).getValue())}]`);
+        //   // Do something
+        // }
+        // for (let key in EDITOR.editors) {
+        //   if (EDITOR.editors.hasOwnProperty(key) && key !== 'root') {
+        //     EDITOR.watch(key, watcherCallback.bind(EDITOR, key));
+        //   }
+        // }
+
       })
   }
 
@@ -170,15 +217,20 @@ class Template extends UNISYS.Component {
         const schemaEdgeTypeOptions = SCHEMA.EDGETYPEOPTIONS;
         // Wrap options in custom Schema to show Delete management UI
         const edgeTypeEditorSchema = SCHEMA.GetTypeEditorSchema(schemaEdgeTypeOptions);
-        console.error('schema is', schemaEdgeTypeOptions)
-        this.setState({
-          editScope: 'edgeTypeOptions'
-        });
+        // Remove default selected (blank) option
+        // This is added back in in template-logic.UpdateTemplate after saving
+        typeOptions = result.template.edgeDefs.type.options.filter(o => o.label !== '');
+        const startval = { options: typeOptions }
+        this.setState({ editScope: 'edgeTypeOptions' });
         this.loadEditor({
-          schema: schemaEdgeTypeOptions,
-          startval: result.template.edgeDefs.type.options
+          schema: edgeTypeEditorSchema,
+          startval
         });
-      })
+        // HACK:  Lock edit fields so original labels are not changed
+        // ClassName added in template-schema.GetTypeEditorSchema()
+        const origLabelFields = document.getElementsByClassName('disabledField');
+        origLabelFields.forEach(f => { f.disabled = true });
+      });
   }
 
   onTOMLfileSelect(e) { // import
@@ -208,7 +260,7 @@ class Template extends UNISYS.Component {
     TEMPLATE_LOGIC.DownloadTemplate();
   }
 
-  onSaveEdit() {
+  onSaveChanges() {
     const templateJSON = EDITOR.getValue(); // could be a snippet
     const { editScope } = this.state;
     const template = TEMPLATE_LOGIC.UpdateTemplate(templateJSON, editScope);
@@ -217,7 +269,7 @@ class Template extends UNISYS.Component {
         if (!result.OK) {
           alert(result.info);
         } else {
-          this.setState({ isBeingEdited: false })
+          this.setState({ isBeingEdited: false });
         }
       });
     this.releaseOpenEditor();
@@ -304,7 +356,7 @@ class Template extends UNISYS.Component {
           >Cancel</Button>
           &nbsp;
           <Button
-            onClick={this.onSaveEdit}
+            onClick={this.onSaveChanges}
             size="sm" color="primary"
           >Save Changes</Button>
           <hr />

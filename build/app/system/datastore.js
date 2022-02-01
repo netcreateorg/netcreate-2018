@@ -34,7 +34,14 @@ let D3DATA = {};
 /*/ establish message handlers during INITIALIZE phase
 /*/
 DSTOR.Hook("INITIALIZE", () => {
+  // DBUPDATE_ALL is a local call originating from within the app
+  // Used to update the full D3DATA object during template updates
+  UDATA.HandleMessage("DBUPDATE_ALL", function(data) {
+    DSTOR.UpdateDataPromise(data);
+  });
+
   // DB_UPDATE is a local call originating from within the app
+  // Generally used to update individual nodes and edges
   UDATA.HandleMessage("DB_UPDATE", function(data) {
     DSTOR.UpdateServerDB(data);
   });
@@ -172,6 +179,21 @@ DSTOR.SaveTemplateFile = template => {
 DSTOR.GetTemplateTOMLFileName = () => {
   return UDATA.Call("SRV_GET_TEMPLATETOML_FILENAME");
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: Update database from d3data-formatted object
+/*/
+DSTOR.UpdateDataPromise = function (d3data) {
+  return new Promise((resolve, reject) => {
+    UDATA.Call("SRV_DBUPDATE_ALL", d3data).then(res => {
+      if (res.OK) {
+        console.log(PR, `database update OK`);
+        resolve(res);
+      } else {
+        reject(new Error(JSON.stringify(res)));
+      }
+    });
+  });
+};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: (WIP) write database from d3data-formatted object
 /*/
