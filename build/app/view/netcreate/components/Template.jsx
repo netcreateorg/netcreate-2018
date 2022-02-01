@@ -32,6 +32,7 @@ const { Button } = ReactStrap;
 import { JSONEditor } from '@json-editor/json-editor';
 const UNISYS = require('unisys/client');
 const TEMPLATE_LOGIC = require("../template-logic");
+const SCHEMA = require("../template-schema");
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 
@@ -86,7 +87,7 @@ class Template extends UNISYS.Component {
    */
   loadEditor(parms) {
     const el = document.getElementById('editor');
-    const schema = (parms && parms.schema) || TEMPLATE_LOGIC.SCHEMA.root;
+    const schema = (parms && parms.schema) || SCHEMA.TEMPLATE;
     const startval = parms && parms.startval;
 
     const options = {
@@ -147,23 +148,28 @@ class Template extends UNISYS.Component {
     UDATA.LocalCall('EDIT_CURRENT_TEMPLATE') // nc-logic
       .then(result => {
         console.error('template is', result);
-        const schemaNodeTypeOptions = TEMPLATE_LOGIC.SCHEMA.nodeTypeOptions;
         console.error('schema is', schemaNodeTypeOptions)
         this.setState({
           editScope: 'nodeTypeOptions'
+        const schemaNodeTypeOptions = SCHEMA.NODETYPEOPTIONS;
+        // Wrap options in custom Schema to show Delete management UI
+        const nodeTypeEditorSchema = SCHEMA.GetTypeEditorSchema(schemaNodeTypeOptions);
         });
         this.loadEditor(
           {
             schema: schemaNodeTypeOptions,
             startval: result.template.nodeDefs.type.options
           });
+        // ClassName added in template-schema.GetTypeEditorSchema()
       })
   }
 
   onEditEdgeTypes() {
     UDATA.LocalCall('EDIT_CURRENT_TEMPLATE') // nc-logic
       .then(result => {
-        const schemaEdgeTypeOptions = TEMPLATE_LOGIC.SCHEMA.edgeTypeOptions;
+        const schemaEdgeTypeOptions = SCHEMA.EDGETYPEOPTIONS;
+        // Wrap options in custom Schema to show Delete management UI
+        const edgeTypeEditorSchema = SCHEMA.GetTypeEditorSchema(schemaEdgeTypeOptions);
         console.error('schema is', schemaEdgeTypeOptions)
         this.setState({
           editScope: 'edgeTypeOptions'
@@ -184,7 +190,7 @@ class Template extends UNISYS.Component {
             editScope: 'root'
           });
           this.loadEditor({
-            schema: TEMPLATE_LOGIC.SCHEMA.root,
+            schema: SCHEMA.TEMPLATE,
             startval: result.templateJSON
           });
         } else {
