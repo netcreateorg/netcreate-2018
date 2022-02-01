@@ -571,7 +571,6 @@ MOD.Hook("INITIALIZE", () => {
       const type = n.type;
       const change = changeMap.get(n.type);
       if (change && change.replacement) {
-        console.log('replacing',n.type,'with',change.replacement)
         n.type = change.replacement;
       }
       return n;
