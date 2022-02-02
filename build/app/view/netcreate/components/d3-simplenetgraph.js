@@ -187,8 +187,8 @@ class D3NetGraph {
       // The template may be loaded or changed after D3DATA is loaded.
       // So we need to explicitly update the colors if the color
       // definitions have changed.
-      UDATA.OnAppStateChange('NODECOLORMAP',(data)=>{
-        if (DBG) console.log(PR,'got state NODECOLORMAP',data);
+      UDATA.OnAppStateChange('COLORMAP',(data)=>{
+        if (DBG) console.log(PR, 'got state COLORMAP', data);
         this._UpdateGraph();
       });
 
@@ -280,9 +280,8 @@ class D3NetGraph {
     This method actually does more than just "update" an existing graph; in D3
     you can write code that initializes AND updates data.
 
-/*/ _UpdateGraph () {
-
-      let COLORMAP = UDATA.AppState('NODECOLORMAP');
+/*/ _UpdateGraph() {
+      const COLORMAP = UDATA.AppState('COLORMAP');
 
       // DATA JOIN
       // select all elemnts with class .node in d3svg
@@ -348,7 +347,7 @@ class D3NetGraph {
           // less human-readable.
           // The problem with this approach though is that any changes
           // to the label text will result in a failed color lookup!
-           return COLORMAP[d.type];
+           return COLORMAP.nodeColorMap[d.type];
         })
         .style("opacity", d => {
           return d.filteredTransparency
@@ -424,7 +423,7 @@ class D3NetGraph {
             return undefined // don't set stroke width
           })
           .attr("fill", (d) => {
-            return COLORMAP[d.type];
+            return COLORMAP.nodeColorMap[d.type];
           })
           .attr("r", (d) => {
             // this "r" is necessary to resize after a link is added
@@ -637,8 +636,8 @@ _UpdateLinkStrokeWidth(edge) {
 }
 
 _UpdateLinkStrokeColor(edge) {
-  let COLORMAP = UDATA.AppState('NODECOLORMAP');
-  let color = COLORMAP[edge.type]
+  let COLORMAP = UDATA.AppState('COLORMAP');
+  let color = COLORMAP.edgeColorMap[edge.type]
   return color;
 }
 

@@ -909,17 +909,18 @@ function m_UpdateColorMap() {
   // but this was a proof of concept. Probably they should be kept separate in case
   // someone ever chooses to use the same label twice, but ...
   try {
-    let nodeColorMap = {};
+    const nodeColorMap = {};
     TEMPLATE.nodeDefs.type.options.forEach(o => {
       nodeColorMap[o.label] = o.color;
     });
 
+    const edgeColorMap = {};
     let defaultEdgeColor = TEMPLATE.edgeDefs.color || "#999"; //for backwards compatability
     TEMPLATE.edgeDefs.type.options.forEach(o => {
-      nodeColorMap[o.label] = o.color || defaultEdgeColor;
+      edgeColorMap[o.label] = o.color || defaultEdgeColor;
     });
 
-    UDATA.SetAppState("NODECOLORMAP", nodeColorMap);
+    UDATA.SetAppState("COLORMAP", {nodeColorMap, edgeColorMap});
   } catch (error) {
     console.error(
       PR,
