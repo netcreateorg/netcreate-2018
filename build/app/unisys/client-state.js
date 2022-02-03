@@ -122,6 +122,11 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
       if (!namespace) throw Error(BAD_NSPACE);
       // update old state by partially overwrite of state
       if (!STATES.has(namespace)) STATES.set(namespace,{});
+      // NOTE Because we're using Object.assign:
+      // * Objects already in the state will remain in the state
+      //   if not overwritten by newState.  This can result in
+      //   the mysterious re-appearance of old paramters.
+      // * No deep clones
       Object.assign(STATES.get(namespace),newState);
       // forward new state to namespace listeners
       let msgr = m_GetStateMessager(namespace);
