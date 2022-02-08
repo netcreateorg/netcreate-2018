@@ -315,6 +315,10 @@ class Template extends UNISYS.Component {
       // OK to Edit, show edit buttons
       jsx = (
         <div hidden={isBeingEdited}>
+          <p><b>PROCEED WITH CAUTION!</b>: Editing templates will modify the data
+            in your dataset and may leave your dataset in an unusable state.
+            Only <b>expert users</b> who know how the data is set up should do this.
+          </p>
           <div style={{
             display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
             columnGap: '10px', rowGap: '5px'
