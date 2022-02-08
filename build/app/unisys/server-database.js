@@ -18,6 +18,8 @@ const TOML = require("@iarna/toml");
 const SESSION = require("../unisys/common-session");
 const LOGGER = require("../unisys/server-logger");
 const PROMPTS = require("../system/util/prompts");
+const TEMPLATE_SCHEMA = require("../view/netcreate/template-schema");
+
 const PR = PROMPTS.Pad("ServerDB");
 const RUNTIMEPATH = './runtime/';
 const TEMPLATEPATH = './app/assets/templates/';
@@ -289,6 +291,12 @@ function m_LoadTOMLTemplate(templateFilePath) {
     if (err) throw err;
     // Read TOML
     const json = TOML.parse(data);
+    // Ensure key fields are present, else default to schema
+    const SCHEMA = TEMPLATE_SCHEMA.TEMPLATE.properties;
+    json.duplicateWarning = json.duplicateWarning || SCHEMA.duplicateWarning.default;
+    json.nodeIsLockedMessage = json.nodeIsLockedMessage || SCHEMA.nodeIsLockedMessage.default;
+    json.edgeIsLockedMessage = json.edgeIsLockedMessage || SCHEMA.edgeIsLockedMessage.default;
+    json.templateIsLockedMessage = json.templateIsLockedMessage || SCHEMA.templateIsLockedMessage.default;
     TEMPLATE = json;
     console.log(PR, 'Template loaded', templateFilePath);
   });
