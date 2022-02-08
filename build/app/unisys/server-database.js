@@ -150,22 +150,23 @@ DB.InitializeDatabase = function (options = {}) {
 function m_MigrateJSONtoTOML(JSONtemplate) {
   console.log(PR, 'Converting JSON to TOML...');
   const jt = JSONtemplate;
+  const SCHEMA = TEMPLATE_SCHEMA.TEMPLATE.properties;
   const TOMLtemplate = {
     name: jt.name,
     description: jt.description,
-    requireLogin: jt.requireLogin || false,
-    // REVIEW: These really ought to load the default values from the schema.
-    hideDeleteNodeButton: (jt.nodePrompts && jt.nodePrompts.delete && jt.nodePrompts.delete.hidden) || false,
-    duplicateWarning: (jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.duplicateWarning) || 'Warning: Duplicate',
-    nodeIsLockedMessage: (jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.sourceNodeIsLockedMessage) || 'Node is locked',
-    edgeIsLockedMessage: (jt.edgePrompts && jt.edgePrompts.edgeIsLockedMessage) || "Edge is locked",
-    nodeDefaultTransparency: (jt.nodePrompts && jt.nodePrompts.defaultTransparency) || 1.0,
-    edgeDefaultTransparency: (jt.edgePrompts && jt.edgePrompts.defaultTransparency) || 0.3,
-    searchColor: jt.searchColor || '#008800',
-    sourceColor: jt.sourceColor || '#FFa500',
+    requireLogin: jt.requireLogin || SCHEMA.requireLogin.default,
+    hideDeleteNodeButton: (jt.nodePrompts && jt.nodePrompts.delete && jt.nodePrompts.delete.hidden) || SCHEMA.hideDeleteNodeButton.default,
+    duplicateWarning: (jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.duplicateWarning) || SCHEMA.duplicateWarning.default,
+    nodeIsLockedMessage: (jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.sourceNodeIsLockedMessage) || SCHEMA.nodeIsLockedMessage.default,
+    edgeIsLockedMessage: (jt.edgePrompts && jt.edgePrompts.edgeIsLockedMessage) || SCHEMA.edgeIsLockedMessage.default,
+    templateIsLockedMessage: SCHEMA.templateIsLockedMessage.default,
+    nodeDefaultTransparency: (jt.nodePrompts && jt.nodePrompts.defaultTransparency) || SCHEMA.nodeDefaultTransparency.default,
+    edgeDefaultTransparency: (jt.edgePrompts && jt.edgePrompts.defaultTransparency) || SCHEMA.edgeDefaultTransparency.default,
+    searchColor: jt.searchColor || SCHEMA.searchColor.default,
+    sourceColor: jt.sourceColor || SCHEMA.sourceColor.default,
     citation: {
       text: (jt.citationPrompts && jt.citationPrompts.citation) || jt.name,
-      hidden: (jt.citationPrompts && jt.citationPrompts.hidden) || true
+      hidden: (jt.citationPrompts && jt.citationPrompts.hidden) || SCHEMA.citation.properties.hidden.default
     }
   }
   // convert nodePrompts
