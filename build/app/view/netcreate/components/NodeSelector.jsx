@@ -460,7 +460,7 @@ class NodeSelector extends UNISYS.Component {
       if ( (activeAutoCompleteId!==thisIdentifier) &&
            (activeAutoCompleteId!=='search')          ) return;
 
-      if (!this.state.isBeingEdited && !this.state.edgesAreLocked) {
+        if (!this.state.isBeingEdited && !this.state.edgesAreLocked) {
         if (data.nodes && data.nodes.length>0) {
 
           // A node was selected, so load it
@@ -969,7 +969,10 @@ class NodeSelector extends UNISYS.Component {
         nodeIsLockedMessage,
         templateIsLockedMessage,
         hideDeleteNodeButton,
-        disableEdit
+        formData,
+        isLocked,
+        disableEdit,
+        isBeingEdited
       } = this.state;
       let { citation } = this.state;
       if(citation==undefined)
@@ -982,13 +985,13 @@ class NodeSelector extends UNISYS.Component {
           <FormGroup className="text-right" style={{marginTop:'-20px',paddingRight:'5px'}}>
             <Button outline size="sm"
               disabled={disableEdit}
-              hidden={this.state.isLocked || this.state.isBeingEdited}
+              hidden={isLocked || isBeingEdited}
               onClick={this.onNewNodeButtonClick}
             >{"Add New Node"}</Button>
           </FormGroup>
           <Form className='nodeEntry' style={{minHeight:'300px',backgroundColor:'#B8EDFF',padding:'5px',marginBottom:'0px'}}
             onSubmit={this.onSubmit}>
-            <FormText><b>NODE {this.state.formData.id||''}</b></FormText>
+            <FormText><b>NODE {formData.id||''}</b></FormText>
             <FormGroup row>
               <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="nodeLabel" className="tooltipAnchor small text-muted">
@@ -1000,9 +1003,9 @@ class NodeSelector extends UNISYS.Component {
               <Col sm={9}>
                 <AutoComplete
                   identifier={thisIdentifier}
-                  disabledValue={this.state.formData.label}
+                  disabledValue={formData.label}
                   inactiveMode={'disabled'}
-                  shouldIgnoreSelection={this.state.isBeingEdited}
+                  shouldIgnoreSelection={isBeingEdited}
                 />
               </Col>
               <div hidden={!this.state.isDuplicateNodeLabel}
@@ -1025,9 +1028,9 @@ class NodeSelector extends UNISYS.Component {
               </Col>
               <Col sm={9}>
                 <Input type="select" name="type" id="typeSelect"
-                  value={this.state.formData.type||''}
+                  value={formData.type||''}
                   onChange={this.onTypeChange}
-                  disabled={!this.state.isBeingEdited}
+                  disabled={!isBeingEdited}
                   >
                   {nodeDefs.type.options.map( option => (
                     <option key={option.label}>{option.label}</option>
@@ -1045,12 +1048,12 @@ class NodeSelector extends UNISYS.Component {
               </Col>
               <Col sm={9}>
                 <Input type="textarea" name="note" id="notesText"
-                  style={{display: this.state.isBeingEdited ? 'block' : 'none'}}
-                  value={this.state.formData.notes||''}
+                  style={{display: isBeingEdited ? 'block' : 'none'}}
+                  value={formData.notes||''}
                   onChange={this.onNotesChange}
-                  readOnly={!this.state.isBeingEdited}
+                  readOnly={!isBeingEdited}
                   />
-                  {this.markdownDisplay(this.state.formData.notes||'')}
+                  {this.markdownDisplay(formData.notes||'')}
               </Col>
             </FormGroup>
             <FormGroup row hidden={nodeDefs.info.hidden}>
@@ -1063,20 +1066,22 @@ class NodeSelector extends UNISYS.Component {
               </Col>
               <Col sm={9}>
                 <Input type="text" name="info" id="info"
-                  value={this.state.formData.info||''}
+                  value={formData.info||''}
                   onChange={this.onInfoChange}
-                  readOnly={!this.state.isBeingEdited}
+                  readOnly={!isBeingEdited}
                   />
               </Col>
             </FormGroup>
-              <div id="citationWindow" hidden={this.state.hideModal} className="modal-content">
-                <span className="close" onClick={this.onCloseCiteClick}>&times;</span>
-                <p><em>Copy the text below:</em><br/><br/>
-                  NetCreate {this.AppState('TEMPLATE').name} network, Node: {this.state.formData.label} (ID {this.state.formData.id}). {citation.text}. Last accessed at {this.dateFormatted()}.</p>
-              </div><br/>
+
+            <div id="citationWindow" hidden={this.state.hideModal} className="modal-content">
+              <span className="close" onClick={this.onCloseCiteClick}>&times;</span>
+              <p><em>Copy the text below:</em><br/><br/>
+                NetCreate {this.AppState('TEMPLATE').name} network, Node: {formData.label} (ID {formData.id}). {citation.text}. Last accessed at {this.dateFormatted()}.</p>
+            </div><br/>
+
             <FormGroup className="text-right" style={{ paddingRight: '5px' }}>
               <Button outline size="sm"
-                hidden={ citation.hidden || (this.state.formData.id==='') }
+                hidden={ citation.hidden || (formData.id==='') }
                 onClick={this.onCiteButtonClick}
                 >Cite Node</Button>&nbsp;&nbsp;
               <div hidden={isLocked || isBeingEdited || (formData.id === '')} style={{ display: 'inline' }}>
@@ -1096,20 +1101,20 @@ class NodeSelector extends UNISYS.Component {
             </FormGroup>
             <FormGroup className="text-right" style={{ paddingRight: '5px' }}>
               <Button outline size="sm"
-                hidden={!this.state.isBeingEdited}
+                hidden={!isBeingEdited}
                 onClick={this.onCancelButtonClick}
-              >{this.state.isBeingEdited?'Cancel':'Close'}</Button>&nbsp;
+              >{isBeingEdited?'Cancel':'Close'}</Button>&nbsp;
               <Button color="primary" size="sm"
                 disabled={!this.state.isValid}
-                hidden={!this.state.isBeingEdited}
+                hidden={!isBeingEdited}
               >Save</Button>
             </FormGroup>
             <FormGroup row className="text-left" style={{
               padding: '10px 5px', margin: '0 -4px', backgroundColor: '#c5e0ef' }}
               hidden={
                 !isAdmin ||
-                this.state.isLocked ||
-                (this.state.formData.id === '') ||
+                isLocked ||
+                (formData.id === '') ||
                 hideDeleteNodeButton
               }
             >
@@ -1139,14 +1144,14 @@ class NodeSelector extends UNISYS.Component {
               <EdgeEditor
                 edgeID={edge.id}
                 key={edge.id}
-                parentNodeLabel={this.state.formData.label}
-                parentNodeIsLocked={this.state.isLocked}
+                parentNodeLabel={formData.label}
+                parentNodeIsLocked={isLocked}
               />
             ))}
             <FormGroup className="text-right">
               <Button outline size="sm"
                 disabled={disableEdit}
-                hidden={this.state.isLocked || this.state.formData.id===''||this.state.isBeingEdited}
+                hidden={isLocked || formData.id===''||isBeingEdited}
                 onClick={this.onAddNewEdgeButtonClick}
               >Add New Edge</Button>
             </FormGroup>
