@@ -302,13 +302,13 @@ class Template extends UNISYS.Component {
       tomlfileErrors
     } = this.state;
     let jsx;
-    if (disableEdit) {
+    if (disableEdit && !isBeingEdited) {
       // Node or Edge is being edited, show disabled message
       jsx = (
         <div>
-          <p>Please finish editing the node or edge.</p>
-          <p>Templates cannot be edited while a node or edge
-            is being edited.  </p>
+          <p><i>Templates cannot be edited while someone is editing a node, edge,
+            or template.</i></p>
+          <p><i>Please finish editing and try again.</i></p>
         </div>
       )
     } else {
