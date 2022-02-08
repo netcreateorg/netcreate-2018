@@ -150,6 +150,7 @@ class NodeSelector extends UNISYS.Component {
         citation: TEMPLATE.citation,
         duplicateWarning: TEMPLATE.duplicateWarning,
         nodeIsLockedMessage: TEMPLATE.nodeIsLockedMessage,
+        templateIsLockedMessage: TEMPLATE.templateIsLockedMessage,
         hideDeleteNodeButton: TEMPLATE.hideDeleteNodeButton,
         formData: {
             label:     '',
@@ -966,6 +967,7 @@ class NodeSelector extends UNISYS.Component {
         nodeDefs,
         duplicateWarning,
         nodeIsLockedMessage,
+        templateIsLockedMessage,
         hideDeleteNodeButton,
         disableEdit
       } = this.state;
@@ -1076,18 +1078,23 @@ class NodeSelector extends UNISYS.Component {
               <Button outline size="sm"
                 hidden={ citation.hidden || (this.state.formData.id==='') }
                 onClick={this.onCiteButtonClick}
-              >Cite Node</Button>&nbsp;&nbsp;
-              <Button outline size="sm"
-                disabled={disableEdit}
-                hidden={this.state.isLocked || this.state.isBeingEdited || (this.state.formData.id==='') }
-                onClick={this.onEditButtonClick}
-              >Edit Node</Button>
-              <p hidden={!this.state.dbIsLocked} className="small text-danger">{nodeIsLockedMessage}<br/>
-              <span hidden={!isAdmin} >If you are absolutely sure this is an error, you can force the unlock:
-              <Button className="small btn btn-outline-light" size="sm"
-                  onClick={this.onForceUnlock}
-                >Force Unlock</Button></span>
-              </p>
+                >Cite Node</Button>&nbsp;&nbsp;
+              <div hidden={isLocked || isBeingEdited || (formData.id === '')} style={{ display: 'inline' }}>
+                <Button outline size="sm"
+                  disabled={disableEdit}
+                  // hidden={isLocked || isBeingEdited || (formData.id==='') }
+                  onClick={this.onEditButtonClick}
+                >Edit Node</Button>
+                <p hidden={!this.state.dbIsLocked} className="small text-danger warning">{nodeIsLockedMessage}
+                  <span hidden={!isAdmin}>&nbsp;<b>ADMINISTRATOR ONLY</b>: If you are absolutely sure this is an error, you can force the unlock:<br/>
+                  <Button className="small btn btn-outline-light warning" size="sm"
+                      onClick={this.onForceUnlock}
+                    >Force Unlock</Button></span>
+                </p>
+                <p hidden={!disableEdit} className="small text-danger warning">{templateIsLockedMessage}</p>
+              </div>
+            </FormGroup>
+            <FormGroup className="text-right" style={{ paddingRight: '5px' }}>
               <Button outline size="sm"
                 hidden={!this.state.isBeingEdited}
                 onClick={this.onCancelButtonClick}

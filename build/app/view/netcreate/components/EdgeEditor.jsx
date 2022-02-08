@@ -217,6 +217,7 @@ class EdgeEditor extends UNISYS.Component {
         edgeDefs: TEMPLATE.edgeDefs,
         citation: TEMPLATE.citation,
         edgeIsLockedMessage: TEMPLATE.edgeIsLockedMessage,
+        templateIsLockedMessage: TEMPLATE.templateIsLockedMessage,
         formData: {                 // Holds the state of the form fields
           sourceId:     '',
           targetId:     '',
@@ -910,7 +911,15 @@ class EdgeEditor extends UNISYS.Component {
 /*/
 /*/ render () {
       const { edgeID, parentNodeLabel, parentNodeIsLocked } = this.props;
-      const { formData, sourceNode, targetNode, edgeDefs, edgeIsLockedMessage, disableEdit} = this.state;
+      const {
+        formData,
+        sourceNode,
+        targetNode,
+        edgeDefs,
+        edgeIsLockedMessage,
+        templateIsLockedMessage,
+        disableEdit
+      } = this.state;
       let {citation} = this.state;
       if (edgeDefs.category === undefined) { // for backwards compatability
         edgeDefs.category = {};
@@ -1106,16 +1115,16 @@ class EdgeEditor extends UNISYS.Component {
               </div><br/>
               <FormGroup className="text-right" style={{paddingRight:'5px'}}>
                 <Button className="small float-left btn btn-outline-light" size="sm"
-                 hidden={this.state.isLocked || parentNodeIsLocked}
-                 onClick={this.onDeleteButtonClick}
+                  hidden={this.state.isLocked || parentNodeIsLocked}
+                  onClick={this.onDeleteButtonClick}
                 >Delete</Button>&nbsp;
                 <Button outline size="sm"
-                hidden={ citation.hidden}
-                onClick={this.onCiteButtonClick}
-              >Cite Edge</Button>&nbsp;&nbsp;
+                  hidden={ citation.hidden}
+                  onClick={this.onCiteButtonClick}
+                >Cite Edge</Button>&nbsp;&nbsp;
                 <Button outline size="sm"
-                  disabled={disableEdit}
                   hidden={this.state.isLocked || this.state.isBeingEdited || parentNodeIsLocked}
+                  disabled={disableEdit}
                   onClick={this.onEditButtonClick}
                 >{this.state.isBeingEdited ? "Add New Edge" : "Edit Edge"}</Button>&nbsp;
                 <Button size="sm"
@@ -1126,7 +1135,10 @@ class EdgeEditor extends UNISYS.Component {
                   hidden={!this.state.isBeingEdited}
                   disabled={ !(this.state.isBeingEdited && this.state.hasValidTarget) }
                 >Save</Button>
-                <p hidden={!this.state.dbIsLocked} className="small text-danger">{edgeIsLockedMessage}</p>
+                <div hidden={this.state.isLocked || this.state.isBeingEdited || parentNodeIsLocked} style={{ display: 'inline' }}>
+                  <p hidden={!this.state.dbIsLocked} className="small text-danger warning">{edgeIsLockedMessage}</p>
+                  <p hidden={!disableEdit} className="small text-danger warning">{templateIsLockedMessage}</p>
+                </div>
               </FormGroup>
             </Form>
           </div>
