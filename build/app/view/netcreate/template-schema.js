@@ -150,6 +150,11 @@ MOD.TEMPLATE = {
       description: 'Warning message to display if user is trying to edit an edge that someone is already editing.',
       default: 'This edge is currently being edited by someone else, please try again later.'
     },
+    "templateIsLockedMessage": {
+      type: 'string',
+      description: 'Warning message to display if user is trying to edit a node or edge while the template is being edited.',
+      default: 'The template is currently being edited, please try again later.'
+    },
     "nodeDefaultTransparency": {
       type: 'number',
       description: 'Default transparency for nodes.',
