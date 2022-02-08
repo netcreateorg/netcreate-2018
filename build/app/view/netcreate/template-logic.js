@@ -41,6 +41,7 @@ var UDATA = UNISYS.NewDataLink(MOD);
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Update TEMPLATE AppState
+    Called by Template.jsx to save data to disk.
     MAJOR SIDE EFFECT: Updates D3DATA with changes!
     `templateSnippet` can be the whole template object, or just the node types or
     edge types.
