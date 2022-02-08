@@ -13,6 +13,12 @@
   This is displayed on the More.jsx component/panel but can be moved
   anywhere.
 
+  Templates can only be edited if:
+  * There are no nodes or edges being edited
+  * There are no other templates being edited
+
+  Conversely, if a Template is being edited, Node and Edge editing
+  will be disabled.
 
   ##  BACKGROUND
 
@@ -65,7 +71,7 @@ class Template extends UNISYS.Component {
     this.onCancelEdit = this.onCancelEdit.bind(this);
 
     UDATA = UNISYS.NewDataLink(this);
-    UDATA.OnAppStateChange("OPENEDITORS", this.updateEditState);
+    UDATA.HandleMessage("EDIT_PERMITTED", this.updateEditState);
 
   } // constructor
 
@@ -87,44 +93,47 @@ class Template extends UNISYS.Component {
    * @param {object} parms { schema, startval }
    */
   loadEditor(parms) {
-    const el = document.getElementById('editor');
-    const schema = (parms && parms.schema) || SCHEMA.TEMPLATE;
-    const startval = parms && parms.startval;
+    UDATA.NetCall("SRV_REQ_TEMPLATE_EDIT")
+      .then(data => {
+        if (!data.okToEdit) {
+          console.warn('Template Locked!  Cannot edit.');
+          return;
+        }
+        const el = document.getElementById('editor');
+        const schema = (parms && parms.schema) || SCHEMA.TEMPLATE;
+        const startval = parms && parms.startval;
 
-    const options = {
-      theme: 'bootstrap4', // spectre, bootstrap3, tailwind, html
-      disable_edit_json: true, // set to false allow direct viewing/editing of json for debugging
-      disable_properties: false, // needed to allow user to add missing properties
-      object_layout: 'table', // 'grid', 'grid-strict', 'categories'
-      no_additional_properties: true, // prevent users from adding new non-schema properties
-      schema
-      // iconlib: 'fontawesome5', // fontawesome is not currently loaded
-    };
-    if (startval) options.startval = startval; // only add startval if its defined, otherwise you end up with an empty template
-    if (EDITOR) EDITOR.destroy(); // clear any existing editor
-    EDITOR = new JSONEditor(el, options);
+        const options = {
+          theme: 'bootstrap4', // spectre, bootstrap3, tailwind, html
+          disable_edit_json: true, // set to false allow direct viewing/editing of json for debugging
+          disable_properties: false, // needed to allow user to add missing properties
+          object_layout: 'table', // 'grid', 'grid-strict', 'categories'
+          no_additional_properties: true, // prevent users from adding new non-schema properties
+          schema
+          // iconlib: 'fontawesome5', // fontawesome is not currently loaded
+        };
+        if (startval) options.startval = startval; // only add startval if its defined, otherwise you end up with an empty template
+        if (EDITOR) EDITOR.destroy(); // clear any existing editor
+        EDITOR = new JSONEditor(el, options);
 
-    this.setState({ isBeingEdited: true });
-
-    // Update OPENEDITORS
-    UDATA.LocalCall("REGISTER_OPENEDITOR", { type: 'template' });
+        this.setState({ isBeingEdited: true });
+      });
   }
 
   /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   updateEditState() {
+    // disable edit if someone else is editing a template, node, or edge
     let disableEdit = false;
-    const openEditors = UDATA.AppState("OPENEDITORS").editors;
-    if (openEditors.includes('node') ||
-      openEditors.includes('edge')) {
-      disableEdit = true;
-    }
-    this.setState({ disableEdit });
+    UDATA.NetCall("SRV_GET_TEMPLATE_EDIT_STATE")
+      .then(data => {
+        disableEdit = data.templateBeingEdited || data.nodeOrEdgeBeingEdited;
+        this.setState({ disableEdit });
+      });
   }
 
   releaseOpenEditor() {
-    // Remove 'template' from OPENEDITORS
-    UDATA.LocalCall("DEREGISTER_OPENEDITOR", { type: 'template' });
+    UDATA.NetCall("SRV_RELEASE_TEMPLATE_EDIT");
   }
 
   onNewTemplate() {

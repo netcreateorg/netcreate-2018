@@ -223,7 +223,8 @@ class NodeSelector extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // Handle Template updates
       this.OnAppStateChange('TEMPLATE', this.setTemplate);
-      this.OnAppStateChange('OPENEDITORS', this.updateEditState);
+      UDATA.HandleMessage("EDIT_PERMITTED", this.updateEditState);
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ If someone on the network updates a node or edge, SOURCE_UPDATE is broadcast.
       We catch it here and update the selection if the node we're displaying matches
@@ -390,17 +391,20 @@ class NodeSelector extends UNISYS.Component {
     } // clearFform
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    setTemplate (data) {
+    setTemplate(data) {
       this.setState({ nodeDefs: data.nodeDefs });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Disable Node Edit if a Template is being edited
 /*/
     updateEditState() {
+      // disable edit if template is being edited
       let disableEdit = false;
-      const openEditors = UDATA.AppState("OPENEDITORS").editors;
-      if (openEditors.includes('template')) disableEdit = true;
-      this.setState({ disableEdit });
+      UDATA.NetCall("SRV_GET_TEMPLATE_EDIT_STATE")
+        .then(data => {
+          disableEdit = data.templateBeingEdited;
+          this.setState({ disableEdit });
+        });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Deregister as an open editor
@@ -409,7 +413,7 @@ class NodeSelector extends UNISYS.Component {
     releaseOpenEditor() {
       // NOTE: We only deregister if we're currently actively editing
       //       otherwise we might inadvertently deregister
-      if (this.state.isBeingEdited) UDATA.LocalCall("DEREGISTER_OPENEDITOR", { type: 'node' });
+      if (this.state.isBeingEdited) UDATA.NetCall("SRV_RELEASE_TEMPLATE_LOCK", { editor: 'node' });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return a new unique ID
@@ -826,8 +830,12 @@ class NodeSelector extends UNISYS.Component {
     });
     this.validateForm();
 
-    // Register as an open editor
-    UDATA.LocalCall("REGISTER_OPENEDITOR", { type: 'node' });
+    // When a node is being edited, lock the Template from being edited
+    UDATA.NetCall("SRV_REQ_TEMPLATE_LOCK", { editor: 'node' })
+      .then(data => {
+        const disableEdit = data.isBeingEdited;
+        this.setState({ disableEdit });
+      });
   } // editNode
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -881,7 +889,8 @@ class NodeSelector extends UNISYS.Component {
               }
             });
         }
-        this.AppCall('AUTOCOMPLETE_SELECT', {id:'search'});
+        this.AppCall('AUTOCOMPLETE_SELECT', { id: 'search' });
+        UDATA.NetCall("SRV_RELEASE_TEMPLATE_LOCK", { editor: 'node' });
       }
     } // onCancelButtonClick
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -945,7 +954,7 @@ class NodeSelector extends UNISYS.Component {
         });
       });
       // probably should unlock the node:
-
+      UDATA.NetCall("SRV_RELEASE_TEMPLATE_LOCK", { editor: 'node' });
     } // onSubmit
 
 
@@ -1181,6 +1190,7 @@ markdownIterate(Tag, props, children, level){
 /*/ componentDidMount () {
       this.onStateChange_SESSION(this.AppState('SESSION'));
       this.validateForm();
+      this.updateEditState();
 
       window.addEventListener("beforeunload", this.checkUnload);
       window.addEventListener("unload", this.doUnload);
@@ -1224,7 +1234,6 @@ markdownIterate(Tag, props, children, level){
       this.AppStateChangeOff('SELECTION', this.handleSelection);
       this.AppStateChangeOff('SEARCH', this.onStateChange_SEARCH);
       this.AppStateChangeOff('TEMPLATE', this.setTemplate);
-      this.AppStateChangeOff('OPENEDITORS', this.updateEditState);
     }
 
 } // class NodeSelector

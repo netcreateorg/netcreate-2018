@@ -68,6 +68,67 @@ var UNISYS = {};
         return UDB.WriteTemplateTOML(pkt);
       });
 
+      /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      /// TEMPLATE / NODE / EDGE EDITOR LOCKING
+      /**
+       * Requested by Template.jsx when user wants to edit template
+       * @return { templateBeingEdited: boolean, nodeOrEdgeBeingEdited: boolean }
+       */
+      UNET.HandleMessage('SRV_REQ_TEMPLATE_EDIT', pkt => { // server-database
+        if (DBG) console.log(PR, sprint_message(pkt));
+        console.log(PR, 'SRV_REQ_TEMPLATE_EDIT', sprint_message(pkt));
+        const data = UDB.RequestTemplateEdit();
+        const editState = UDB.GetTemplateEditState();
+        UNET.NetCall('EDIT_PERMITTED', editState); // Broadcast Lock State
+        return data;
+      });
+      /**
+       * Requested by Template.jsx when user is finished editing template
+       * @return { templateBeingEdited: boolean, nodeOrEdgeBeingEdited: boolean }
+       */
+      UNET.HandleMessage('SRV_RELEASE_TEMPLATE_EDIT', pkt => { // server-database
+        if (DBG) console.log(PR, sprint_message(pkt));
+        console.log(PR, 'SRV_RELEASE_TEMPLATE_EDIT', sprint_message(pkt));
+        const data = UDB.ReleaseTemplateEdit();
+        UNET.NetCall('EDIT_PERMITTED', data); // Broadcast Lock State
+        return data;
+      });
+      /**
+       * @return { templateBeingEdited: boolean, nodeOrEdgeBeingEdited: boolean }
+       */
+      UNET.HandleMessage('SRV_GET_TEMPLATE_EDIT_STATE', pkt => { // server-database
+        if (DBG) console.log(PR, sprint_message(pkt));
+        console.log(PR, 'SRV_GET_TEMPLATE_EDIT_STATE', sprint_message(pkt));
+        const data = UDB.GetTemplateEditState(pkt);
+        return data;
+      });
+      /**
+       * Requested by Node / Edge Editor when user wants to edit node / edge
+       * @return { templateBeingEdited: boolean, nodeOrEdgeBeingEdited: boolean }
+       */
+      UNET.HandleMessage('SRV_REQ_TEMPLATE_LOCK', pkt => { // server-database
+        if (DBG) console.log(PR, sprint_message(pkt));
+        console.log(PR, 'SRV_REQ_TEMPLATE_LOCK', sprint_message(pkt));
+        const data = UDB.RequestTemplateLock(pkt);
+        // Broadcast Lock State
+        UNET.NetCall('EDIT_PERMITTED', data);
+        return data;
+      });
+      /**
+       * @return { templateBeingEdited: boolean, nodeOrEdgeBeingEdited: boolean }
+       */
+      UNET.HandleMessage('SRV_RELEASE_TEMPLATE_LOCK', pkt => { // server-database
+        if (DBG) console.log(PR, sprint_message(pkt));
+        console.log(PR, 'SRV_RELEASE_TEMPLATE_LOCK', sprint_message(pkt));
+        const data = UDB.ReleaseTemplateLock(pkt);
+        // Broadcast Lock State
+        UNET.NetCall('EDIT_PERMITTED', data);
+        return data;
+      });
+
+
+      /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      /// TEMPLATE EDITING
       UNET.HandleMessage('SRV_GET_TEMPLATETOML_FILENAME', () => {
         return UDB.GetTemplateTOMLFileName();
       })
@@ -98,7 +159,7 @@ var UNISYS = {};
         return UDB.PKT_GetNewNodeID(pkt);
       });
 
-      UNET.HandleMessage('SRV_DBLOCKNODE',function(pkt) {
+      UNET.HandleMessage('SRV_DBLOCKNODE', function (pkt) {
         if (DBG) console.log(PR,sprint_message(pkt));
         return UDB.PKT_RequestLockNode(pkt);
       });

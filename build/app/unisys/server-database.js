@@ -37,6 +37,7 @@ let EDGES; // loki "edges" collection
 let m_locked_nodes; // map key = nodeID, value = uaddr initiating the lock
 let m_locked_edges; // map key = nodeID, value = uaddr initiating the lock
 let TEMPLATE;
+let m_open_editors = []; // array of template, node, or edge editors
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -482,6 +483,7 @@ DB.PKT_RequestUnlockAllEdges = function (pkt) {
 DB.PKT_RequestUnlockAll = function (pkt) {
   m_locked_nodes = new Map();
   m_locked_edges = new Map();
+  m_open_editors = [];
   return { unlocked: true };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -743,6 +745,81 @@ DB.WriteTemplateTOML = (pkt) => {
       console.log(PR, 'Failed trying to save', templateFilePath, err);
       return { OK: false, info: 'Failed trying to save', templateFilePath }
     });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ OPENEDITORS
+
+    Used to coordinate Template editing vs Node/Edge editing.  Since Nodes and
+    Edges should not be edited while the Template is being edited, any editor
+    that is opened registers as an OPENEDITOR and will check on the status of
+    existing open editors.
+
+    * When a Template editor is open, "Node Edit", "Edge Edit", and "Add New Edge"
+      buttons are all disabled.
+    * When "Node Edit", "Edge Edit", or "Add New Edge" has been triggered,
+      the Template buttons on the Template panel are all disabled.
+
+    m_open_editors is an array of all the editors (node, edge, template) that are
+    currently open.  Used to coordinate template vs node/edge editing
+    because nodes and edges should not be edited while the template
+    is being edited.
+/*/
+const EDITOR = { TEMPLATE: 'template', NONTEMPLATE: 'nonTemplate' };
+
+function GetEditStatus() {
+  // If there are any 'node' or 'edge' open editors, then request fails: template cannot be locked
+  // If there are any 'template' open editors, then request fails: template cannot be locked
+  const templateBeingEdited = m_open_editors.length === 1 && m_open_editors.includes( EDITOR.TEMPLATE );
+  const nodeOrEdgeBeingEdited = m_open_editors.length > 0 && !m_open_editors.includes( EDITOR.TEMPLATE );
+  return { templateBeingEdited, nodeOrEdgeBeingEdited };
+}
+
+/**
+ * @returns { temtemplateBeingEditedplate: boolean, nodeOrEdgeBeingEdited: boolean }
+ */
+DB.GetTemplateEditState = pkt => {
+  // return { isBeingEdited: GetTemplateIsBeingEdited() };
+  return GetEditStatus();
+}
+/**
+ * Requester is always the Template editor.
+ * @returns { okToEdit: boolean }
+ */
+DB.RequestTemplateEdit = () => {
+  console.log(PR,'RequestTemplateEdit', m_open_editors)
+  const okToEdit = m_open_editors.length < 1; // okToEdit only if no node/edge/template is open
+  // return edit state
+  if (okToEdit) m_open_editors.push(EDITOR.TEMPLATE);
+  return { okToEdit };
+}
+/**
+ * Requester is always the Template editor
+ * @param {Object} pkt
+ * @returns { temtemplateBeingEditedplate: boolean, nodeOrEdgeBeingEdited: boolean }
+ */
+DB.ReleaseTemplateEdit = pkt => {
+  const i = m_open_editors.findIndex(e => e === EDITOR.TEMPLATE);
+  if (i > -1) m_open_editors.splice(i, 1);
+  return GetEditStatus();
+}
+/**
+ * Requester is always node or edge editor
+ * @param {Object} pkt
+ * @param {string} pkt.editor - 'node' or 'edge'
+ * @returns { templateBeingEdited: boolean, nodeOrEdgeBeingEdited: boolean }
+ */
+DB.RequestTemplateLock = pkt => {
+  console.log(PR,'RequestTemplateLock', pkt)
+  m_open_editors.push(pkt.Data().editor);
+  return GetEditStatus();
+}
+/**
+ * @returns { templateBeingEdited: boolean, nodeOrEdgeBeingEdited: boolean }
+ */
+DB.ReleaseTemplateLock = pkt => {
+  const i = m_open_editors.findIndex(e => e === pkt.Data().editor);
+  if (i > -1) m_open_editors.splice(i, 1);
+  return GetEditStatus();
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
