@@ -1246,7 +1246,7 @@ JSCLI.AddFunction(function ncPushDatabase(jsonFile) {
 JSCLI.AddFunction(
   function ncUnlockAll() {
     UDATA.NetCall('SRV_DBUNLOCKALL', {});
-    return "Unlocking all nodes and edges in the database.";
+    return "Unlocking all nodes and edges in the database, and enabling template edits.";
   }
 );
 JSCLI.AddFunction(
