@@ -58,7 +58,7 @@ MOD.UpdateTemplate = (templateSnippet, editScope) => {
     UDATA.LocalCall("NODE_TYPES_UPDATE", { nodeTypesChanges: templateSnippet.options });
     // 3. Remove Types marked for deletion
     TEMPLATE.nodeDefs.type.options = TEMPLATE.nodeDefs.type.options.filter(o => !o.delete);
-    // 4. Update types with replacements
+    // 4. Update types with replacement labels
     TEMPLATE.nodeDefs.type.options = TEMPLATE.nodeDefs.type.options.map(o => {
       if (o.replacement) {
         o.label = o.replacement;
