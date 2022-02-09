@@ -756,6 +756,24 @@ DB.WriteTemplateTOML = (pkt) => {
     });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Clones the existing toml template
+    called by brunch to generate an up-to-date Template file to path
+    for standalone mode.
+    creates the path if it doesn't exist
+/*/
+DB.CloneTemplateTOML = function (filePath) {
+  const TOMLtemplateFilePath = m_GetTemplateTOMLFilePath();
+  FS.ensureDirSync(PATH.dirname(TOMLtemplateFilePath));
+  // Does the template exist?
+  if (!FS.existsSync(TOMLtemplateFilePath)) {
+    console.error(PR, `ERR could not find template ${TOMLtemplateFilePath}`);
+  } else {
+    FS.copySync(TOMLtemplateFilePath, filePath);
+    console.log(PR, `*** COPIED TEMPLATE ${TOMLtemplateFilePath} to ${filePath}`);
+  }
+};
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ OPENEDITORS
 
     Used to coordinate Template editing vs Node/Edge editing.  Since Nodes and

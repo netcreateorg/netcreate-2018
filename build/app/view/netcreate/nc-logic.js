@@ -196,7 +196,7 @@ MOD.Hook("LOADASSETS", () => {
             D3DATA = data;
           });
         // load template
-        let p2 = await DATASTORE.PromiseJSONFile("data/" + dataset + "-template.json")
+        let p2 = await DATASTORE.PromiseTOMLFile("data/" + dataset + ".template.toml")
           .then(data => {
             TEMPLATE = data;
             UDATA.SetAppState("TEMPLATE", TEMPLATE);

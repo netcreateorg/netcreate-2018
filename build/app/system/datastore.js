@@ -11,6 +11,7 @@ const DBG = { load: true };
 
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const TOML = require("@iarna/toml");
 const SETTINGS = require("settings");
 const SESSION = require("unisys/common-session");
 const UNISYS = require("unisys/client");
@@ -154,6 +155,29 @@ DSTOR.PromiseJSONFile = function(jsonFile) {
       resolve(D3DATA);
     });
     xobj.open("GET", `${jsonFile}`, true);
+    xobj.send();
+  });
+  return promise;
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: Load default data set from a TOML file in /assets/data
+/*/
+DSTOR.PromiseTOMLFile = function (tomlFile) {
+  if (typeof tomlFile !== "string") {
+    throw new Error("pass arg <filename_in_assets/data>");
+  }
+  let promise = new Promise((resolve, reject) => {
+    let xobj = new XMLHttpRequest();
+    xobj.addEventListener("load", event => {
+      if (event.target.status === 404) {
+        reject(new Error(`file not found`));
+        return;
+      }
+      const data = event.target.responseText;
+      const tomlData = Object.assign(D3DATA, TOML.parse(data));
+      resolve(tomlData);
+    });
+    xobj.open("GET", `${tomlFile}`, true);
     xobj.send();
   });
   return promise;
