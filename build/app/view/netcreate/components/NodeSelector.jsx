@@ -34,9 +34,12 @@
     NodeSelector's internal representation of form data up-to-date, we rely on
     the SELECTION updates' searchLabel field to update the label.
 
-    There are two different levels of write-access:
+    There are different levels of write-access:
 
       isLocked        Nodes can be selected for viewing, but editing
+                      cannot be enabled.
+
+      isStandalone    Nodes can be selected for viewing, but editing
                       cannot be enabled.
 
       disableEdit     Template is being edited, disable "Edit Node" button
@@ -162,6 +165,7 @@ class NodeSelector extends UNISYS.Component {
         },
         edges:         [],
         isLocked:       true,
+        isStandalone: false,
         edgesAreLocked: false,
         dbIsLocked: false,
         disableEdit: false,
@@ -517,7 +521,7 @@ class NodeSelector extends UNISYS.Component {
     its handleChange() when active typing is occuring, and also during
     SessionShell.componentWillMount()
 /*/ onStateChange_SESSION( decoded ) {
-      let update = { isLocked:   !decoded.isValid };
+      let update = { isLocked: !decoded.isValid };
       this.setState(update);
     }
 
@@ -971,6 +975,7 @@ class NodeSelector extends UNISYS.Component {
         hideDeleteNodeButton,
         formData,
         isLocked,
+        isStandalone,
         disableEdit,
         isBeingEdited
       } = this.state;
@@ -1084,10 +1089,9 @@ class NodeSelector extends UNISYS.Component {
                 hidden={ citation.hidden || (formData.id==='') }
                 onClick={this.onCiteButtonClick}
                 >Cite Node</Button>&nbsp;&nbsp;
-              <div hidden={isLocked || isBeingEdited || (formData.id === '')} style={{ display: 'inline' }}>
+              <div hidden={isLocked || isStandalone || isBeingEdited || (formData.id === '')} style={{ display: 'inline' }}>
                 <Button outline size="sm"
                   disabled={disableEdit}
-                  // hidden={isLocked || isBeingEdited || (formData.id==='') }
                   onClick={this.onEditButtonClick}
                 >Edit Node</Button>
                 <p hidden={!this.state.dbIsLocked} className="small text-danger warning">{nodeIsLockedMessage}
@@ -1203,7 +1207,10 @@ markdownIterate(Tag, props, children, level){
       this.onStateChange_SESSION(this.AppState('SESSION'));
       this.validateForm();
       this.updateEditState();
-
+      this.setState({
+        // hide Edit button if in standalone mode
+        isStandalone: UNISYS.IsStandaloneMode()
+      });
       window.addEventListener("beforeunload", this.checkUnload);
       window.addEventListener("unload", this.doUnload);
     }

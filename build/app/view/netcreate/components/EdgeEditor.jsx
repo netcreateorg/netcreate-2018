@@ -244,6 +244,7 @@ class EdgeEditor extends UNISYS.Component {
             id:        ''
         },
         isLocked:        true,       // User has not logged in, don't allow edge edit
+        isStandalone: false,         // Standalone mode, view only
         dbIsLocked:      false,      // Server Database is locked because someone else is editing
         disableEdit: false,          // Template is being edited, disable "Edit Edge" button
         isBeingEdited: false,        // Form is in an editable state
@@ -916,6 +917,7 @@ class EdgeEditor extends UNISYS.Component {
         sourceNode,
         targetNode,
         edgeDefs,
+        isStandalone,
         edgeIsLockedMessage,
         templateIsLockedMessage,
         disableEdit
@@ -1115,7 +1117,7 @@ class EdgeEditor extends UNISYS.Component {
               </div><br/>
               <FormGroup className="text-right" style={{paddingRight:'5px'}}>
                 <Button className="small float-left btn btn-outline-light" size="sm"
-                  hidden={this.state.isLocked || parentNodeIsLocked}
+                  hidden={this.state.isLocked || isStandalone || parentNodeIsLocked}
                   onClick={this.onDeleteButtonClick}
                 >Delete</Button>&nbsp;
                 <Button outline size="sm"
@@ -1123,7 +1125,7 @@ class EdgeEditor extends UNISYS.Component {
                   onClick={this.onCiteButtonClick}
                 >Cite Edge</Button>&nbsp;&nbsp;
                 <Button outline size="sm"
-                  hidden={this.state.isLocked || this.state.isBeingEdited || parentNodeIsLocked}
+                  hidden={this.state.isLocked || isStandalone || this.state.isBeingEdited || parentNodeIsLocked}
                   disabled={disableEdit}
                   onClick={this.onEditButtonClick}
                 >{this.state.isBeingEdited ? "Add New Edge" : "Edit Edge"}</Button>&nbsp;
@@ -1153,6 +1155,10 @@ class EdgeEditor extends UNISYS.Component {
       this.loadSourceAndTarget();
       this.onStateChange_SESSION(this.AppState('SESSION'));
       this.updateEditState();
+      this.setState({
+        // hide Edit button if in standalone mode
+        isStandalone: UNISYS.IsStandaloneMode()
+      });
       window.addEventListener("beforeunload", this.checkUnload);
       window.addEventListener("unload", this.doUnload);
     }
