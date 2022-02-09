@@ -300,7 +300,7 @@ MOD.TEMPLATE = {
               format: 'checkbox',
               default: false
             },
-            "options": MOD.NODETYPEOPTIONS
+            "options": Object.assign(MOD.NODETYPEOPTIONS, { description: 'NOTE: We recommend using the "Edit Node Types" feature to edit Node Types.  It provides additional dataset migration tools.' })
           }
         },
         "notes": { // Signficance
@@ -620,7 +620,7 @@ MOD.TEMPLATE = {
               format: 'checkbox',
               default: false
             },
-            "options": MOD.EDGETYPEOPTIONS
+            "options": Object.assign(MOD.EDGETYPEOPTIONS, { description: 'NOTE: We recommend using the "Edit Edge Types" feature to edit Edge Types.  It provides additional dataset migration tools.' })
           }
         },
         "notes": { // Signficance
