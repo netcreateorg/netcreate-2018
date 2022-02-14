@@ -140,9 +140,8 @@ class Template extends UNISYS.Component {
 
   // When editing Node or Edge Type Options, the original label field should be
   // disabled so they can't be edited
+  // ClassName added in template-schema.GetTypeEditorSchema()
   disableOrigLabelFields() {
-    // HACK:  Lock edit fields so original labels are not changed
-    // ClassName added in template-schema.GetTypeEditorSchema()
     const origLabelFields = document.getElementsByClassName('disabledField');
     origLabelFields.forEach(f => f.setAttribute("disabled", "disabled"));
   }
@@ -152,19 +151,14 @@ class Template extends UNISYS.Component {
   }
 
   onNewTemplate() {
-    this.setState({
-      editScope: 'root'
-    });
+    this.setState({ editScope: 'root' });
     this.loadEditor(); // new blank template with default schema
   }
 
   onCurrentTemplateLoad(e) {
     UDATA.LocalCall('EDIT_CURRENT_TEMPLATE') // nc-logic
       .then(result => {
-        console.error('template is', result);
-        this.setState({
-          editScope: 'root'
-        });
+        this.setState({ editScope: 'root' });
         this.loadEditor({ startval: result.template });
       })
   }
@@ -193,50 +187,6 @@ class Template extends UNISYS.Component {
             });
           }
         );
-
-        // Not needed anymore, but keep for reference for managing json-editor
-        //
-        // // Handle Delete Events
-        // EDITOR.on('deleteRow', editor => {
-        //   const val = EDITOR.getValue();
-        //   const currentOptions = val ? val.options : [];
-        //   console.log('currentOptions', currentOptions);
-        //   typeOptionsRemoved = []; // start from scratch each time
-        //   typeOptions.forEach(o => {
-        //     if (!currentOptions.find(c => c.label === o.label)) typeOptionsRemoved.push(o);
-        //   });
-        //   console.log('removed options', typeOptionsRemoved);
-        //   const deletions = EDITOR.getEditor('root.deletions');
-        //   if (deletions) deletions.setValue(typeOptionsRemoved);
-        //
-        //   // key is 0 for first row
-        //   // editor and key are undefined for last row
-        //   // console.log('deleteRow', editor && editor.key)
-        //   // const deletions = EDITOR.getEditor('root.deletions');
-        //   // if (deletions) deletions.setValue([{ label: 'yo', color: '#ffffff' }]);
-        //   // EDITOR.setValue({ deleted: 'yes' });
-        // });
-        //
-        //
-        // watch one
-        // root.1 refers to second field, fields are 0-indexed
-        // EDITOR.watch('root.1.label', (e) => {
-        //   // `e` is undefined
-        //   console.log('change', e);
-        // });
-        //
-        // watch ALL
-        // works but watches too much?
-        // const watcherCallback = function (path) {
-        //   console.log(`field with path: [${path}] changed to [${JSON.stringify(this.getEditor(path).getValue())}]`);
-        //   // Do something
-        // }
-        // for (let key in EDITOR.editors) {
-        //   if (EDITOR.editors.hasOwnProperty(key) && key !== 'root') {
-        //     EDITOR.watch(key, watcherCallback.bind(EDITOR, key));
-        //   }
-        // }
-
       })
   }
 
@@ -405,6 +355,50 @@ class Template extends UNISYS.Component {
 
 } // class Help
 
+
+// NOTES on using json-editor
+        // Not needed anymore, but keep for reference for managing json-editor
+        //
+        // // Handle Delete Events
+        // EDITOR.on('deleteRow', editor => {
+        //   const val = EDITOR.getValue();
+        //   const currentOptions = val ? val.options : [];
+        //   console.log('currentOptions', currentOptions);
+        //   typeOptionsRemoved = []; // start from scratch each time
+        //   typeOptions.forEach(o => {
+        //     if (!currentOptions.find(c => c.label === o.label)) typeOptionsRemoved.push(o);
+        //   });
+        //   console.log('removed options', typeOptionsRemoved);
+        //   const deletions = EDITOR.getEditor('root.deletions');
+        //   if (deletions) deletions.setValue(typeOptionsRemoved);
+        //
+        //   // key is 0 for first row
+        //   // editor and key are undefined for last row
+        //   // console.log('deleteRow', editor && editor.key)
+        //   // const deletions = EDITOR.getEditor('root.deletions');
+        //   // if (deletions) deletions.setValue([{ label: 'yo', color: '#ffffff' }]);
+        //   // EDITOR.setValue({ deleted: 'yes' });
+        // });
+        //
+        //
+        // watch one
+        // root.1 refers to second field, fields are 0-indexed
+        // EDITOR.watch('root.1.label', (e) => {
+        //   // `e` is undefined
+        //   console.log('change', e);
+        // });
+        //
+        // watch ALL
+        // works but watches too much?
+        // const watcherCallback = function (path) {
+        //   console.log(`field with path: [${path}] changed to [${JSON.stringify(this.getEditor(path).getValue())}]`);
+        //   // Do something
+        // }
+        // for (let key in EDITOR.editors) {
+        //   if (EDITOR.editors.hasOwnProperty(key) && key !== 'root') {
+        //     EDITOR.watch(key, watcherCallback.bind(EDITOR, key));
+        //   }
+        // }
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
