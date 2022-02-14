@@ -307,14 +307,6 @@ MOD.Hook("INITIALIZE", () => {
     }
   }); // StateChange SELECTION
 
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ TEMPLATE has been edited
-  /*/
-  UDATA.OnAppStateChange("TEMPLATE", stateChange => {
-    if (DBG) console.log(PR, 'TEMPLATE state change', stateChange)
-    TEMPLATE = stateChange;
-    m_UpdateColorMap();
-  });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ User has clicked on a suggestion from the AutoCopmlete suggestion list.
@@ -681,6 +673,18 @@ MOD.Hook("INITIALIZE", () => {
   });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ TEMPLATE has been edited
+      This message is sent from server.js over the net.
+      This is the main handler for the local app.  It updates the appState.
+  /*/
+  UDATA.HandleMessage("NET_TEMPLATE_UPDATE", stateChange => {
+    if (DBG) console.log(PR, 'NET_TEMPLATE_UPDATE state change', stateChange)
+    TEMPLATE = stateChange;
+    UDATA.SetAppState("TEMPLATE", TEMPLATE);
+    m_UpdateColorMap();
+  });
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/
   /*/
   UDATA.HandleMessage("EXPORT_NODES", data => {
@@ -742,7 +746,8 @@ MOD.Hook("APP_READY", function(info) {
       `NODE_DELETE`,
       "EDGE_UPDATE",
       "EDGE_DELETE",
-      "EDIT_PERMITTED"
+      "EDIT_PERMITTED",
+      "NET_TEMPLATE_UPDATE"
     ]).then(d => {
       clearTimeout(timeout);
       if (DBG)

@@ -41,20 +41,34 @@ var UDATA = UNISYS.NewDataLink(MOD);
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Update TEMPLATE AppState
-    Called by Template.jsx to save data to disk.
+    Called by Template.jsx to update the template data with the info from the form.
+    Mostly used to process whether the form is:
+    a) updating the whole template data, or
+    b) updating only node types, or
+    c) updateing only edge types
+
+    IMPORTANT: Does NOT save the template or SetAppState!  Use SaveTemplateFile!
+      SaveTemplateFile will trigger a TEMPLATE state update.
+      Generally you won't call UpdateTemplate without a followup call to
+      SaveTemplateFile.
+
     MAJOR SIDE EFFECT: Updates D3DATA with changes!
     `templateSnippet` can be the whole template object, or just the node types or
     edge types.
 /*/
 MOD.UpdateTemplate = (templateSnippet, editScope) => {
   let TEMPLATE = UDATA.AppState('TEMPLATE');
-  // Replace whole template?
+
+  // a) Replace whole template?
   if (editScope === 'root') TEMPLATE = templateSnippet;
-  // Replace NODE type options?
+
+  // b) Replace NODE type options?
   if (editScope === 'nodeTypeOptions') {
     // 1. Clean/validate -- Remove any empty labels
-    //    Copy new options to main Template store
-    TEMPLATE.nodeDefs.type.options = templateSnippet.options.filter(o => o.label !== '');
+    //    Added Rows will have a blank 'label' but a non-blank 'replacement'
+    TEMPLATE.nodeDefs.type.options = templateSnippet.options.filter(o => {
+      return (o.label !== '') || (o.label === '' && o.replacement !== '');
+    });
     // 2. Update D3DATA with new types
     UDATA.LocalCall("NODE_TYPES_UPDATE", { nodeTypesChanges: templateSnippet.options });
     // 3. Remove Types marked for deletion
@@ -73,12 +87,15 @@ MOD.UpdateTemplate = (templateSnippet, editScope) => {
       label: '', color: '#eeee'
     });
   }
-  // Replace EDGE type options?
+
+  // c) Replace EDGE type options?
   if (editScope === 'edgeTypeOptions') {
     console.log('edgeTypeOptions: template snippet', templateSnippet)
     // 1. Clean/validate -- Remove any empty labels
-    //    Copy new options to main Template store
-    TEMPLATE.edgeDefs.type.options = templateSnippet.options.filter(o => o.label !== '');
+    //    Added Rows will have a blank 'label' but a non-blank 'replacement'
+    TEMPLATE.edgeDefs.type.options = templateSnippet.options.filter(o => {
+      return (o.label !== '') || (o.label === '' && o.replacement !== '');
+    });
     // 2. Update D3DATA with new types
     UDATA.LocalCall("EDGE_TYPES_UPDATE", { edgeTypesChanges: templateSnippet.options });
     // 3. Remove Types marked for deletion
@@ -97,7 +114,8 @@ MOD.UpdateTemplate = (templateSnippet, editScope) => {
       label: '', color: '#eeee'
     });
   }
-  UDATA.SetAppState("TEMPLATE", TEMPLATE);
+  // This call is redundant.  SaveTemplateToFile will trigger a state update.
+  // UDATA.SetAppState("TEMPLATE", TEMPLATE);
   return TEMPLATE;
 }
 

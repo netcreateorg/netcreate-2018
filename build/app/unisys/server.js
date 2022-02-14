@@ -65,6 +65,7 @@ var UNISYS = {};
 
       UNET.HandleMessage('SRV_TEMPLATESAVE', pkt => { // server-database
         if (DBG) console.log(PR, sprint_message(pkt));
+        UNET.NetCall('NET_TEMPLATE_UPDATE', pkt.data.template); // Broadcast template to other computers on the net
         return UDB.WriteTemplateTOML(pkt);
       });
 
