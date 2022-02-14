@@ -60,6 +60,7 @@ class Template extends UNISYS.Component {
     };
     this.loadEditor = this.loadEditor.bind(this);
     this.updateEditState = this.updateEditState.bind(this);
+    this.disableOrigLabelFields = this.disableOrigLabelFields.bind(this);
     this.releaseOpenEditor = this.releaseOpenEditor.bind(this);
     this.onNewTemplate = this.onNewTemplate.bind(this);
     this.onCurrentTemplateLoad = this.onCurrentTemplateLoad.bind(this);
@@ -81,6 +82,7 @@ class Template extends UNISYS.Component {
 
   componentWillUnmount() {
     if (EDITOR) EDITOR.destroy();
+    UDATA.UnhandleMessage("EDIT_PERMITTED", this.updateEditState);
   }
 
   /// METHODS /////////////////////////////////////////////////////////////////
@@ -91,8 +93,9 @@ class Template extends UNISYS.Component {
    * -- If startval is not defined, an empty template created from the default
    *    schema is used.
    * @param {object} parms { schema, startval }
+   * @param {function} cb - Callback function
    */
-  loadEditor(parms) {
+  loadEditor(parms, cb) {
     UDATA.NetCall("SRV_REQ_TEMPLATE_EDIT")
       .then(data => {
         if (!data.okToEdit) {
@@ -117,6 +120,9 @@ class Template extends UNISYS.Component {
         EDITOR = new JSONEditor(el, options);
 
         this.setState({ isBeingEdited: true });
+
+        if (cb === undefined || typeof cb !== 'function') return;
+        cb();
       });
   }
 
@@ -130,6 +136,15 @@ class Template extends UNISYS.Component {
         disableEdit = data.templateBeingEdited || data.nodeOrEdgeBeingEdited;
         this.setState({ disableEdit });
       });
+  }
+
+  // When editing Node or Edge Type Options, the original label field should be
+  // disabled so they can't be edited
+  disableOrigLabelFields() {
+    // HACK:  Lock edit fields so original labels are not changed
+    // ClassName added in template-schema.GetTypeEditorSchema()
+    const origLabelFields = document.getElementsByClassName('disabledField');
+    origLabelFields.forEach(f => f.setAttribute("disabled", "disabled"));
   }
 
   releaseOpenEditor() {
@@ -165,16 +180,21 @@ class Template extends UNISYS.Component {
         typeOptions = result.template.nodeDefs.type.options.filter(o => o.label !== '');
         const startval = { options: typeOptions }
         this.setState({ editScope: 'nodeTypeOptions' });
-        this.loadEditor({
-          schema: nodeTypeEditorSchema,
-          startval
-        });
-        // HACK:  Lock edit fields so original labels are not changed
-        // ClassName added in template-schema.GetTypeEditorSchema()
-        const origLabelFields = document.getElementsByClassName('disabledField');
-        origLabelFields.forEach(f => { f.disabled = true });
+        this.loadEditor(
+          {
+            schema: nodeTypeEditorSchema,
+            startval
+          }, () => {
+            this.disableOrigLabelFields();
+            // HACK: After a row is added, we need to also disable the newly added
+            // "Label" field -- the new label should be added in the "Change To" field
+            EDITOR.on('addRow', editor => {
+              this.disableOrigLabelFields();
+            });
+          }
+        );
 
-        // Not needed anymore, but keep for reference
+        // Not needed anymore, but keep for reference for managing json-editor
         //
         // // Handle Delete Events
         // EDITOR.on('deleteRow', editor => {
@@ -234,11 +254,15 @@ class Template extends UNISYS.Component {
         this.loadEditor({
           schema: edgeTypeEditorSchema,
           startval
-        });
-        // HACK:  Lock edit fields so original labels are not changed
-        // ClassName added in template-schema.GetTypeEditorSchema()
-        const origLabelFields = document.getElementsByClassName('disabledField');
-        origLabelFields.forEach(f => { f.disabled = true });
+        }, () => {
+            this.disableOrigLabelFields();
+            // HACK: After a row is added, we need to also disable the newly added
+            // "Label" field -- the new label should be added in the "Change To" field
+            EDITOR.on('addRow', editor => {
+              this.disableOrigLabelFields();
+            });
+          }
+        );
       });
   }
 

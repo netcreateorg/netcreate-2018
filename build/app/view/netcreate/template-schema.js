@@ -770,7 +770,7 @@ MOD.GetTypeEditorSchema = schemaTypeOptions => {
     typeOptions.items.properties.label.options = {
       // For some reason inputAttribute 'disabled' does not work here
       // so we use a className to mark the field
-      // then in Temlate.onEditNodeTypes we set the
+      // then in Template.onEditNodeTypes we set the
       // disabled property via js
       inputAttributes: { class: 'disabledField' }
     };
