@@ -1109,8 +1109,8 @@ function m_MigrateData(data) {
 /*/
 function m_ConvertSourceTarget2ID(edges) {
   return edges.map(e => {
-    e.source = e.source.id;
-    e.target = e.target.id;
+    e.source = e.source && e.source.id;
+    e.target = e.target && e.target.id;
     return e;
   });
 }
