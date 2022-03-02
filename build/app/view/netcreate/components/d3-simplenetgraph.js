@@ -292,7 +292,7 @@ class D3NetGraph {
       let nodeElements = this.zoomWrapper.selectAll(".node")
         .data(this.data.nodes, (d) => { return d.id }); // fn returns the calculated key for the data object
 
-      // edges is a d3.selection object
+      // linkElements is a d3.selection object
       let linkElements = this.zoomWrapper.selectAll(".edge")
         .data(this.data.edges, (d) => { return d.id }); // fn returns the calculated key for the data object
 
@@ -624,6 +624,7 @@ displayUpdated(nodeEdge)
     and mouseover events.
 /*/
 _UpdateLinkStrokeWidth(edge) {
+  if (DBG) console.log(PR, '_UpdateLinkStrokeWidth', edge)
   if (edge.selected ||
     (edge.source.id === mouseoverNodeId) ||
     (edge.target.id === mouseoverNodeId) ||
@@ -636,6 +637,7 @@ _UpdateLinkStrokeWidth(edge) {
 }
 
 _UpdateLinkStrokeColor(edge) {
+  if (DBG) console.log(PR, '_UpdateLinkStrokeColor', edge)
   let COLORMAP = UDATA.AppState('COLORMAP');
   let color = COLORMAP.edgeColorMap[edge.type]
   return color;
@@ -647,11 +649,13 @@ _UpdateLinkStrokeColor(edge) {
 /*/ This primarily handles mousewheel zooms
 /*/
 _HandleZoom() {
+  if (DBG) console.log(PR, '_HandleZoom')
   d3.select('.zoomer').attr("transform", d3.event.transform);
 }
 /*/ This handles zoom button zooms.
 /*/
 _Transition(zoomLevel) {
+  if (DBG) console.log(PR, '_Transition')
   this.d3svg.transition()
     //.delay(100)
     .duration(200)
@@ -661,6 +665,7 @@ _Transition(zoomLevel) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ _Dragstarted (d, self) {
+      if (DBG) console.log(PR, '_Dragstarted', d.x, d.y)
       if (!d3.event.active) self.simulation.alphaTarget(0.3).restart();
       d.fx = d.x;
       d.fy = d.y;
@@ -668,12 +673,14 @@ _Transition(zoomLevel) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ _Dragged (d) {
+      if (DBG) console.log(PR, '_Dragged')
       d.fx = d3.event.x;
       d.fy = d3.event.y;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ _Dragended (d, self) {
+      if (DBG) console.log(PR, '_Dragended')
       if (!d3.event.active) self.simulation.alphaTarget(0.0001);
       d.fx = null;
       d.fy = null;
