@@ -338,6 +338,7 @@ class D3NetGraph {
         .append("circle")
         // "r" has to be set here or circles don't draw.
         .attr("r", (d) => {
+          if (!this.data.edges) return this.defaultSize; // no edges, use default size
           let radius = this.data.edges.reduce((acc, ed) => {
             return (ed.source === d.id || ed.target === d.id) ? acc + 1 : acc;
           }, 1);
@@ -436,6 +437,7 @@ class D3NetGraph {
           })
           .attr("r", (d) => {
             // this "r" is necessary to resize after a link is added
+            if (!this.data.edges) return this.defaultSize; // no edges, uise default size
             let radius = this.data.edges.reduce((acc,ed)=>{
               return (ed.source.id===d.id || ed.target.id===d.id) ? acc+1 : acc
             },1);
