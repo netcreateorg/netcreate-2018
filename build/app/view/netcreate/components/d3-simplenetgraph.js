@@ -157,6 +157,7 @@ class D3NetGraph {
 
       // bind 'this' to function objects so event handlers can access
       // contents of this class+module instance
+      this._HandleFilteredD3DataUpdate = this._HandleFilteredD3DataUpdate.bind(this);
       this._SetData           = this._SetData.bind(this);
       this._Initialize        = this._Initialize.bind(this);
       this._UpdateGraph       = this._UpdateGraph.bind(this);
@@ -177,12 +178,8 @@ class D3NetGraph {
       //   this._SetData(data);
       // });
 
-      // Special handler for the remove filter
-      UDATA.OnAppStateChange('FILTEREDD3DATA',(data)=>{
-        // expect { nodes, edges } for this namespace
-        if (DBG) console.log(PR,'got state FILTEREDD3DATA',data);
-        this._SetData(data);
-      });
+      UDATA.OnAppStateChange('FILTEREDD3DATA', this._HandleFilteredD3DataUpdate);
+
 
       // The template may be loaded or changed after D3DATA is loaded.
       // So we need to explicitly update the colors if the color
@@ -228,6 +225,20 @@ class D3NetGraph {
 
 /// CLASS PUBLIC METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  /// CLASS PRIVATE METHODS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+   *
+   * @param {object} data
+   * @param {array} data.nodes
+   * @param {array} data.edges
+   */
+  _HandleFilteredD3DataUpdate(data) {
+    if (DBG) console.log(PR, this.uid, 'got state FILTEREDD3DATA', data);
+    this._SetData(data);
+  }
+
 /*/ Clear the SVG data
     Currently not used because we just deconstruct d3-simplenetgraph insead.
     Was thought to be needed during imports otherwise _UpdateGraph reads data from existing
