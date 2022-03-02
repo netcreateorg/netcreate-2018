@@ -366,6 +366,56 @@ DB.PKT_SetDatabase = function (pkt) {
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: Add nodes/edges to an existing db
+/*/
+DB.PKT_InsertDatabase = function (pkt) {
+  if (DBG) console.log(PR, `PKT_InsertDatabase`);
+  let { nodes = [], edges = [] } = pkt.Data();
+  if (!nodes.length) console.log(PR, "WARNING: empty nodes array");
+  else console.log(PR, `setting ${nodes.length} nodes...`);
+  if (!edges.length) console.log(PR, "WARNING: empty edges array");
+  else console.log(PR, `setting ${edges.length} edges...`);
+  NODES.insert(nodes);
+  EDGES.insert(edges);
+  console.log(PR, `PKT_InsertDatabase complete. Data available on next get.`);
+  m_db.close();
+  DB.InitializeDatabase();
+  LOGGER.Write(pkt.Info(), `setdatabase`);
+  return { OK: true };
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: Update or add nodes/edges to an existing db
+    If the node/edge exists, update it.
+    Otherwise, insert it.
+    This walks down the node and edge arrays one by one,
+    using PKT_Update to decide whether to insert or update the data.
+    REVIEW: Consider batch operations ala `NODES.insert(nodes)`?
+/*/
+DB.PKT_MergeDatabase = function (pkt) {
+  if (DBG) console.log(PR, `PKT_InsertDatabase`);
+  let { nodes = [], edges = [] } = pkt.Data();
+
+  // insert nodes one by one
+  nodes.forEach(n => {
+    pkt.data.node = n;
+    DB.PKT_Update(pkt);
+  });
+  pkt.data.node = undefined; // clear, no longer needed
+
+  edges.forEach(e => {
+    pkt.data.edge = e;
+    DB.PKT_Update(pkt);
+  });
+  pkt.data.edge = undefined; // clear, no longer needed
+
+  return new Promise((resolve, reject) => m_db.saveDatabase(err => {
+    if (err) reject(new Error('rejected'));
+    DB.InitializeDatabase();
+    LOGGER.Write(pkt.Info(), `mergedatabase`);
+    resolve({ OK: true });
+  }));
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Update all data in existing database.
     Used to update node/edge types after template edit
 /*/

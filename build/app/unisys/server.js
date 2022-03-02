@@ -63,10 +63,16 @@ var UNISYS = {};
         return UDB.PKT_SetDatabase(pkt);
       });
 
-      UNET.HandleMessage('SRV_TEMPLATESAVE', pkt => { // server-database
-        if (DBG) console.log(PR, sprint_message(pkt));
-        UNET.NetCall('NET_TEMPLATE_UPDATE', pkt.data.template); // Broadcast template to other computers on the net
-        return UDB.WriteTemplateTOML(pkt);
+      /// Add new node/edges to db after an import
+      UNET.HandleMessage('SRV_DBINSERT', function (pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_InsertDatabase(pkt);
+      });
+
+      /// Update or add new node/edges to db after an import
+      UNET.HandleMessage('SRV_DBMERGE', function (pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_MergeDatabase(pkt);
       });
 
       /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -130,14 +136,24 @@ var UNISYS = {};
 
       /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       /// TEMPLATE EDITING
+      UNET.HandleMessage('SRV_TEMPLATESAVE', pkt => { // server-database
+        if (DBG) console.log(PR, sprint_message(pkt));
+        UNET.NetCall('NET_TEMPLATE_UPDATE', pkt.data.template); // Broadcast template to other computers on the net
+        return UDB.WriteTemplateTOML(pkt);
+      });
+
       UNET.HandleMessage('SRV_GET_TEMPLATETOML_FILENAME', () => {
         return UDB.GetTemplateTOMLFileName();
       })
 
+      /// Update all EXISTING nodes/edges after a Template edit
       UNET.HandleMessage('SRV_DBUPDATE_ALL', function (pkt) {
-        if (DBG) console.log(PR,sprint_message(pkt));
+        if (DBG) console.log(PR, sprint_message(pkt));
         return UDB.PKT_UpdateDatabase(pkt);
       });
+
+      /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      /// NODE/EDGE EDITING
 
       // receives a packet from a client
       UNET.HandleMessage('SRV_DBUPDATE',function(pkt) {

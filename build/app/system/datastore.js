@@ -47,6 +47,17 @@ DSTOR.Hook("INITIALIZE", () => {
     DSTOR.UpdateServerDB(data);
   });
 
+  // DB_INSERT is a local call originating from within the app
+  // Generally used to add new nodes and edges after an import
+  UDATA.HandleMessage("DB_INSERT", function(data) {
+    DSTOR.InsertServerDB(data);
+  });
+
+  // DB_MERGE is a local call originating from within the app
+  // Generally used to update or add new nodes and edges after an import
+  // Unlike DB_INSERT, it'll update existing nodes/edges
+  UDATA.HandleMessage("DB_MERGE", DSTOR.MergeServerDB);
+
   UDATA.OnAppStateChange('SESSION', function( decodedData ) {
     let { isValid, token } = decodedData;
     console.log('Handling SESSION',isValid);
@@ -209,6 +220,41 @@ DSTOR.GetTemplateTOMLFileName = () => {
 DSTOR.UpdateDataPromise = function (d3data) {
   return new Promise((resolve, reject) => {
     UDATA.Call("SRV_DBUPDATE_ALL", d3data).then(res => {
+      if (res.OK) {
+        console.log(PR, `database update OK`);
+        resolve(res);
+      } else {
+        reject(new Error(JSON.stringify(res)));
+      }
+    });
+  });
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: Insert new records into database from d3data-formatted object
+/*/
+DSTOR.InsertServerDB = function (d3data) {
+  return new Promise((resolve, reject) => {
+    UDATA.Call("SRV_DBINSERT", d3data).then(res => {
+      if (res.OK) {
+        console.log(PR, `database update OK`);
+        resolve(res);
+      } else {
+        reject(new Error(JSON.stringify(res)));
+      }
+    });
+  });
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * API: Add or Insert records into database from d3data-formatted object
+ * @param {object} mergeData
+ * @param {array} mergeData.nodes
+ * @param {array} mergeData.edges
+ * @returns
+ */
+DSTOR.MergeServerDB = function (mergeData) {
+  return new Promise((resolve, reject) => {
+    UDATA.Call("SRV_DBMERGE", mergeData).then(res => {
       if (res.OK) {
         console.log(PR, `database update OK`);
         resolve(res);
