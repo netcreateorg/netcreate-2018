@@ -573,7 +573,7 @@ displayUpdated(nodeEdge)
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Apply new force properties
     Call this on construct and if forceProperties have changed.
-/*/ _UpdateForces ( data ) {
+/*/ _UpdateForces() {
       this.simulation
         .force("link", d3.forceLink()
             .id((d) => {return d.id})
