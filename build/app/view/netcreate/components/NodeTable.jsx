@@ -106,7 +106,10 @@ class NodeTable extends UNISYS.Component {
       this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
     }
 
-    displayUpdated(nodeEdge) {
+  displayUpdated(nodeEdge) {
+      // Prevent error if `meta` info is not defined yet, or not properly imported
+      if (!nodeEdge.meta) return;
+
       var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
 
       var year = String(d.getFullYear());

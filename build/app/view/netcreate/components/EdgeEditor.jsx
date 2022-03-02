@@ -391,9 +391,9 @@ class EdgeEditor extends UNISYS.Component {
       let D3DATA = this.AppState('D3DATA');
 
       // parseInt in case of old bad string id
-      let edges = D3DATA.edges.filter( edge=>parseInt(edge.id)===edgeID );
+      let edges = D3DATA.edges ? D3DATA.edges.filter( edge=>parseInt(edge.id)===edgeID ) : [];
       if (!edges) {
-        throw 'EdgeEditor: Passed edgeID'+edgeID+'not found!';
+        throw 'EdgeEditor: Passed edgeID '+edgeID+' not found!';
       }
       let edge = edges[0];
       if (DBG) console.log('EdgeEditor.loadSourceAndTarget: Loading edge', edge);

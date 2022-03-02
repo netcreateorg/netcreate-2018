@@ -497,6 +497,7 @@ function m_IsNodeMatchedByFilter(node, filter) {
 function m_FiltersApplyToEdges(FDATA, FILTEREDD3DATA) {
   const { filterAction } = FDATA;
   const { filters, transparency } = FDATA.edges;
+  if (!FILTEREDD3DATA.edges) return; // no data
   FILTEREDD3DATA.edges = FILTEREDD3DATA.edges.filter(edge => {
     return m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3DATA);
   });
