@@ -560,6 +560,11 @@ tooltipForNode(d)
 
 displayUpdated(nodeEdge)
 {
+      // BL FIX 2022-02
+      // safely return empty dateTime if ._nlog is missing
+      // ._nlog can be missing if data was imported
+      if (nodeEdge._nlog === undefined) return; // catch bad or missing _nlog
+
       var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
 
       var year = "" + d.getFullYear();
