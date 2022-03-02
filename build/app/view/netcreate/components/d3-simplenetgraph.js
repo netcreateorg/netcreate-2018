@@ -163,6 +163,11 @@ class D3NetGraph {
       this._UpdateGraph       = this._UpdateGraph.bind(this);
       this._UpdateForces      = this._UpdateForces.bind(this);
       this._Tick              = this._Tick.bind(this);
+      this._ColorMap = this._ColorMap.bind(this);
+      this._ZoomReset = this._ZoomReset.bind(this);
+      this._ZoomIn = this._ZoomIn.bind(this);
+      this._ZoomOut = this._ZoomOut.bind(this);
+      this._ZoomPanReset = this._ZoomPanReset.bind(this);
       this._HandleZoom        = this._HandleZoom.bind(this);
       this._Dragstarted       = this._Dragstarted.bind(this);
       this._Dragged           = this._Dragged.bind(this);
@@ -179,52 +184,31 @@ class D3NetGraph {
       // });
 
       UDATA.OnAppStateChange('FILTEREDD3DATA', this._HandleFilteredD3DataUpdate);
+      UDATA.OnAppStateChange('COLORMAP', this._ColorMap);
+      UDATA.HandleMessage('ZOOM_RESET', this._ZoomReset);
+      UDATA.HandleMessage('ZOOM_IN', this._ZoomIn);
+      UDATA.HandleMessage('ZOOM_OUT', this._ZoomOut);
+      UDATA.HandleMessage('ZOOM_PAN_RESET', this._ZoomPanReset);
+      // UDATA.HandleMessage('GROUP_PROPS', (data) => {
+      //   console.log('GROUP_PROPS got ... ');
+      // });
 
-
-      // The template may be loaded or changed after D3DATA is loaded.
-      // So we need to explicitly update the colors if the color
-      // definitions have changed.
-      UDATA.OnAppStateChange('COLORMAP',(data)=>{
-        if (DBG) console.log(PR, 'got state COLORMAP', data);
-        this._UpdateGraph();
-      });
-
-      UDATA.HandleMessage('ZOOM_RESET', (data) => {
-        if (DBG) console.log(PR, 'ZOOM_RESET got state D3DATA', data);
-        // NOTE: The transition/duration call means _HandleZoom will be called multiple times
-        this.d3svg.transition()
-          .duration(200)
-          .call(this.zoom.scaleTo, 1);
-      });
-
-      UDATA.HandleMessage('ZOOM_IN', (data) => {
-        if (DBG) console.log(PR, 'ZOOM_IN got state D3DATA', data);
-        this._Transition(1.2);
-      });
-
-      UDATA.HandleMessage('ZOOM_OUT', (data) => {
-        if (DBG) console.log(PR, 'ZOOM_OUT got state D3DATA', data);
-        this._Transition(0.8);
-      });
-
-      // Pan to 0,0 and zoom scale to 1
-      // (Currently not used)
-      UDATA.HandleMessage('ZOOM_PAN_RESET', (data) => {
-        if (DBG) console.log(PR, 'ZOOM_PAN_RESET got state D3DATA', data);
-        const transform = d3.zoomIdentity.translate(0, 0).scale(1);
-        this.d3svg.call(this.zoom.transform, transform);
-      });
-
-      UDATA.HandleMessage('GROUP_PROPS', (data) => {
-        console.log('GROUP_PROPS got ... ');
-      });
 
 
   }
 
 
-/// CLASS PUBLIC METHODS //////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// CLASS PUBLIC METHODS //////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  Deregister() {
+    if (DBG) console.log(PR, 'd3-simplenetgraph.DESTRUCT!!!')
+    UDATA.AppStateChangeOff('FILTEREDD3DATA', this._HandleFilteredD3DataUpdate);
+    UDATA.AppStateChangeOff('COLORMAP', this._ColorMap);
+    UDATA.UnhandleMessage('ZOOM_RESET', this._ZoomReset);
+    UDATA.UnhandleMessage('ZOOM_IN', this._ZoomIn);
+    UDATA.UnhandleMessage('ZOOM_OUT', this._ZoomOut);
+    UDATA.UnhandleMessage('ZOOM_PAN_RESET', this._ZoomPanReset);
+  }
 
   /// CLASS PRIVATE METHODS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -684,6 +668,40 @@ _UpdateLinkStrokeColor(edge) {
 
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // The template may be loaded or changed after D3DATA is loaded.
+  // So we need to explicitly update the colors if the color
+  // definitions have changed.
+  _ColorMap(data) {
+    if (DBG) console.log(PR, 'got state COLORMAP', data);
+    this._UpdateGraph();
+  }
+
+  _ZoomReset(data) {
+    if (DBG) console.log(PR, 'ZOOM_RESET got state D3DATA', data);
+    // NOTE: The transition/duration call means _HandleZoom will be called multiple times
+    this.d3svg.transition()
+      .duration(200)
+      .call(this.zoom.scaleTo, 1);
+  }
+
+  _ZoomIn(data) {
+    if (DBG) console.log(PR, 'ZOOM_IN got state D3DATA', data);
+    this._Transition(1.2);
+  }
+
+  _ZoomOut(data) {
+    if (DBG) console.log(PR, 'ZOOM_OUT got state D3DATA', data);
+    this._Transition(0.8);
+  }
+
+  // Pan to 0,0 and zoom scale to 1
+  // (Currently not used)
+  _ZoomPanReset(data) {
+    if (DBG) console.log(PR, 'ZOOM_PAN_RESET got state D3DATA', data);
+    const transform = d3.zoomIdentity.translate(0, 0).scale(1);
+    this.d3svg.call(this.zoom.transform, transform);
+  }
+
 /*/ This primarily handles mousewheel zooms
 /*/
 _HandleZoom() {
