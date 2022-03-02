@@ -53,7 +53,7 @@ var   UDATA           = null;
 let m_width  = 800;
 let m_height = 800;
 let mouseoverNodeId = -1;   // id of the node the mouse is currently over
-let m_forceProperties = {   // values for all forces
+const M_FORCEPROPERTIES = {   // values for all forces
       center: {
         x: 0.5,
         y: 0.5
@@ -85,7 +85,7 @@ let m_forceProperties = {   // values for all forces
         distance: 130, // 60, 30,
         iterations: 2 // 1
       }
-    }; // m_forceProperties
+    }; // M_FORCEPROPERTIES
 
 
 
@@ -568,31 +568,31 @@ displayUpdated(nodeEdge)
       this.simulation
         .force("link", d3.forceLink()
             .id((d) => {return d.id})
-            .distance( (d)=>{return m_forceProperties.link.distance} )
+            .distance( (d)=>{return M_FORCEPROPERTIES.link.distance} )
 // this doesn't seem to change anything?!?  The m_forceProperties.link.distance is the only value that seems to matter?
 //            .distance( (d)=>{return m_forceProperties.link.distance+d.size*10 } )
 //            .distance( (d)=>{return m_forceProperties.link.distance * (1/d.size) } )
 //            .distance( m_forceProperties.link.distance )
-            .iterations(m_forceProperties.link.iterations))
+            .iterations(M_FORCEPROPERTIES.link.iterations))
         .force("charge", d3.forceManyBody()
 //            .strength(m_forceProperties.charge.strength * m_forceProperties.charge.enabled)
 //            .strength( (d)=>{return d.size/6 * m_forceProperties.charge.strength * m_forceProperties.charge.enabled} )
-            .strength( (d)=>{return d.size/4 * m_forceProperties.charge.strength * m_forceProperties.charge.enabled} )
-            .distanceMin(m_forceProperties.charge.distanceMin)
-            .distanceMax(m_forceProperties.charge.distanceMax))
+            .strength( (d)=>{return d.size/4 * M_FORCEPROPERTIES.charge.strength * M_FORCEPROPERTIES.charge.enabled} )
+            .distanceMin(M_FORCEPROPERTIES.charge.distanceMin)
+            .distanceMax(M_FORCEPROPERTIES.charge.distanceMax))
         .force("collide", d3.forceCollide()
-            .strength(m_forceProperties.collide.strength * m_forceProperties.collide.enabled)
-            .radius((d) => {return d.size/m_forceProperties.collide.radius;})
-            .iterations(m_forceProperties.collide.iterations))
+            .strength(M_FORCEPROPERTIES.collide.strength * M_FORCEPROPERTIES.collide.enabled)
+            .radius((d) => {return d.size/M_FORCEPROPERTIES.collide.radius;})
+            .iterations(M_FORCEPROPERTIES.collide.iterations))
         .force("center", d3.forceCenter()
-            .x(m_width * m_forceProperties.center.x)
-            .y(m_height * m_forceProperties.center.y))
+            .x(m_width * M_FORCEPROPERTIES.center.x)
+            .y(m_height * M_FORCEPROPERTIES.center.y))
         .force("forceX", d3.forceX()
-            .strength(m_forceProperties.forceX.strength * m_forceProperties.forceX.enabled)
-            .x(m_width * m_forceProperties.forceX.x))
+            .strength(M_FORCEPROPERTIES.forceX.strength * M_FORCEPROPERTIES.forceX.enabled)
+            .x(m_width * M_FORCEPROPERTIES.forceX.x))
         .force("forceY", d3.forceY()
-            .strength(m_forceProperties.forceY.strength * m_forceProperties.forceY.enabled)
-            .y(m_height * m_forceProperties.forceY.y))
+            .strength(M_FORCEPROPERTIES.forceY.strength * M_FORCEPROPERTIES.forceY.enabled)
+            .y(m_height * M_FORCEPROPERTIES.forceY.y))
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Update the display positions after each simulation tick
