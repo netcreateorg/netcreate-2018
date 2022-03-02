@@ -228,6 +228,15 @@ class D3NetGraph {
 
 /// CLASS PUBLIC METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Clear the SVG data
+    Currently not used because we just deconstruct d3-simplenetgraph insead.
+    Was thought to be needed during imports otherwise _UpdateGraph reads data from existing
+    SVG elements rather than the new data.
+/*/
+  _ClearSVG() {
+    this.zoomWrapper.selectAll(".edge").remove();
+    this.zoomWrapper.selectAll(".node").remove();
+  }
 
 
 /// CLASS PRIVATE METHODS /////////////////////////////////////////////////////
