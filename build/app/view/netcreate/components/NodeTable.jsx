@@ -383,7 +383,9 @@ render() {
         <thead>
           <tr>
             <th width="4%"><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
-            <th width="4%" hidden={!DBG}>ID</th>
+            <th width="4%" hidden={!DBG}><Button size="sm"
+                  onClick={() => this.setSortKey("id")}
+                >ID</Button></th>
             <th width="4%"><Button size="sm"
                   onClick={() => this.setSortKey("edgeCount")}
                 >{nodeDefs.degrees.displayLabel} {this.sortSymbol("edgeCount")}</Button></th>
