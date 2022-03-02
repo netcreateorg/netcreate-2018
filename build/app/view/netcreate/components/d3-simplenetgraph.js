@@ -239,21 +239,31 @@ class D3NetGraph {
   }
 
 
-/// CLASS PRIVATE METHODS /////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ The parent container passes data to the d3 graph via this SetData call
     which then triggers all the internal updates
-/*/ _SetData ( newData ) {
-      this.data = newData
-      if (newData && newData.nodes) {
-        this._Initialize()
-        this._UpdateForces()
-        this._UpdateGraph()
-        // updates ignored until this is run restarts the simulation
-        // (important if simulation has already slowed down)
-        this.simulation.alpha(.3).restart()  // was 1 - JD
-      }
+/*/
+  _SetData(newData) {
+    if (newData) {
+      // Make a shallow copy to protect against mutation, while
+      // recycling old nodes to preserve position and velocity.
+      // From https://observablehq.com/@d3/modifying-a-force-directed-graph?collection=@d3/d3-force
+      // grab the SVG nodes
+      const svgNodes = this.zoomWrapper.selectAll(".node");
+      const oldNodes = new Map(svgNodes.data().map(d => [d.id, d]));
+
+      this.data.nodes = newData.nodes.map(d => Object.assign(oldNodes.get(d.id) || {}, d));
+      this.data.edges = newData.edges.map(d => Object.assign({}, d));
+
+      this._Initialize()
+      this._UpdateForces()
+      this._UpdateGraph()
+
+      // updates ignored until this is run restarts the simulation
+      // (important if simulation has already slowed down)
+      this.simulation.alpha(.3).restart()  // was 1 - JD
     }
+  }
+
 /*/ This sets up the force properties for the simulation and tick handler.
 /*/ _Initialize () {
       // Create the force layout.  After a call to force.start(), the tick
