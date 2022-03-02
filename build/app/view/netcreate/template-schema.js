@@ -303,7 +303,7 @@ MOD.TEMPLATE = {
             "options": Object.assign({}, MOD.NODETYPEOPTIONS, { description: 'NOTE: We recommend using the "Edit Node Types" feature to edit Node Types.  It provides additional dataset migration tools.' })
           }
         },
-        "notes": { // Signficance
+        "notes": { // Significance
           type: 'object',
           description: 'Display name of the node',
           properties: {
@@ -414,7 +414,7 @@ MOD.TEMPLATE = {
             }
           }
         },
-        "created": { // HACK setting.  Only used in d3-simplenetgraph tooltip.  Does not define a new data field.
+        "created": { // Built-in data DO NOT MODIFY!
           type: 'object',
           description: 'System-generated date.  This setting only used to show/hide tooltip in graph',
           properties: {
@@ -446,7 +446,7 @@ MOD.TEMPLATE = {
             }
           }
         },
-        "updated": { // HACK setting.  Only used in d3-simplenetgraph tooltip.  Does not define a new data field.
+        "updated": { // Built-in data DO NOT MODIFY!
           type: 'object',
           description: 'System-generated date.  This setting only used to show/hide tooltip in graph',
           properties: {
@@ -470,6 +470,38 @@ MOD.TEMPLATE = {
               type: 'string',
               description: 'Help text to display on the Node Editor form',
               default: 'Date and time node was last modified'
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              default: false
+            }
+          }
+        },
+        "revision": { // Built-in data DO NOT MODIFY!
+          type: 'object',
+          description: 'System-generated revision count.  This setting only used to show/hide tooltip in graph',
+          properties: {
+            "displayLabel": {
+              type: 'string',
+              description: 'Label to use for system display',
+              default: 'Revision'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Revision'
+            },
+            "includeInGraphTooltip": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Show "revision" value in tooltip on graph',
+              default: true
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Node Editor form',
+              default: 'Number of times this node has been revised'
             },
             "hidden": {
               type: 'boolean',
@@ -747,6 +779,102 @@ MOD.TEMPLATE = {
             }
           }
         },
+        "created": { // Built-in data DO NOT MODIFY!
+          type: 'object',
+          description: 'System-generated date.  This setting only used to show/hide tooltip in graph',
+          properties: {
+            "displayLabel": {
+              type: 'string',
+              description: 'Label to use for system display',
+              default: 'Created'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Created'
+            },
+            "includeInGraphTooltip": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Show "created" value in tooltip on graph',
+              default: true
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Node Editor form',
+              default: 'Date and time node was created'
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              default: false
+            }
+          }
+        },
+        "updated": { // Built-in data DO NOT MODIFY!
+          type: 'object',
+          description: 'System-generated date.  This setting only used to show/hide tooltip in graph',
+          properties: {
+            "displayLabel": {
+              type: 'string',
+              description: 'Label to use for system display',
+              default: 'Updated'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Updated'
+            },
+            "includeInGraphTooltip": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Show "updated" value in tooltip on graph',
+              default: true
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Node Editor form',
+              default: 'Date and time node was last modified'
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              default: false
+            }
+          }
+        },
+        "revision": { // Built-in data DO NOT MODIFY!
+          type: 'object',
+          description: 'System-generated revision count.  This setting only used to show/hide tooltip in graph',
+          properties: {
+            "displayLabel": {
+              type: 'string',
+              description: 'Label to use for system display',
+              default: 'Revision'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Revision'
+            },
+            "includeInGraphTooltip": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Show "revision" value in tooltip on graph',
+              default: true
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Node Editor form',
+              default: 'Number of times this node has been revised'
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              default: false
+            }
+          }
+        }
       }
     }
   }
