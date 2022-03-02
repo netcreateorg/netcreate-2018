@@ -197,7 +197,7 @@ const SERVER_UADDR      = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
       if (m_heartbeat_interval) return; // already started
       m_heartbeat_interval = setInterval(function sendHeartbeat() {
         mu_sockets.forEach((socket, key, map) => {
-          if (DBG) console.log(PR, 'sending heartbeat to', socket.UADDR);
+          // if (DBG) console.log(PR, 'sending heartbeat to', socket.UADDR);
           if (socket.readyState === socket.OPEN) {
             socket.send("ping", (err) => {
               if (err) console.log(PR, 'error "', err, '" while sending heartbeat to', socket.UADDR);
