@@ -531,8 +531,9 @@ class D3NetGraph {
       // UPDATE ANIMATED SIMULATION
       // this is a plugin
       this.simulation.nodes(this.data.nodes)
-      this.simulation.force("link").links(this.data.edges)
-
+      if (this.data.edges) {
+        this.simulation.force("link").links(this.data.edges)
+      }
     }
 
 // added by Joshua to generate the text, based on the template, for the tooltip on the node
