@@ -100,7 +100,7 @@ class D3NetGraph {
       this.zoom = {};
       this.zoomWrapper  = {};
       this.simulation   = {};
-      this.data         = {};
+      this.data         = { nodes: [], edges: [] };
 
       this.clickFn      = {};
 
