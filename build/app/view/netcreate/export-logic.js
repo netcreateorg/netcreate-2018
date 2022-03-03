@@ -5,11 +5,13 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const DBG = false;
+const PR = 'export-logic: ';
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS = require("unisys/client");
 const TOML = require("@iarna/toml");
+const clone = require("rfdc")();
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -18,6 +20,21 @@ var UDATA = UNISYS.NewDataLink(MOD);
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// For CSV Importing
+/// We need to match:
+/// * To split lines, we need to split on LF that is NOT wrapped in quotes
+const REGEXMatchLFNotInQuotes = /\n(?=(?:[^"]*"[^"]*")*[^"]*$)/;
+/// * To read fields, we need to ignore commas that are between two double quotes
+const REGEXMatchCommasNotInQuotes = /,(?=(?:[^"]*"[^"]*")*[^"]*$)/;
+
+/// DATA //////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// These are set by MOD.ValidateNodeFile and MOD.ValidateEdgeFile if the
+/// file to import matches the headers.  They are not actually imported
+/// until MOD.Import() is called.
+MOD.NodefileData = {}; // { headers, lines }
+MOD.EdgefileData = {}; // { headers, lines }
+// REVIEW: Is this too confusing with `nodefileData`?
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -29,8 +46,12 @@ function m_formatDate(date) {
 }
 
 function m_encode(data) {
+  let res;
   // double quotes need to be escaped
-  return String(data).replace(/"/g, '""');
+  res = String(data).replace(/"/g, '""');
+  // encode carriage returns
+  res = String(res).replace(/\n/g, 'nnn');
+  return res;
 }
 
 // DEPRECATED -- Used to flatten 'attributes'
@@ -58,6 +79,7 @@ function m_flattenKeys(keys, prefix) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Returns an array of export values for a given node record
+    Used during export.
     e.g. [1,'Tacitus','Person',...]
 /*/
 function m_getNodeValues(node, keys) {
@@ -73,12 +95,18 @@ function m_getNodeValues(node, keys) {
       });
     }
     // Special Data Handling
-    // -- DATE
-    if (['created', 'updated'].includes(key)) {
-      RESULT.push(m_formatDate(node[key]));
+    // -- Number
+    if (['id', 'revision'].includes(key)) {
+      // Export as a number
+      RESULT.push(node[key]);
       return;
     }
-    // Else, normal processing
+    // -- DATE
+    if (['created', 'updated'].includes(key)) {
+      RESULT.push(m_formatDate(node.meta[key]));
+      return;
+    }
+    // Else, normal processing -- wrap in quotes
     if (node.hasOwnProperty(key)) RESULT.push(`"${m_encode(node[key])}"`); // enclose in quotes to support commas
   })
   return RESULT;
@@ -86,6 +114,7 @@ function m_getNodeValues(node, keys) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Returns an array of node records
+    Used during export.
     e.g. [[<tacitus>], [<marc antony>], ...]
 /*/
 function m_GenerateNodesArray(nodes, nodekeys) {
@@ -96,7 +125,8 @@ function m_GenerateNodesArray(nodes, nodekeys) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Returns an array of values for a given node record
+/*/ Returns an array of values for a given edge record
+    Used during export.
     e.g. [1,'Tacitus','Person',...]
 /*/
 function m_getEdgeValues(edge, keys) {
@@ -112,24 +142,32 @@ function m_getEdgeValues(edge, keys) {
       });
     }
     // Special Data Handling
+    // -- Number
+    if (['id', 'revision'].includes(key)) {
+      // Export as a number
+      RESULT.push(edge[key]);
+      return;
+    }
     // -- SOURCE / TARGET
     if (['source', 'target'].includes(key)) {
+      // Export only the id of the source/target, not the whole object
       RESULT.push(edge[key].id);
       return;
     }
     // -- DATE
     if (['created', 'updated'].includes(key)) {
-      RESULT.push(m_formatDate(edge[key]));
+      RESULT.push(m_formatDate(edge.meta[key]));
       return;
     }
-    // Else, normal processing
+    // Else, normal processing -- wrap in quotes
     if (edge.hasOwnProperty(key)) RESULT.push(`"${edge[key]}"`); // enclose in quotes to support commas
   })
   return RESULT;
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Returns an array of node records
+/*/ Returns an array of edge records
+    Used during export.
     e.g. [ [<tacitus>], [<marc antony>], ...]
 /*/
 function m_GenerateEdgesArray(edges, edgekeys) {
@@ -138,6 +176,7 @@ function m_GenerateEdgesArray(edges, edgekeys) {
   edges.forEach(e => edgeArr.push(m_getEdgeValues(e, edgekeys)));
   return edgeArr;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 /// MODULE EXPORT METHODS /////////////////////////////////////////////////////
@@ -168,9 +207,12 @@ MOD.ExportNodes = () => {
     // eslint-disable-next-line prefer-reflect
     if (Object.prototype.toString.call(key) === '[object Object]') {
       // DEPRECATED -- 'attribute' handler.
-      const subKeys = Object.keys(key); // can have multiple subKeys
-      const internalkeys = subKeys.map(sk => key[sk].map(k => `${sk}:${k}`)).flat();
-      return internalkeys.map(k => NODEKEY_LABELS[k]);
+      throw new Error(`Unexpected node type for ${key}`);
+      // This shouldn't be called anymore as of 2/2022 because the data fields
+      // have been flattened. See #198.
+      // const subKeys = Object.keys(key); // can have multiple subKeys
+      // const internalkeys = subKeys.map(sk => key[sk].map(k => `${sk}:${k}`)).flat();
+      // return internalkeys.map(k => NODEKEY_LABELS[k]);
     } else {
       // return NODEKEY_LABELS[key];
       return TEMPLATE.nodeDefs[key].exportLabel;
@@ -254,6 +296,83 @@ MOD.ExportEdges = () => {
   link.click();
   document.body.removeChild(link);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+/// MODULE IMPORT METHODS /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// IMPORT NODES //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// This only checks to make sure the expected headers are present
+/// It does not actually validate the data
+/// Headers are defined in the template schema.
+MOD.ValidateNodeFile = async data => {
+  let isValid = true;
+  let missingKeys = [];
+
+  // Retrieve import file node keys defined in template
+  const TEMPLATE = UDATA.AppState('TEMPLATE');
+  const NODEKEYS = Object.values(TEMPLATE.nodeDefs).map(k => k.exportLabel);
+
+  const { nodefile } = data;
+  if (nodefile===undefined) return { isValid: false, missingKeys, fileKeys: []}; // User cancelled
+  let result = await nodefile.text();
+  // Validate Data
+  const lines = result.split(REGEXMatchLFNotInQuotes);
+  // First line should list the headers
+  // Remove headers, so 'lines' is just data
+  const headers = lines.shift().split(',');
+  // get keys
+  const nodeKeys = m_flattenKeys(NODEKEYS);
+  const fileKeys = m_flattenKeys(headers);
+  // check that ALL nodeKeys are in the fileKeys
+  nodeKeys.forEach(n => {
+    if (!fileKeys.includes(n)) {
+      isValid = false;
+      missingKeys.push(n);
+    }
+  });
+  if (isValid) MOD.NodefileData = { headers, lines };
+  return {isValid, missingKeys, fileKeys};
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// This only checks to make sure the expected headers are present
+/// It does not actually validate the data
+MOD.ValidateEdgeFile = async data => {
+  let isValid = true;
+  let missingKeys = [];
+
+  // Retrieve import file node keys defined in template
+  const TEMPLATE = UDATA.AppState('TEMPLATE');
+  const EDGEKEYS = Object.values(TEMPLATE.edgeDefs).map(k => k.exportLabel);
+
+  const { edgefile } = data;
+  if (edgefile===undefined) return { isValid: false, missingKeys, fileKeys: []}; // User cancelled
+  let result = await edgefile.text();
+  // Validate Data
+  const lines = result.split(/\r\n|\n/);
+  // First line should list the headers
+  // Remove headers, so 'lines' is just data
+  const headers = lines.shift().split(',');
+  // get keys
+  const edgeKeys = m_flattenKeys(EDGEKEYS);
+  const fileKeys = m_flattenKeys(headers);
+  // check that ALL nodeKeys are in the fileKeys
+  edgeKeys.forEach(n => {
+    if (!fileKeys.includes(n)) {
+      isValid = false;
+      missingKeys.push(n);
+    }
+  });
+  if (isValid) MOD.EdgefileData = { headers, lines };
+  return {isValid, missingKeys, fileKeys};
+}
+
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Used when importing a TOML file
     Makes sure TOML file is readable.
@@ -271,6 +390,210 @@ MOD.ValidateTOMLFile = async data => {
     return { isValid: false, error: err };
   }
 }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// IMPORT
+/**
+ * Load Nodes from node csv file
+ * @param {object} nodefileData
+ * @param {array} nodefileData.headers
+ * @param {array} nodefileData.lines
+ * @returns
+ */
+function m_LoadNodes(nodefileData) {
+  // If nodefileData is not defined, just return an empty array
+  if (!nodefileData || !nodefileData.headers || !nodefileData.lines) return [];
+
+  // Retrieve import file node keys defined in template
+  const TEMPLATE = UDATA.AppState('TEMPLATE');
+  const NODEKEYS = Object.values(TEMPLATE.nodeDefs).map(k => k.exportLabel);
+
+  // Map import fields (exportLabel) to internal fields, e.g. ID => id,
+  // essentially a reverse look up map
+  const INTERNAL_FIELDS_MAP = new Map();
+  Object.entries(TEMPLATE.nodeDefs).map(e => INTERNAL_FIELDS_MAP.set(e[1].exportLabel, e[0]));
+
+  // convert nodefileData to JSON
+  // Load JSON
+  const headers = nodefileData.headers;
+  const nodes = nodefileData.lines.map(l => {
+    const node = {};
+    const subcategories = new Map();
+    const importFields = l.split(REGEXMatchCommasNotInQuotes); // ?=" needed to match commas in strings
+    importFields.forEach((f, index) => {
+      const field = f.replace(/^"/, "").replace(/"$/, ""); // strip quotes
+      const key = headers[index];
+      const keysplit = String(key).split(':');
+      // Subcategory and subkey are DEPRECATED
+      const subcategory = keysplit[0]; // e.g. 'attributes' of 'attributes:Node_type'
+      const subkey = keysplit[1]; // e.g. 'Node_type'
+      if (subkey) {
+        console.error(PR, `subkey ${subkey} is deprecated!`);
+        // DEPRECATED: Review if we decide to use this again.
+        // // Using a sub category?  e.g. 'attributes:Node_type'
+        // const currSubfields = subcategories.get(subcategory) || {};
+        // console.log('...currSubfields', currSubfields, field)
+        // currSubfields[subkey] = field;
+        // subcategories.set(subcategory, currSubfields);
+        // console.log('adding subfields', key, currSubfields, subcategories)
+      } else {
+        // not using a subcategory, just a regular field
+        // meta field?
+        const exportLabel = headers[index];
+        if (exportLabel === undefined) console.error(PR, 'could not find exportLabel for index', index, 'in', headers);
+        const internalLabel = INTERNAL_FIELDS_MAP.get(exportLabel);
+        // special handling for internal fields
+        if (['id'].includes(internalLabel)) {
+          node[internalLabel] = Number(field); // ids are numbers
+        } else if (['created', 'updated', 'revision'].includes(internalLabel)) {
+          if (node.meta === undefined) node.meta = {};
+          node.meta[internalLabel] = field;
+        } else {
+          node[internalLabel] = field;
+        }
+      }
+    })
+    // DEPRECATED
+    // collapse 'attributes' and 'meta' into objects
+    // subcategories.forEach((val, key) => {
+    //   node[key] = val
+    // });
+    return node;
+  });
+  return nodes;
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * Load Edges from edge csv file
+ * @param {object} edgefileData
+ * @param {array} edgefileData.headers
+ * @param {array} edgefileData.lines
+ * @returns
+ */
+function m_LoadEdges(edgefileData) {
+  // If edgefileData is not defined, just return an empty array
+  if (!edgefileData || !edgefileData.headers || !edgefileData.lines) return [];
+
+  // Retrieve import file node keys defined in template
+  const TEMPLATE = UDATA.AppState('TEMPLATE');
+  const EDGEKEYS = Object.values(TEMPLATE.edgeDefs).map(k => k.exportLabel);
+
+  // Map import fields (exportLabel) to internal fields, e.g. ID => id,
+  // essentially a reverse look up map
+  const INTERNAL_FIELDS_MAP = new Map();
+  Object.entries(TEMPLATE.edgeDefs).map(e => INTERNAL_FIELDS_MAP.set(e[1].exportLabel, e[0]));
+
+  // convert edgefileData to JSON
+  // Load JSON
+  const headers = edgefileData.headers;
+  const edges = edgefileData.lines.map(l => {
+    const edge = {};
+    const subcategories = new Map();
+    const importFields = l.split(REGEXMatchCommasNotInQuotes); // ?=" needed to match commas in strings
+    importFields.forEach((f, index) => {
+      const field = f.replace(/^"/, "").replace(/"$/, ""); // strip quotes
+      const key = headers[index];
+      const keysplit = String(key).split(':');
+      // Subcategory and subkey are DEPRECATED
+      const subcategory = keysplit[0]; // e.g. 'attributes' of 'attributes:Node_type'
+      const subkey = keysplit[1]; // e.g. 'Node_type'
+      if (subkey) {
+        console.error(PR, `subkey ${subkey} is deprecated!`);
+        // DEPRECATED: Review if we decide to use this again.
+        // // Using a sub category?  e.g. 'attributes:Node_type'
+        // const currSubfields = subcategories.get(subcategory) || {};
+        // console.log('...currSubfields', currSubfields, field)
+        // currSubfields[subkey] = field;
+        // subcategories.set(subcategory, currSubfields);
+        // console.log('adding subfields', key, currSubfields, subcategories)
+      } else {
+        // not using a subcategory, just a regular field
+        // meta field?
+        const exportLabel = headers[index];
+        if (exportLabel === undefined) console.error(PR, 'could not find exportLabel for index', index, 'in', headers);
+        const internalLabel = INTERNAL_FIELDS_MAP.get(exportLabel);
+        // special handling for internal fields
+        if (['id','source','target'].includes(internalLabel)) {
+          edge[internalLabel] = Number(field); // ids are numbers
+        } else if (['created', 'updated', 'revision'].includes(internalLabel)) {
+          if (edge.meta === undefined) edge.meta = {};
+          edge.meta[internalLabel] = field;
+        } else {
+          edge[internalLabel] = field;
+        }
+      }
+    })
+    // DEPRECATED
+    // collapse 'attributes' and 'meta' into objects
+    // subcategories.forEach((val, key) => {
+    //   node[key] = val
+    // });
+    return edge;
+  });
+  return edges;
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Import
+MOD.Import = data => {
+  const importNodes = m_LoadNodes(MOD.NodefileData);
+  const importEdges = m_LoadEdges(MOD.EdgefileData);
+  const mergeData = { nodes: importNodes, edges: importEdges }
+
+  // Write to database!
+  // IMPORTANT: We have to update the db BEFORE calling SetAppState
+  // because SetAppState will cause d3 to convert edge source/targets
+  // from ids back to node objects.
+  UDATA.LocalCall("DB_MERGE", mergeData).then( res => {
+    // Update D3DATA after we know the db has been successfully updated
+    // Merge changes into D3DATA
+    const D3DATA = clone(UDATA.AppState('D3DATA'));
+    importNodes.forEach(n => {
+      const i = D3DATA.nodes.findIndex(dn => dn.id === n.id);
+      if (i > -1) {
+        D3DATA.nodes.splice(i, 1, n); // Replace existing node
+      } else {
+        D3DATA.nodes.push(n); // Insert new node
+      }
+    })
+    importEdges.forEach(e => {
+// REVIEW: Add validation here!!!
+      // Validate Edges?
+      // Make sure each edge has a valid source and target
+      // if not, fail!
+
+      // Set default edge size
+      // REVIEW: Recalculate edge size?
+      e.size = 1;
+
+      const i = D3DATA.edges.findIndex(de => de.id === e.id);
+      if (i > -1) {
+        D3DATA.edges.splice(i, 1, e);  // Replace existing edge
+      } else {
+        D3DATA.edges.push(e); // Insert new edge
+      }
+    })
+
+    // HACK TEST
+    // console.warn(PR, 'VVVVVVVV updated D3DATA', D3DATA)
+    // console.warn(PR, '@@@@@@@ CLEARING D3DATA');
+    // UDATA.SetAppState("D3DATA", {nodes: [], edges: []});
+    // // UDATA.LocalCall('CONSTRUCT_GRAPH');
+    // setTimeout(() => {
+    //   console.warn(PR, '@@@@@@@ Times Up...restoring ');
+    //   UDATA.LocalCall('CONSTRUCT_GRAPH');
+    //   UDATA.SetAppState("D3DATA", D3DATA);
+    // }, 10000);
+    // console.warn(PR, '@@@@@@ Oops, did not wait');
+
+    UDATA.LocalCall('CONSTRUCT_GRAPH');
+    UDATA.SetAppState("D3DATA", D3DATA);
+
+    // And FDATA???
+  });
+}
+
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
