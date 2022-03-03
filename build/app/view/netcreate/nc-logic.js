@@ -350,18 +350,20 @@ MOD.Hook("INITIALIZE", () => {
     } else {
       // Load existing node and edges
       let edges = [];
-      if (nodeID) {
-        edges = edges.concat(
-          D3DATA.edges.filter(
-            edge => edge.source.id === nodeID || edge.target.id === nodeID
-          )
-        );
-      } else {
-        edges = edges.concat(
-          D3DATA.edges.filter(
-            edge => edge.source.label === nodeLabel || edge.target.label === nodeLabel
-          )
-        );
+      if (D3DATA.edges) { // if no edges are defined, skip, otherwise chokes on D3DATA.edges.filter
+        if (nodeID) {
+          edges = edges.concat(
+            D3DATA.edges.filter(
+              edge => edge.source.id === nodeID || edge.target.id === nodeID
+            )
+          );
+        } else {
+          edges = edges.concat(
+            D3DATA.edges.filter(
+              edge => edge.source.label === nodeLabel || edge.target.label === nodeLabel
+            )
+          );
+        }
       }
       // create state change object
       newState = {
