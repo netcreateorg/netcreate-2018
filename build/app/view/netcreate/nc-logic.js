@@ -1272,6 +1272,18 @@ JSCLI.AddFunction(
     return "Unlocking all edges in the database.";
   }
 );
+JSCLI.AddFunction(
+  function ncNodeColorMap() {
+    console.log(UDATA.AppState('COLORMAP'));
+    return "ncNodeColorMap.";
+  }
+);
+JSCLI.AddFunction(
+  function ncDumpData() {
+    console.log('D3DATA', D3DATA);
+    return `ncDumpData: ${JSON.stringify(D3DATA)}`;
+  }
+);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Command: Token Generator
 /*/
