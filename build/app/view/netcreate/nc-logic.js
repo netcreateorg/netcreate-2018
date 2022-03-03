@@ -694,7 +694,11 @@ MOD.Hook("INITIALIZE", () => {
     EXPORT.ExportEdges();
   });
 
+  UDATA.HandleMessage("IMPORT", EXPORT.Import);
+  UDATA.HandleMessage("VALIDATE_NODEFILE", EXPORT.ValidateNodeFile);
+  UDATA.HandleMessage("VALIDATE_EDGEFILE", EXPORT.ValidateEdgeFile);
   UDATA.HandleMessage("VALIDATE_TOMLFILE", EXPORT.ValidateTOMLFile);
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   UDATA.HandleMessage("EDIT_CURRENT_TEMPLATE", () => {
     return { template: TEMPLATE }
