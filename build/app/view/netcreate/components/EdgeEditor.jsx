@@ -265,6 +265,7 @@ class EdgeEditor extends UNISYS.Component {
       this.handleSelection        = this.handleSelection.bind(this);
       this.handleEdgeSelection    = this.handleEdgeSelection.bind(this);
       this.handleEdgeEdit         = this.handleEdgeEdit.bind(this);
+      this.handleEdgeClose = this.handleEdgeClose.bind(this);
       this.onStateChange_SESSION  = this.onStateChange_SESSION.bind(this);
       this.onEdgeClick            = this.onEdgeClick.bind(this);
       this.onDeleteButtonClick    = this.onDeleteButtonClick.bind(this);
@@ -295,19 +296,13 @@ class EdgeEditor extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       this.OnAppStateChange('SELECTION', this.handleSelection);
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      UDATA.HandleMessage('EDGE_SELECT',(data) => {
-        this.handleEdgeSelection(data);
-      });
+      UDATA.HandleMessage('EDGE_SELECT', this.handleEdgeSelection);
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      UDATA.HandleMessage('EDGE_EDIT',(data) => {
-        this.handleEdgeEdit(data);
-      });
+      UDATA.HandleMessage('EDGE_EDIT', this.handleEdgeEdit);
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      UDATA.HandleMessage('EDGE_CLOSE',(data) => {
-        if (this.state.isExpanded) this.setState({ isExpanded: false });
-      });
+      UDATA.HandleMessage('EDGE_CLOSE', this.handleEdgeClose);
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      // Template handler
+      // Template handlers
       this.OnAppStateChange('TEMPLATE', this.setTemplate);
       UDATA.HandleMessage('EDIT_PERMITTED', this.updateEditState);
 
@@ -592,6 +587,11 @@ class EdgeEditor extends UNISYS.Component {
       }
 
     } // handleEdgeEdit
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ handleEdgeClose() {
+      if (this.state.isExpanded) this.setState({ isExpanded: false });
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle change in SESSION data
     Called both by componentDidMount() and AppStateChange handler.
@@ -1196,6 +1196,10 @@ class EdgeEditor extends UNISYS.Component {
       this.AppStateChangeOff('SESSION', this.onStateChange_SESSION);
       this.AppStateChangeOff('SELECTION', this.handleSelection);
       this.AppStateChangeOff('TEMPLATE', this.setTemplate);
+      UDATA.UnhandleMessage('EDGE_SELECT', this.handleEdgeSelection);
+      UDATA.UnhandleMessage('EDGE_EDIT', this.handleEdgeEdit);
+      UDATA.UnhandleMessage('EDGE_CLOSE', this.handleEdgeClose);
+      UDATA.UnhandleMessage('EDIT_PERMITTED', this.updateEditState);
     }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
