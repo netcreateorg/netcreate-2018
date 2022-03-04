@@ -28,7 +28,7 @@ const HASH_MINLEN = 3;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let DSTOR = UNISYS.NewModule(module.id);
 let UDATA = UNISYS.NewDataLink(DSTOR);
-let D3DATA = {};
+let NCDATA = {};
 
 /// LIFECYCLE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,7 +36,7 @@ let D3DATA = {};
 /*/
 DSTOR.Hook("INITIALIZE", () => {
   // DBUPDATE_ALL is a local call originating from within the app
-  // Used to update the full D3DATA object during template updates
+  // Used to update the full NCDATA object during template updates
   UDATA.HandleMessage("DBUPDATE_ALL", function(data) {
     DSTOR.UpdateDataPromise(data);
   });
@@ -87,7 +87,7 @@ DSTOR.SetSessionGroupID = function ( decodedData ) {
 /*/ API: Placeholder DATA access function
 /*/
 DSTOR.Data = function() {
-  return D3DATA;
+  return NCDATA;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Write update to database
@@ -162,8 +162,8 @@ DSTOR.PromiseJSONFile = function(jsonFile) {
         return;
       }
       let data = event.target.responseText;
-      D3DATA = Object.assign(D3DATA, JSON.parse(data));
-      resolve(D3DATA);
+      NCDATA = Object.assign(NCDATA, JSON.parse(data));
+      resolve(NCDATA);
     });
     xobj.open("GET", `${jsonFile}`, true);
     xobj.send();
@@ -185,7 +185,7 @@ DSTOR.PromiseTOMLFile = function (tomlFile) {
         return;
       }
       const data = event.target.responseText;
-      const tomlData = Object.assign(D3DATA, TOML.parse(data));
+      const tomlData = Object.assign(NCDATA, TOML.parse(data));
       resolve(tomlData);
     });
     xobj.open("GET", `${tomlFile}`, true);

@@ -546,15 +546,15 @@ MOD.Import = data => {
   // because SetAppState will cause d3 to convert edge source/targets
   // from ids back to node objects.
   UDATA.LocalCall("DB_MERGE", mergeData).then( res => {
-    // Update D3DATA after we know the db has been successfully updated
-    // Merge changes into D3DATA
-    const D3DATA = clone(UDATA.AppState('D3DATA'));
+    // Update NCDATA after we know the db has been successfully updated
+    // Merge changes into NCDATA
+    const NCDATA = clone(UDATA.AppState('NCDATA'));
     importNodes.forEach(n => {
-      const i = D3DATA.nodes.findIndex(dn => dn.id === n.id);
+      const i = NCDATA.nodes.findIndex(dn => dn.id === n.id);
       if (i > -1) {
-        D3DATA.nodes.splice(i, 1, n); // Replace existing node
+        NCDATA.nodes.splice(i, 1, n); // Replace existing node
       } else {
-        D3DATA.nodes.push(n); // Insert new node
+        NCDATA.nodes.push(n); // Insert new node
       }
     })
     importEdges.forEach(e => {
@@ -567,28 +567,28 @@ MOD.Import = data => {
       // REVIEW: Recalculate edge size?
       e.size = 1;
 
-      const i = D3DATA.edges.findIndex(de => de.id === e.id);
+      const i = NCDATA.edges.findIndex(de => de.id === e.id);
       if (i > -1) {
-        D3DATA.edges.splice(i, 1, e);  // Replace existing edge
+        NCDATA.edges.splice(i, 1, e);  // Replace existing edge
       } else {
-        D3DATA.edges.push(e); // Insert new edge
+        NCDATA.edges.push(e); // Insert new edge
       }
     })
 
     // HACK TEST
     // console.warn(PR, 'VVVVVVVV updated D3DATA', D3DATA)
     // console.warn(PR, '@@@@@@@ CLEARING D3DATA');
-    // UDATA.SetAppState("D3DATA", {nodes: [], edges: []});
+    // UDATA.SetAppState("NCDATA", {nodes: [], edges: []});
     // // UDATA.LocalCall('CONSTRUCT_GRAPH');
     // setTimeout(() => {
     //   console.warn(PR, '@@@@@@@ Times Up...restoring ');
     //   UDATA.LocalCall('CONSTRUCT_GRAPH');
-    //   UDATA.SetAppState("D3DATA", D3DATA);
+    //   UDATA.SetAppState("NCDATA", D3DATA);
     // }, 10000);
     // console.warn(PR, '@@@@@@ Oops, did not wait');
 
     UDATA.LocalCall('CONSTRUCT_GRAPH');
-    UDATA.SetAppState("D3DATA", D3DATA);
+    UDATA.SetAppState("NCDATA", NCDATA);
 
     // And FDATA???
   });

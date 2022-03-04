@@ -49,12 +49,12 @@
         nodes/edges from the display without affecting the underlying data.
 
   * With Version 1.4, the only data that is graphed is FILTEREDD3DATA.
-    --  d3-simplenetgraph no longer plots on D3DATA changes.
-    --  Instead, it plots the new FILTEREDD3DATA state.  Whenever D3DATA changes,
+    --  d3-simplenetgraph no longer plots on NCDATA changes.
+    --  Instead, it plots the new FILTEREDD3DATA state.  Whenever NCDATA changes,
         FILTERDD3DATA is udpated.
     --  This way there is only one source of truth: all draw updates
         are routed through filter-logic.
-    --  If filters have not been defined, we just pass the raw D3DATA
+    --  If filters have not been defined, we just pass the raw NCDATA
 
   * Filters can be stacked.
         You can define two "Label" filters, for example.
@@ -141,9 +141,9 @@ MOD.Hook("INITIALIZE", () => {
     UDATA.SetAppState("FDATA", FDATA);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Listen for D3DATA updates so we know to trigger change?
+  /*/ Listen for NCDATA updates so we know to trigger change?
   /*/
-  UDATA.OnAppStateChange('D3DATA', (data) => {
+  UDATA.OnAppStateChange('NCDATA', (data) => {
     m_UpdateFilters();
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -295,7 +295,7 @@ function m_FilterDefine(data) {
  * @param {Object} data A UDATA pkt {defs}
  */
 function m_FiltersApply() {
-  const FILTEREDD3DATA = UDATA.AppState("D3DATA");
+  const FILTEREDD3DATA = UDATA.AppState("NCDATA");
   const FDATA = UDATA.AppState("FDATA");
 
   // skip if FDATA has not been defined yet

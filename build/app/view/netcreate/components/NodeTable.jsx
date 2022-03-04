@@ -4,12 +4,12 @@
 
     NodeTable is used to to display a table of nodes for review.
 
-    It displays D3DATA.
+    It displays NCDATA.
     But also checks FILTEREDD3DATA to show highlight/filtered state
 
   ## TO USE
 
-    NodeTable is self contained and relies on global D3DATA to load.
+    NodeTable is self contained and relies on global NCDATA to load.
 
       <NodeTable/>
 
@@ -73,7 +73,7 @@ class NodeTable extends UNISYS.Component {
 
     // Always make sure class methods are bind()'d before using them
     // as a handler, otherwise object context is lost
-    this.OnAppStateChange('D3DATA', this.handleDataUpdate);
+    this.OnAppStateChange('NCDATA', this.handleDataUpdate);
 
     // Track Filtered Data Updates too
     this.OnAppStateChange('FILTEREDD3DATA', this.handleFilterDataUpdate);
@@ -87,21 +87,21 @@ class NodeTable extends UNISYS.Component {
 /*/
 /*/ componentDidMount () {
       if (DBG) console.error('NodeTable.componentDidMount!');
-      // Explicitly retrieve data because we may not have gotten a D3DATA
+      // Explicitly retrieve data because we may not have gotten a NCDATA
       // update while we were hidden.
 
       // filtered data needs to be set before D3Data
       const FILTEREDD3DATA = UDATA.AppState('FILTEREDD3DATA');
       this.setState({ filteredNodes: FILTEREDD3DATA.nodes },
         () => {
-          let D3DATA = this.AppState('D3DATA');
-          this.handleDataUpdate(D3DATA);
+          let NCDATA = this.AppState('NCDATA');
+          this.handleDataUpdate(NCDATA);
         }
       )
     }
 
     componentWillUnmount() {
-      this.AppStateChangeOff('D3DATA', this.handleDataUpdate);
+      this.AppStateChangeOff('NCDATA', this.handleDataUpdate);
       this.AppStateChangeOff('FILTEREDD3DATA', this.handleFilterDataUpdate);
       this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
     }

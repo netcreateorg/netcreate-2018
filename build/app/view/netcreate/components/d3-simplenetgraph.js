@@ -390,7 +390,7 @@ class D3NetGraph {
 
       /*/ TRICKY D3 CODE CONCEPTS AHEAD
 
-          CONTEXT: The author of this code has assumed that D3DATA may
+          CONTEXT: The author of this code has assumed that NCDATA may
           completely changed, so his update code is written with this in mind.
 
           At this point in the code, nodeElements is operating on the enter()
@@ -668,7 +668,7 @@ _UpdateLinkStrokeColor(edge) {
 
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // The template may be loaded or changed after D3DATA is loaded.
+  // The template may be loaded or changed after NCDATA is loaded.
   // So we need to explicitly update the colors if the color
   // definitions have changed.
   _ColorMap(data) {
@@ -677,7 +677,7 @@ _UpdateLinkStrokeColor(edge) {
   }
 
   _ZoomReset(data) {
-    if (DBG) console.log(PR, 'ZOOM_RESET got state D3DATA', data);
+    if (DBG) console.log(PR, 'ZOOM_RESET got state NCDATA', data);
     // NOTE: The transition/duration call means _HandleZoom will be called multiple times
     this.d3svg.transition()
       .duration(200)
@@ -685,19 +685,19 @@ _UpdateLinkStrokeColor(edge) {
   }
 
   _ZoomIn(data) {
-    if (DBG) console.log(PR, 'ZOOM_IN got state D3DATA', data);
+    if (DBG) console.log(PR, 'ZOOM_IN got state NCDATA', data);
     this._Transition(1.2);
   }
 
   _ZoomOut(data) {
-    if (DBG) console.log(PR, 'ZOOM_OUT got state D3DATA', data);
+    if (DBG) console.log(PR, 'ZOOM_OUT got state NCDATA', data);
     this._Transition(0.8);
   }
 
   // Pan to 0,0 and zoom scale to 1
   // (Currently not used)
   _ZoomPanReset(data) {
-    if (DBG) console.log(PR, 'ZOOM_PAN_RESET got state D3DATA', data);
+    if (DBG) console.log(PR, 'ZOOM_PAN_RESET got state NCDATA', data);
     const transform = d3.zoomIdentity.translate(0, 0).scale(1);
     this.d3svg.call(this.zoom.transform, transform);
   }

@@ -545,7 +545,7 @@ class NodeSelector extends UNISYS.Component {
       // This is a case insensitive search
       var isDuplicateNodeLabel = false;
       var duplicateNodeID = void 0;
-      if (formData.label !== '' && this.AppState('D3DATA').nodes.find(function (node) {
+      if (formData.label !== '' && this.AppState('NCDATA').nodes.find(function (node) {
         if (node.id !== formData.id)
         {
 
@@ -672,7 +672,7 @@ class NodeSelector extends UNISYS.Component {
     let isValid = false;
     // Allow `` because we use a a blank field to indicate delete node without relinking edges.
     if ((event.target.value === '') ||
-        (this.AppState('D3DATA').nodes.find(node => { return node.id === replacementNodeID; })) ) {
+        (this.AppState('NCDATA').nodes.find(node => { return node.id === replacementNodeID; })) ) {
       isValid = true;
     }
     this.setState({
@@ -874,7 +874,7 @@ class NodeSelector extends UNISYS.Component {
 /*/ onCancelButtonClick () {
       // If we were editing, then revert and exit
       if (this.state.isBeingEdited) {
-        let originalNode = this.AppState('D3DATA').nodes.filter( node => { return node.id === this.state.formData.id; } )[0];
+        let originalNode = this.AppState('NCDATA').nodes.filter( node => { return node.id === this.state.formData.id; } )[0];
         if (originalNode===undefined) {
           // user abandoned editing a new node that was never saved
           this.clearForm();

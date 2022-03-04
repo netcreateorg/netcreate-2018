@@ -4,13 +4,13 @@
 
     EdgeTable is used to to display a table of edges for review.
 
-    It displays D3DATA.
+    It displays NCDATA.
     But also read FILTEREDD3DATA to show highlight/filtered state
 
 
   ## TO USE
 
-    EdgeTable is self contained and relies on global D3DATA to load.
+    EdgeTable is self contained and relies on global NCDATA to load.
 
       <EdgeTable/>
 
@@ -79,7 +79,7 @@ class EdgeTable extends UNISYS.Component {
 
       // Always make sure class methods are bind()'d before using them
       // as a handler, otherwise object context is lost
-      this.OnAppStateChange('D3DATA', this.handleDataUpdate);
+      this.OnAppStateChange('NCDATA', this.handleDataUpdate);
 
       // Handle Template updates
       this.OnAppStateChange('TEMPLATE', this.OnTemplateUpdate);
@@ -93,20 +93,20 @@ class EdgeTable extends UNISYS.Component {
 /*/
 /*/ componentDidMount () {
       if (DBG) console.log('EdgeTable.componentDidMount!');
-      // Explicitly retrieve data because we may not have gotten a D3DATA
+      // Explicitly retrieve data because we may not have gotten a NCDATA
       // update while we were hidden.
       // filtered data needs to be set before D3Data
       const FILTEREDD3DATA = UDATA.AppState('FILTEREDD3DATA');
       this.setState({ filteredEdges: FILTEREDD3DATA.edges },
         () => {
-          let D3DATA = this.AppState('D3DATA');
-          this.handleDataUpdate(D3DATA);
+          let NCDATA = this.AppState('NCDATA');
+          this.handleDataUpdate(NCDATA);
         }
       )
 }
 
     componentWillUnmount() {
-      this.AppStateChangeOff('D3DATA', this.handleDataUpdate);
+      this.AppStateChangeOff('NCDATA', this.handleDataUpdate);
       this.AppStateChangeOff('FILTEREDD3DATA', this.handleFilterDataUpdate);
       this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
     }

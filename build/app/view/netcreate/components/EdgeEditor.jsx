@@ -380,7 +380,7 @@ class EdgeEditor extends UNISYS.Component {
         });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ populate formdata from D3DATA
+/*/ populate formdata from NCDATA
 /*/ loadSourceAndTarget () {
       if (DBG) console.log('EdgeEditor.loadSourceAndTarget!')
 
@@ -388,7 +388,7 @@ class EdgeEditor extends UNISYS.Component {
       // Clean Data
       if (isNaN(edgeID)) { edgeID = parseInt(edgeID); }
 
-      const NCDATA = this.AppState('D3DATA');
+      const NCDATA = this.AppState('NCDATA');
 
       // parseInt in case of old bad string id
       let edges = NCDATA.edges ? NCDATA.edges.filter( edge=>parseInt(edge.id)===edgeID ) : [];
@@ -622,7 +622,7 @@ class EdgeEditor extends UNISYS.Component {
 
         // If we were editing, then revert and exit
         if (this.state.isBeingEdited) {
-          const NCDATA = this.AppState('D3DATA');
+          const NCDATA = this.AppState('NCDATA');
 
           this.setState({ isBeingEdited: false, targetIsEditable: false });
           // Return focus of autocomplete to Search field.
@@ -865,7 +865,7 @@ class EdgeEditor extends UNISYS.Component {
       // linking to non-existent nodes. This should probably be moved to nc-logic.
       if (edge) {
         // check source
-        const NCDATA = this.AppState('D3DATA');
+        const NCDATA = this.AppState('NCDATA');
         const source = NCDATA.nodes.find(node => node.id === edge.source);
         if (!source) {
           alert('Sorry, the source node has been removed.  Please recreate your edge.');

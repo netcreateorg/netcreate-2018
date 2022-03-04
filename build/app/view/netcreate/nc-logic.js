@@ -21,8 +21,8 @@
                             mark.
 
                             The rendering is handled by modifying the
-                            node data in D3DATA.  d3-simplenetgraph will
-                            then read any D3DATA updates and redraw
+                            node data in NCDATA.  d3-simplenetgraph will
+                            then read any NCDATA updates and redraw
                             the graph based on the updated data.
 
     Add New Node/Edge       When the user adds a new edge or node, handlers in
@@ -71,7 +71,7 @@ var UDATA = UNISYS.NewDataLink(MOD);
                 the suggestions list
     * edges     An array of edge objects for editing
                 *REVIEW*: Should this be renamed "selectedEdges" to distinguish from
-                *D3DATA.edge
+                *NCDATA.edge
 
 
 
@@ -123,14 +123,14 @@ var UDATA = UNISYS.NewDataLink(MOD);
                 the value of this property.
 
 
-    D3DATA
+    NCDATA
 
     * nodes: all nodes (not all may be actually changed)
     * edges: all edges (not all may be actually changed)
 
 
 \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -/*/
-var D3DATA = null; // see above for description
+var NCDATA = null; // see above for description
 var TEMPLATE = null; // template definition for prompts
 const NETWORK = require("unisys/client-network");
 const DATASTORE = require("system/datastore");
@@ -167,13 +167,13 @@ MOD.Hook("LOADASSETS", () => {
       console.warn(PR,"STANDALONE MODE: 'LOADASSETS' using browser cache");
       return new Promise((resolve, reject) => {
         const lstore = window.localStorage;
-        let ld3 = lstore.getItem("D3DATA");
-        D3DATA = JSON.parse(ld3);
-        if (!D3DATA) reject(Error("couldn't get D3DATA from Local Store"));
-        UDATA.SetAppState("D3DATA", D3DATA);
+        let ld3 = lstore.getItem("NCDATA");
+        NCDATA = JSON.parse(ld3);
+        if (!NCDATA) reject(Error("couldn't get NCDATA from Local Store"));
+        UDATA.SetAppState("NCDATA", NCDATA);
         let tem = lstore.getItem("TEMPLATE");
         TEMPLATE = JSON.parse(tem);
-        console.log(D3DATA, TEMPLATE);
+        console.log(NCDATA, TEMPLATE);
         if (!TEMPLATE) reject(Error("couldn't get TEMPLATE from Local Store"));
         UDATA.SetAppState("TEMPLATE", TEMPLATE);
         resolve();
@@ -191,9 +191,9 @@ MOD.Hook("LOADASSETS", () => {
           .then(data => {
             m_MigrateData(data);
             m_RecalculateAllEdgeWeights(data);
-            UDATA.SetAppState("D3DATA", data);
-            // Save off local reference because we don't have D3DATA AppStateChange handler
-            D3DATA = data;
+            UDATA.SetAppState("NCDATA", data);
+            // Save off local reference because we don't have NCDATA AppStateChange handler
+            NCDATA = data;
           });
         // load template
         let p2 = await DATASTORE.PromiseTOMLFile("data/" + dataset + ".template.toml")
@@ -206,16 +206,16 @@ MOD.Hook("LOADASSETS", () => {
     });
   }
 
-  // NOT STANDALONE MODE so load data into D3DATA
+  // NOT STANDALONE MODE so load data into NCDATA
   let p1 = DATASTORE.PromiseD3Data()
   .then(data => {
     if (DBG) console.log(PR, "DATASTORE returned data", data);
     m_MigrateData(data.d3data);
     m_RecalculateAllEdgeWeights(data.d3data);
-    UDATA.SetAppState("D3DATA", data.d3data);
+    UDATA.SetAppState("NCDATA", data.d3data);
     UDATA.SetAppState("TEMPLATE", data.template);
-    // Save off local reference because we don't have D3DATA AppStateChange handler
-    D3DATA = data.d3data;
+    // Save off local reference because we don't have NCDATA AppStateChange handler
+    NCDATA = data.d3data;
     TEMPLATE = data.template;
   });
   return Promise.all([p1]);
@@ -240,7 +240,7 @@ MOD.Hook("CONFIGURE", () => {
 MOD.Hook("DISCONNECT", () => {
   console.log("DISCONNECT HOOK");
   const lstore = window.localStorage;
-  lstore.setItem("D3DATA", JSON.stringify(D3DATA));
+  lstore.setItem("NCDATA", JSON.stringify(NCDATA));
   lstore.setItem("TEMPLATE", JSON.stringify(TEMPLATE));
   console.log("saving d3data, template to localstore");
 });
@@ -298,7 +298,7 @@ MOD.Hook("INITIALIZE", () => {
       }
     }
     // SEARCH LABEL UPDATE
-    if (D3DATA.nodes.length < 150) { // JD to speedup processing for large sets
+    if (NCDATA.nodes.length < 150) { // JD to speedup processing for large sets
       if (searchLabel === "") {
         m_UnStrokeAllNodes();
       } else if (searchLabel !== undefined) {
@@ -350,19 +350,22 @@ MOD.Hook("INITIALIZE", () => {
     } else {
       // Load existing node and edges
       let edges = [];
-      if (D3DATA.edges) { // if no edges are defined, skip, otherwise chokes on D3DATA.edges.filter
+      if (NCDATA.edges) { // if no edges are defined, skip, otherwise chokes on NCDATA.edges.filter
         if (nodeID) {
           edges = edges.concat(
-            D3DATA.edges.filter(
-              edge => edge.source.id === nodeID || edge.target.id === nodeID
+            NCDATA.edges.filter(
+              edge => edge.source === nodeID || edge.target === nodeID
             )
           );
         } else {
-          edges = edges.concat(
-            D3DATA.edges.filter(
-              edge => edge.source.label === nodeLabel || edge.target.label === nodeLabel
-            )
-          );
+          console.error(PR, `SOURCE_SELECT trying to match edge using "label" ${nodeLabel}.  This is deprecated!`);
+          // REVIEW: are we actually matching label anymore?
+          // This should fail because source/target is no longer an object, just an id
+          // edges = edges.concat(
+          //   NCDATA.edges.filter(
+          //     edge => edge.source.label === nodeLabel || edge.target.label === nodeLabel
+          //   )
+          // );
         }
       }
       // create state change object
@@ -432,14 +435,14 @@ MOD.Hook("INITIALIZE", () => {
     let { nodeLabel, nodeID, color } = data;
     if (nodeLabel) {
       // Only mark nodes if something is selected
-      if (D3DATA.nodes.length < 250) { // JD to speedup processing for large
+      if (NCDATA.nodes.length < 250) { // JD to speedup processing for large
         m_UnMarkAllNodes();
         m_MarkNodeByLabel(nodeLabel, TEMPLATE.sourceColor || DEFAULT_SOURCE_COLOR);
       }
     }
     if (nodeID) {
       // Only mark nodes if something is selected
-      if (D3DATA.nodes.length < 250) { // JD to speedup processing for large
+      if (NCDATA.nodes.length < 250) { // JD to speedup processing for large
         m_UnMarkAllNodes();
         m_MarkNodeById(nodeID, TEMPLATE.sourceColor || DEFAULT_SOURCE_COLOR);
       }
@@ -449,7 +452,7 @@ MOD.Hook("INITIALIZE", () => {
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ SOURCE_UPDATE is called when the properties of a node has changed
-      Globally updates DATASTORE and working D3DATA objects with the new node data.
+      Globally updates DATASTORE and working NCDATA objects with the new node data.
       NOTE: SOURCE_UPDATE can be invoked remotely by the server on a DATABASE
       update.
   /*/
@@ -463,8 +466,8 @@ MOD.Hook("INITIALIZE", () => {
       console.error("SOURCE_UPDATE: duplicate ids in", updatedNodes);
       throw Error("SOURCE_UPDATE: found duplicate IDs");
     }
-    if (updatedNodes.length === 0) D3DATA.nodes.push(node);
-    UDATA.SetAppState("D3DATA", D3DATA);
+    if (updatedNodes.length === 0) NCDATA.nodes.push(node);
+    UDATA.SetAppState("NCDATA", NCDATA);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ NODE_DELETE is called by NodeSelector via datastore.js and
@@ -478,14 +481,14 @@ MOD.Hook("INITIALIZE", () => {
     if (replacementNodeID !== -1) {
       // replace
       let replacementNode = m_FindNodeById(replacementNodeID);
-      edgesToProcess = D3DATA.edges.map(edge => {
+      edgesToProcess = NCDATA.edges.map(edge => {
         if (edge.source.id === nodeID) edge.source = replacementNode;
         if (edge.target.id === nodeID) edge.target = replacementNode;
         return edge;
       });
     } else {
       // delete nodes
-      edgesToProcess = D3DATA.edges.filter(edge => {
+      edgesToProcess = NCDATA.edges.filter(edge => {
         let pass = false;
         if (edge.source.id !== nodeID && edge.target.id !== nodeID) {
           pass = true;
@@ -493,12 +496,12 @@ MOD.Hook("INITIALIZE", () => {
         return pass;
       });
     }
-    D3DATA.edges = edgesToProcess;
+    NCDATA.edges = edgesToProcess;
 
     // // Remove node
     let updatedNodes = m_DeleteMatchingNodesByProp({ id: nodeID });
-    D3DATA.nodes = updatedNodes;
-    UDATA.SetAppState("D3DATA", D3DATA);
+    NCDATA.nodes = updatedNodes;
+    UDATA.SetAppState("NCDATA", NCDATA);
 
     // Also update selection so nodes in EdgeEditor will update
     UDATA.SetAppState("SELECTION", {
@@ -514,7 +517,7 @@ MOD.Hook("INITIALIZE", () => {
       and deleted type options to existing options.
       This updates:
       * The template file with new new node types
-      * D3DATA and the databse file with node type changes
+      * NCDATA and the databse file with node type changes
 
       @param {object} data
       @param {object} data.nodeTypesChanges - { label, color, replacement, delete }
@@ -529,7 +532,7 @@ MOD.Hook("INITIALIZE", () => {
     nodeTypesChanges.forEach(c => {
       changeMap.set(c.label, c);
     });
-    D3DATA.nodes = D3DATA.nodes.map(n => {
+    NCDATA.nodes = NCDATA.nodes.map(n => {
       const type = n.type;
       const change = changeMap.get(n.type);
       if (change && change.replacement) {
@@ -538,13 +541,13 @@ MOD.Hook("INITIALIZE", () => {
       return n;
     });
     // Convert D3 source/target nodes objects into ids
-    D3DATA.edges = m_ConvertSourceTarget2ID(D3DATA.edges);
+    NCDATA.edges = m_ConvertSourceTarget2ID(NCDATA.edges);
     // Write to database!
     // IMPORTANT: We have to update the db BEFORE calling SetAppState
     // because SetAppState will cause d3 to convert edge source/targets
     // from ids back to node objects.
-    UDATA.LocalCall("DBUPDATE_ALL", D3DATA);
-    UDATA.SetAppState("D3DATA", D3DATA);
+    UDATA.LocalCall("DBUPDATE_ALL", NCDATA);
+    UDATA.SetAppState("NCDATA", NCDATA);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ EDGE_TYPES_UPDATE is called by template-logic after user has changed the
@@ -552,7 +555,7 @@ MOD.Hook("INITIALIZE", () => {
       and deleted type options to existing options.
       This updates:
       * The template file with new new edge types
-      * D3DATA and the databse file with edge type changes
+      * NCDATA and the databse file with edge type changes
 
       @param {object} data
       @param {object} data.nodeTypesChanges - { label, color, replacement, delete }
@@ -567,7 +570,7 @@ MOD.Hook("INITIALIZE", () => {
     edgeTypesChanges.forEach(c => {
       changeMap.set(c.label, c);
     });
-    D3DATA.edges = D3DATA.edges.map(e => {
+    NCDATA.edges = NCDATA.edges.map(e => {
       const type = e.type;
       const change = changeMap.get(e.type);
       if (change && change.replacement) {
@@ -580,8 +583,8 @@ MOD.Hook("INITIALIZE", () => {
     // IMPORTANT: We have to update the db BEFORE calling SetAppState
     // because SetAppState will cause d3 to convert edge source/targets
     // from ids back to node objects.
-    UDATA.LocalCall("DBUPDATE_ALL", D3DATA);
-    UDATA.SetAppState("D3DATA", D3DATA);
+    UDATA.LocalCall("DBUPDATE_ALL", NCDATA);
+    UDATA.SetAppState("NCDATA", NCDATA);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ EDGE_UPDATE is called when the properties of an edge has changed
@@ -604,7 +607,7 @@ MOD.Hook("INITIALIZE", () => {
       if (DBG) console.log("nc-logic.EDGE_UPDATE: adding new edge", edge);
       // created edges should have a default size
       edge.size = 1;
-      D3DATA.edges.push(edge);
+      NCDATA.edges.push(edge);
     }
     // if there was one node
     if (updatedEdges.length === 1) {
@@ -623,14 +626,14 @@ MOD.Hook("INITIALIZE", () => {
     edge.source = edge.source.id;
     edge.target = edge.target.id;
     // Calculate Edge Size
-    edge.size = m_CalculateEdgeWeight(edge, D3DATA.edges);
+    edge.size = m_CalculateEdgeWeight(edge, NCDATA.edges);
 
     // if there were more edges than expected
     if (updatedEdges.length > 1) {
       throw Error("EdgeUpdate found duplicate IDs");
     }
 
-    UDATA.SetAppState("D3DATA", D3DATA);
+    UDATA.SetAppState("NCDATA", NCDATA);
   });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
@@ -640,8 +643,8 @@ MOD.Hook("INITIALIZE", () => {
     let { edgeID } = data;
     let edges = [];
     // remove specified edge from edge list
-    D3DATA.edges = m_DeleteMatchingEdgeByProp({ id: edgeID });
-    UDATA.SetAppState("D3DATA", D3DATA);
+    NCDATA.edges = m_DeleteMatchingEdgeByProp({ id: edgeID });
+    UDATA.SetAppState("NCDATA", NCDATA);
     // Also update selection so edges in EdgeEditor will update
     let selection = UDATA.AppState("SELECTION");
     if (
@@ -727,7 +730,7 @@ MOD.Hook("RESET", () => {
   // Force an AppState update here so that the react components will load
   // the data after they've been initialized.  The SetAppState call in
   // LOADASSETS is broadcast before react components have been loaded.
-  UDATA.SetAppState("D3DATA", D3DATA);
+  UDATA.SetAppState("NCDATA", NCDATA);
 }); // end UNISYS_RESET
 
 /// APP_READY MESSAGE REGISTRATION ////////////////////////////////////////////
@@ -915,7 +918,7 @@ function m_UpdateColorMap() {
 /*/ Return array of nodes that DON'T match del_me object keys/values
 /*/
 function m_DeleteMatchingNodesByProp(del_me = {}) {
-  let matches = D3DATA.nodes.filter(node => {
+  let matches = NCDATA.nodes.filter(node => {
     let pass = false;
     for (let key in del_me) {
       if (del_me[key] !== node[key]) {
@@ -932,7 +935,7 @@ function m_DeleteMatchingNodesByProp(del_me = {}) {
     NOTE: make sure that strings are compared with strings, etc
 /*/
 function m_FindMatchingNodeByProp(match_me = {}) {
-  return m_FindMatchingObjsByProp(D3DATA.nodes, match_me);
+  return m_FindMatchingObjsByProp(NCDATA.nodes, match_me);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Convenience function to retrieve node by ID
@@ -947,7 +950,7 @@ function m_FindMatchingNodesByLabel(str = "") {
   str = u_EscapeRegexChars(str.trim());
   if (str === "") return [];
   const regex = new RegExp(/*'^'+*/ str, "i");
-  return D3DATA.nodes.filter(node => regex.test(node.label));
+  return NCDATA.nodes.filter(node => regex.test(node.label));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Set nodes that PARTIALLY match 'str' to 'yes' props.
@@ -959,7 +962,7 @@ function m_SetMatchingNodesByLabel(str = "", yes = {}, no = {}) {
   str = u_EscapeRegexChars(str.trim());
   if (str === "") return undefined;
   const regex = new RegExp(/*'^'+*/ str, "i");
-  D3DATA.nodes.forEach(node => {
+  NCDATA.nodes.forEach(node => {
     if (regex.test(node.label)) {
       for (let key in yes) node[key] = yes[key];
       returnMatches.push(node);
@@ -977,7 +980,7 @@ function m_SetMatchingNodesByLabel(str = "", yes = {}, no = {}) {
     Optionally resets all the NON matching nodes as well
 /*/
 function m_SetMatchingNodesByProp(match_me = {}, yes = {}, no = {}) {
-  return m_SetMatchingObjsByProp(D3DATA.nodes, match_me, yes, no);
+  return m_SetMatchingObjsByProp(NCDATA.nodes, match_me, yes, no);
 }
 
 /// EDGE HELPERS //////////////////////////////////////////////////////////////
@@ -985,7 +988,7 @@ function m_SetMatchingNodesByProp(match_me = {}, yes = {}, no = {}) {
 /*/ Return array of edges that DON'T match del_me object keys/values
 /*/
 function m_DeleteMatchingEdgeByProp(del_me = {}) {
-  let matches = D3DATA.edges.filter(edge => {
+  let matches = NCDATA.edges.filter(edge => {
     let pass = false;
     for (let key in del_me) {
       if (del_me[key] !== edge[key]) {
@@ -1002,7 +1005,7 @@ function m_DeleteMatchingEdgeByProp(del_me = {}) {
 /*/ Update props of exact matching edges, returns matches
 /*/
 function m_SetMatchingEdgesByProp(match_me = {}, yes = {}, no = {}) {
-  return m_SetMatchingObjsByProp(D3DATA.edges, match_me, yes, no);
+  return m_SetMatchingObjsByProp(NCDATA.edges, match_me, yes, no);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Count number of edges with the same source/target to determine weight
@@ -1110,7 +1113,7 @@ function m_MigrateData(data) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Converts edge.source and edge.target from objects to ids
     d3 converts edge.source and edget.target from ids to node objects
-    when it renders D3DATA.  When getting ready to save edges to the database
+    when it renders NCDATA.  When getting ready to save edges to the database
     we need to convert them back to ids.
 /*/
 function m_ConvertSourceTarget2ID(edges) {
@@ -1127,16 +1130,16 @@ function m_ConvertSourceTarget2ID(edges) {
 /*/
 function m_UnMarkAllNodes() {
   let props = { selected: DESELECTED_COLOR };
-  m_SetAllObjs(D3DATA.nodes, props);
-  UDATA.SetAppState("D3DATA", D3DATA);
+  m_SetAllObjs(NCDATA.nodes, props);
+  UDATA.SetAppState("NCDATA", NCDATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Remove the stroke color.  Used to unmark search matches.
 /*/
 function m_UnStrokeAllNodes() {
   let props = { strokeColor: undefined };
-  m_SetAllObjs(D3DATA.nodes, props);
-  UDATA.SetAppState("D3DATA", D3DATA);
+  m_SetAllObjs(NCDATA.nodes, props);
+  UDATA.SetAppState("NCDATA", NCDATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Sets the `node.selected` property to `color` so it is hilited on graph
@@ -1149,7 +1152,7 @@ function m_MarkNodeById(id, color) {
   // to override the properties
   m_SetMatchingNodesByProp({ id }, marked, normal);
 
-    UDATA.SetAppState("D3DATA", D3DATA);
+    UDATA.SetAppState("NCDATA", NCDATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Sets the `node.selected` property to `color` so it is hilited on graph
@@ -1162,7 +1165,7 @@ function m_MarkNodeByLabel(label, color) {
   // to override the properties
   m_SetMatchingNodesByLabel(label, marked, normal);
 
-  UDATA.SetAppState("D3DATA", D3DATA);
+  UDATA.SetAppState("NCDATA", NCDATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Sets matching node labels to the passed selection color
@@ -1175,7 +1178,7 @@ function m_MarkNodesThatMatch(searchString, color) {
   let select = { selected: color };
   let deselect = { selected: DESELECTED_COLOR };
   m_SetMatchingNodesByLabel(searchString, select, deselect);
-  UDATA.SetAppState("D3DATA", D3DATA);
+  UDATA.SetAppState("NCDATA", NCDATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Sets matching node labels to the passed selection color
@@ -1187,7 +1190,7 @@ function m_SetStrokeColorThatMatch(searchString, color) {
   let matched = { strokeColor: color };
   let notmatched = { strokeColor: undefined };
   m_SetMatchingNodesByLabel(searchString, matched, notmatched);
-  UDATA.SetAppState("D3DATA", D3DATA);
+  UDATA.SetAppState("NCDATA", NCDATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Sets the 'selected' state of edges that are attached to the node
@@ -1199,14 +1202,14 @@ function m_MarkSelectedEdges(edges, node) {
   });
   // Find connected edges
   let id = node.id;
-  D3DATA.edges.forEach(edge => {
+  NCDATA.edges.forEach(edge => {
     if (edge.source.id === id || edge.target.id === id) {
       edge.selected = true;
     } else {
       edge.selected = false;
     }
   });
-  UDATA.SetAppState("D3DATA", D3DATA);
+  UDATA.SetAppState("NCDATA", NCDATA);
 }
 
 /// COMMAND LINE UTILITIES ////////////////////////////////////////////////////
@@ -1280,8 +1283,8 @@ JSCLI.AddFunction(
 );
 JSCLI.AddFunction(
   function ncDumpData() {
-    console.log('D3DATA', D3DATA);
-    return `ncDumpData: ${JSON.stringify(D3DATA)}`;
+    console.log('NCDATA', NCDATA);
+    return `ncDumpData: ${JSON.stringify(NCDATA)}`;
   }
 );
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

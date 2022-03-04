@@ -52,7 +52,7 @@ var UDATA = UNISYS.NewDataLink(MOD);
       Generally you won't call UpdateTemplate without a followup call to
       SaveTemplateFile.
 
-    MAJOR SIDE EFFECT: Updates D3DATA with changes!
+    MAJOR SIDE EFFECT: Updates NCDATA with changes!
     `templateSnippet` can be the whole template object, or just the node types or
     edge types.
 /*/
@@ -69,7 +69,7 @@ MOD.UpdateTemplate = (templateSnippet, editScope) => {
     TEMPLATE.nodeDefs.type.options = templateSnippet.options.filter(o => {
       return (o.label !== '') || (o.label === '' && o.replacement !== '');
     });
-    // 2. Update D3DATA with new types
+    // 2. Update NCDATA with new types
     UDATA.LocalCall("NODE_TYPES_UPDATE", { nodeTypesChanges: templateSnippet.options });
     // 3. Remove Types marked for deletion
     TEMPLATE.nodeDefs.type.options = TEMPLATE.nodeDefs.type.options.filter(o => !o.delete);
@@ -96,7 +96,7 @@ MOD.UpdateTemplate = (templateSnippet, editScope) => {
     TEMPLATE.edgeDefs.type.options = templateSnippet.options.filter(o => {
       return (o.label !== '') || (o.label === '' && o.replacement !== '');
     });
-    // 2. Update D3DATA with new types
+    // 2. Update NCDATA with new types
     UDATA.LocalCall("EDGE_TYPES_UPDATE", { edgeTypesChanges: templateSnippet.options });
     // 3. Remove Types marked for deletion
     TEMPLATE.edgeDefs.type.options = TEMPLATE.edgeDefs.type.options.filter(o => !o.delete);
