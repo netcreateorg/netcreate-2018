@@ -68,6 +68,10 @@
 
   ## TECHNICAL DESCRIPTION
 
+    EdgeEditor works directly with raw NCDATA, unprocessed by d3.
+    This means that `edge.source` and `edge.target` are IDs, NOT the node objects
+    that d3 will convert them into.
+
 
   ## TESTING
 
@@ -370,6 +374,7 @@ class EdgeEditor extends UNISYS.Component {
       let disableEdit = false;
       UDATA.NetCall("SRV_GET_TEMPLATE_EDIT_STATE")
         .then(data => {
+          if (DBG) console.log(PR, 'SRV_GET_TEMPLATE_EDIT_STATE received', data)
           disableEdit = data.templateBeingEdited;
           this.setState({ disableEdit });
         });
@@ -383,10 +388,10 @@ class EdgeEditor extends UNISYS.Component {
       // Clean Data
       if (isNaN(edgeID)) { edgeID = parseInt(edgeID); }
 
-      let D3DATA = this.AppState('D3DATA');
+      const NCDATA = this.AppState('D3DATA');
 
       // parseInt in case of old bad string id
-      let edges = D3DATA.edges ? D3DATA.edges.filter( edge=>parseInt(edge.id)===edgeID ) : [];
+      let edges = NCDATA.edges ? NCDATA.edges.filter( edge=>parseInt(edge.id)===edgeID ) : [];
       if (!edges) {
         throw 'EdgeEditor: Passed edgeID '+edgeID+' not found!';
       }
@@ -404,7 +409,7 @@ class EdgeEditor extends UNISYS.Component {
         if (DBG) console.log('...EdgeEditor.loadSourceAndTarget: New edge!  No target yet!');
         // Get a real source node, since we know the parent of this link is the currently
         // selected source node.
-        sourceNodes = D3DATA.nodes.filter( node => node.label===this.props.parentNodeLabel );
+        sourceNodes = NCDATA.nodes.filter( node => node.label===this.props.parentNodeLabel );
         // We don't know what target the user is going to pick yet, so just display a
         // placeholder for now, otherwise, the render will choke on an invalid targetNode.
         targetNodes = [{label:'pick one...'}];
@@ -437,8 +442,9 @@ class EdgeEditor extends UNISYS.Component {
 
         // LOAD EXISTING EDGE
 
-        sourceNodes = D3DATA.nodes.filter( node => parseInt(node.id)===parseInt(edge.source.id) );
-        targetNodes = D3DATA.nodes.filter( node => parseInt(node.id)===parseInt(edge.target.id) );
+        // NOTE: NCDATA has not expanded source/target into objects, but remain ids
+        sourceNodes = NCDATA.nodes.filter( node => parseInt(node.id)===parseInt(edge.source) );
+        targetNodes = NCDATA.nodes.filter( node => parseInt(node.id)===parseInt(edge.target) );
 
         // Assume we have a valid target node
         this.setState({
@@ -616,7 +622,7 @@ class EdgeEditor extends UNISYS.Component {
 
         // If we were editing, then revert and exit
         if (this.state.isBeingEdited) {
-          const D3DATA = this.AppState('D3DATA');
+          const NCDATA = this.AppState('D3DATA');
 
           this.setState({ isBeingEdited: false, targetIsEditable: false });
           // Return focus of autocomplete to Search field.
@@ -627,10 +633,10 @@ class EdgeEditor extends UNISYS.Component {
           if (this.state.isBeingEdited) UDATA.NetCall("SRV_RELEASE_TEMPLATE_LOCK", { editor: 'edge' });
 
           // Cancel edit existing or cancel edit new?
-          let originalEdge = D3DATA.edges.filter(edge => parseInt(edge.id) === this.props.edgeID)[0];
+          let originalEdge = NCDATA.edges.filter(edge => parseInt(edge.id) === this.props.edgeID)[0];
           if (originalEdge === undefined) {
             // user abandoned editing a new node that was never saved
-            const parentNode = D3DATA.nodes.find(node => node.label === this.props.parentNodeLabel);
+            const parentNode = NCDATA.nodes.find(node => node.label === this.props.parentNodeLabel);
             // parentNode might be missing if the admin user deleted it.
             if (parentNode) {
               // Unlock edges and reselect the source node
@@ -859,9 +865,8 @@ class EdgeEditor extends UNISYS.Component {
       // linking to non-existent nodes. This should probably be moved to nc-logic.
       if (edge) {
         // check source
-        const D3DATA = this.AppState('D3DATA');
-        console.log('D3DATA is', D3DATA);
-        const source = D3DATA.nodes.find(node => node.id === edge.source);
+        const NCDATA = this.AppState('D3DATA');
+        const source = NCDATA.nodes.find(node => node.id === edge.source);
         if (!source) {
           alert('Sorry, the source node has been removed.  Please recreate your edge.');
           // Trigger Cancel
@@ -869,7 +874,7 @@ class EdgeEditor extends UNISYS.Component {
           return;
         }
         // check target
-        const target = D3DATA.nodes.find(node => node.id === edge.target);
+        const target = NCDATA.nodes.find(node => node.id === edge.target);
         if (!target) {
           alert('Sorry, the target node has been removed.  Please recreate your edge.');
           // Trigger Cancel
