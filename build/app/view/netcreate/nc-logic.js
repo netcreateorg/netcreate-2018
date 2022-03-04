@@ -43,7 +43,7 @@ const SETTINGS = require("settings");
 const UNISYS = require("unisys/client");
 const JSCLI = require("system/util/jscli");
 const D3 = require("d3");
-const EXPORT = require("./export-logic");
+const IMPORTEXPORT = require("./importexport-logic");
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -693,16 +693,16 @@ MOD.Hook("INITIALIZE", () => {
   /*/
   /*/
   UDATA.HandleMessage("EXPORT_NODES", data => {
-    EXPORT.ExportNodes();
+    IMPORTEXPORT.ExportNodes();
   });
   UDATA.HandleMessage("EXPORT_EDGES", data => {
-    EXPORT.ExportEdges();
+    IMPORTEXPORT.ExportEdges();
   });
 
-  UDATA.HandleMessage("IMPORT", EXPORT.Import);
-  UDATA.HandleMessage("VALIDATE_NODEFILE", EXPORT.ValidateNodeFile);
-  UDATA.HandleMessage("VALIDATE_EDGEFILE", EXPORT.ValidateEdgeFile);
-  UDATA.HandleMessage("VALIDATE_TOMLFILE", EXPORT.ValidateTOMLFile);
+  UDATA.HandleMessage("IMPORT", IMPORTEXPORT.Import);
+  UDATA.HandleMessage("VALIDATE_NODEFILE", IMPORTEXPORT.ValidateNodeFile);
+  UDATA.HandleMessage("VALIDATE_EDGEFILE", IMPORTEXPORT.ValidateEdgeFile);
+  UDATA.HandleMessage("VALIDATE_TOMLFILE", IMPORTEXPORT.ValidateTOMLFile);
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   UDATA.HandleMessage("EDIT_CURRENT_TEMPLATE", () => {
