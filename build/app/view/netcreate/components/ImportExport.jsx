@@ -19,6 +19,10 @@ const { Button, Table }    = ReactStrap;
 
 const UNISYS   = require('unisys/client');
 
+/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const NODEFILESTATUS_DEFAULT = 'Select a node .csv file to import';
+const EDGEFILESTATUS_DEFAULT = 'Select an edge .csv file to import';
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -29,11 +33,12 @@ class ImportExport extends UNISYS.Component {
     this.state = {
       isExpanded: true,
       nodefile: undefined,
-      nodefileStatus: 'Select a node .csv file to import',
+      nodefileStatus: NODEFILESTATUS_DEFAULT,
       nodefileErrors: undefined,
       edgefile: undefined,
-      edgefileStatus: 'Select an edge .csv file to import',
+      edgefileStatus: EDGEFILESTATUS_DEFAULT,
       edgefileErrors: undefined,
+      importErrors: undefined
     };
     this.onNodesExportSelect = this.onNodesExportSelect.bind(this);
     this.onEdgesExportSelect = this.onEdgesExportSelect.bind(this);
@@ -58,19 +63,31 @@ class ImportExport extends UNISYS.Component {
             nodefile,
             nodefileStatus: "Ready for import",
             nodefileErrors: undefined
+            // node does not clear importErrors because errors come from edges
           });
         } else {
-          const errorMsg = (
-            <div>
-              <div>Missing keys: {result.missingKeys.join(', ')}</div>
-              <div>Keys found in file: {result.fileKeys.join(', ')}</div>
-            </div>
-          );
-          this.setState({
-            nodefile: undefined,
-            nodefileStatus: 'Invalid nodes csv file!!!',
-            nodefileErrors: errorMsg
+          if (result.missingKeys.length > 0) {
+            // user selected file with missing keys
+            this.setState({
+              nodefile: undefined,
+              nodefileStatus: 'Invalid nodes csv file!!!',
+              nodefileErrors: (
+                <div>
+                  <div>Missing keys: {result.missingKeys.join(', ')}</div>
+                  <div>Keys found in file: {result.fileKeys.join(', ')}</div>
+                </div>
+              )
+              // node does not clear importErrors because errors come from edges
+            });
+          } else {
+            // User Cancelled, reset to default
+            this.setState({
+              nodefile: undefined,
+              nodefileStatus: NODEFILESTATUS_DEFAULT,
+              nodefileErrors: undefined
+              // node does not clear importErrors because errors come from edges
           });
+          }
         }
       });
   }
@@ -83,28 +100,60 @@ class ImportExport extends UNISYS.Component {
           this.setState({
             edgefile,
             edgefileStatus: "Ready for import",
-            edgefileErrors: undefined
+            edgefileErrors: undefined,
+            importErrors: undefined
           });
         } else {
-          const errorMsg = (
-            <div>
-              <div>Missing keys: {result.missingKeys.join(', ')}</div>
-              <div>Keys found in file: {result.fileKeys.join(', ')}</div>
-            </div>
-          );
-          this.setState({
-            edgefile: undefined,
-            edgefileStatus: "Invalid edges csv file!!!",
-            edgefileErrors: errorMsg
-          });
+          if (result.missingKeys.length > 0) {
+            // user selected file with missing keys
+            this.setState({
+              edgefile: undefined,
+              edgefileStatus: "Invalid edges csv file!!!",
+              edgefileErrors: (
+                <div>
+                  <div>Missing keys: {result.missingKeys.join(', ')}</div>
+                  <div>Keys found in file: {result.fileKeys.join(', ')}</div>
+                </div>
+              )
+            });
+          } else {
+            // User Cancelled, reset to default
+            this.setState({
+              edgefile: undefined,
+              edgefileStatus: EDGEFILESTATUS_DEFAULT,
+              edgefileErrors: undefined,
+              importErrors: undefined
+            });
+          }
         }
       });
   }
 
   onDoImport() {
-    UDATA.LocalCall('UI_CLOSE_MORE'); // InfoPanel.jsx
-    UDATA.LocalCall('IMPORT'); // nc-logic -> export-logic
-    this.setState({ nodefile: undefined, edgefile: undefined }); // clear files for next import
+    UDATA.LocalCall('IMPORT').then(result => {
+      if (result.error) {
+        this.setState({
+          importErrors: (
+            <div>ERROR: File(s) not imported.<br />
+              <ul>{result.error.map(e => (<li>{e}</li>))}</ul>
+            </div>)
+        });
+      } else {
+        UDATA.LocalCall('UI_CLOSE_MORE'); // InfoPanel.jsx
+        // clear files for next import
+        this.setState({
+          nodefile: undefined,
+          nodefileStatus: NODEFILESTATUS_DEFAULT,
+          nodefileErrors: undefined,
+          edgefile: undefined,
+          edgefileStatus: EDGEFILESTATUS_DEFAULT,
+          edgefileErrors: undefined,
+          importErrors: undefined
+        });
+        document.getElementById('nodefileInput').value = "";
+        document.getElementById('edgefileInput').value = "";
+      }
+    }); // nc-logic -> export-logic
   }
 
 
@@ -112,15 +161,20 @@ class ImportExport extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   render() {
-    const { nodefile,
+    const {
+      nodefile,
       nodefileStatus,
       nodefileErrors,
       edgefile,
       edgefileStatus,
-      edgefileErrors
+      edgefileErrors,
+      importErrors
     } = this.state;
 
-    const importDisabled = false;
+    const importDisabled = (!nodefile && !edgefile) ||
+      nodefileErrors !== undefined ||
+      edgefileErrors !== undefined ||
+      importErrors !== undefined;
 
     return (
       <div
@@ -154,6 +208,7 @@ class ImportExport extends UNISYS.Component {
           &nbsp;<i>{edgefileStatus}</i><br />
           {edgefileErrors && <span style={{ color: "red" }}>{edgefileErrors}</span>}
         </label><br />
+        {importErrors && <div style={{ color: "red" }}>{importErrors}</div>}
         <Button size="sm" outline color={importDisabled ? "light" : "primary"} disabled={importDisabled} onClick={this.onDoImport}>
           Import
         </Button>&nbsp;
