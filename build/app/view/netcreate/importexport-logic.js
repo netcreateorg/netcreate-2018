@@ -91,7 +91,7 @@ function m_getNodeValues(node, keys) {
       // DEPRECATED -- 'attribute' handler.
       const subKeys = Object.keys(key); // can have multiple subKeys
       subKeys.forEach(k => {
-        RESULT.push( m_getNodeValues(node[k], key[k]) );
+        RESULT.push(m_getNodeValues(node[k], key[k]));
       });
     }
     // Special Data Handling
@@ -106,9 +106,14 @@ function m_getNodeValues(node, keys) {
       RESULT.push(m_formatDate(node.meta[key]));
       return;
     }
-    // Else, normal processing -- wrap in quotes
-    if (node.hasOwnProperty(key)) RESULT.push(`"${m_encode(node[key])}"`); // enclose in quotes to support commas
-  })
+    // -- Normal processing -- wrap in quotes
+    if (node.hasOwnProperty(key)) {
+      RESULT.push(`"${m_encode(node[key])}"`); // enclose in quotes to support commas
+      return;
+    }
+    // -- Else, data missing/not defined, add empty string
+    RESULT.push("");
+  });
   return RESULT;
 }
 
@@ -150,8 +155,8 @@ function m_getEdgeValues(edge, keys) {
     }
     // -- SOURCE / TARGET
     if (['source', 'target'].includes(key)) {
-      // Export only the id of the source/target, not the whole object
-      RESULT.push(edge[key].id);
+      // source/target is an id not an object
+      RESULT.push(edge[key]);
       return;
     }
     // -- DATE
@@ -159,8 +164,13 @@ function m_getEdgeValues(edge, keys) {
       RESULT.push(m_formatDate(edge.meta[key]));
       return;
     }
-    // Else, normal processing -- wrap in quotes
-    if (edge.hasOwnProperty(key)) RESULT.push(`"${edge[key]}"`); // enclose in quotes to support commas
+    // -- normal processing -- wrap in quotes
+    if (edge.hasOwnProperty(key)) {
+      RESULT.push(`"${edge[key]}"`); // enclose in quotes to support commas
+      return;
+    }
+    // -- Else, data missing/not defined, add empty string
+    RESULT.push("");
   })
   return RESULT;
 }
