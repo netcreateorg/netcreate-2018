@@ -219,7 +219,7 @@ class D3NetGraph {
    * @param {array} data.edges
    */
   _HandleFilteredD3DataUpdate(data) {
-    if (DBG) console.log(PR, this.uid, 'got state FILTEREDD3DATA', data);
+    if (DBG) console.log(PR, 'got state FILTEREDD3DATA', data);
     this._SetData(data);
   }
 
