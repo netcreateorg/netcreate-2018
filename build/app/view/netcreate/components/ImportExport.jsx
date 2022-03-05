@@ -38,7 +38,8 @@ class ImportExport extends UNISYS.Component {
       edgefile: undefined,
       edgefileStatus: EDGEFILESTATUS_DEFAULT,
       edgefileErrors: undefined,
-      importErrors: undefined
+      importErrors: undefined,
+      importMsgs: undefined
     };
     this.onNodesExportSelect = this.onNodesExportSelect.bind(this);
     this.onEdgesExportSelect = this.onEdgesExportSelect.bind(this);
@@ -101,7 +102,8 @@ class ImportExport extends UNISYS.Component {
             edgefile,
             edgefileStatus: "Ready for import",
             edgefileErrors: undefined,
-            importErrors: undefined
+            importErrors: undefined,
+            importMsgs: undefined
           });
         } else {
           if (result.missingKeys.length > 0) {
@@ -122,7 +124,8 @@ class ImportExport extends UNISYS.Component {
               edgefile: undefined,
               edgefileStatus: EDGEFILESTATUS_DEFAULT,
               edgefileErrors: undefined,
-              importErrors: undefined
+              importErrors: undefined,
+              importMsgs: undefined
             });
           }
         }
@@ -133,13 +136,15 @@ class ImportExport extends UNISYS.Component {
     UDATA.LocalCall('IMPORT').then(result => {
       if (result.error) {
         this.setState({
-          importErrors: (
+          importErrors: result.error && (
             <div>ERROR: File(s) not imported.<br />
-              <ul>{result.error.map(e => (<li>{e}</li>))}</ul>
+              <ul>{result.error.map((e, i) => (<li key={i}>{e}</li>))}</ul>
             </div>)
         });
       } else {
-        UDATA.LocalCall('UI_CLOSE_MORE'); // InfoPanel.jsx
+        // Don't close the "More" tab so we can display results
+        // UDATA.LocalCall('UI_CLOSE_MORE'); // InfoPanel.jsx
+
         // clear files for next import
         this.setState({
           nodefile: undefined,
@@ -148,7 +153,11 @@ class ImportExport extends UNISYS.Component {
           edgefile: undefined,
           edgefileStatus: EDGEFILESTATUS_DEFAULT,
           edgefileErrors: undefined,
-          importErrors: undefined
+          importErrors: undefined,
+          importMsgs: result.messages && (
+            <div>IMPORT NOTES:<br />
+              <ul>{result.messages.map((e, i) => (<li key={i}>{e}</li>))}</ul>
+            </div>)
         });
         document.getElementById('nodefileInput').value = "";
         document.getElementById('edgefileInput').value = "";
@@ -168,7 +177,8 @@ class ImportExport extends UNISYS.Component {
       edgefile,
       edgefileStatus,
       edgefileErrors,
-      importErrors
+      importErrors,
+      importMsgs
     } = this.state;
 
     const importDisabled = (!nodefile && !edgefile) ||
@@ -209,6 +219,7 @@ class ImportExport extends UNISYS.Component {
           {edgefileErrors && <span style={{ color: "red" }}>{edgefileErrors}</span>}
         </label><br />
         {importErrors && <div style={{ color: "red" }}>{importErrors}</div>}
+        {importMsgs && <div>{importMsgs}</div>}
         <Button size="sm" outline color={importDisabled ? "light" : "primary"} disabled={importDisabled} onClick={this.onDoImport}>
           Import
         </Button>&nbsp;
