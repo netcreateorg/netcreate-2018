@@ -189,8 +189,8 @@ function m_GenerateEdgesArray(edges, edgekeys) {
 
 
 ///////////////////////////////////////////////////////////////////////////////
-/// MODULE EXPORT METHODS /////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// EXPORT METHODS ////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// EXPORT NODES //////////////////////////////////////////////////////////////
@@ -308,8 +308,8 @@ MOD.ExportEdges = () => {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/// MODULE IMPORT METHODS /////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// IMPORT METHODS ////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// IMPORT NODES //////////////////////////////////////////////////////////////
@@ -546,33 +546,41 @@ function m_LoadEdges(edgefileData) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Import
+/**
+ * Import will first try to validate the data.  If the data is valid
+ * it will write the results to the database and NCDATA AppState is updated.
+ * If the data is not valid neither the database nor NCDATA will be updated.
+ * @param {object} data - not used currently
+ * @returns { error } - 'error' is 'undefined' if there are no errors
+ *                      otherwise it is an array of error messages.
+ */
 MOD.Import = data => {
+  let errMsgs = [];
   const importNodes = m_LoadNodes(MOD.NodefileData);
   const importEdges = m_LoadEdges(MOD.EdgefileData);
   const mergeData = { nodes: importNodes, edges: importEdges }
 
-  // Write to database!
-  // IMPORTANT: We have to update the db BEFORE calling SetAppState
-  // because SetAppState will cause d3 to convert edge source/targets
-  // from ids back to node objects.
-  UDATA.LocalCall("DB_MERGE", mergeData).then( res => {
-    // Update NCDATA after we know the db has been successfully updated
-    // Merge changes into NCDATA
-    const NCDATA = clone(UDATA.AppState('NCDATA'));
-    importNodes.forEach(n => {
-      const i = NCDATA.nodes.findIndex(dn => dn.id === n.id);
-      if (i > -1) {
-        NCDATA.nodes.splice(i, 1, n); // Replace existing node
-      } else {
-        NCDATA.nodes.push(n); // Insert new node
-      }
-    })
-    importEdges.forEach(e => {
-// REVIEW: Add validation here!!!
-      // Validate Edges?
-      // Make sure each edge has a valid source and target
-      // if not, fail!
+  // Validate Data
+  const NCDATA = clone(UDATA.AppState('NCDATA'));
+  // 1. Merge nodes to NCDATA
+  importNodes.forEach(n => {
+    const i = NCDATA.nodes.findIndex(dn => dn.id === n.id);
+    if (i > -1) {
+      NCDATA.nodes.splice(i, 1, n); // Replace existing node
+    } else {
+      NCDATA.nodes.push(n); // Insert new node
+    }
+  });
+  // 2. Merge edges to NCDATA
+  importEdges.forEach(e => {
+    // Validate Edges
+    // Make sure each edge has a valid source and target
+    const source = NCDATA.nodes.find(n => n.id === e.source);
+    const target = NCDATA.nodes.find(n => n.id === e.target);
+    if (source === undefined) errMsgs.push(`Edge id ${e.id} references unknown source node id ${e.source}`);
+    if (target === undefined) errMsgs.push(`Edge id ${e.id} references unknown target node id ${e.target}`);
 
+    if (source && target) {
       // Set default edge size
       // REVIEW: Recalculate edge size?
       e.size = 1;
@@ -583,25 +591,19 @@ MOD.Import = data => {
       } else {
         NCDATA.edges.push(e); // Insert new edge
       }
-    })
+    }
+  })
 
-    // HACK TEST
-    // console.warn(PR, 'VVVVVVVV updated D3DATA', D3DATA)
-    // console.warn(PR, '@@@@@@@ CLEARING D3DATA');
-    // UDATA.SetAppState("NCDATA", {nodes: [], edges: []});
-    // // UDATA.LocalCall('CONSTRUCT_GRAPH');
-    // setTimeout(() => {
-    //   console.warn(PR, '@@@@@@@ Times Up...restoring ');
-    //   UDATA.LocalCall('CONSTRUCT_GRAPH');
-    //   UDATA.SetAppState("NCDATA", D3DATA);
-    // }, 10000);
-    // console.warn(PR, '@@@@@@ Oops, did not wait');
+  // If there were errors, abort!!!
+  if (errMsgs.length > 0) return { error: errMsgs };
 
+  // Write to database!
+  UDATA.LocalCall("DB_MERGE", mergeData).then(res => {
     UDATA.LocalCall('CONSTRUCT_GRAPH');
-    UDATA.SetAppState("NCDATA", NCDATA);
+    UDATA.SetAppState("NCDATA", NCDATA); // data was merged into NCDATA before the merge, now publish it
+ });
 
-    // And FDATA???
-  });
+  return { error: undefined };
 }
 
 
