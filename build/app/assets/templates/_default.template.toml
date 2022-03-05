@@ -148,8 +148,8 @@ color = "#ffae00"
 
 [edgeDefs.notes]
 type = "string"
-displayLabel = "Significatnce"
-exportLabel = "Significatnce"
+displayLabel = "Significance"
+exportLabel = "Significance"
 help = ""
 hidden = false
 
