@@ -524,8 +524,9 @@ function m_LoadEdges(edgefileData) {
         if (exportLabel === undefined) console.error(PR, 'could not find exportLabel for index', index, 'in', headers);
         const internalLabel = INTERNAL_FIELDS_MAP.get(exportLabel);
         // special handling for internal fields
-        if (['id','source','target'].includes(internalLabel)) {
-          edge[internalLabel] = Number(field); // ids are numbers
+        if (['id', 'source', 'target'].includes(internalLabel)) {
+          // don't replace bad ids with 0
+          edge[internalLabel] = field==='' ? NaN : Number(field); // ids are numbers
         } else if (['created', 'updated', 'revision'].includes(internalLabel)) {
           if (edge.meta === undefined) edge.meta = {};
           edge.meta[internalLabel] = field;
