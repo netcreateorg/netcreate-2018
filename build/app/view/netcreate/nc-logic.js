@@ -251,6 +251,13 @@ MOD.Hook("DISCONNECT", () => {
 /*/
 MOD.Hook("INITIALIZE", () => {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ NCDATA
+  /*/
+  UDATA.OnAppStateChange("NCDATA", stateChange => {
+    if (DBG) console.log("nc-logic: Got NCDATA", stateChange);
+    NCDATA = stateChange;
+  });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ Handle D3-related updates based on state changes. Subcomponents are
       responsible for updating themselves.
   /*/
