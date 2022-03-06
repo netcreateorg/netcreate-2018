@@ -343,15 +343,7 @@ class D3NetGraph {
         .append("circle")
         // "r" has to be set here or circles don't draw.
         .attr("r", (d) => {
-          if (!this.data.edges) return this.defaultSize; // no edges, use default size
-          let radius = this.data.edges.reduce((acc, ed) => {
-            return (ed.source === d.id || ed.target === d.id) ? acc + 1 : acc;
-          }, 1);
-
-          d.weight = radius
-          d.size = radius // save the calculated size
-          d.degrees = radius - 1 // hack for filters that read degrees
-          return this.defaultSize + (this.defaultSize * d.weight / 2)
+          return this.defaultSize + d.degrees;
         })
         //        .attr("r", (d) => { return this.defaultSize }) // d.size ?  d.size/10 : this.defaultSize; })
         .attr("fill", (d) => {
@@ -442,17 +434,7 @@ class D3NetGraph {
           })
           .attr("r", (d) => {
             // this "r" is necessary to resize after a link is added
-            if (!this.data.edges) return this.defaultSize; // no edges, uise default size
-            let radius = this.data.edges.reduce((acc,ed)=>{
-              return (ed.source.id===d.id || ed.target.id===d.id) ? acc+1 : acc
-            },1);
-
-            d.weight = radius
-            d.size = radius // save the calculated size
-            // radius is calculated by counting the number of edges attached
-            // (+ 1 for a minimum radius), so we hack degrees by using radius-1
-            d.degrees = radius - 1
-            return this.defaultSize + (this.defaultSize * d.weight / 2)
+            return this.defaultSize + d.degrees;
           })
           .transition()
           .duration(500)
