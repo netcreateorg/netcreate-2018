@@ -44,6 +44,7 @@ const UNISYS = require("unisys/client");
 const JSCLI = require("system/util/jscli");
 const D3 = require("d3");
 const IMPORTEXPORT = require("./importexport-logic");
+const UTILS = require("./nc-utils");
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -188,12 +189,13 @@ MOD.Hook("LOADASSETS", () => {
     return new Promise((resolve) => {
       (async () => {
         let p1 = await DATASTORE.PromiseJSONFile("data/" + dataset + "-db.json")
-          .then(data => {
-            m_MigrateData(data);
-            m_RecalculateAllEdgeWeights(data);
-            UDATA.SetAppState("NCDATA", data);
+          .then(d3data => {
+            m_MigrateData(d3data);
+            UTILS.RecalculateAllEdgeSizes(d3data);
+            UTILS.RecalculateAllNodeDegrees(d3data);
+            UDATA.SetAppState("NCDATA", d3data);
             // Save off local reference because we don't have NCDATA AppStateChange handler
-            NCDATA = data;
+            NCDATA = d3data;
           });
         // load template
         let p2 = await DATASTORE.PromiseTOMLFile("data/" + dataset + ".template.toml")
@@ -211,7 +213,8 @@ MOD.Hook("LOADASSETS", () => {
   .then(data => {
     if (DBG) console.log(PR, "DATASTORE returned data", data);
     m_MigrateData(data.d3data);
-    m_RecalculateAllEdgeWeights(data.d3data);
+    UTILS.RecalculateAllEdgeSizes(data.d3data);
+    UTILS.RecalculateAllNodeDegrees(data.d3data);
     UDATA.SetAppState("NCDATA", data.d3data);
     UDATA.SetAppState("TEMPLATE", data.template);
     // Save off local reference because we don't have NCDATA AppStateChange handler
@@ -632,14 +635,14 @@ MOD.Hook("INITIALIZE", () => {
     // (If we don't do this, the edges become disconnected from nodes)
     edge.source = edge.source.id;
     edge.target = edge.target.id;
-    // Calculate Edge Size
-    edge.size = m_CalculateEdgeWeight(edge, NCDATA.edges);
 
     // if there were more edges than expected
     if (updatedEdges.length > 1) {
       throw Error("EdgeUpdate found duplicate IDs");
     }
 
+    UTILS.RecalculateAllEdgeSizes(NCDATA);
+    UTILS.RecalculateAllNodeDegrees(NCDATA);
     UDATA.SetAppState("NCDATA", NCDATA);
   });
 
@@ -651,6 +654,8 @@ MOD.Hook("INITIALIZE", () => {
     let edges = [];
     // remove specified edge from edge list
     NCDATA.edges = m_DeleteMatchingEdgeByProp({ id: edgeID });
+    UTILS.RecalculateAllEdgeSizes(NCDATA);
+    UTILS.RecalculateAllNodeDegrees(NCDATA);
     UDATA.SetAppState("NCDATA", NCDATA);
     // Also update selection so edges in EdgeEditor will update
     let selection = UDATA.AppState("SELECTION");
@@ -1014,44 +1019,6 @@ function m_DeleteMatchingEdgeByProp(del_me = {}) {
 function m_SetMatchingEdgesByProp(match_me = {}, yes = {}, no = {}) {
   return m_SetMatchingObjsByProp(NCDATA.edges, match_me, yes, no);
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Count number of edges with the same source/target to determine weight
-/*/
-function m_CalculateEdgeWeight(edge, edges) {
-  // REVIEW: If there's a match, BOTH edge sizes ought to be set!
-
-  let size = edges.reduce((accumulator, e) => {
-    // Ignore self
-    if (e.id === edge.id) return accumulator;
-    // source and target might be ids or might be node objects depending
-    // on whether D3 has processed the edge object.
-    let sourceId = e.source.id || e.source;
-    let targetId = e.target.id || e.target;
-    let edgeSourceId = edge.source.id || edge.source;
-    let edgeTargetId = edge.target.id || edge.target;
-    //console.log('comparing sourceId',sourceId,'to',edgeSourceId,' / targetId',targetId,'to',edgeTargetId);
-    if (
-      (sourceId === edgeSourceId && targetId === edgeTargetId) ||
-      (sourceId === edgeTargetId && targetId === edgeSourceId)
-    )
-      return accumulator + 1;
-    return accumulator;
-  }, 1);
-  return size;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Count number of edges with the same source/target to determine weight
-      `data` is passed by reference
-      This modifies `data`
-      data = { nodes: [], edges: [] }
-/*/
-function m_RecalculateAllEdgeWeights(data) {
-  data.edges.forEach(edge => {
-    edge.size = m_CalculateEdgeWeight(edge, data.edges);
-  });
-  return data;
-}
-
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

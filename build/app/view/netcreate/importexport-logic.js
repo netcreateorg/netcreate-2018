@@ -12,6 +12,7 @@ const PR = 'importexport-logic: ';
 const UNISYS = require("unisys/client");
 const TOML = require("@iarna/toml");
 const clone = require("rfdc")();
+const UTILS = require("./nc-utils");
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -624,18 +625,24 @@ MOD.Import = data => {
     }
   })
 
+  // C. Calculate degrees and sizes
+  UTILS.RecalculateAllEdgeSizes(NCDATA);
+  UTILS.RecalculateAllNodeDegrees(NCDATA);
+
+  // D. Post summary of results
   importMsgs.push(`Nodes -- Added: ${nodesAdded} Replaced: ${nodesReplaced}`);
   importMsgs.push(`Edges -- Added: ${edgesAdded} Replaced: ${edgesReplaced}`);
 
   // If there were errors, abort!!!
   if (errMsgs.length > 0) return { error: errMsgs, messages: importMsgs };
 
-  // clear data, otherwise data will be re-used on next import
+  // Reset Form
+  // Clear file data, otherwise data will be re-used on next import
   MOD.NodefileData = {};
   MOD.EdgefileData = {};
 
-  const mergeData = { nodes: importNodes, edges: importEdges };
   // Write to database!
+  const mergeData = { nodes: importNodes, edges: importEdges };
   UDATA.LocalCall("DB_MERGE", mergeData).then(res => {
     UDATA.LocalCall('CONSTRUCT_GRAPH');
     UDATA.SetAppState("NCDATA", NCDATA); // data was merged into NCDATA before the merge, now publish it
