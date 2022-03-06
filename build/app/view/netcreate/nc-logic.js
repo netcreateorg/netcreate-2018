@@ -1016,18 +1016,6 @@ function m_SetMatchingEdgesByProp(match_me = {}, yes = {}, no = {}) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Count number of edges with the same source/target to determine weight
-      `data` is passed by reference
-      This modifies `data`
-      data = { nodes: [], edges: [] }
-/*/
-function m_RecalculateAllEdgeWeights(data) {
-  data.edges.forEach(edge => {
-    edge.size = m_CalculateEdgeWeight(edge, data.edges);
-  });
-  return data;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Count number of edges with the same source/target to determine weight
 /*/
 function m_CalculateEdgeWeight(edge, edges) {
   // REVIEW: If there's a match, BOTH edge sizes ought to be set!
@@ -1051,6 +1039,19 @@ function m_CalculateEdgeWeight(edge, edges) {
   }, 1);
   return size;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Count number of edges with the same source/target to determine weight
+      `data` is passed by reference
+      This modifies `data`
+      data = { nodes: [], edges: [] }
+/*/
+function m_RecalculateAllEdgeWeights(data) {
+  data.edges.forEach(edge => {
+    edge.size = m_CalculateEdgeWeight(edge, data.edges);
+  });
+  return data;
+}
+
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
