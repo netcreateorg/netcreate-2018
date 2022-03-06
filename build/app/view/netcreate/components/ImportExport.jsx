@@ -137,7 +137,7 @@ class ImportExport extends UNISYS.Component {
       if (result.error) {
         this.setState({
           importErrors: result.error && (
-            <div>ERROR: File(s) not imported.<br />
+            <div>IMPORT ERROR: File(s) not imported.<br />
               <ul>{result.error.map((e, i) => (<li key={i}>{e}</li>))}</ul>
             </div>)
         });
