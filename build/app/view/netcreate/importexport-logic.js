@@ -365,7 +365,7 @@ MOD.ValidateEdgeFile = async data => {
   if (edgefile===undefined) return { isValid: false, missingKeys, fileKeys: []}; // User cancelled
   let result = await edgefile.text();
   // Validate Data
-  const lines = result.split(/\r\n|\n/);
+  const lines = result.split(REGEXMatchLFNotInQuotes);
   // First line should list the headers
   // Remove headers, so 'lines' is just data
   const headers = lines.shift().split(',');
