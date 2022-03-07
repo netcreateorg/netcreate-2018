@@ -129,10 +129,20 @@ MOD.TEMPLATE = {
       // Normally, only admins can delete nodes.  You're an admin if:
       // -- is localhost (e.g. IP is 127.0.0.71)
       // -- or has `?admin=true` GET parameter
-      // This will force hide the delete button even if you're an admin
+      // This will force hide the delete button even if you're an admin.
       type: 'boolean',
       format: 'checkbox',
       description: 'Always hide Node delete button, even for admins.',
+      default: false
+    },
+    "allowLoggedInUserToImport": {
+      // Normally, only admins can import data.  You're an admin if:
+      // -- is localhost (e.g. IP is 127.0.0.71)
+      // -- or has `?admin=true` GET parameter
+      // This will allow any logged in user to import data.
+      type: 'boolean',
+      format: 'checkbox',
+      description: 'Allow any logged in user to import data.  Admins can always import data.',
       default: false
     },
     "duplicateWarning": {

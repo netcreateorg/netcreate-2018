@@ -156,6 +156,7 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
     description: jt.description,
     requireLogin: jt.requireLogin || SCHEMA.requireLogin.default,
     hideDeleteNodeButton: (jt.nodePrompts && jt.nodePrompts.delete && jt.nodePrompts.delete.hidden) || SCHEMA.hideDeleteNodeButton.default,
+    allowLoggedInUserToImport: SCHEMA.allowLoggedInUserToImport.default, // new parameter not in old json template
     duplicateWarning: (jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.duplicateWarning) || SCHEMA.duplicateWarning.default,
     nodeIsLockedMessage: (jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.sourceNodeIsLockedMessage) || SCHEMA.nodeIsLockedMessage.default,
     edgeIsLockedMessage: (jt.edgePrompts && jt.edgePrompts.edgeIsLockedMessage) || SCHEMA.edgeIsLockedMessage.default,
