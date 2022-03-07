@@ -16,6 +16,8 @@ var UDATA = null;
 const React        = require('react');
 const ReactStrap   = require('reactstrap');
 const { Button, Table }    = ReactStrap;
+const SETTINGS = require("settings");
+const NetMessage = require("unisys/common-netmessage-class");
 
 const UNISYS   = require('unisys/client');
 
@@ -181,48 +183,61 @@ class ImportExport extends UNISYS.Component {
       importMsgs
     } = this.state;
 
-    const importDisabled = (!nodefile && !edgefile) ||
+    const ISADMIN = SETTINGS.IsAdmin();
+    const isLoggedIn = NetMessage.GlobalGroupID();
+    const importDisabled = !(ISADMIN || isLoggedIn);
+
+    const importBtnDisabled = (!nodefile && !edgefile) ||
       nodefileErrors !== undefined ||
       edgefileErrors !== undefined ||
       importErrors !== undefined;
 
     return (
-      <div
-        style={{
-          backgroundColor: 'rgba(240,240,240,0.95)',
-          padding: '10px 20px'
-        }}
-      >
-        <h1>Export Data</h1>
+      <div>
+        <div
+          style={{
+            backgroundColor: 'rgba(240,240,240,0.95)',
+            padding: '10px 20px'
+          }}
+        >
+          <h1>Export Data</h1>
 
-        <i className="small text-muted">Export data in .csv format.</i><br/>
-        <Button size="sm" outline onClick={this.onNodesExportSelect}>
-          Export Nodes
-        </Button>&nbsp;
-        <Button size="sm" outline onClick={this.onEdgesExportSelect}>
-          Export Edges
-        </Button>&nbsp;
+          <i className="small text-muted">Export data in .csv format.</i><br/>
+          <Button size="sm" outline onClick={this.onNodesExportSelect}>
+            Export Nodes
+          </Button>&nbsp;
+          <Button size="sm" outline onClick={this.onEdgesExportSelect}>
+            Export Edges
+          </Button>&nbsp;
+        </div>
 
-        <hr />
+        <div
+          hidden={importDisabled}
+          style={{
+            backgroundColor: 'rgba(240,240,240,0.95)',
+            marginTop: '10px',
+            padding: '10px 20px'
+          }}
+        >
+          <h1>Import Data</h1>
 
-        <h1>Import Data</h1>
-
-        <i className="small text-muted">Import .csv data</i><br/>
-        <label>
-          <input type="file" accept="text/csv" id="nodefileInput" onChange={this.onNodeImportFileSelect}/>
-          &nbsp;<i>{nodefileStatus}</i><br />
-          {nodefileErrors && <span style={{ color: "red" }}>{nodefileErrors}</span>}
-        </label><br />
-        <label>
-          <input type="file" accept="text/csv" id="edgefileInput" onChange={this.onEdgeImportFileSelect}/>
-          &nbsp;<i>{edgefileStatus}</i><br />
-          {edgefileErrors && <span style={{ color: "red" }}>{edgefileErrors}</span>}
-        </label><br />
-        {importErrors && <div style={{ color: "red" }}>{importErrors}</div>}
-        {importMsgs && <div>{importMsgs}</div>}
-        <Button size="sm" outline color={importDisabled ? "light" : "primary"} disabled={importDisabled} onClick={this.onDoImport}>
-          Import
-        </Button>&nbsp;
+          <i className="small text-muted">Import .csv data</i><br/>
+          <label>
+            <input type="file" accept="text/csv" id="nodefileInput" onChange={this.onNodeImportFileSelect}/>
+            &nbsp;<i>{nodefileStatus}</i><br />
+            {nodefileErrors && <span style={{ color: "red" }}>{nodefileErrors}</span>}
+          </label><br />
+          <label>
+            <input type="file" accept="text/csv" id="edgefileInput" onChange={this.onEdgeImportFileSelect}/>
+            &nbsp;<i>{edgefileStatus}</i><br />
+            {edgefileErrors && <span style={{ color: "red" }}>{edgefileErrors}</span>}
+          </label><br />
+          {importErrors && <div style={{ color: "red" }}>{importErrors}</div>}
+          {importMsgs && <div>{importMsgs}</div>}
+          <Button size="sm" outline color={importBtnDisabled ? "light" : "primary"} disabled={importBtnDisabled} onClick={this.onDoImport}>
+            Import
+          </Button>&nbsp;
+        </div>
       </div>
     );
   }
