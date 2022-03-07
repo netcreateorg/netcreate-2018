@@ -126,9 +126,34 @@ var UDATA = UNISYS.NewDataLink(MOD);
 
     NCDATA
 
+    NCDATA is the core pristine network data of nodes and edges. It is read
+    directly from the database, or, when importing data, data is imported
+    into NCDATA.  It is an object consisting of two arrays:
+      `NCDATA = { nodes: [], edges: [] }`
+    See https://whimsical.com/network-data-flow-63qtRETqrfDVfp7EchUdzp
+    NCDATA is maintained as a application-wide AppState, though some modules
+    may keep a local copy.  (This needs to be reviewed and revised).
+    It includes:
     * nodes: all nodes (not all may be actually changed)
     * edges: all edges (not all may be actually changed)
 
+
+    FILTEREDD3DATA
+
+    FILTEREDD3DATA is the processed network data. It is derived from NCDATA.
+    It represents a subset of NCDATA with filtered items tagged (for highlight)
+    or removed. d3 will alter FILTEREDD3DATA, replacing edge source/targets
+    ids with node objects.
+    FILTEREDD3DATA is updated whenever NCDATA is updated.
+
+    There are three key differences between NCDATA and FILTEREDD3DATA:
+    1. edge.source and edge.target in NCDATA refer to node ids
+       whereas in FILTEREDD3DATA, edge.source and edge.target are node objects
+    2. Only FILTEREDD3DATA is passed to d3.  d3 never directly touches NCDATA.
+    3. FILTEREDD3DATA is directly derived from NCDATA, and can contain a subset
+       of the nodes or edges of NCDATA. In contrast, NCDATA contains ALL nodes
+       and edges.  When a filter is set, FILTEREDD3DATA is updated from
+       NCDATA, with nodes and edges removed or marked according to the filter.
 
 \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -/*/
 var NCDATA = null; // see above for description
