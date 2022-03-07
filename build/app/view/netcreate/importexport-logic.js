@@ -167,7 +167,7 @@ function m_getEdgeValues(edge, keys) {
     }
     // -- normal processing -- wrap in quotes
     if (edge.hasOwnProperty(key)) {
-      RESULT.push(`"${edge[key]}"`); // enclose in quotes to support commas
+      RESULT.push(`"${m_encode(edge[key])}"`); // enclose in quotes to support commas
       return;
     }
     // -- Else, data missing/not defined, add empty string
