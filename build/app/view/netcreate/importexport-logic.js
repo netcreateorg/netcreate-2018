@@ -50,8 +50,10 @@ function m_encode(data) {
   let res;
   // double quotes need to be escaped
   res = String(data).replace(/"/g, '""');
-  // encode carriage returns
-  res = String(res).replace(/\n/g, 'nnn');
+  // Don't encode carriage returns, csv should support LF inside of quotes
+  // `REGEXMatchLFNotInQuotes` should work.
+  // // encode carriage returns
+  // res = String(res).replace(/\n/g, 'nnn');
   return res;
 }
 
