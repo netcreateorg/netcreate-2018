@@ -32,6 +32,7 @@ const EDGEFILESTATUS_DEFAULT = 'Select an edge .csv file to import';
 class ImportExport extends UNISYS.Component {
   constructor (props) {
     super(props);
+    const TEMPLATE = this.AppState('TEMPLATE');
     this.state = {
       isExpanded: true,
       nodefile: undefined,
@@ -41,7 +42,8 @@ class ImportExport extends UNISYS.Component {
       edgefileStatus: EDGEFILESTATUS_DEFAULT,
       edgefileErrors: undefined,
       importErrors: undefined,
-      importMsgs: undefined
+      importMsgs: undefined,
+      allowLoggedInUserToImport: TEMPLATE.allowLoggedInUserToImport
     };
     this.onNodesExportSelect = this.onNodesExportSelect.bind(this);
     this.onEdgesExportSelect = this.onEdgesExportSelect.bind(this);
@@ -180,12 +182,16 @@ class ImportExport extends UNISYS.Component {
       edgefileStatus,
       edgefileErrors,
       importErrors,
-      importMsgs
+      importMsgs,
+      allowLoggedInUserToImport
     } = this.state;
 
+    // Set Import Permissions
+    // -- Admins can always import
+    // -- If allowLoggedInUserToImport, logged in users can also import
     const ISADMIN = SETTINGS.IsAdmin();
     const isLoggedIn = NetMessage.GlobalGroupID();
-    const importDisabled = !(ISADMIN || isLoggedIn);
+    const importDisabled = !(ISADMIN || (allowLoggedInUserToImport && isLoggedIn));
 
     const importBtnDisabled = (!nodefile && !edgefile) ||
       nodefileErrors !== undefined ||
