@@ -560,7 +560,8 @@ function m_LoadEdges(edgefileData) {
  */
 MOD.Import = data => {
   const importMsgs = []; // general non-error notes about the import
-  const errMsgs = [];
+  const nodeImportErrors = [];
+  const edgeImportErrors = [];
   const importNodes = m_LoadNodes(MOD.NodefileData);
   const importEdges = m_LoadEdges(MOD.EdgefileData);
 
@@ -575,7 +576,7 @@ MOD.Import = data => {
     // Validate Nodes
     // 1. Make sure each node has a valid id
     //    m_LoadNotes converts n.id to a number
-    if (isNaN(n.id)) errMsgs.push(`Node in row ${row} does not have a valid id.`);
+    if (isNaN(n.id)) nodeImportErrors.push(`Node in row ${row} does not have a valid id.  Found: "${n.id}".`);
     // 2. Note non-unique ids
     const existingNode = NCDATA.nodes.find(node => n.id === node.id);
     if (existingNode) {
@@ -600,7 +601,7 @@ MOD.Import = data => {
     // Validate Edges
     // 1. Make sure each edge has a valid id
     //    m_LoadEdges converts e.id to a number
-    if (isNaN(e.id)) errMsgs.push(`Edge in row ${row} does not have a valid id.`);
+    if (isNaN(e.id)) edgeImportErrors.push(`Edge in row ${row} does not have a valid id.  Found: "${e.id}".`);
     // 2. Note non-unique ids
     if (NCDATA.edges.find(existingEdge => e.id === existingEdge.id)) {
       importMsgs.push(`Existing edge id ${e.id} replaced by edge in row ${row} with matching id.`);
@@ -608,8 +609,8 @@ MOD.Import = data => {
     // 3. Make sure each edge has a valid source and target
     const source = NCDATA.nodes.find(n => n.id === e.source);
     const target = NCDATA.nodes.find(n => n.id === e.target);
-    if (source === undefined) errMsgs.push(`Edge id ${e.id}, row ${row} references unknown source node id ${e.source}`);
-    if (target === undefined) errMsgs.push(`Edge id ${e.id}, row ${row} references unknown target node id ${e.target}`);
+    if (source === undefined) edgeImportErrors.push(`Edge id ${e.id}, row ${row} references unknown source node id ${e.source}`);
+    if (target === undefined) edgeImportErrors.push(`Edge id ${e.id}, row ${row} references unknown target node id ${e.target}`);
 
     if (source && target) {
       // Set default edge size
@@ -636,7 +637,8 @@ MOD.Import = data => {
   importMsgs.push(`Edges -- Added: ${edgesAdded} Replaced: ${edgesReplaced}`);
 
   // If there were errors, abort!!!
-  if (errMsgs.length > 0) return { error: errMsgs, messages: importMsgs };
+  if (nodeImportErrors.length > 0 ) return { nodeImportErrors, edgeImportErrors: undefined, messages: importMsgs };
+  if (edgeImportErrors.length > 0) return { nodeImportErrors: undefined, edgeImportErrors, messages: importMsgs };
 
   // Reset Form
   // Clear file data, otherwise data will be re-used on next import
@@ -648,9 +650,9 @@ MOD.Import = data => {
   UDATA.LocalCall("DB_MERGE", mergeData).then(res => {
     UDATA.LocalCall('CONSTRUCT_GRAPH');
     UDATA.SetAppState("NCDATA", NCDATA); // data was merged into NCDATA before the merge, now publish it
- });
+  });
 
-  return { error: undefined, messages: importMsgs };
+  return { nodeImportErrors: undefined, edgeImportErrors: undefined, messages: importMsgs };
 }
 
 
