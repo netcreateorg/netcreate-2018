@@ -571,22 +571,20 @@ displayUpdated(nodeEdge)
 /*/ _UpdateForces() {
       this.simulation
         .force("link", d3.forceLink()
-            .id((d) => {return d.id})
-            .distance( (d)=>{return M_FORCEPROPERTIES.link.distance} )
-// this doesn't seem to change anything?!?  The m_forceProperties.link.distance is the only value that seems to matter?
-//            .distance( (d)=>{return m_forceProperties.link.distance+d.size*10 } )
-//            .distance( (d)=>{return m_forceProperties.link.distance * (1/d.size) } )
-//            .distance( m_forceProperties.link.distance )
+            .id(d => d.id)
+            // thicker edges push nodes further apart
+            .distance(d => d.size * M_FORCEPROPERTIES.link.distance) // edge so d.size, not d.degrees
             .iterations(M_FORCEPROPERTIES.link.iterations))
         .force("charge", d3.forceManyBody()
-//            .strength(m_forceProperties.charge.strength * m_forceProperties.charge.enabled)
-//            .strength( (d)=>{return d.size/6 * m_forceProperties.charge.strength * m_forceProperties.charge.enabled} )
-            .strength( (d)=>{return d.size/4 * M_FORCEPROPERTIES.charge.strength * M_FORCEPROPERTIES.charge.enabled} )
+            // the larger the node, the harder it pushes
+            .strength(d => (this.defaultSize+d.degrees) * M_FORCEPROPERTIES.charge.strength * M_FORCEPROPERTIES.charge.enabled )
             .distanceMin(M_FORCEPROPERTIES.charge.distanceMin)
             .distanceMax(M_FORCEPROPERTIES.charge.distanceMax))
         .force("collide", d3.forceCollide()
             .strength(M_FORCEPROPERTIES.collide.strength * M_FORCEPROPERTIES.collide.enabled)
-            .radius((d) => {return d.size/M_FORCEPROPERTIES.collide.radius;})
+            // node radius (defaultSize+degrees) + preset radius keeps nodes separated
+            // from each other like bouncing balls
+            .radius(d => this.defaultSize+d.degrees+M_FORCEPROPERTIES.collide.radius)
             .iterations(M_FORCEPROPERTIES.collide.iterations))
         .force("center", d3.forceCenter()
             .x(m_width * M_FORCEPROPERTIES.center.x)
