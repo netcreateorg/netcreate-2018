@@ -457,7 +457,8 @@ function m_LoadNodes(nodefileData) {
         const internalLabel = INTERNAL_FIELDS_MAP.get(exportLabel);
         // special handling for internal fields
         if (['id'].includes(internalLabel)) {
-          node[internalLabel] = Number(field); // ids are numbers
+          // don't replace bad ids with 0
+          node[internalLabel] = field==='' ? NaN : Number(field); // ids are numbers
         } else if (['created', 'updated', 'revision'].includes(internalLabel)) {
           if (node.meta === undefined) node.meta = {};
           node.meta[internalLabel] = field;
