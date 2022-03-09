@@ -1,3 +1,7 @@
 .warning {
   padding: 5px 0
 }
+
+.nodeEntry img {
+  max-width: 100%
+}
