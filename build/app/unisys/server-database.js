@@ -18,6 +18,8 @@ const TOML = require("@iarna/toml");
 const SESSION = require("../unisys/common-session");
 const LOGGER = require("../unisys/server-logger");
 const PROMPTS = require("../system/util/prompts");
+const TEMPLATE_SCHEMA = require("../view/netcreate/template-schema");
+
 const PR = PROMPTS.Pad("ServerDB");
 const RUNTIMEPATH = './runtime/';
 const TEMPLATEPATH = './app/assets/templates/';
@@ -37,6 +39,7 @@ let EDGES; // loki "edges" collection
 let m_locked_nodes; // map key = nodeID, value = uaddr initiating the lock
 let m_locked_edges; // map key = nodeID, value = uaddr initiating the lock
 let TEMPLATE;
+let m_open_editors = []; // array of template, node, or edge editors
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -147,22 +150,23 @@ DB.InitializeDatabase = function (options = {}) {
 function m_MigrateJSONtoTOML(JSONtemplate) {
   console.log(PR, 'Converting JSON to TOML...');
   const jt = JSONtemplate;
+  const SCHEMA = TEMPLATE_SCHEMA.TEMPLATE.properties;
   const TOMLtemplate = {
     name: jt.name,
     description: jt.description,
-    requireLogin: jt.requireLogin || false,
-    // REVIEW: These really ought to load the default values from the schema.
-    hideDeleteNodeButton: (jt.nodePrompts && jt.nodePrompts.delete && jt.nodePrompts.delete.hidden) || false,
-    duplicateWarning: (jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.duplicateWarning) || 'Warning: Duplicate',
-    nodeIsLockedMessage: (jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.sourceNodeIsLockedMessage) || 'Node is locked',
-    edgeIsLockedMessage: (jt.edgePrompts && jt.edgePrompts.edgeIsLockedMessage) || "Edge is locked",
-    nodeDefaultTransparency: (jt.nodePrompts && jt.nodePrompts.defaultTransparency) || 1.0,
-    edgeDefaultTransparency: (jt.edgePrompts && jt.edgePrompts.defaultTransparency) || 0.3,
-    searchColor: jt.searchColor || '#008800',
-    sourceColor: jt.sourceColor || '#FFa500',
+    requireLogin: jt.requireLogin || SCHEMA.requireLogin.default,
+    hideDeleteNodeButton: (jt.nodePrompts && jt.nodePrompts.delete && jt.nodePrompts.delete.hidden) || SCHEMA.hideDeleteNodeButton.default,
+    duplicateWarning: (jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.duplicateWarning) || SCHEMA.duplicateWarning.default,
+    nodeIsLockedMessage: (jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.sourceNodeIsLockedMessage) || SCHEMA.nodeIsLockedMessage.default,
+    edgeIsLockedMessage: (jt.edgePrompts && jt.edgePrompts.edgeIsLockedMessage) || SCHEMA.edgeIsLockedMessage.default,
+    templateIsLockedMessage: SCHEMA.templateIsLockedMessage.default,
+    nodeDefaultTransparency: (jt.nodePrompts && jt.nodePrompts.defaultTransparency) || SCHEMA.nodeDefaultTransparency.default,
+    edgeDefaultTransparency: (jt.edgePrompts && jt.edgePrompts.defaultTransparency) || SCHEMA.edgeDefaultTransparency.default,
+    searchColor: jt.searchColor || SCHEMA.searchColor.default,
+    sourceColor: jt.sourceColor || SCHEMA.sourceColor.default,
     citation: {
       text: (jt.citationPrompts && jt.citationPrompts.citation) || jt.name,
-      hidden: (jt.citationPrompts && jt.citationPrompts.hidden) || true
+      hidden: (jt.citationPrompts && jt.citationPrompts.hidden) || SCHEMA.citation.properties.hidden.default
     }
   }
   // convert nodePrompts
@@ -288,6 +292,12 @@ function m_LoadTOMLTemplate(templateFilePath) {
     if (err) throw err;
     // Read TOML
     const json = TOML.parse(data);
+    // Ensure key fields are present, else default to schema
+    const SCHEMA = TEMPLATE_SCHEMA.TEMPLATE.properties;
+    json.duplicateWarning = json.duplicateWarning || SCHEMA.duplicateWarning.default;
+    json.nodeIsLockedMessage = json.nodeIsLockedMessage || SCHEMA.nodeIsLockedMessage.default;
+    json.edgeIsLockedMessage = json.edgeIsLockedMessage || SCHEMA.edgeIsLockedMessage.default;
+    json.templateIsLockedMessage = json.templateIsLockedMessage || SCHEMA.templateIsLockedMessage.default;
     TEMPLATE = json;
     console.log(PR, 'Template loaded', templateFilePath);
   });
@@ -353,6 +363,24 @@ DB.PKT_SetDatabase = function (pkt) {
   m_db.close();
   DB.InitializeDatabase();
   LOGGER.Write(pkt.Info(), `setdatabase`);
+  return { OK: true };
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: Update all data in existing database.
+    Used to update node/edge types after template edit
+/*/
+DB.PKT_UpdateDatabase = function (pkt) {
+  if (DBG) console.log(PR, `PKT_UpdateDatabase`);
+  let { nodes = [], edges = [] } = pkt.Data();
+  if (!nodes.length) console.log(PR, "WARNING: empty nodes array");
+  else console.log(PR, `updating ${nodes.length} nodes...`);
+  if (!edges.length) console.log(PR, "WARNING: empty edges array");
+  else console.log(PR, `updating ${edges.length} edges...`);
+  NODES.update(nodes);
+  EDGES.update(edges);
+  console.log(PR, `PKT_UpdateDatabase complete. Disk db file updated.`);
+  m_db.saveDatabase();
+  LOGGER.Write(pkt.Info(), `updatedatabase`);
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -464,6 +492,7 @@ DB.PKT_RequestUnlockAllEdges = function (pkt) {
 DB.PKT_RequestUnlockAll = function (pkt) {
   m_locked_nodes = new Map();
   m_locked_edges = new Map();
+  m_open_editors = [];
   return { unlocked: true };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -725,6 +754,99 @@ DB.WriteTemplateTOML = (pkt) => {
       console.log(PR, 'Failed trying to save', templateFilePath, err);
       return { OK: false, info: 'Failed trying to save', templateFilePath }
     });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Clones the existing toml template
+    called by brunch to generate an up-to-date Template file to path
+    for standalone mode.
+    creates the path if it doesn't exist
+/*/
+DB.CloneTemplateTOML = function (filePath) {
+  const TOMLtemplateFilePath = m_GetTemplateTOMLFilePath();
+  FS.ensureDirSync(PATH.dirname(TOMLtemplateFilePath));
+  // Does the template exist?
+  if (!FS.existsSync(TOMLtemplateFilePath)) {
+    console.error(PR, `ERR could not find template ${TOMLtemplateFilePath}`);
+  } else {
+    FS.copySync(TOMLtemplateFilePath, filePath);
+    console.log(PR, `*** COPIED TEMPLATE ${TOMLtemplateFilePath} to ${filePath}`);
+  }
+};
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ OPENEDITORS
+
+    Used to coordinate Template editing vs Node/Edge editing.  Since Nodes and
+    Edges should not be edited while the Template is being edited, any editor
+    that is opened registers as an OPENEDITOR and will check on the status of
+    existing open editors.
+
+    * When a Template editor is open, "Node Edit", "Edge Edit", and "Add New Edge"
+      buttons are all disabled.
+    * When "Node Edit", "Edge Edit", or "Add New Edge" has been triggered,
+      the Template buttons on the Template panel are all disabled.
+
+    m_open_editors is an array of all the editors (node, edge, template) that are
+    currently open.  Used to coordinate template vs node/edge editing
+    because nodes and edges should not be edited while the template
+    is being edited.
+/*/
+const EDITOR = { TEMPLATE: 'template', NONTEMPLATE: 'nonTemplate' };
+
+function GetEditStatus() {
+  // If there are any 'node' or 'edge' open editors, then request fails: template cannot be locked
+  // If there are any 'template' open editors, then request fails: template cannot be locked
+  const templateBeingEdited = m_open_editors.length === 1 && m_open_editors.includes( EDITOR.TEMPLATE );
+  const nodeOrEdgeBeingEdited = m_open_editors.length > 0 && !m_open_editors.includes( EDITOR.TEMPLATE );
+  return { templateBeingEdited, nodeOrEdgeBeingEdited };
+}
+
+/**
+ * @returns { temtemplateBeingEditedplate: boolean, nodeOrEdgeBeingEdited: boolean }
+ */
+DB.GetTemplateEditState = pkt => {
+  // return { isBeingEdited: GetTemplateIsBeingEdited() };
+  return GetEditStatus();
+}
+/**
+ * Requester is always the Template editor.
+ * @returns { okToEdit: boolean }
+ */
+DB.RequestTemplateEdit = () => {
+  console.log(PR,'RequestTemplateEdit', m_open_editors)
+  const okToEdit = m_open_editors.length < 1; // okToEdit only if no node/edge/template is open
+  // return edit state
+  if (okToEdit) m_open_editors.push(EDITOR.TEMPLATE);
+  return { okToEdit };
+}
+/**
+ * Requester is always the Template editor
+ * @param {Object} pkt
+ * @returns { temtemplateBeingEditedplate: boolean, nodeOrEdgeBeingEdited: boolean }
+ */
+DB.ReleaseTemplateEdit = pkt => {
+  const i = m_open_editors.findIndex(e => e === EDITOR.TEMPLATE);
+  if (i > -1) m_open_editors.splice(i, 1);
+  return GetEditStatus();
+}
+/**
+ * Requester is always node or edge editor
+ * @param {Object} pkt
+ * @param {string} pkt.editor - 'node' or 'edge'
+ * @returns { templateBeingEdited: boolean, nodeOrEdgeBeingEdited: boolean }
+ */
+DB.RequestTemplateLock = pkt => {
+  console.log(PR,'RequestTemplateLock', pkt)
+  m_open_editors.push(pkt.Data().editor);
+  return GetEditStatus();
+}
+/**
+ * @returns { templateBeingEdited: boolean, nodeOrEdgeBeingEdited: boolean }
+ */
+DB.ReleaseTemplateLock = pkt => {
+  const i = m_open_editors.findIndex(e => e === pkt.Data().editor);
+  if (i > -1) m_open_editors.splice(i, 1);
+  return GetEditStatus();
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

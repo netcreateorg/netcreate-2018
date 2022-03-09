@@ -13,6 +13,12 @@
   This is displayed on the More.jsx component/panel but can be moved
   anywhere.
 
+  Templates can only be edited if:
+  * There are no nodes or edges being edited
+  * There are no other templates being edited
+
+  Conversely, if a Template is being edited, Node and Edge editing
+  will be disabled.
 
   ##  BACKGROUND
 
@@ -32,10 +38,12 @@ const { Button } = ReactStrap;
 import { JSONEditor } from '@json-editor/json-editor';
 const UNISYS = require('unisys/client');
 const TEMPLATE_LOGIC = require("../template-logic");
+const SCHEMA = require("../template-schema");
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 
 let EDITOR; // json-editor object
+let typeOptions;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -52,6 +60,7 @@ class Template extends UNISYS.Component {
     };
     this.loadEditor = this.loadEditor.bind(this);
     this.updateEditState = this.updateEditState.bind(this);
+    this.disableOrigLabelFields = this.disableOrigLabelFields.bind(this);
     this.releaseOpenEditor = this.releaseOpenEditor.bind(this);
     this.onNewTemplate = this.onNewTemplate.bind(this);
     this.onCurrentTemplateLoad = this.onCurrentTemplateLoad.bind(this);
@@ -59,11 +68,11 @@ class Template extends UNISYS.Component {
     this.onEditEdgeTypes = this.onEditEdgeTypes.bind(this);
     this.onTOMLfileSelect = this.onTOMLfileSelect.bind(this);
     this.onDownloadTemplate = this.onDownloadTemplate.bind(this);
-    this.onSaveEdit = this.onSaveEdit.bind(this);
+    this.onSaveChanges = this.onSaveChanges.bind(this);
     this.onCancelEdit = this.onCancelEdit.bind(this);
 
     UDATA = UNISYS.NewDataLink(this);
-    UDATA.OnAppStateChange("OPENEDITORS", this.updateEditState);
+    UDATA.HandleMessage("EDIT_PERMITTED", this.updateEditState);
 
   } // constructor
 
@@ -73,6 +82,7 @@ class Template extends UNISYS.Component {
 
   componentWillUnmount() {
     if (EDITOR) EDITOR.destroy();
+    UDATA.UnhandleMessage("EDIT_PERMITTED", this.updateEditState);
   }
 
   /// METHODS /////////////////////////////////////////////////////////////////
@@ -83,62 +93,72 @@ class Template extends UNISYS.Component {
    * -- If startval is not defined, an empty template created from the default
    *    schema is used.
    * @param {object} parms { schema, startval }
+   * @param {function} cb - Callback function
    */
-  loadEditor(parms) {
-    const el = document.getElementById('editor');
-    const schema = (parms && parms.schema) || TEMPLATE_LOGIC.SCHEMA.root;
-    const startval = parms && parms.startval;
+  loadEditor(parms, cb) {
+    UDATA.NetCall("SRV_REQ_TEMPLATE_EDIT")
+      .then(data => {
+        if (!data.okToEdit) {
+          console.warn('Template Locked!  Cannot edit.');
+          return;
+        }
+        const el = document.getElementById('editor');
+        const schema = (parms && parms.schema) || SCHEMA.TEMPLATE;
+        const startval = parms && parms.startval;
 
-    const options = {
-      theme: 'bootstrap4', // spectre, bootstrap3, tailwind, html
-      disable_edit_json: true, // set to false allow direct viewing/editing of json for debugging
-      disable_properties: false, // needed to allow user to add missing properties
-      object_layout: 'table', // 'grid', 'grid-strict', 'categories'
-      no_additional_properties: true, // prevent users from adding new non-schema properties
-      schema
-      // iconlib: 'fontawesome5', // fontawesome is not currently loaded
-    };
-    if (startval) options.startval = startval; // only add startval if its defined, otherwise you end up with an empty template
-    if (EDITOR) EDITOR.destroy(); // clear any existing editor
-    EDITOR = new JSONEditor(el, options);
+        const options = {
+          theme: 'bootstrap4', // spectre, bootstrap3, tailwind, html
+          disable_edit_json: true, // set to false allow direct viewing/editing of json for debugging
+          disable_properties: false, // needed to allow user to add missing properties
+          object_layout: 'table', // 'grid', 'grid-strict', 'categories'
+          no_additional_properties: true, // prevent users from adding new non-schema properties
+          schema
+          // iconlib: 'fontawesome5', // fontawesome is not currently loaded
+        };
+        if (startval) options.startval = startval; // only add startval if its defined, otherwise you end up with an empty template
+        if (EDITOR) EDITOR.destroy(); // clear any existing editor
+        EDITOR = new JSONEditor(el, options);
 
-    this.setState({ isBeingEdited: true });
+        this.setState({ isBeingEdited: true });
 
-    // Update OPENEDITORS
-    UDATA.LocalCall("REGISTER_OPENEDITOR", { type: 'template' });
+        if (cb === undefined || typeof cb !== 'function') return;
+        cb();
+      });
   }
 
   /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   updateEditState() {
+    // disable edit if someone else is editing a template, node, or edge
     let disableEdit = false;
-    const openEditors = UDATA.AppState("OPENEDITORS").editors;
-    if (openEditors.includes('node') ||
-      openEditors.includes('edge')) {
-      disableEdit = true;
-    }
-    this.setState({ disableEdit });
+    UDATA.NetCall("SRV_GET_TEMPLATE_EDIT_STATE")
+      .then(data => {
+        disableEdit = data.templateBeingEdited || data.nodeOrEdgeBeingEdited;
+        this.setState({ disableEdit });
+      });
+  }
+
+  // When editing Node or Edge Type Options, the original label field should be
+  // disabled so they can't be edited
+  // ClassName added in template-schema.GetTypeEditorSchema()
+  disableOrigLabelFields() {
+    const origLabelFields = document.getElementsByClassName('disabledField');
+    origLabelFields.forEach(f => f.setAttribute("disabled", "disabled"));
   }
 
   releaseOpenEditor() {
-    // Remove 'template' from OPENEDITORS
-    UDATA.LocalCall("DEREGISTER_OPENEDITOR", { type: 'template' });
+    UDATA.NetCall("SRV_RELEASE_TEMPLATE_EDIT");
   }
 
   onNewTemplate() {
-    this.setState({
-      editScope: 'root'
-    });
+    this.setState({ editScope: 'root' });
     this.loadEditor(); // new blank template with default schema
   }
 
   onCurrentTemplateLoad(e) {
     UDATA.LocalCall('EDIT_CURRENT_TEMPLATE') // nc-logic
       .then(result => {
-        console.error('template is', result);
-        this.setState({
-          editScope: 'root'
-        });
+        this.setState({ editScope: 'root' });
         this.loadEditor({ startval: result.template });
       })
   }
@@ -146,33 +166,54 @@ class Template extends UNISYS.Component {
   onEditNodeTypes() {
     UDATA.LocalCall('EDIT_CURRENT_TEMPLATE') // nc-logic
       .then(result => {
-        console.error('template is', result);
-        const schemaNodeTypeOptions = TEMPLATE_LOGIC.SCHEMA.nodeTypeOptions;
-        console.error('schema is', schemaNodeTypeOptions)
-        this.setState({
-          editScope: 'nodeTypeOptions'
-        });
+        const schemaNodeTypeOptions = SCHEMA.NODETYPEOPTIONS;
+        // Wrap options in custom Schema to show Delete management UI
+        const nodeTypeEditorSchema = SCHEMA.GetTypeEditorSchema(schemaNodeTypeOptions);
+        // Remove default selected (blank) option
+        // This is added back in in template-logic.UpdateTemplate after saving
+        typeOptions = result.template.nodeDefs.type.options.filter(o => o.label !== '');
+        const startval = { options: typeOptions }
+        this.setState({ editScope: 'nodeTypeOptions' });
         this.loadEditor(
           {
-            schema: schemaNodeTypeOptions,
-            startval: result.template.nodeDefs.type.options
-          });
+            schema: nodeTypeEditorSchema,
+            startval
+          }, () => {
+            this.disableOrigLabelFields();
+            // HACK: After a row is added, we need to also disable the newly added
+            // "Label" field -- the new label should be added in the "Change To" field
+            EDITOR.on('addRow', editor => {
+              this.disableOrigLabelFields();
+            });
+          }
+        );
       })
   }
 
   onEditEdgeTypes() {
     UDATA.LocalCall('EDIT_CURRENT_TEMPLATE') // nc-logic
       .then(result => {
-        const schemaEdgeTypeOptions = TEMPLATE_LOGIC.SCHEMA.edgeTypeOptions;
-        console.error('schema is', schemaEdgeTypeOptions)
-        this.setState({
-          editScope: 'edgeTypeOptions'
-        });
+        const schemaEdgeTypeOptions = SCHEMA.EDGETYPEOPTIONS;
+        // Wrap options in custom Schema to show Delete management UI
+        const edgeTypeEditorSchema = SCHEMA.GetTypeEditorSchema(schemaEdgeTypeOptions);
+        // Remove default selected (blank) option
+        // This is added back in in template-logic.UpdateTemplate after saving
+        typeOptions = result.template.edgeDefs.type.options.filter(o => o.label !== '');
+        const startval = { options: typeOptions }
+        this.setState({ editScope: 'edgeTypeOptions' });
         this.loadEditor({
-          schema: schemaEdgeTypeOptions,
-          startval: result.template.edgeDefs.type.options
-        });
-      })
+          schema: edgeTypeEditorSchema,
+          startval
+        }, () => {
+            this.disableOrigLabelFields();
+            // HACK: After a row is added, we need to also disable the newly added
+            // "Label" field -- the new label should be added in the "Change To" field
+            EDITOR.on('addRow', editor => {
+              this.disableOrigLabelFields();
+            });
+          }
+        );
+      });
   }
 
   onTOMLfileSelect(e) { // import
@@ -184,7 +225,7 @@ class Template extends UNISYS.Component {
             editScope: 'root'
           });
           this.loadEditor({
-            schema: TEMPLATE_LOGIC.SCHEMA.root,
+            schema: SCHEMA.TEMPLATE,
             startval: result.templateJSON
           });
         } else {
@@ -202,7 +243,7 @@ class Template extends UNISYS.Component {
     TEMPLATE_LOGIC.DownloadTemplate();
   }
 
-  onSaveEdit() {
+  onSaveChanges() {
     const templateJSON = EDITOR.getValue(); // could be a snippet
     const { editScope } = this.state;
     const template = TEMPLATE_LOGIC.UpdateTemplate(templateJSON, editScope);
@@ -211,7 +252,7 @@ class Template extends UNISYS.Component {
         if (!result.OK) {
           alert(result.info);
         } else {
-          this.setState({ isBeingEdited: false })
+          this.setState({ isBeingEdited: false });
         }
       });
     this.releaseOpenEditor();
@@ -235,19 +276,23 @@ class Template extends UNISYS.Component {
       tomlfileErrors
     } = this.state;
     let jsx;
-    if (disableEdit) {
+    if (disableEdit && !isBeingEdited) {
       // Node or Edge is being edited, show disabled message
       jsx = (
         <div>
-          <p>Please finish editing the node or edge.</p>
-          <p>Templates cannot be edited while a node or edge
-            is being edited.  </p>
+          <p><i>Templates cannot be edited while someone is editing a node, edge,
+            or template.</i></p>
+          <p><i>Please finish editing and try again.</i></p>
         </div>
       )
     } else {
       // OK to Edit, show edit buttons
       jsx = (
         <div hidden={isBeingEdited}>
+          <p><b>PROCEED WITH CAUTION!</b>: Editing templates will modify the data
+            in your dataset and may leave your dataset in an unusable state.
+            Only <b>expert users</b> who know how the data is set up should do this.
+          </p>
           <div style={{
             display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
             columnGap: '10px', rowGap: '5px'
@@ -298,7 +343,7 @@ class Template extends UNISYS.Component {
           >Cancel</Button>
           &nbsp;
           <Button
-            onClick={this.onSaveEdit}
+            onClick={this.onSaveChanges}
             size="sm" color="primary"
           >Save Changes</Button>
           <hr />
@@ -310,6 +355,50 @@ class Template extends UNISYS.Component {
 
 } // class Help
 
+
+// NOTES on using json-editor
+        // Not needed anymore, but keep for reference for managing json-editor
+        //
+        // // Handle Delete Events
+        // EDITOR.on('deleteRow', editor => {
+        //   const val = EDITOR.getValue();
+        //   const currentOptions = val ? val.options : [];
+        //   console.log('currentOptions', currentOptions);
+        //   typeOptionsRemoved = []; // start from scratch each time
+        //   typeOptions.forEach(o => {
+        //     if (!currentOptions.find(c => c.label === o.label)) typeOptionsRemoved.push(o);
+        //   });
+        //   console.log('removed options', typeOptionsRemoved);
+        //   const deletions = EDITOR.getEditor('root.deletions');
+        //   if (deletions) deletions.setValue(typeOptionsRemoved);
+        //
+        //   // key is 0 for first row
+        //   // editor and key are undefined for last row
+        //   // console.log('deleteRow', editor && editor.key)
+        //   // const deletions = EDITOR.getEditor('root.deletions');
+        //   // if (deletions) deletions.setValue([{ label: 'yo', color: '#ffffff' }]);
+        //   // EDITOR.setValue({ deleted: 'yes' });
+        // });
+        //
+        //
+        // watch one
+        // root.1 refers to second field, fields are 0-indexed
+        // EDITOR.watch('root.1.label', (e) => {
+        //   // `e` is undefined
+        //   console.log('change', e);
+        // });
+        //
+        // watch ALL
+        // works but watches too much?
+        // const watcherCallback = function (path) {
+        //   console.log(`field with path: [${path}] changed to [${JSON.stringify(this.getEditor(path).getValue())}]`);
+        //   // Do something
+        // }
+        // for (let key in EDITOR.editors) {
+        //   if (EDITOR.editors.hasOwnProperty(key) && key !== 'root') {
+        //     EDITOR.watch(key, watcherCallback.bind(EDITOR, key));
+        //   }
+        // }
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

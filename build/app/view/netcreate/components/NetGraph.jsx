@@ -47,12 +47,16 @@ class NetGraph extends UNISYS.Component {
     constructor (props) {
       super(props)
       this.state = {
-        d3NetGraph: {}
+        d3NetGraph: {},
+        nodeTypes: []
       }
 
       this.onZoomReset = this.onZoomReset.bind(this);
       this.onZoomIn    = this.onZoomIn.bind(this);
       this.onZoomOut   = this.onZoomOut.bind(this);
+      this.updateNodeTypes = this.updateNodeTypes.bind(this);
+
+      this.OnAppStateChange('TEMPLATE', this.updateNodeTypes);
 
     } // constructor
 
@@ -72,14 +76,29 @@ class NetGraph extends UNISYS.Component {
       this.AppCall('ZOOM_OUT', {});
     }
 
-/// REACT LIFECYCLE ///////////////////////////////////////////////////////////
+    updateNodeTypes() {
+      // Update Legend
+      const nodeTypes = this.AppState('TEMPLATE').nodeDefs.type.options;
+      this.setState({ nodeTypes });
+      this.forceUpdate(); // just once, needed to overcome shouldComponentUpdate override
+    }
+
+    /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ componentDidMount () {
       // D3NetGraph Constructor
-      let el = ReactDOM.findDOMNode(this);
-      let d3NetGraph = new D3NetGraph(el, this.AppState('TEMPLATE').nodeDefs);
-      this.setState({ d3NetGraph });
+      const el = ReactDOM.findDOMNode(this);
+      const TEMPLATE = this.AppState('TEMPLATE');
+      const d3NetGraph = new D3NetGraph(el, TEMPLATE.nodeDefs);
+      const nodeTypes = TEMPLATE.nodeDefs.type.options;
+      this.setState({ d3NetGraph, nodeTypes });
+      this.forceUpdate(); // just once, needed to overcome shouldComponentUpdate override
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ componentWillUnMount() {
+      this.AppStateChangeOff('TEMPLATE', this.updateNodeTypes);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -93,7 +112,7 @@ class NetGraph extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ render() {
-      let nodeTypes = this.AppState('TEMPLATE').nodeDefs.type.options;
+      const { nodeTypes } = this.state;
       return (
         <div style={{ height: '100%' }}>
           <div style={{ margin: '10px 0 0 10px' }}>

@@ -112,10 +112,6 @@ const PR = "filter-logic: ";
 /*/
 MOD.Hook("INITIALIZE", () => {
 
-  UDATA.OnAppStateChange("TEMPLATE", data => {
-    m_ImportFilters();
-  });
-
   UDATA.OnAppStateChange("FDATA", data => {
     if (DBG) console.log(PR + 'OnAppStateChange: FDATA', data);
     // The filter defs have been updated, so apply the filters.
@@ -145,12 +141,19 @@ MOD.Hook("INITIALIZE", () => {
     UDATA.SetAppState("FDATA", FDATA);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/     // Listen for D3DATA updates so we know to trigger change?
+  /*/ Listen for D3DATA updates so we know to trigger change?
   /*/
-  UDATA.OnAppStateChange('D3DATA',(data)=>{
+  UDATA.OnAppStateChange('D3DATA', (data) => {
     m_UpdateFilters();
   });
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Listen for TEMPLATE updates so we know to trigger change?
+  /*/
+  UDATA.OnAppStateChange("TEMPLATE", data => {
+    // this is critical -- graph will not draw if this is
+    // not called from nc-logic.LOADASSETS
+    m_ImportFilters();
+  });
 
 }); // end UNISYS_INIT
 
@@ -163,7 +166,6 @@ MOD.Hook("INITIALIZE", () => {
  */
 function m_ImportFilters() {
   TEMPLATE = UDATA.AppState("TEMPLATE");
-
   const nodeDefs = TEMPLATE.nodeDefs;
   const edgeDefs = TEMPLATE.edgeDefs;
   NODE_DEFAULT_TRANSPARENCY = TEMPLATE.nodeDefaultTransparency;

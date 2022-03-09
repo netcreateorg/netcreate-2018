@@ -148,9 +148,13 @@ module.exports = {
             UDB.WriteDbJSON(`${__dirname}/app/assets/data/${NC_CONFIG.dataset}-db.json`);
             UDB.WriteDbJSON(`${__dirname}/app/assets/data/standalone-db.json`);
 
-            // save json of template to public/data
-            UDB.WriteTemplateJSON(`${__dirname}/app/assets/data/${NC_CONFIG.dataset}-template.json`);
-            UDB.WriteTemplateJSON(`${__dirname}/app/assets/data/standalone-template.json`);
+            // // save json of template to public/data
+            // UDB.WriteTemplateJSON(`${__dirname}/app/assets/data/${NC_CONFIG.dataset}-template.json`);
+            // UDB.WriteTemplateJSON(`${__dirname}/app/assets/data/standalone-template.json`);
+
+            // save TOML of template to public/data
+            UDB.CloneTemplateTOML(`${__dirname}/app/assets/data/${NC_CONFIG.dataset}.template.toml`);
+            UDB.CloneTemplateTOML(`${__dirname}/app/assets/data/standalone.template.toml`);
 
           },
           onCompile() {
@@ -182,9 +186,13 @@ module.exports = {
             UDB.WriteDbJSON(`${__dirname}/app/assets/data/${NC_CONFIG.dataset}-db.json`);
             UDB.WriteDbJSON(`${__dirname}/app/assets/data/standalone-db.json`);
 
-            // save json of template to public/data
-            UDB.WriteTemplateJSON(`${__dirname}/app/assets/data/${NC_CONFIG.dataset}-template.json`);
-            UDB.WriteTemplateJSON(`${__dirname}/app/assets/data/standalone-template.json`);
+            // // save json of template to public/data
+            // UDB.WriteTemplateJSON(`${__dirname}/app/assets/data/${NC_CONFIG.dataset}-template.json`);
+            // UDB.WriteTemplateJSON(`${__dirname}/app/assets/data/standalone-template.json`);
+
+            // save TOML of template to public/data
+            UDB.CloneTemplateTOML(`${__dirname}/app/assets/data/${NC_CONFIG.dataset}.template.toml`);
+            UDB.CloneTemplateTOML(`${__dirname}/app/assets/data/standalone.template.toml`);
 
           },
           onCompile() {

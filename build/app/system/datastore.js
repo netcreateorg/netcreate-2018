@@ -11,6 +11,7 @@ const DBG = { load: true };
 
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const TOML = require("@iarna/toml");
 const SETTINGS = require("settings");
 const SESSION = require("unisys/common-session");
 const UNISYS = require("unisys/client");
@@ -34,7 +35,14 @@ let D3DATA = {};
 /*/ establish message handlers during INITIALIZE phase
 /*/
 DSTOR.Hook("INITIALIZE", () => {
+  // DBUPDATE_ALL is a local call originating from within the app
+  // Used to update the full D3DATA object during template updates
+  UDATA.HandleMessage("DBUPDATE_ALL", function(data) {
+    DSTOR.UpdateDataPromise(data);
+  });
+
   // DB_UPDATE is a local call originating from within the app
+  // Generally used to update individual nodes and edges
   UDATA.HandleMessage("DB_UPDATE", function(data) {
     DSTOR.UpdateServerDB(data);
   });
@@ -152,6 +160,29 @@ DSTOR.PromiseJSONFile = function(jsonFile) {
   return promise;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: Load default data set from a TOML file in /assets/data
+/*/
+DSTOR.PromiseTOMLFile = function (tomlFile) {
+  if (typeof tomlFile !== "string") {
+    throw new Error("pass arg <filename_in_assets/data>");
+  }
+  let promise = new Promise((resolve, reject) => {
+    let xobj = new XMLHttpRequest();
+    xobj.addEventListener("load", event => {
+      if (event.target.status === 404) {
+        reject(new Error(`file not found`));
+        return;
+      }
+      const data = event.target.responseText;
+      const tomlData = Object.assign(D3DATA, TOML.parse(data));
+      resolve(tomlData);
+    });
+    xobj.open("GET", `${tomlFile}`, true);
+    xobj.send();
+  });
+  return promise;
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Load D3 Database
 /*/
 DSTOR.PromiseD3Data = function() {
@@ -172,6 +203,21 @@ DSTOR.SaveTemplateFile = template => {
 DSTOR.GetTemplateTOMLFileName = () => {
   return UDATA.Call("SRV_GET_TEMPLATETOML_FILENAME");
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: Update database from d3data-formatted object
+/*/
+DSTOR.UpdateDataPromise = function (d3data) {
+  return new Promise((resolve, reject) => {
+    UDATA.Call("SRV_DBUPDATE_ALL", d3data).then(res => {
+      if (res.OK) {
+        console.log(PR, `database update OK`);
+        resolve(res);
+      } else {
+        reject(new Error(JSON.stringify(res)));
+      }
+    });
+  });
+};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: (WIP) write database from d3data-formatted object
 /*/

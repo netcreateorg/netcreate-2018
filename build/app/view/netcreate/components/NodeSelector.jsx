@@ -34,9 +34,12 @@
     NodeSelector's internal representation of form data up-to-date, we rely on
     the SELECTION updates' searchLabel field to update the label.
 
-    There are two different levels of write-access:
+    There are different levels of write-access:
 
       isLocked        Nodes can be selected for viewing, but editing
+                      cannot be enabled.
+
+      isStandalone    Nodes can be selected for viewing, but editing
                       cannot be enabled.
 
       disableEdit     Template is being edited, disable "Edit Node" button
@@ -150,6 +153,7 @@ class NodeSelector extends UNISYS.Component {
         citation: TEMPLATE.citation,
         duplicateWarning: TEMPLATE.duplicateWarning,
         nodeIsLockedMessage: TEMPLATE.nodeIsLockedMessage,
+        templateIsLockedMessage: TEMPLATE.templateIsLockedMessage,
         hideDeleteNodeButton: TEMPLATE.hideDeleteNodeButton,
         formData: {
             label:     '',
@@ -161,6 +165,7 @@ class NodeSelector extends UNISYS.Component {
         },
         edges:         [],
         isLocked:       true,
+        isStandalone: false,
         edgesAreLocked: false,
         dbIsLocked: false,
         disableEdit: false,
@@ -223,7 +228,8 @@ class NodeSelector extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // Handle Template updates
       this.OnAppStateChange('TEMPLATE', this.setTemplate);
-      this.OnAppStateChange('OPENEDITORS', this.updateEditState);
+      UDATA.HandleMessage("EDIT_PERMITTED", this.updateEditState);
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ If someone on the network updates a node or edge, SOURCE_UPDATE is broadcast.
       We catch it here and update the selection if the node we're displaying matches
@@ -390,17 +396,20 @@ class NodeSelector extends UNISYS.Component {
     } // clearFform
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    setTemplate (data) {
+    setTemplate(data) {
       this.setState({ nodeDefs: data.nodeDefs });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Disable Node Edit if a Template is being edited
 /*/
     updateEditState() {
+      // disable edit if template is being edited
       let disableEdit = false;
-      const openEditors = UDATA.AppState("OPENEDITORS").editors;
-      if (openEditors.includes('template')) disableEdit = true;
-      this.setState({ disableEdit });
+      UDATA.NetCall("SRV_GET_TEMPLATE_EDIT_STATE")
+        .then(data => {
+          disableEdit = data.templateBeingEdited;
+          this.setState({ disableEdit });
+        });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Deregister as an open editor
@@ -409,7 +418,7 @@ class NodeSelector extends UNISYS.Component {
     releaseOpenEditor() {
       // NOTE: We only deregister if we're currently actively editing
       //       otherwise we might inadvertently deregister
-      if (this.state.isBeingEdited) UDATA.LocalCall("DEREGISTER_OPENEDITOR", { type: 'node' });
+      if (this.state.isBeingEdited) UDATA.NetCall("SRV_RELEASE_TEMPLATE_LOCK", { editor: 'node' });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return a new unique ID
@@ -455,7 +464,7 @@ class NodeSelector extends UNISYS.Component {
       if ( (activeAutoCompleteId!==thisIdentifier) &&
            (activeAutoCompleteId!=='search')          ) return;
 
-      if (!this.state.isBeingEdited && !this.state.edgesAreLocked) {
+        if (!this.state.isBeingEdited && !this.state.edgesAreLocked) {
         if (data.nodes && data.nodes.length>0) {
 
           // A node was selected, so load it
@@ -512,7 +521,7 @@ class NodeSelector extends UNISYS.Component {
     its handleChange() when active typing is occuring, and also during
     SessionShell.componentWillMount()
 /*/ onStateChange_SESSION( decoded ) {
-      let update = { isLocked:   !decoded.isValid };
+      let update = { isLocked: !decoded.isValid };
       this.setState(update);
     }
 
@@ -826,8 +835,12 @@ class NodeSelector extends UNISYS.Component {
     });
     this.validateForm();
 
-    // Register as an open editor
-    UDATA.LocalCall("REGISTER_OPENEDITOR", { type: 'node' });
+    // When a node is being edited, lock the Template from being edited
+    UDATA.NetCall("SRV_REQ_TEMPLATE_LOCK", { editor: 'node' })
+      .then(data => {
+        const disableEdit = data.isBeingEdited;
+        this.setState({ disableEdit });
+      });
   } // editNode
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -881,7 +894,8 @@ class NodeSelector extends UNISYS.Component {
               }
             });
         }
-        this.AppCall('AUTOCOMPLETE_SELECT', {id:'search'});
+        this.AppCall('AUTOCOMPLETE_SELECT', { id: 'search' });
+        UDATA.NetCall("SRV_RELEASE_TEMPLATE_LOCK", { editor: 'node' });
       }
     } // onCancelButtonClick
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -945,7 +959,7 @@ class NodeSelector extends UNISYS.Component {
         });
       });
       // probably should unlock the node:
-
+      UDATA.NetCall("SRV_RELEASE_TEMPLATE_LOCK", { editor: 'node' });
     } // onSubmit
 
 
@@ -957,8 +971,13 @@ class NodeSelector extends UNISYS.Component {
         nodeDefs,
         duplicateWarning,
         nodeIsLockedMessage,
+        templateIsLockedMessage,
         hideDeleteNodeButton,
-        disableEdit
+        formData,
+        isLocked,
+        isStandalone,
+        disableEdit,
+        isBeingEdited
       } = this.state;
       let { citation } = this.state;
       if(citation==undefined)
@@ -971,13 +990,13 @@ class NodeSelector extends UNISYS.Component {
           <FormGroup className="text-right" style={{marginTop:'-20px',paddingRight:'5px'}}>
             <Button outline size="sm"
               disabled={disableEdit}
-              hidden={this.state.isLocked || this.state.isBeingEdited}
+              hidden={isLocked || isBeingEdited}
               onClick={this.onNewNodeButtonClick}
             >{"Add New Node"}</Button>
           </FormGroup>
           <Form className='nodeEntry' style={{minHeight:'300px',backgroundColor:'#B8EDFF',padding:'5px',marginBottom:'0px'}}
             onSubmit={this.onSubmit}>
-            <FormText><b>NODE {this.state.formData.id||''}</b></FormText>
+            <FormText><b>NODE {formData.id||''}</b></FormText>
             <FormGroup row>
               <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="nodeLabel" className="tooltipAnchor small text-muted">
@@ -989,9 +1008,9 @@ class NodeSelector extends UNISYS.Component {
               <Col sm={9}>
                 <AutoComplete
                   identifier={thisIdentifier}
-                  disabledValue={this.state.formData.label}
+                  disabledValue={formData.label}
                   inactiveMode={'disabled'}
-                  shouldIgnoreSelection={this.state.isBeingEdited}
+                  shouldIgnoreSelection={isBeingEdited}
                 />
               </Col>
               <div hidden={!this.state.isDuplicateNodeLabel}
@@ -1014,9 +1033,9 @@ class NodeSelector extends UNISYS.Component {
               </Col>
               <Col sm={9}>
                 <Input type="select" name="type" id="typeSelect"
-                  value={this.state.formData.type||''}
+                  value={formData.type||''}
                   onChange={this.onTypeChange}
-                  disabled={!this.state.isBeingEdited}
+                  disabled={!isBeingEdited}
                   >
                   {nodeDefs.type.options.map( option => (
                     <option key={option.label}>{option.label}</option>
@@ -1034,12 +1053,12 @@ class NodeSelector extends UNISYS.Component {
               </Col>
               <Col sm={9}>
                 <Input type="textarea" name="note" id="notesText"
-                  style={{display: this.state.isBeingEdited ? 'block' : 'none'}}
-                  value={this.state.formData.notes||''}
+                  style={{display: isBeingEdited ? 'block' : 'none'}}
+                  value={formData.notes||''}
                   onChange={this.onNotesChange}
-                  readOnly={!this.state.isBeingEdited}
+                  readOnly={!isBeingEdited}
                   />
-                  {this.markdownDisplay(this.state.formData.notes||'')}
+                  {this.markdownDisplay(formData.notes||'')}
               </Col>
             </FormGroup>
             <FormGroup row hidden={nodeDefs.info.hidden}>
@@ -1052,48 +1071,54 @@ class NodeSelector extends UNISYS.Component {
               </Col>
               <Col sm={9}>
                 <Input type="text" name="info" id="info"
-                  value={this.state.formData.info||''}
+                  value={formData.info||''}
                   onChange={this.onInfoChange}
-                  readOnly={!this.state.isBeingEdited}
+                  readOnly={!isBeingEdited}
                   />
               </Col>
             </FormGroup>
-              <div id="citationWindow" hidden={this.state.hideModal} className="modal-content">
-                <span className="close" onClick={this.onCloseCiteClick}>&times;</span>
-                <p><em>Copy the text below:</em><br/><br/>
-                  NetCreate {this.AppState('TEMPLATE').name} network, Node: {this.state.formData.label} (ID {this.state.formData.id}). {citation.text}. Last accessed at {this.dateFormatted()}.</p>
-              </div><br/>
+
+            <div id="citationWindow" hidden={this.state.hideModal} className="modal-content">
+              <span className="close" onClick={this.onCloseCiteClick}>&times;</span>
+              <p><em>Copy the text below:</em><br/><br/>
+                NetCreate {this.AppState('TEMPLATE').name} network, Node: {formData.label} (ID {formData.id}). {citation.text}. Last accessed at {this.dateFormatted()}.</p>
+            </div><br/>
+
             <FormGroup className="text-right" style={{ paddingRight: '5px' }}>
               <Button outline size="sm"
-                hidden={ citation.hidden || (this.state.formData.id==='') }
+                hidden={ citation.hidden || (formData.id==='') }
                 onClick={this.onCiteButtonClick}
-              >Cite Node</Button>&nbsp;&nbsp;
+                >Cite Node</Button>&nbsp;&nbsp;
+              <div hidden={isLocked || isStandalone || isBeingEdited || (formData.id === '')} style={{ display: 'inline' }}>
+                <Button outline size="sm"
+                  disabled={disableEdit}
+                  onClick={this.onEditButtonClick}
+                >Edit Node</Button>
+                <p hidden={!this.state.dbIsLocked} className="small text-danger warning">{nodeIsLockedMessage}
+                  <span hidden={!isAdmin}>&nbsp;<b>ADMINISTRATOR ONLY</b>: If you are absolutely sure this is an error, you can force the unlock:<br/>
+                  <Button className="small btn btn-outline-light warning" size="sm"
+                      onClick={this.onForceUnlock}
+                    >Force Unlock</Button></span>
+                </p>
+                <p hidden={!disableEdit} className="small text-danger warning">{templateIsLockedMessage}</p>
+              </div>
+            </FormGroup>
+            <FormGroup className="text-right" style={{ paddingRight: '5px' }}>
               <Button outline size="sm"
-                disabled={disableEdit}
-                hidden={this.state.isLocked || this.state.isBeingEdited || (this.state.formData.id==='') }
-                onClick={this.onEditButtonClick}
-              >Edit Node</Button>
-              <p hidden={!this.state.dbIsLocked} className="small text-danger">{nodeIsLockedMessage}<br/>
-              <span hidden={!isAdmin} >If you are absolutely sure this is an error, you can force the unlock:
-              <Button className="small btn btn-outline-light" size="sm"
-                  onClick={this.onForceUnlock}
-                >Force Unlock</Button></span>
-              </p>
-              <Button outline size="sm"
-                hidden={!this.state.isBeingEdited}
+                hidden={!isBeingEdited}
                 onClick={this.onCancelButtonClick}
-              >{this.state.isBeingEdited?'Cancel':'Close'}</Button>&nbsp;
+              >{isBeingEdited?'Cancel':'Close'}</Button>&nbsp;
               <Button color="primary" size="sm"
                 disabled={!this.state.isValid}
-                hidden={!this.state.isBeingEdited}
+                hidden={!isBeingEdited}
               >Save</Button>
             </FormGroup>
             <FormGroup row className="text-left" style={{
               padding: '10px 5px', margin: '0 -4px', backgroundColor: '#c5e0ef' }}
               hidden={
                 !isAdmin ||
-                this.state.isLocked ||
-                (this.state.formData.id === '') ||
+                isLocked ||
+                (formData.id === '') ||
                 hideDeleteNodeButton
               }
             >
@@ -1123,14 +1148,14 @@ class NodeSelector extends UNISYS.Component {
               <EdgeEditor
                 edgeID={edge.id}
                 key={edge.id}
-                parentNodeLabel={this.state.formData.label}
-                parentNodeIsLocked={this.state.isLocked}
+                parentNodeLabel={formData.label}
+                parentNodeIsLocked={isLocked}
               />
             ))}
             <FormGroup className="text-right">
               <Button outline size="sm"
                 disabled={disableEdit}
-                hidden={this.state.isLocked || this.state.formData.id===''||this.state.isBeingEdited}
+                hidden={isLocked || formData.id===''||isBeingEdited}
                 onClick={this.onAddNewEdgeButtonClick}
               >Add New Edge</Button>
             </FormGroup>
@@ -1181,7 +1206,11 @@ markdownIterate(Tag, props, children, level){
 /*/ componentDidMount () {
       this.onStateChange_SESSION(this.AppState('SESSION'));
       this.validateForm();
-
+      this.updateEditState();
+      this.setState({
+        // hide Edit button if in standalone mode
+        isStandalone: UNISYS.IsStandaloneMode()
+      });
       window.addEventListener("beforeunload", this.checkUnload);
       window.addEventListener("unload", this.doUnload);
     }
@@ -1224,7 +1253,6 @@ markdownIterate(Tag, props, children, level){
       this.AppStateChangeOff('SELECTION', this.handleSelection);
       this.AppStateChangeOff('SEARCH', this.onStateChange_SEARCH);
       this.AppStateChangeOff('TEMPLATE', this.setTemplate);
-      this.AppStateChangeOff('OPENEDITORS', this.updateEditState);
     }
 
 } // class NodeSelector
