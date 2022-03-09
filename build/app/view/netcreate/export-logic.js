@@ -18,36 +18,6 @@ var UDATA = UNISYS.NewDataLink(MOD);
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Define Node KEYS to export
-/// Subkeys are mapped with a `:`, e.g. attributes:Node_Type
-/// REVIEW: Should this be defined in the Template?
-const NODEKEYS = [
-  'id',
-  'label',
-  { 'attributes': ['Node_Type', 'Extra Info', 'Notes'] },
-  'degrees',
-  { 'meta': ['created', 'updated']}
-];
-/// Export Labels -- Exported data uses these labels as headers
-/// During the export, we do a simple key lookup to match the label
-/// e.g. 'id' becomes 'ID' in the exported file
-const NODEKEY_LABELS = {
-  'id': 'ID',
-  'label': 'Label',
-  'attributes:Node_Type': 'Attributes:Node_Type',
-  'attributes:Extra Info': 'Attributes:Extra Info',
-  'attributes:Notes': 'Attributes:Notes',
-  'degrees': 'Degrees',
-  'meta:created': 'Meta:Created',
-  'meta:updated': 'Meta:Updated'
-}
-const EDGEKEYS = [
-  'id',
-  'source',
-  'target',
-  { 'attributes': ['Relationship', 'Info', 'Citations', 'Category', 'Notes'] },
-  { 'meta': ['created', 'updated']}
-];
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -63,6 +33,8 @@ function m_encode(data) {
   return String(data).replace(/"/g, '""');
 }
 
+// DEPRECATED -- Used to flatten 'attributes'
+//    'attributes' have been removed, so this should not be needed anymore
 // Converts nested key definitions into a flat array, e.g.
 //     from ['id', { attributes: ['type', 'info'] } ]
 //     into ['id', 'attributes:type', 'attributes:info']
@@ -94,6 +66,7 @@ function m_getNodeValues(node, keys) {
     // If the key is an object, recurse
     // eslint-disable-next-line prefer-reflect
     if (Object.prototype.toString.call(key) === '[object Object]') {
+      // DEPRECATED -- 'attribute' handler.
       const subKeys = Object.keys(key); // can have multiple subKeys
       subKeys.forEach(k => {
         RESULT.push( m_getNodeValues(node[k], key[k]) );
@@ -132,6 +105,7 @@ function m_getEdgeValues(edge, keys) {
     // If the key is an object, recurse
     // eslint-disable-next-line prefer-reflect
     if (Object.prototype.toString.call(key) === '[object Object]') {
+      // DEPRECATED -- 'attribute' handler.
       const subKeys = Object.keys(key); // can have multiple subKeys
       subKeys.forEach(k => {
         RESULT.push( m_getNodeValues(edge[k], key[k]) );
@@ -175,26 +149,31 @@ function m_GenerateEdgesArray(edges, edgekeys) {
 /// Exports FILTERED data, not the full data set.
 MOD.ExportNodes = () => {
   const DATA = UDATA.AppState('FILTEREDD3DATA');
+  const TEMPLATE = UDATA.AppState('TEMPLATE');
   const { nodes } = DATA;
   let EXPORT = '';
 
   /// 1. Export Nodes
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// Define Node KEYS to export
-  const nodesArr = m_GenerateNodesArray(nodes, NODEKEYS);
+  /// Use nodekeys from TEMPLATE
+  const nodekeys = Object.keys(TEMPLATE.nodeDefs);
+  const nodesArr = m_GenerateNodesArray(nodes, nodekeys);
 
   /// 2. Expand to CSV
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ///    3.1. NODES
   ///    3.1.1. Create headers
-  const nodeHeadersArr = NODEKEYS.map(key => {
+  const nodeHeadersArr = nodekeys.map(key => {
     // eslint-disable-next-line prefer-reflect
     if (Object.prototype.toString.call(key) === '[object Object]') {
+      // DEPRECATED -- 'attribute' handler.
       const subKeys = Object.keys(key); // can have multiple subKeys
       const internalkeys = subKeys.map(sk => key[sk].map(k => `${sk}:${k}`)).flat();
       return internalkeys.map(k => NODEKEY_LABELS[k]);
     } else {
-      return NODEKEY_LABELS[key];
+      // return NODEKEY_LABELS[key];
+      return TEMPLATE.nodeDefs[key].exportLabel;
     }
   });
   const nodeHeaders = nodeHeadersArr.flat();
@@ -224,25 +203,34 @@ MOD.ExportNodes = () => {
 /// Exports FILTERED data, not the full data set.
 MOD.ExportEdges = () => {
   const DATA = UDATA.AppState('FILTEREDD3DATA');
+  const TEMPLATE = UDATA.AppState('TEMPLATE');
   const { edges } = DATA;
   let EXPORT = '';
 
   /// 1. Export Edges
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// Define Edge KEYS
-  const edgesArr = m_GenerateEdgesArray(edges, EDGEKEYS);
+
+  // Old attributes method
+  // const edgesArr = m_GenerateEdgesArray(edges, EDGEKEYS);
+
+  // New Template method
+  // Use edgekeys from TEMPLATE
+  const edgekeys = Object.keys(TEMPLATE.edgeDefs);
+  const edgesArr = m_GenerateEdgesArray(edges, edgekeys);
 
   /// 3. Expand to CSV
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ///   3.1. EDGES
   ///   3.1.1. Create headers
-  const edgeHeadersArr = EDGEKEYS.map(key => {
+  const edgeHeadersArr = edgekeys.map(key => {
     // eslint-disable-next-line prefer-reflect
     if (Object.prototype.toString.call(key) === '[object Object]') {
+      // DEPRECATED -- 'attribute' handler.
       const subKeys = Object.keys(key); // can have multiple subKeys
       return subKeys.map(sk => key[sk].map(k => `${sk}:${k}`)).flat();
     } else {
-      return key;
+      return TEMPLATE.edgeDefs[key].exportLabel;
     }
   });
   const edgeHeaders = edgeHeadersArr.flat();

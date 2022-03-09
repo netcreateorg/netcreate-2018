@@ -66,7 +66,7 @@ const SCHEMA = {
   properties: {
     "name": {
       type: 'string',
-      description: 'Template Name',
+      description: 'A short descriptive title for the project.  This is displayed on the graph view.  It can contain spaces.  e.g. "Alexander the Great"',
       default: 'Untitled Template'
     },
     "description": {
@@ -103,6 +103,7 @@ const SCHEMA = {
       // -- or has `?admin=true` GET parameter
       // This will force hide the delete button even if you're an admin
       type: 'boolean',
+      format: 'checkbox',
       description: 'Always hide Node delete button, even for admins.',
       default: false
     },

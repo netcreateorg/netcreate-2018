@@ -348,7 +348,7 @@ class D3NetGraph {
           // less human-readable.
           // The problem with this approach though is that any changes
           // to the label text will result in a failed color lookup!
-          return COLORMAP[d.attributes["Node_Type"]];
+           return COLORMAP[d.type];
         })
         .style("opacity", d => {
           return d.filteredTransparency
@@ -424,8 +424,7 @@ class D3NetGraph {
             return undefined // don't set stroke width
           })
           .attr("fill", (d) => {
-            // REVIEW: Using label match.  Should we use id instead?
-            return COLORMAP[d.attributes["Node_Type"]];
+            return COLORMAP[d.type];
           })
           .attr("r", (d) => {
             // this "r" is necessary to resize after a link is added
@@ -526,17 +525,17 @@ tooltipForNode(d)
           if(this.nodeDefs.label.includeInGraphTooltip)
             titleText += this.nodeDefs.label.displayLabel + ": " + d.label + "\n";
         // Add type
-          if(this.nodeDefs.type.includeInGraphTooltip)
-            titleText += this.nodeDefs.type.displayLabel + ": " + d.attributes.Node_Type + "\n";
+          if (this.nodeDefs.type.includeInGraphTooltip)
+            titleText += this.nodeDefs.type.displayLabel + ": " + d.type + "\n";
         // Add degrees
           if(this.nodeDefs.degrees.includeInGraphTooltip)
             titleText += this.nodeDefs.degrees.displayLabel + ": " + d.weight + "\n";
         // Add notes
           if(this.nodeDefs.notes.includeInGraphTooltip)
-            titleText += this.nodeDefs.notes.displayLabel + ": " + d.attributes.Notes + "\n";
+            titleText += this.nodeDefs.notes.displayLabel + ": " + d.notes + "\n";
         // Add info
           if(this.nodeDefs.info.includeInGraphTooltip)
-            titleText += this.nodeDefs.info.displayLabel + ": " + d.attributes["Extra Info"] + "\n";
+            titleText += this.nodeDefs.info.displayLabel + ": " + d.info + "\n";
         // Add updated info
           if(this.nodeDefs.updated.includeInGraphTooltip)
             titleText += this.nodeDefs.updated.displayLabel + ": " + this.displayUpdated(d);
@@ -639,7 +638,7 @@ _UpdateLinkStrokeWidth(edge) {
 
 _UpdateLinkStrokeColor(edge) {
   let COLORMAP = UDATA.AppState('NODECOLORMAP');
-  let color = COLORMAP[edge.attributes.Relationship]
+  let color = COLORMAP[edge.type]
   return color;
 }
 

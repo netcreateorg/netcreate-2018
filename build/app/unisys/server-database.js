@@ -185,7 +185,10 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
           label: o.label,
           color: o.color
         }
-      })
+      });
+      // make sure field type is set to "select" -- older templates do not set type
+      nodeDefs[k].type = 'select';
+      console.log(PR,'...migrating nodeDefs field', k,'with options, forcing type to "select"')
       nodeDefs[k].options = options;
     }
   })
@@ -225,6 +228,10 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
       exportLabel: field.label,
       help: field.help,
       hidden: field.hidden || false // default to not hidden
+      // If necessary, user can edit template to hide it again.
+      // We want it visible by default, because of migrations
+      // the original field may not be defined.
+      // e.g. orig template uses "Relationship" not "type"
     }
     if (k === 'type') {
       // special handling for type options
@@ -234,6 +241,9 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
           color: o.color
         }
       })
+      // make sure field type is set to "select" -- older templates do not set type
+      edgeDefs[k].type = 'select';
+      console.log(PR,'...migrating edgeDefs field', k,'with options, forcing type to "select"')
       edgeDefs[k].options = options;
     }
   })

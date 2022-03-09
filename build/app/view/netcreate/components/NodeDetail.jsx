@@ -63,10 +63,10 @@ class NodeDetail extends UNISYS.Component {
       let node = hilitedNode || {};
       node.attributes = node.attributes || {};    // validate attributes
       this.setState({
-        label : node.label,
-        type  : node.attributes["Node_Type"],     // HACK This needs to be updated when
-        info  : node.attributes["Extra Info"],    // the data format is updated
-        notes : node.attributes["Notes"]          // These were bad keys from Fusion Tables.
+        label: node.label,
+        type: node.type,
+        info: node.info,
+        notes: node.notes
       });
     } // handleSelection
 
