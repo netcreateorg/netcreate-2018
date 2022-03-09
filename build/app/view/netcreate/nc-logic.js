@@ -493,6 +493,11 @@ MOD.Hook("INITIALIZE", () => {
   /*/
   UDATA.HandleMessage("SOURCE_UPDATE", function(data) {
     let { node } = data;
+    // REVIEW: NodeSelector should probably not be submitting data
+    //         directly to the database.  Instead, it should be notifying
+    //         nc-logic and we handle the degree insertion and db call.
+    // if degrees has not already been set (e.g. this is a new node), default to 0
+    node.degrees = node.degrees || 0;
     // try updating existing nodes with this id?
     let updatedNodes = m_SetMatchingNodesByProp({ id: node.id }, node);
     if (DBG) console.log("SOURCE_UPDATE: updated", updatedNodes);
