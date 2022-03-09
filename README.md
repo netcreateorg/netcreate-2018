@@ -17,6 +17,9 @@ The Wiki has [detailed instructions](https://github.com/netcreateorg/netcreate-2
 
 This will get NetCreate installed and ready to run. It may take some time for the `npm ci` command to finish installing, so be patient!
 
+The first time you run Net.Create, you also need to create a `net-create.config` file.  This will tell Net.Create which dataset to open and which ports to use.  We have a script that can do this for you.  Run:
+* `./nc.js --dataset=demo` -- where `demo` will be the name of the dataset you want to use.
+
 ## QUICK OPERATION GUIDE
 
 Once you have NetCreate installed, make sure you are in the `netcreate-2018/build` directory. From there, you can execute **scripts** through the `npm` tool that is installed as part of NodeJS. 

@@ -52,7 +52,7 @@ class EdgeTable extends UNISYS.Component {
       super(props);
 
       this.state = {
-        edgePrompts:  this.AppState('TEMPLATE').edgePrompts,
+        edgeDefs:  this.AppState('TEMPLATE').edgeDefs,
         edges:        [],
         filteredEdges: [],
         isExpanded:   true,
@@ -164,7 +164,7 @@ class EdgeTable extends UNISYS.Component {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   OnTemplateUpdate(data) {
-    this.setState({edgePrompts: data.edgePrompts});
+    this.setState({edgeDefs: data.edgeDefs});
   }
 
 
@@ -376,12 +376,12 @@ class EdgeTable extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ render () {
-      let { edgePrompts } = this.state;
+      let { edgeDefs } = this.state;
 
-      if (edgePrompts.category === undefined) { // for backwards compatability
-        edgePrompts.category = {};
-        edgePrompts.category.label = "";
-        edgePrompts.category.hidden = true;
+      if (edgeDefs.category === undefined) { // for backwards compatability
+        edgeDefs.category = {};
+        edgeDefs.category.label = "";
+        edgeDefs.category.hidden = true;
       }
 
       const { tableHeight } = this.props;
@@ -429,26 +429,26 @@ class EdgeTable extends UNISYS.Component {
                 <th hidden={!DBG}>Src ID</th>
                 <th  width="10%"><Button size="sm"
                       onClick={()=>this.setSortKey("source")}
-                    >{edgePrompts.source.label} {this.sortSymbol("source")}</Button></th>
+                    >{edgeDefs.source.displayLabel} {this.sortSymbol("source")}</Button></th>
                 <th width="10%"><Button size="sm"
                       onClick={()=>this.setSortKey("Relationship")}
-                    >{edgePrompts.type.label} {this.sortSymbol("Relationship")}</Button></th>
+                    >{edgeDefs.type.displayLabel} {this.sortSymbol("Relationship")}</Button></th>
                 <th hidden={!DBG}>Target ID</th>
                 <th width="10%"><Button size="sm"
                       onClick={()=>this.setSortKey("target")}
-                    >{edgePrompts.target.label} {this.sortSymbol("target")}</Button></th>
-                <th width="8%" hidden={edgePrompts.category.hidden}><Button size="sm"
+                    >{edgeDefs.target.displayLabel} {this.sortSymbol("target")}</Button></th>
+                <th width="8%" hidden={edgeDefs.category.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Category")}
-                    >{edgePrompts.category.label} {this.sortSymbol("Category")}</Button></th>
-                <th width="10%" hidden={edgePrompts.citation.hidden}><Button size="sm"
+                    >{edgeDefs.category.displayLabel} {this.sortSymbol("Category")}</Button></th>
+                <th width="10%" hidden={edgeDefs.citation.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Citations")}
-                    >{edgePrompts.citation.label} {this.sortSymbol("Citations")}</Button></th>
-                <th width="20%" hidden={edgePrompts.notes.hidden}><Button size="sm"
+                    >{edgeDefs.citation.displayLabel} {this.sortSymbol("Citations")}</Button></th>
+                <th width="20%" hidden={edgeDefs.notes.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Notes")}
-                    >{edgePrompts.notes.label} {this.sortSymbol("Notes")}</Button></th>
-                <th  width="10%"hidden={edgePrompts.info.hidden}><Button size="sm"
+                    >{edgeDefs.notes.displayLabel} {this.sortSymbol("Notes")}</Button></th>
+                <th  width="10%"hidden={edgeDefs.info.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Info")}
-                    >{edgePrompts.info.label} {this.sortSymbol("Info")}</Button></th>
+                    >{edgeDefs.info.displayLabel} {this.sortSymbol("Info")}</Button></th>
                 <th  width="10%"hidden={!isLocalHost}><Button size="sm"
                       onClick={()=>this.setSortKey("Updated")}
                     >Updated {this.sortSymbol("Updated")}</Button></th>
@@ -476,12 +476,12 @@ class EdgeTable extends UNISYS.Component {
                 <td hidden={!DBG}>{edge.target.id}</td>
                 <td><a href="#" onClick={(e)=>this.selectNode(edge.target.id,e)}
                     >{edge.target.label || edge.target}</a></td>
-                <td hidden={edgePrompts.category.hidden}>{edge.attributes["Category"]}</td>
-                <td hidden={edgePrompts.citation.hidden}>{edge.attributes["Citations"]}</td>
-                <td hidden={edgePrompts.notes.hidden}>
+                <td hidden={edgeDefs.category.hidden}>{edge.attributes["Category"]}</td>
+                <td hidden={edgeDefs.citation.hidden}>{edge.attributes["Citations"]}</td>
+                <td hidden={edgeDefs.notes.hidden}>
                   {edge.attributes["Notes"] ? <MarkdownNote text={edge.attributes["Notes"]} /> : "" }
                 </td>
-                <td hidden={edgePrompts.info.hidden}>{edge.attributes["Info"]}</td>
+                <td hidden={edgeDefs.info.hidden}>{edge.attributes["Info"]}</td>
                 <td hidden={!isLocalHost}>{this.displayUpdated(edge)}</td>
               </tr>
             ))}

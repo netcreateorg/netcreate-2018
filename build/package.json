@@ -47,6 +47,8 @@
     "tracer": "^0.9.1"
   },
   "dependencies": {
+    "@iarna/toml": "^2.2.5",
+    "@json-editor/json-editor": "^2.6.1",
     "babel-polyfill": "^6.26.0",
     "bootstrap": "^4.3.1",
     "classnames": "^2.2.6",

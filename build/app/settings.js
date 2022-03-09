@@ -63,6 +63,12 @@ let RELOAD_TIMER = null;
 /*/ MOD.CurrentTime = () => {
       return DATE.toDateString();
     };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ MOD.IsAdmin = () => {
+      return (MOD.EJSProp('client').ip === '127.0.0.1') ||
+        location.href.includes('admin=true');
+    }
 
 /// SERVER-PROVIDED PROPERTIES ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

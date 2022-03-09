@@ -128,6 +128,19 @@ var UDATA = UNISYS.NewDataLink(MOD);
     * nodes: all nodes (not all may be actually changed)
     * edges: all edges (not all may be actually changed)
 
+
+    OPENEDITORS
+
+    Used to coordinate Template editing vs Node/Edge editing.  Since Nodes and
+    Edges should not be edited while the Template is being edited, any editor
+    that is opened registers as an OPENEDITOR and will check on the status of
+    existing open editors.
+
+    * When a Template editor is open, "Node Edit", "Edge Edit", and "Add New Edge"
+      buttons are all disabled.
+    * When "Node Edit", "Edge Edit", or "Add New Edge" has been triggered,
+      the Template buttons on the Template panel are all disabled.
+
 \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -/*/
 var D3DATA = null; // see above for description
 var TEMPLATE = null; // template definition for prompts
@@ -148,7 +161,8 @@ const DEFAULT_SOURCE_COLOR = "#FFa500";
 const TARGET_COLOR = "#FF0000";
 
 const DATASET = window.NC_CONFIG.dataset || "netcreate";
-const TEMPLATE_URL = `templates/${DATASET}.json`;
+const TEMPLATE_URL = `templates/${DATASET}.toml`;
+
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -157,6 +171,8 @@ const TEMPLATE_URL = `templates/${DATASET}.json`;
 /*/
 MOD.Hook("LOADASSETS", () => {
   if (UNISYS.IsStandaloneMode()) {
+    // STANDALONE MODE
+    // Load read-only database from exported db file.
 
     const USE_CACHE = false;
     if (USE_CACHE) {
@@ -201,7 +217,7 @@ MOD.Hook("LOADASSETS", () => {
       })();
     });
   }
-  // if got this far...
+
   // NOT STANDALONE MODE so load data into D3DATA
   let p1 = DATASTORE.PromiseD3Data()
   .then(data => {
@@ -225,89 +241,8 @@ MOD.Hook("LOADASSETS", () => {
 // eslint-disable-next-line complexity
 MOD.Hook("CONFIGURE", () => {
   // Process Node, NodeColorMap and Edge options
-
-  // Validate the template file
-  try {
-    // nodePrompts
-    let nodePrompts = TEMPLATE.nodePrompts;
-    if (nodePrompts === undefined) {
-      throw "Missing `nodePrompts` nodePrompts=" + nodePrompts;
-    }
-    if (nodePrompts.label === undefined)
-      throw "Missing `nodePrompts.label` label=" + nodePrompts.label;
-    if (nodePrompts.type === undefined)
-      throw "Missing `nodePrompts.type` type= " + nodePrompts.type;
-    if (
-      nodePrompts.type.options === undefined ||
-      !Array.isArray(nodePrompts.type.options)
-    ) {
-      throw "Missing or bad `nodePrompts.type.options` options=" +
-        nodePrompts.type.options;
-    }
-    if (nodePrompts.notes === undefined)
-      throw "Missing `nodePrompts.notes` notes=" + nodePrompts.notes;
-    if (nodePrompts.info === undefined)
-      throw "Missing `nodePrompts.info` info=" + nodePrompts.info;
-
-    // edgePrompts
-    let edgePrompts = TEMPLATE.edgePrompts;
-    if (edgePrompts === undefined)
-      throw "Missing `edgePrompts` edgePrompts=" + edgePrompts;
-    if (edgePrompts.source === undefined)
-      throw "Missing `edgePrompts.source` source=" + edgePrompts.source;
-    if (edgePrompts.type === undefined)
-      throw "Missing `edgePrompts.type` type= " + edgePrompts.type;
-    if (
-      edgePrompts.type.options === undefined ||
-      !Array.isArray(edgePrompts.type.options)
-    ) {
-      throw "Missing or bad `edgePrompts.type.options` options=" +
-        edgePrompts.type.options;
-    }
-    if (edgePrompts.target === undefined)
-      throw "Missing `edgePrompts.target` label=" + edgePrompts.target;
-    if (edgePrompts.notes === undefined)
-      throw "Missing `edgePrompts.notes` notes=" + edgePrompts.notes;
-    if (edgePrompts.info === undefined)
-      throw "Missing `edgePrompts.info` info=" + edgePrompts.info;
-    if (edgePrompts.citation === undefined)
-      throw "Missing `edgePrompts.citation` info=" + edgePrompts.citation;
-    if (edgePrompts.category === undefined)
-      throw "Missing `edgePrompts.category` info=" + edgePrompts.category;
-  } catch (error) {
-    console.error(
-      PR + "Error loading template `",
-      TEMPLATE_URL,
-      "`::::",
-      error
-    );
-  }
-
-  // REVIEW: Load ColorMap in d3?  or elsewhere?  does it need its own state?
-  // Joshua added Edges in here ... it should either be renamed or kept separate
-  // but this was a proof of concept. Probably they should be kept separate in case
-  // someone ever chooses to use the same label twice, but ...
-  try {
-    let nodeColorMap = {};
-    TEMPLATE.nodePrompts.type.options.forEach(o => {
-      nodeColorMap[o.label] = o.color;
-    });
-
-    let defaultEdgeColor = TEMPLATE.edgePrompts.color || "#999" ; //for backwards compatability
-    TEMPLATE.edgePrompts.type.options.forEach(o => {
-      nodeColorMap[o.label] = o.color || defaultEdgeColor;
-    });
-
-    UDATA.SetAppState("NODECOLORMAP", nodeColorMap);
-  } catch (error) {
-    console.error(
-      PR,
-      "received bad TEMPLATE node options.  ERROR:",
-      error,
-      ". DATA:",
-      TEMPLATE
-    );
-  }
+  m_ValidateTemplate();
+  m_UpdateColorMap();
 }); // end CONFIGURE HOOK
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
@@ -368,22 +303,50 @@ MOD.Hook("INITIALIZE", () => {
     // NODE LIST UPDATE
     if (nodes !== undefined) {
       if (nodes.length > 0) {
-        let color = TEMPLATE.searchColor != undefined? TEMPLATE.searchColor : DEFAULT_SEARCH_COLOR;
+        const color = TEMPLATE.searchColor || DEFAULT_SEARCH_COLOR;
         nodes.forEach(node => m_MarkNodeById(node.id, color));
       } else {
         m_UnMarkAllNodes();
       }
     }
     // SEARCH LABEL UPDATE
-    if(D3DATA.nodes.length < 150) // JD to speedup processing for large sets
-    {
+    if (D3DATA.nodes.length < 150) { // JD to speedup processing for large sets
       if (searchLabel === "") {
         m_UnStrokeAllNodes();
       } else if (searchLabel !== undefined) {
-         m_SetStrokeColorThatMatch(searchLabel, TEMPLATE.searchColor != undefined? TEMPLATE.searchColor : DEFAULT_SEARCH_COLOR);
+         m_SetStrokeColorThatMatch(searchLabel, TEMPLATE.searchColor || DEFAULT_SEARCH_COLOR);
       }
     }
   }); // StateChange SELECTION
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ TEMPLATE has been edited
+  /*/
+  UDATA.OnAppStateChange("TEMPLATE", stateChange => {
+    if (DBG) console.log(PR, 'TEMPLATE state change', stateChange)
+    TEMPLATE = stateChange;
+    m_UpdateColorMap();
+  });
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ OPENEDITORS is an array of all the editors (node, edge, template) that are
+      currently open.  Used to coordinate template vs node/edge editing
+      because nodes and edges should not be edited while the template
+      is being edited.
+  /*/
+  UDATA.SetAppState("OPENEDITORS", { editors: [] });
+
+  UDATA.HandleMessage("REGISTER_OPENEDITOR", data => {
+    let openEditors = UDATA.AppState("OPENEDITORS").editors;
+    openEditors.push(data.type);
+    UDATA.SetAppState("OPENEDITORS", { editors: openEditors });
+  });
+  UDATA.HandleMessage("DEREGISTER_OPENEDITOR", data => {
+    let openEditors = UDATA.AppState("OPENEDITORS").editors;
+    const i = openEditors.findIndex(e => e === data.type);
+    if (i>-1) openEditors.splice(i, 1);
+    UDATA.SetAppState("OPENEDITORS", { editors: openEditors });
+  });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ User has clicked on a suggestion from the AutoCopmlete suggestion list.
@@ -485,8 +448,8 @@ MOD.Hook("INITIALIZE", () => {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ SOURCE_HILITE updates the currently rolled-over node name in a list of
-      selections.  The hilite can be selected via either the label or
-      the node id.
+      node name selections when using AutoComplete.
+      The hilite can be selected via either the label or the node id.
   /*/
  /* ORIGINAL INQUIRIUM CODE
   UDATA.HandleMessage("SOURCE_HILITE", function(data) {
@@ -507,18 +470,16 @@ MOD.Hook("INITIALIZE", () => {
     let { nodeLabel, nodeID, color } = data;
     if (nodeLabel) {
       // Only mark nodes if something is selected
-      if(D3DATA.nodes.length < 250) // JD to speedup processing for large
-      {
+      if (D3DATA.nodes.length < 250) { // JD to speedup processing for large
         m_UnMarkAllNodes();
-        m_MarkNodeByLabel(nodeLabel, TEMPLATE.sourceColor != undefined? TEMPLATE.sourceColor : DEFAULT_SOURCE_COLOR);
+        m_MarkNodeByLabel(nodeLabel, TEMPLATE.sourceColor || DEFAULT_SOURCE_COLOR);
       }
     }
     if (nodeID) {
       // Only mark nodes if something is selected
-      if(D3DATA.nodes.length < 250) // JD to speedup processing for large
-      {
+      if (D3DATA.nodes.length < 250) { // JD to speedup processing for large
         m_UnMarkAllNodes();
-        m_MarkNodeById(nodeID, TEMPLATE.sourceColor != undefined? TEMPLATE.sourceColor : DEFAULT_SOURCE_COLOR);
+        m_MarkNodeById(nodeID, TEMPLATE.sourceColor || DEFAULT_SOURCE_COLOR);
       }
     }
 
@@ -686,6 +647,12 @@ MOD.Hook("INITIALIZE", () => {
     EXPORT.ExportEdges();
   });
 
+  UDATA.HandleMessage("VALIDATE_TOMLFILE", EXPORT.ValidateTOMLFile);
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  UDATA.HandleMessage("EDIT_CURRENT_TEMPLATE", () => {
+    return { template: TEMPLATE }
+  })
+
 }); // end UNISYS_INIT
 
 
@@ -810,6 +777,85 @@ MOD.SetAllObjs = m_SetAllObjs; // Expose for filter-logic.js
 
 /// NODE HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/*/ Validate Template File
+/*/
+function m_ValidateTemplate() {
+  try {
+    // nodeDefs
+    let nodeDefs = TEMPLATE.nodeDefs;
+    if (nodeDefs === undefined) {
+      throw "Missing `nodeDefs` nodeDefs=" + nodeDefs;
+    }
+    if (nodeDefs.label === undefined) throw "Missing `nodeDefs.label` label=" + nodeDefs.label;
+    if (nodeDefs.type === undefined) throw "Missing `nodeDefs.type` type= " + nodeDefs.type;
+    if (
+      nodeDefs.type.options === undefined ||
+      !Array.isArray(nodeDefs.type.options)
+    ) {
+      throw "Missing or bad `nodeDefs.type.options` options=" +
+        nodeDefs.type.options;
+    }
+    if (nodeDefs.notes === undefined) throw "Missing `nodeDefs.notes` notes=" + nodeDefs.notes;
+    if (nodeDefs.info === undefined) throw "Missing `nodeDefs.info` info=" + nodeDefs.info;
+
+    // edgeDefs
+    let edgeDefs = TEMPLATE.edgeDefs;
+    if (edgeDefs === undefined) throw "Missing `edgeDefs` edgeDefs=" + edgeDefs;
+    if (edgeDefs.source === undefined) throw "Missing `edgeDefs.source` source=" + edgeDefs.source;
+    if (edgeDefs.type === undefined) throw "Missing `edgeDefs.type` type= " + edgeDefs.type;
+    if (
+      edgeDefs.type.options === undefined ||
+      !Array.isArray(edgeDefs.type.options)
+    ) {
+      throw "Missing or bad `edgeDefs.type.options` options=" +
+        edgeDefs.type.options;
+    }
+    if (edgeDefs.target === undefined) throw "Missing `edgeDefs.target` label=" + edgeDefs.target;
+    if (edgeDefs.notes === undefined) throw "Missing `edgeDefs.notes` notes=" + edgeDefs.notes;
+    if (edgeDefs.info === undefined) throw "Missing `edgeDefs.info` info=" + edgeDefs.info;
+    if (edgeDefs.citation === undefined) throw "Missing `edgeDefs.citation` info=" + edgeDefs.citation;
+    if (edgeDefs.category === undefined) throw "Missing `edgeDefs.category` info=" + edgeDefs.category;
+  } catch (error) {
+    console.error(
+      PR + "Error loading template `",
+      TEMPLATE_URL,
+      "`::::",
+      error
+    );
+  }
+}
+
+/*/ Update ColorMap
+/*/
+function m_UpdateColorMap() {
+  // REVIEW: Load ColorMap in d3?  or elsewhere?  does it need its own state?
+  // Joshua added Edges in here ... it should either be renamed or kept separate
+  // but this was a proof of concept. Probably they should be kept separate in case
+  // someone ever chooses to use the same label twice, but ...
+  try {
+    let nodeColorMap = {};
+    TEMPLATE.nodeDefs.type.options.forEach(o => {
+      nodeColorMap[o.label] = o.color;
+    });
+
+    let defaultEdgeColor = TEMPLATE.edgeDefs.color || "#999"; //for backwards compatability
+    TEMPLATE.edgeDefs.type.options.forEach(o => {
+      nodeColorMap[o.label] = o.color || defaultEdgeColor;
+    });
+
+    UDATA.SetAppState("NODECOLORMAP", nodeColorMap);
+  } catch (error) {
+    console.error(
+      PR,
+      "received bad TEMPLATE node options.  ERROR:",
+      error,
+      ". DATA:",
+      TEMPLATE
+    );
+  }
+}
+
 /*/ Return array of nodes that DON'T match del_me object keys/values
 /*/
 function m_DeleteMatchingNodesByProp(del_me = {}) {

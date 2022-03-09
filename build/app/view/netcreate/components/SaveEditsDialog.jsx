@@ -7,13 +7,13 @@
   with two options:
   * Edit the existing ndoe
   * Continue adding the new node
-  
+
   The dialog is displayed next to the node label so that the user can make
   a decision.
-  
+
   We allow duplicate nodes because there might be places/people with the
   same name.
-  
+
   ## PROPS
       nodeID
 
@@ -48,7 +48,7 @@ class SaveChangesDialog extends UNISYS.Component {
     super(props);
 
     this.state = {
-      nodePrompts: this.AppState('TEMPLATE').nodePrompts,
+      nodeDefs: this.AppState('TEMPLATE').nodeDefs,
     }
 
     this.handleEdit = this.handleEdit.bind(this);
@@ -73,7 +73,7 @@ class SaveChangesDialog extends UNISYS.Component {
 
   handleCancel () {
     event.preventDefault();
-    
+
   }
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
@@ -95,7 +95,7 @@ class SaveChangesDialog extends UNISYS.Component {
   /*/
   /*/
   render() {
-    let { nodePrompts } = this.state;
+    let { nodeDefs } = this.state;
     return (
       <Modal>
         <ModalBody>You've made changes to the Node.  Are you sure you want to </ModalBody>

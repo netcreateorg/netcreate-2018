@@ -28,7 +28,7 @@ var UNISYS = {};
 /*/ Initialize() is called by brunch-server.js to define the default UNISYS
     network values, so it can embed them in the index.ejs file for webapps
     override = { port }
-/*/ UNISYS.InitializeNetwork = ( override ) => {
+/*/ UNISYS.InitializeNetwork = override => {
       UDB.InitializeDatabase(override);
       return UNET.InitializeNetwork(override);
     };
@@ -58,10 +58,19 @@ var UNISYS = {};
         return UDB.PKT_GetDatabase(pkt);
       });
 
-      UNET.HandleMessage('SRV_DBSET',function(pkt) {
+      UNET.HandleMessage('SRV_DBSET', function (pkt) {
         if (DBG) console.log(PR,sprint_message(pkt));
         return UDB.PKT_SetDatabase(pkt);
       });
+
+      UNET.HandleMessage('SRV_TEMPLATESAVE', pkt => { // server-database
+        if (DBG) console.log(PR, sprint_message(pkt));
+        return UDB.WriteTemplateTOML(pkt);
+      });
+
+      UNET.HandleMessage('SRV_GET_TEMPLATETOML_FILENAME', () => {
+        return UDB.GetTemplateTOMLFileName();
+      })
 
       // receives a packet from a client
       UNET.HandleMessage('SRV_DBUPDATE',function(pkt) {

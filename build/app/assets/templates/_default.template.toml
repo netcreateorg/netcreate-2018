@@ -1,0 +1,175 @@
+name = "Untitled"
+description = "Default empty template"
+requireLogin = false
+hideDeleteNodeButton = false
+duplicateWarning = "You’re entering a duplicate node.  Do you want to View the Existing node, or Continue creating?"
+nodeIsLockedMessage = "This node is currently being edited by someone else, please try again later."
+edgeIsLockedMessage = "This edge is currently being edited by someone else, please try again later."
+nodeDefaultTransparency = 1.0
+edgeDefaultTransparency = 0.3
+searchColor = "#FFFF00"
+sourceColor = "#FFa500"
+
+[citation]
+text = "No citation set"
+hidden = false
+
+[nodeDefs.id]
+type = "number"
+displayLabel = "id"
+exportLabel = "ID"
+help = "System-generated unique id number"
+
+[nodeDefs.label]
+type = "string"
+displayLabel = "label"
+exportLabel = "Label"
+help = "Display name of the node"
+includeInGraphTooltip = true
+
+[nodeDefs.type]
+type = "select"
+displayLabel = "Type"
+exportLabel = "Type"
+help = "Multiple people are a 'Group'"
+includeInGraphTooltip = true
+hidden = false
+
+[[nodeDefs.type.options]]
+label = ""
+color = "#eeeeee"
+
+[[nodeDefs.type.options]]
+label = "Person"
+color = "#00fbff"
+
+[[nodeDefs.type.options]]
+label = "Group"
+color = "#3399ff"
+
+[[nodeDefs.type.options]]
+label = "Place"
+color = "#00ff00"
+
+[[nodeDefs.type.options]]
+label = "Thing"
+color = "#009999"
+
+[[nodeDefs.type.options]]
+label = "Event"
+color = "#ff0000"
+
+[nodeDefs.notes]
+type = "string"
+displayLabel = "Significance"
+exportLabel = "Notes"
+help = "Add some details"
+includeInGraphTooltip = true
+hidden = false
+
+[nodeDefs.info]
+type = "number"
+displayLabel = "Number"
+exportLabel = "Info"
+help = "Some number comparison"
+includeInGraphTooltip = true
+hidden = false
+
+[nodeDefs.degrees]
+type = "number"
+displayLabel = "Degrees"
+exportLabel = "Degrees"
+help = "Number of edges"
+includeInGraphTooltip = true
+hidden = false
+
+[nodeDefs.created]
+type = "string"
+displayLabel = "Created"
+exportLabel = "Created"
+help = "Date and time node was created"
+includeInGraphTooltip = true
+hidden = false
+
+[nodeDefs.updated]
+type = "string"
+displayLabel = "Last Updated"
+exportLabel = "Last Updated"
+help = "Date and time node was last modified"
+includeInGraphTooltip = true
+hidden = false
+
+[edgeDefs.id]
+type = "number"
+displayLabel = "id"
+exportLabel = "ID"
+help = "System-generated unique id number"
+
+[edgeDefs.source]
+type = "node"
+displayLabel = "Source"
+exportLabel = "Source"
+help = ""
+hidden = false
+
+[edgeDefs.target]
+type = "node"
+displayLabel = "Target"
+exportLabel = "Target"
+help = ""
+hidden = false
+
+[edgeDefs.type]
+type = "select"
+displayLabel = "Type"
+exportLabel = "Type"
+help = ""
+hidden = false
+
+[[edgeDefs.type.options]]
+label = ""
+color = "#c2c2c2"
+
+[[edgeDefs.type.options]]
+label = "you've got, a \"friend\""
+color = "#0dbd00"
+
+[[edgeDefs.type.options]]
+label = "has unfriendly interaction with"
+color = "#ff0000"
+
+[[edgeDefs.type.options]]
+label = "is a member of"
+color = "#9ebeff"
+
+[[edgeDefs.type.options]]
+label = "visits"
+color = "#ffae00"
+
+[edgeDefs.notes]
+type = "string"
+displayLabel = "Significatnce"
+exportLabel = "Significatnce"
+help = ""
+hidden = false
+
+[edgeDefs.info]
+type = "number"
+displayLabel = "Date"
+exportLabel = "Date"
+help = "'YYYY-MM-DD' format"
+hidden = false
+
+[edgeDefs.citation]
+type = "string"
+displayLabel = "Citation"
+exportLabel = "Citation"
+help = "Source Book.Chapter (Part 2 06.03)"
+hidden = false
+
+[edgeDefs.category]
+type = "string"
+displayLabel = "Category"
+exportLabel = "Category"
+help = "Category?"
+hidden = false
