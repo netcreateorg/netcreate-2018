@@ -59,31 +59,54 @@ const M_FORCEPROPERTIES = {   // values for all forces
         y: 0.5
       },
       charge: {
+        // 'charge' provides a repelling force against other nodes
         enabled: true,
-        strength: -1000,  //-1000, // -20, was 1500 - JD
-        distanceMin: 20,  //20, 50, // 1,
-        distanceMax: 1000 //2000
+        // -50 works well for small networks with no links
+        strength: -50, // during _UpdateForces, 'strength' is multipled by the size of the node (degrees+1)
+                       // -50 close < -1000 pushes nodes far apart
+        distanceMin: 1, // use 'collide' to keep nodes from intersecting, not distance
+        distanceMax: 750 // max keeps large clusters from pushing unattached nodes too far away
+                         // 250 close < 500 med < 1000 spacious < 10000 far away
       },
       collide: {
+        // 'collide' keeps nodes from overlapping each other
+        // collide's `radius` value maintains a minimum distance between nodes
         enabled: true,
-        strength: 0.3, // was .7 - JD
-        iterations: 1,
-        radius: 4
+        strength: 0.75, // 1 keeps nodes from intersecting during drag so nodes feel more solid
+                        // 0.75 softens the collisions so they don't feel so jarring
+                        // 0.3 will allow nodes to intersect, then iterations will push them out
+        iterations: 5, // need at least 3 iterations to stabilize
+                       // at 1 graph takes a long time to reach equilibrium
+        radius: 7 // `radius` is added to node.degrees + defaultSize during _UpdateForces with the node radius
       },
       forceX: {
+        // 'forceX' pushes nodes towards a normalized x position
+        // x is calculated relative to the m_width
+        // e.g. x=0.5 is the center
+        // higher strength will push harder towards the x point
+        // e.g. to create a narrow tall graph, use strength: 2
         enabled: true,
-        strength: 0.2,    // 0.03,
+        strength: 0.25, // 1 clumped < 0.3 med  < 0.2 loose < 0.1 very loose
         x: 0.5
       },
       forceY: {
+        // 'forceY' pushes nodes towards a normalized y position
+        // y is calculated relative to the m_height
+        // e.g. y=0.5 is the center
+        // higher strength will push harder towards the y point
+        // e.g. to create a wide short graph, use strength: 2
         enabled: true,
-        strength: 0.2,    // 0.03,
+        strength: 0.25, // 1 clumped < 0.3 med  < 0.2 loose < 0.1 very loose
         y: 0.5
       },
       link: {
         enabled: true,
-        distance: 130, // 60, 30,
-        iterations: 2 // 1
+        distance: 25, // sets the basic link distance between nodes
+                      // 10 is a little too close
+                      // 25 is cozy
+                      // 50 is spacious
+                      // 100 leaves everything too far apart
+        iterations: 5 // Orig val = 1.  More iterations will give graph time to settle
       }
     }; // M_FORCEPROPERTIES
 
@@ -571,9 +594,9 @@ displayUpdated(nodeEdge)
 /*/ _UpdateForces() {
       this.simulation
         .force("link", d3.forceLink()
-            .id(d => d.id)
-            // thicker edges push nodes further apart
-            .distance(d => d.size * M_FORCEPROPERTIES.link.distance) // edge so d.size, not d.degrees
+            .id(d => d.id) // note `d` is an edge, not a node
+            // all edges use the same link distance, charge is what pushes them apart
+            .distance(M_FORCEPROPERTIES.link.distance)
             .iterations(M_FORCEPROPERTIES.link.iterations))
         .force("charge", d3.forceManyBody()
             // the larger the node, the harder it pushes
