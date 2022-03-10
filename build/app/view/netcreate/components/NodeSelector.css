@@ -1,7 +1,10 @@
+/* Auto-compiled and included by brunch */
+
 .warning {
   padding: 5px 0
 }
 
-.nodeEntry img {
+/* Applies to both NodeSelector, EdgeEditor, NodeTable, and EdgeTable */
+.nodeEntry img, .table img {
   max-width: 100%
 }
