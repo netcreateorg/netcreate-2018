@@ -81,10 +81,15 @@ function m_flattenKeys(keys, prefix) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Returns an array of export values for a given node record
-    Used during export.
-    e.g. [1,'Tacitus','Person',...]
-/*/
+/**
+ * Returns an array of export values for a given node record
+ * Used during export.
+ * @param {array} nodes - array of source nodes to export
+ * @param {array} keys - node def keys, e.g. 'id' and 'label'
+ *                       NOTE this is usually a subset of nodeDef keys
+ *                       with `hidden` keys removed so they won't export
+ * @returns - array of node values, e.g. [1,'Tacitus','Person',...]
+ */
 function m_getNodeValues(node, keys) {
   const RESULT = [];
   keys.forEach(key => {
@@ -121,10 +126,15 @@ function m_getNodeValues(node, keys) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Returns an array of node records
-    Used during export.
-    e.g. [[<tacitus>], [<marc antony>], ...]
-/*/
+/**
+ * Returns an array of node records
+ * Used during export.
+ * @param {array} nodes - array of source nodes to export
+ * @param {array} nodekeys - node def keys, e.g. 'id' and 'label'
+ *                           NOTE this is usually a subset of nodeDef keys
+ *                           with `hidden` keys removed so they won't export
+ * @returns - array of nodes, e.g. [[<tacitus>], [<marc antony>], ...]
+ */
 function m_GenerateNodesArray(nodes, nodekeys) {
   /// Define Node KEYS
   const nodesArr = [];
@@ -133,10 +143,15 @@ function m_GenerateNodesArray(nodes, nodekeys) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Returns an array of values for a given edge record
-    Used during export.
-    e.g. [1,'Tacitus','Person',...]
-/*/
+/**
+ * Returns an array of export values for a given edge record
+ * Used during export.
+ * @param {array} edge - array of source nodes to export
+ * @param {array} keys - edge def keys, e.g. 'id' and 'label'
+ *                       NOTE this is usually a subset of edgeDef keys
+ *                       with `hidden` keys removed so they won't export
+ * @returns - array of edge values, e.g. [1,'is enemy of',2,...]
+ */
 function m_getEdgeValues(edge, keys) {
   const RESULT = [];
   keys.forEach(key => {
@@ -179,10 +194,15 @@ function m_getEdgeValues(edge, keys) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Returns an array of edge records
-    Used during export.
-    e.g. [ [<tacitus>], [<marc antony>], ...]
-/*/
+/**
+ * Returns an array of edge records
+ * Used during export.
+ * @param {array} edges - array of source edges to export
+ * @param {array} edgekeys - edge def keys, e.g. 'id' and 'label'
+ *                           NOTE this is usually a subset of edgeDef keys
+ *                           with `hidden` keys removed so they won't export
+ * @returns - array of edges, e.g. [[<1:2>], [<1:4>], ...]
+ */
 function m_GenerateEdgesArray(edges, edgekeys) {
   /// Define Edge KEYS
   const edgeArr = [];
@@ -208,15 +228,16 @@ MOD.ExportNodes = () => {
   /// 1. Export Nodes
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// Define Node KEYS to export
-  /// Use nodekeys from TEMPLATE
-  const nodekeys = Object.keys(TEMPLATE.nodeDefs);
-  const nodesArr = m_GenerateNodesArray(nodes, nodekeys);
+  /// Use nodekeys from TEMPLATE, but skip hidden fields
+  const nodekeys = Object.keys(TEMPLATE.nodeDefs).filter(k => {
+    return TEMPLATE.nodeDefs[k].hidden ? false : k;
+  });
 
   /// 2. Expand to CSV
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ///    3.1. NODES
-  ///    3.1.1. Create headers
-  const nodeHeadersArr = nodekeys.map(key => {
+  ///    2.1. NODES
+  ///    2.1.1. Create headers
+  const nodeHeadersArr = nodekeys.filter(key => {
     // eslint-disable-next-line prefer-reflect
     if (Object.prototype.toString.call(key) === '[object Object]') {
       // DEPRECATED -- 'attribute' handler.
@@ -227,15 +248,20 @@ MOD.ExportNodes = () => {
       // const internalkeys = subKeys.map(sk => key[sk].map(k => `${sk}:${k}`)).flat();
       // return internalkeys.map(k => NODEKEY_LABELS[k]);
     } else {
-      // return NODEKEY_LABELS[key];
+      // don't export hidden fields
+      if (TEMPLATE.nodeDefs[key].hidden) return false;
       return TEMPLATE.nodeDefs[key].exportLabel;
     }
   });
   const nodeHeaders = nodeHeadersArr.flat();
+  ///    2.1.2 Export Nodes with filtered headers
+  const nodesArr = m_GenerateNodesArray(nodes, nodekeys);
+  ///    2.1.3 Attach headers to front of file
   nodesArr.unshift(nodeHeaders); // add headers
-  ///    3.1.2. Expand Nodes to CSV
+  ///    2.1.4 Expand Nodes to CSV
   const commaDelimitedNodes = nodesArr.map(n => n.join(','));
   EXPORT += commaDelimitedNodes.join('\n')
+
 
   /// 3. Save to File
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -270,27 +296,37 @@ MOD.ExportEdges = () => {
   // const edgesArr = m_GenerateEdgesArray(edges, EDGEKEYS);
 
   // New Template method
-  // Use edgekeys from TEMPLATE
-  const edgekeys = Object.keys(TEMPLATE.edgeDefs);
-  const edgesArr = m_GenerateEdgesArray(edges, edgekeys);
+  // Use edgekeys from TEMPLATE, but skip hidden fields
+  // const edgekeys = Object.keys(TEMPLATE.edgeDefs);
+  const edgekeys = Object.keys(TEMPLATE.edgeDefs).filter(k => {
+    return TEMPLATE.edgeDefs[k].hidden ? false : k;
+  });
+
+
+  // const edgesArr = m_GenerateEdgesArray(edges, edgekeys);
 
   /// 3. Expand to CSV
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ///   3.1. EDGES
   ///   3.1.1. Create headers
-  const edgeHeadersArr = edgekeys.map(key => {
+  const edgeHeadersArr = edgekeys.filter(key => {
     // eslint-disable-next-line prefer-reflect
     if (Object.prototype.toString.call(key) === '[object Object]') {
       // DEPRECATED -- 'attribute' handler.
       const subKeys = Object.keys(key); // can have multiple subKeys
       return subKeys.map(sk => key[sk].map(k => `${sk}:${k}`)).flat();
     } else {
+      // don't export hidden fields
+      if (TEMPLATE.edgeDefs[key].hidden) return false;
       return TEMPLATE.edgeDefs[key].exportLabel;
     }
   });
   const edgeHeaders = edgeHeadersArr.flat();
-  edgesArr.unshift(edgeHeaders); // add headers
-  ///   3.2.2 Expand Edges to CSV
+  ///    3.1.2 Export Nodes with filtered headers
+  const edgesArr = m_GenerateEdgesArray(edges, edgekeys);
+  ///    3.1.3 Attach headers to front of file
+  edgesArr.unshift(edgeHeaders);
+  ///    3.1.4 Expand Edges to CSV
   const commaDelimitedEdges = edgesArr.map(e => e.join(','));
   EXPORT += commaDelimitedEdges.join('\n');
 
