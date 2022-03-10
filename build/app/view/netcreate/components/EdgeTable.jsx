@@ -454,7 +454,7 @@ class EdgeTable extends UNISYS.Component {
                 <th  width="10%"><Button size="sm"
                       onClick={()=>this.setSortKey("source")}
                     >{edgeDefs.source.displayLabel} {this.sortSymbol("source")}</Button></th>
-                <th width="10%"><Button size="sm"
+                <th hidden={edgeDefs.type.hidden} width="10%"><Button size="sm"
                       onClick={()=>this.setSortKey("Relationship")}
                     >{edgeDefs.type.displayLabel} {this.sortSymbol("Relationship")}</Button></th>
                 <th hidden={!DBG}>Target ID</th>
@@ -496,7 +496,7 @@ class EdgeTable extends UNISYS.Component {
                 <td hidden={!DBG}>{edge.source.id}</td>
                 <td><a href="#" onClick={(e)=>this.selectNode(edge.source.id,e)}
                     >{edge.source.label || edge.source}</a></td>
-                <td>{edge.type}</td>
+                <td hidden={edgeDefs.type.hidden}>{edge.type}</td>
                 <td hidden={!DBG}>{edge.target.id}</td>
                 <td><a href="#" onClick={(e)=>this.selectNode(edge.target.id,e)}
                     >{edge.target.label || edge.target}</a></td>

@@ -116,6 +116,7 @@ MOD.TEMPLATE = {
         "hidden": {
           type: 'boolean',
           format: 'checkbox',
+          description: 'Hides the "Cite Node" and "Cite Edge" buttons.',
           default: false
         }
       }
@@ -225,9 +226,9 @@ MOD.TEMPLATE = {
             },
             "hidden": {
               type: 'boolean',
-              // not editable
-              options: { hidden: true },
               format: 'checkbox',
+              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
+              description: 'Not used.  "id" is always hidden.',
               default: false
             }
           }
@@ -266,8 +267,8 @@ MOD.TEMPLATE = {
             },
             "hidden": {
               type: 'boolean',
-              // not editable
-              options: { hidden: true },
+              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
+              description: 'Not used.  "label" is always shown.',
               format: 'checkbox',
               default: false
             }
@@ -308,6 +309,7 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Hides "type" from Node Editor and Nodes Table',
               default: false
             },
             "options": Object.assign({}, MOD.NODETYPEOPTIONS, { description: 'NOTE: We recommend using the "Edit Node Types" feature to edit Node Types.  It provides additional dataset migration tools.' })
@@ -346,6 +348,7 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Hides "notes" from Node Editor and Nodes Table',
               default: false
             }
           }
@@ -383,11 +386,12 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Hides "info" from Node Editor and Nodes Table',
               default: false
             }
           }
         },
-        "degrees": { // Weight
+        "degrees": {
           type: 'object',
           description: 'Display name of the node',
           properties: {
@@ -404,7 +408,7 @@ MOD.TEMPLATE = {
             "exportLabel": {
               type: 'string',
               description: 'Label to use for exported csv file field name',
-              default: 'Weight'
+              default: 'Degrees'
             },
             "help": {
               type: 'string',
@@ -420,6 +424,7 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Hides "degrees" from Node Editor and Nodes Table',
               default: false
             }
           }
@@ -452,6 +457,8 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
+              description: 'Not used.  "created" has no UI.',
               default: false
             }
           }
@@ -484,6 +491,8 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
+              description: 'Not used.  "updated" has no UI.',
               default: false
             }
           }
@@ -516,6 +525,8 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
+              description: 'Not used.  "revision" has no UI.',
               default: false
             }
           }
@@ -554,9 +565,9 @@ MOD.TEMPLATE = {
             },
             "hidden": {
               type: 'boolean',
-              // not editable
-              options: { hidden: true },
               format: 'checkbox',
+              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
+              description: 'Not used.  "id" is always hidden.',
               default: false
             }
           }
@@ -589,9 +600,9 @@ MOD.TEMPLATE = {
             },
             "hidden": {
               type: 'boolean',
-              // not editable
-              options: { hidden: true },
               format: 'checkbox',
+              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
+              description: 'Not used.  "source" is always shown.',
               default: false
             }
           }
@@ -624,9 +635,9 @@ MOD.TEMPLATE = {
             },
             "hidden": {
               type: 'boolean',
-              // not editable
-              options: { hidden: true },
               format: 'checkbox',
+              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
+              description: 'Not used.  "target" is always shown.',
               default: false
             }
           }
@@ -660,6 +671,7 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Hides "type" from Edge Editor and Edges Table',
               default: false
             },
             "options": Object.assign({}, MOD.EDGETYPEOPTIONS, { description: 'NOTE: We recommend using the "Edit Edge Types" feature to edit Edge Types.  It provides additional dataset migration tools.' })
@@ -692,6 +704,7 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Hides "notes" from Edge Editor and Edges Table',
               default: false
             }
           }
@@ -723,11 +736,12 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Hides "info" from Edge Editor and Edges Table',
               default: false
             }
           }
         },
-        "citation": { // Signficance
+        "citation": {
           type: 'object',
           description: 'Display name of the node',
           properties: {
@@ -754,11 +768,12 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Hides "citation" from Edge Editor and Edges Table',
               default: false
             }
           }
         },
-        "category": { // Signficance
+        "category": {
           type: 'object',
           description: 'Display name of the node',
           properties: {
@@ -785,6 +800,7 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Hides "category" from Edge Editor and Edges Table',
               default: true
             }
           }
@@ -817,6 +833,8 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
+              description: 'Not used.  "created" has no UI.',
               default: false
             }
           }
@@ -849,6 +867,8 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
+              description: 'Not used.  "updated" has no UI.',
               default: false
             }
           }
@@ -881,6 +901,8 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
+              description: 'Not used.  "revision" has no UI.',
               default: false
             }
           }
