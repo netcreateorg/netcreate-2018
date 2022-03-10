@@ -309,7 +309,7 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
-              description: 'Hides "type" from Node Editor and Nodes Table',
+              description: 'Hides "type" from Node Editor, Nodes Table, and exports',
               default: false
             },
             "options": Object.assign({}, MOD.NODETYPEOPTIONS, { description: 'NOTE: We recommend using the "Edit Node Types" feature to edit Node Types.  It provides additional dataset migration tools.' })
@@ -348,7 +348,7 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
-              description: 'Hides "notes" from Node Editor and Nodes Table',
+              description: 'Hides "notes" from Node Editor, Nodes Table, and exports',
               default: false
             }
           }
@@ -386,7 +386,7 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
-              description: 'Hides "info" from Node Editor and Nodes Table',
+              description: 'Hides "info" from Node Editor, Nodes Table, and exports',
               default: false
             }
           }
@@ -424,7 +424,7 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
-              description: 'Hides "degrees" from Node Editor and Nodes Table',
+              description: 'Hides "degrees" from Node Editor, Nodes Table, and exports',
               default: false
             }
           }
@@ -671,7 +671,7 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
-              description: 'Hides "type" from Edge Editor and Edges Table',
+              description: 'Hides "type" from Edge Editor, Edges Table, and exports',
               default: false
             },
             "options": Object.assign({}, MOD.EDGETYPEOPTIONS, { description: 'NOTE: We recommend using the "Edit Edge Types" feature to edit Edge Types.  It provides additional dataset migration tools.' })
@@ -704,7 +704,7 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
-              description: 'Hides "notes" from Edge Editor and Edges Table',
+              description: 'Hides "notes" from Edge Editor, Edges Table, and exports',
               default: false
             }
           }
@@ -736,7 +736,7 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
-              description: 'Hides "info" from Edge Editor and Edges Table',
+              description: 'Hides "info" from Edge Editor, Edges Table, and exports',
               default: false
             }
           }
@@ -768,7 +768,7 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
-              description: 'Hides "citation" from Edge Editor and Edges Table',
+              description: 'Hides "citation" from Edge Editor, Edges Table, and exports',
               default: false
             }
           }
@@ -800,7 +800,7 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
-              description: 'Hides "category" from Edge Editor and Edges Table',
+              description: 'Hides "category" from Edge Editor, Edges Table, and exports',
               default: true
             }
           }
