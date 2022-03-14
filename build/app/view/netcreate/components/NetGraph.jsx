@@ -48,19 +48,20 @@ class NetGraph extends UNISYS.Component {
       super(props)
       this.state = {
         d3NetGraph: {},
-        nodeTypes: []
+        nodeTypes: [],
+        edgeTypes: []
       }
 
       this.onZoomReset = this.onZoomReset.bind(this);
       this.onZoomIn    = this.onZoomIn.bind(this);
       this.onZoomOut   = this.onZoomOut.bind(this);
-      this.updateNodeTypes = this.updateNodeTypes.bind(this);
+      this.updateLegend = this.updateLegend.bind(this);
       this.constructGraph = this.constructGraph.bind(this);
 
       /// Initialize UNISYS DATA LINK for REACT
       UDATA = UNISYS.NewDataLink(this);
 
-      this.OnAppStateChange('TEMPLATE', this.updateNodeTypes);
+      this.OnAppStateChange('TEMPLATE', this.updateLegend);
       UDATA.HandleMessage('CONSTRUCT_GRAPH', this.constructGraph);
 
     } // constructor
@@ -81,12 +82,19 @@ class NetGraph extends UNISYS.Component {
       this.AppCall('ZOOM_OUT', {});
     }
 
-    updateNodeTypes() {
-      // Update Legend
-      const nodeTypes = this.AppState('TEMPLATE').nodeDefs.type.options;
-      this.setState({ nodeTypes });
-      this.forceUpdate(); // just once, needed to overcome shouldComponentUpdate override
+    updateLegend() {
+      // Update Legends
+      const TEMPLATE = this.AppState('TEMPLATE');
+      const nodeTypes = TEMPLATE.nodeDefs.type.options;
+      const edgeTypes = TEMPLATE.edgeDefs.type.options;
+      this.setState({ nodeTypes, edgeTypes }, () => {
+        this.forceUpdate(); // just once, needed to overcome shouldComponentUpdate override
+      });
     }
+
+
+    /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ constructGraph() {
       // first destroy any existing SVG graph elements
@@ -102,7 +110,8 @@ class NetGraph extends UNISYS.Component {
       }
       const d3NetGraph = new D3NetGraph(el, TEMPLATE.nodeDefs);
       const nodeTypes = TEMPLATE.nodeDefs.type.options;
-      this.setState({ d3NetGraph, nodeTypes });
+      const edgeTypes = TEMPLATE.edgeDefs.type.options;
+      this.setState({ d3NetGraph, nodeTypes, edgeTypes });
       this.forceUpdate(); // just once, needed to overcome shouldComponentUpdate override
     }
 
@@ -115,7 +124,7 @@ class NetGraph extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ componentWillUnMount() {
-      this.AppStateChangeOff('TEMPLATE', this.updateNodeTypes);
+      this.AppStateChangeOff('TEMPLATE', this.updateLegend);
       UDATA.UnhandleMessage('CONSTRUCT_GRAPH', this.constructGraph);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -130,7 +139,7 @@ class NetGraph extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ render() {
-      const { nodeTypes } = this.state;
+      const { nodeTypes, edgeTypes } = this.state;
       return (
         <div style={{ height: '100%' }}>
           <div style={{ margin: '10px 0 0 10px' }}>
@@ -149,7 +158,9 @@ class NetGraph extends UNISYS.Component {
           </div>
           <div style={{ position: 'absolute', bottom: '40px', marginLeft: '10px', marginBottom: '15px',fontSize: '10px' }}>
 
-            <div style={{ display: 'inline-block', paddingRight: '2em' }}>KEY:</div>
+            <div style={{ display: 'inline-block', paddingRight: '2em' }}>KEY</div>
+            <br></br>
+            <div style={{ display: 'inline-block', paddingRight: '2em' }}> - Node Types:</div>
             {nodeTypes.map((type, i) => (
                <div key={i} className="tooltipAnchor">
                 <div style={{ display: 'inline-block', paddingRight: '2em', lineHeight: '10px' }}>
@@ -158,6 +169,19 @@ class NetGraph extends UNISYS.Component {
                   </div>
                    <span className="tooltiptextabove">{ (type.label==='') ? 'No Type Selected' : type.help || type.label }</span>
                 </div>
+
+            ))}
+           <br></br>
+          <div style={{ display: 'inline-block', paddingRight: '2em' }}> - Edge Types:</div>
+            {edgeTypes.map((type, i) => (
+               <div key={i} className="tooltipAnchor">
+                <div style={{ display: 'inline-block', paddingRight: '2em', lineHeight: '10px' }}>
+                  <div style={{ display: 'inline-block', width: '10px', height: '8px', backgroundColor: type.color }}></div>
+                    &nbsp;{ (type.label==='') ? 'No Type Selected' : type.label }
+                  </div>
+                   <span className="tooltiptextabove">{ (type.label==='') ? 'No Type Selected' : type.help || type.label }</span>
+                </div>
+
             ))}
 
           </div>
