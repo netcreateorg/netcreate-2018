@@ -55,11 +55,9 @@ class NetGraph extends UNISYS.Component {
       this.onZoomReset = this.onZoomReset.bind(this);
       this.onZoomIn    = this.onZoomIn.bind(this);
       this.onZoomOut   = this.onZoomOut.bind(this);
-      this.updateNodeTypes = this.updateNodeTypes.bind(this);
-      this.updateEdgeTypes = this.updateEdgeTypes.bind(this);
+      this.updateTypes = this.updateLegend.bind(this);
 
-      this.OnAppStateChange('TEMPLATE', this.updateNodeTypes);
-      this.OnAppStateChange('TEMPLATE', this.updateEdgeTypes);
+      this.OnAppStateChange('TEMPLATE', this.updateTypes);
 
 
     } // constructor
@@ -80,19 +78,16 @@ class NetGraph extends UNISYS.Component {
       this.AppCall('ZOOM_OUT', {});
     }
 
-    updateNodeTypes() {
-      // Update Legend
-      const nodeTypes = this.AppState('TEMPLATE').nodeDefs.type.options;
-      this.setState({ nodeTypes });
-      this.forceUpdate(); // just once, needed to overcome shouldComponentUpdate override
+    updateLegend() {
+      // Update Legends
+      const TEMPLATE = this.AppState('TEMPLATE');
+      const nodeTypes = TEMPLATE.nodeDefs.type.options;
+      const edgeTypes = TEMPLATE.edgeDefs.type.options;
+      this.setState({ nodeTypes, edgeTypes }, () => {
+        this.forceUpdate(); // just once, needed to overcome shouldComponentUpdate override
+      });
     }
 
-    updateEdgeTypes() {
-      // Update Legend
-      const edgeTypes = this.AppState('TEMPLATE').edgeDefs.type.options;
-      this.setState({ edgeTypes });
-      this.forceUpdate(); // just once, needed to overcome shouldComponentUpdate override
-    }
 
     /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -110,8 +105,7 @@ class NetGraph extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ componentWillUnMount() {
-      this.AppStateChangeOff('TEMPLATE', this.updateNodeTypes);
-      this.AppStateChangeOff('TEMPLATE', this.updateEdgeTypes);
+      this.AppStateChangeOff('TEMPLATE', this.updateLegend);
 
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
