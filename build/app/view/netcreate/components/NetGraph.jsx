@@ -55,9 +55,9 @@ class NetGraph extends UNISYS.Component {
       this.onZoomReset = this.onZoomReset.bind(this);
       this.onZoomIn    = this.onZoomIn.bind(this);
       this.onZoomOut   = this.onZoomOut.bind(this);
-      this.updateTypes = this.updateLegend.bind(this);
+      this.updateLegend = this.updateLegend.bind(this);
 
-      this.OnAppStateChange('TEMPLATE', this.updateTypes);
+      this.OnAppStateChange('TEMPLATE', this.updateLegend);
 
 
     } // constructor
