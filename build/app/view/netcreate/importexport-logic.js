@@ -240,20 +240,19 @@ MOD.ExportNodes = () => {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ///    2.1. NODES
   ///    2.1.1. Create headers
-  const nodeHeadersArr = nodekeys.filter(key => {
+  const nodeHeadersArr = [];
+  nodekeys.forEach(key => {
     // eslint-disable-next-line prefer-reflect
     if (Object.prototype.toString.call(key) === '[object Object]') {
       // DEPRECATED -- 'attribute' handler.
-      throw new Error(`Unexpected node type for ${key}`);
+      throw new Error(`Unexpected node type for ${JSON.stringify(key)}`);
       // This shouldn't be called anymore as of 2/2022 because the data fields
       // have been flattened. See #198.
       // const subKeys = Object.keys(key); // can have multiple subKeys
       // const internalkeys = subKeys.map(sk => key[sk].map(k => `${sk}:${k}`)).flat();
       // return internalkeys.map(k => NODEKEY_LABELS[k]);
     } else {
-      // don't export hidden fields
-      if (TEMPLATE.nodeDefs[key].hidden) return false;
-      return TEMPLATE.nodeDefs[key].exportLabel;
+      nodeHeadersArr.push(TEMPLATE.nodeDefs[key].exportLabel);
     }
   });
   const nodeHeaders = nodeHeadersArr.flat();
@@ -312,16 +311,16 @@ MOD.ExportEdges = () => {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ///   3.1. EDGES
   ///   3.1.1. Create headers
-  const edgeHeadersArr = edgekeys.filter(key => {
+  const edgeHeadersArr = [];
+  edgekeys.forEach(key => {
     // eslint-disable-next-line prefer-reflect
     if (Object.prototype.toString.call(key) === '[object Object]') {
       // DEPRECATED -- 'attribute' handler.
-      const subKeys = Object.keys(key); // can have multiple subKeys
-      return subKeys.map(sk => key[sk].map(k => `${sk}:${k}`)).flat();
+      throw new Error(`Unexpected edge type for ${JSON.stringify(key)}`);
+      // const subKeys = Object.keys(key); // can have multiple subKeys
+      // return subKeys.map(sk => key[sk].map(k => `${sk}:${k}`)).flat();
     } else {
-      // don't export hidden fields
-      if (TEMPLATE.edgeDefs[key].hidden) return false;
-      return TEMPLATE.edgeDefs[key].exportLabel;
+      edgeHeadersArr.push(TEMPLATE.edgeDefs[key].exportLabel);
     }
   });
   const edgeHeaders = edgeHeadersArr.flat();
