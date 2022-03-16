@@ -373,7 +373,9 @@ MOD.ValidateNodeFile = async data => {
 
   // Retrieve import file node keys defined in template
   const TEMPLATE = UDATA.AppState('TEMPLATE');
-  const NODEKEYS = Object.values(TEMPLATE.nodeDefs).map(k => k.exportLabel);
+  const NODEKEYS = Object.values(TEMPLATE.nodeDefs)
+    .filter(k => !k.hidden) // Ignore hidden keys
+    .map(k => k.exportLabel);
 
   const { nodefile } = data;
   if (nodefile===undefined) return { isValid: false, missingKeys, fileKeys: []}; // User cancelled
@@ -406,7 +408,9 @@ MOD.ValidateEdgeFile = async data => {
 
   // Retrieve import file node keys defined in template
   const TEMPLATE = UDATA.AppState('TEMPLATE');
-  const EDGEKEYS = Object.values(TEMPLATE.edgeDefs).map(k => k.exportLabel);
+  const EDGEKEYS = Object.values(TEMPLATE.edgeDefs)
+    .filter(k => !k.hidden) // Ignore hidden keys
+    .map(k => k.exportLabel);
 
   const { edgefile } = data;
   if (edgefile===undefined) return { isValid: false, missingKeys, fileKeys: []}; // User cancelled
