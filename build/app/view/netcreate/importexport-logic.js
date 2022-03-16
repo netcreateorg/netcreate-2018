@@ -645,7 +645,7 @@ MOD.Import = async data => {
   //    A1. Construct 'nodesToAdd' and 'nodesToReplace'
   importNodes.forEach((n, i) => {
     const row = i + 2; // to account for header row
-    if (n.id === NEW_ID_KEYWORD) {
+    if (String(n.id).toLowerCase() === NEW_ID_KEYWORD) {
       //  A1.1 "new" node
       nodesToAdd.push(n);
     } else {
@@ -696,7 +696,7 @@ MOD.Import = async data => {
     // Make sure each edge has a valid source and target
     if (!m_hasValidSourceTarget(e, NCDATA, edgeImportErrors, row)) return;
 
-    if (e.id === NEW_ID_KEYWORD) {
+    if (String(e.id).toLowerCase() === NEW_ID_KEYWORD) {
       // B1.1 New Edge
       edgesToAdd.push(e);
     } else {
