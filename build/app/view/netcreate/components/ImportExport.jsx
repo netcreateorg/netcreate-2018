@@ -182,7 +182,7 @@ class ImportExport extends UNISYS.Component {
           edgefileErrors: undefined,
           edgeImportErrors: undefined,
           importMsgs: result.messages && (
-            <div>IMPORT NOTES:<br />
+            <div>IMPORT NOTES {nodeFilename} {edgeFilename}:<br />
               <ul>{result.messages.map((e, i) => (<li key={i}>{e}</li>))}</ul>
             </div>)
         });
