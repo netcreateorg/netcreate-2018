@@ -60,6 +60,13 @@ function m_encode(data) {
   return res;
 }
 
+function m_decode(data) {
+  let res;
+  // double quotes need to be escaped
+  res = String(data).replace(/""/g, '"');
+  return res;
+}
+
 // DEPRECATED -- Used to flatten 'attributes'
 //    'attributes' have been removed, so this should not be needed anymore
 // Converts nested key definitions into a flat array, e.g.
@@ -141,7 +148,7 @@ function m_getNodeValues(node, keys) {
 function m_GenerateNodesArray(nodes, nodekeys) {
   /// Define Node KEYS
   const nodesArr = [];
-  nodes.forEach(n => nodesArr.push(m_getNodeValues(n, nodekeys)));
+  nodes.forEach(n => nodesArr.push(m_renderNodeValues(n, nodekeys)));
   return nodesArr;
 }
 
@@ -474,7 +481,7 @@ function m_LoadNodes(nodefileData) {
     const subcategories = new Map();
     const importFields = l.split(REGEXMatchCommasNotInQuotes); // ?=" needed to match commas in strings
     importFields.forEach((f, index) => {
-      const field = f.replace(/^"/, "").replace(/"$/, ""); // strip quotes
+      const field = f.replace(/^"/, "").replace(/"$/, ""); // strip start and end quotes from strings
       const key = headers[index];
       const keysplit = String(key).split(':');
       // Subcategory and subkey are DEPRECATED
@@ -505,7 +512,7 @@ function m_LoadNodes(nodefileData) {
           if (node.meta === undefined) node.meta = {};
           node.meta[internalLabel] = field;
         } else {
-          node[internalLabel] = field;
+          node[internalLabel] = m_decode(field); // convert double quotes
         }
       }
     })
