@@ -100,7 +100,7 @@ function m_flattenKeys(keys, prefix) {
  *                       with `hidden` keys removed so they won't export
  * @returns - array of node values, e.g. [1,'Tacitus','Person',...]
  */
-function m_getNodeValues(node, keys) {
+function m_renderNodeValues(node, keys) {
   const RESULT = [];
   keys.forEach(key => {
     // If the key is an object, recurse
@@ -109,7 +109,7 @@ function m_getNodeValues(node, keys) {
       // DEPRECATED -- 'attribute' handler.
       const subKeys = Object.keys(key); // can have multiple subKeys
       subKeys.forEach(k => {
-        RESULT.push(m_getNodeValues(node[k], key[k]));
+        RESULT.push(m_renderNodeValues(node[k], key[k]));
       });
     }
     // Special Data Handling
@@ -162,7 +162,7 @@ function m_GenerateNodesArray(nodes, nodekeys) {
  *                       with `hidden` keys removed so they won't export
  * @returns - array of edge values, e.g. [1,'is enemy of',2,...]
  */
-function m_getEdgeValues(edge, keys) {
+function m_renderEdgeValues(edge, keys) {
   const RESULT = [];
   keys.forEach(key => {
     // If the key is an object, recurse
@@ -171,7 +171,7 @@ function m_getEdgeValues(edge, keys) {
       // DEPRECATED -- 'attribute' handler.
       const subKeys = Object.keys(key); // can have multiple subKeys
       subKeys.forEach(k => {
-        RESULT.push( m_getNodeValues(edge[k], key[k]) );
+        RESULT.push( m_renderNodeValues(edge[k], key[k]) );
       });
     }
     // Special Data Handling
@@ -216,7 +216,7 @@ function m_getEdgeValues(edge, keys) {
 function m_GenerateEdgesArray(edges, edgekeys) {
   /// Define Edge KEYS
   const edgeArr = [];
-  edges.forEach(e => edgeArr.push(m_getEdgeValues(e, edgekeys)));
+  edges.forEach(e => edgeArr.push(m_renderEdgeValues(e, edgekeys)));
   return edgeArr;
 }
 
@@ -387,10 +387,10 @@ MOD.ValidateNodeFile = async data => {
   const nodeKeys = m_flattenKeys(NODEKEYS);
   const fileKeys = m_flattenKeys(headers);
   // check that ALL nodeKeys are in the fileKeys
-  nodeKeys.forEach(n => {
-    if (!fileKeys.includes(n)) {
+  nodeKeys.forEach(k => {
+    if (!fileKeys.includes(k)) {
       isValid = false;
-      missingKeys.push(n);
+      missingKeys.push(k);
     }
   });
   if (isValid) MOD.NodefileData = { headers, lines };
@@ -420,10 +420,10 @@ MOD.ValidateEdgeFile = async data => {
   const edgeKeys = m_flattenKeys(EDGEKEYS);
   const fileKeys = m_flattenKeys(headers);
   // check that ALL nodeKeys are in the fileKeys
-  edgeKeys.forEach(n => {
-    if (!fileKeys.includes(n)) {
+  edgeKeys.forEach(k => {
+    if (!fileKeys.includes(k)) {
       isValid = false;
-      missingKeys.push(n);
+      missingKeys.push(k);
     }
   });
   if (isValid) MOD.EdgefileData = { headers, lines };
