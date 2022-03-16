@@ -69,7 +69,8 @@ class ImportExport extends UNISYS.Component {
             nodefile,
             nodefileStatus: "Ready for import",
             nodefileErrors: undefined,
-            nodeImportErrors: undefined
+            nodeImportErrors: undefined,
+            importMsgs: undefined
           });
         } else {
           if (result.missingKeys.length > 0) {
@@ -83,7 +84,8 @@ class ImportExport extends UNISYS.Component {
                   <div>Keys found in file: {result.fileKeys.join(', ')}</div>
                 </div>
               ),
-              nodeImportErrors: undefined
+              nodeImportErrors: undefined,
+              importMsgs: undefined
             });
           } else {
             // User Cancelled, reset to default
@@ -91,7 +93,8 @@ class ImportExport extends UNISYS.Component {
               nodefile: undefined,
               nodefileStatus: NODEFILESTATUS_DEFAULT,
               nodefileErrors: undefined,
-              nodeImportErrors: undefined
+              nodeImportErrors: undefined,
+              importMsgs: undefined
             });
           }
           // Force Clear so that if the user fixes the file and reselects it
@@ -126,7 +129,8 @@ class ImportExport extends UNISYS.Component {
                   <div>Keys found in file: {result.fileKeys.join(', ')}</div>
                 </div>
               ),
-              edgeImportErrors: undefined
+              edgeImportErrors: undefined,
+              importMsgs: undefined
             });
           } else {
             // User Cancelled, reset to default
