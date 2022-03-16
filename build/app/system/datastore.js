@@ -127,6 +127,21 @@ DSTOR.PromiseNewNodeID = function() {
   });
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ get multiple unique NodeIDs
+/*/
+DSTOR.PromiseNewNodeIDs = function(count) {
+  return new Promise((resolve, reject) => {
+    UDATA.NetCall("SRV_DBGETNODEIDS", {count}).then(data => {
+      if (data.nodeIDs) {
+        if (DBG) console.log(PR, "server allocated node_id", data.nodeIDs);
+        resolve(data.nodeIDs);
+      } else {
+        reject(new Error("unknown error" + JSON.stringify(data)));
+      }
+    });
+  });
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ get a unique Edge
 /*/
 DSTOR.PromiseNewEdgeID = function() {
@@ -141,6 +156,21 @@ DSTOR.PromiseNewEdgeID = function() {
         } else {
           reject(new Error("unknown error" + JSON.stringify(data)));
         }
+      }
+    });
+  });
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ get multiple unique EdgeIDs
+/*/
+DSTOR.PromiseNewEdgeIDs = function(count) {
+  return new Promise((resolve, reject) => {
+    UDATA.NetCall("SRV_DBGETEDGEIDS", {count}).then(data => {
+      if (data.edgeIDs) {
+        if (DBG) console.log(PR, "server allocated edge_id:", data.edgeIDs);
+        resolve(data.edgeIDs);
+      } else {
+        reject(new Error("unknown error" + JSON.stringify(data)));
       }
     });
   });

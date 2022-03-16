@@ -441,10 +441,30 @@ DB.PKT_GetNewNodeID = function(pkt) {
   return { nodeID: m_max_nodeID };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DB.PKT_GetNewNodeIDs = function (pkt) {
+  const count = Number(pkt.Data().count);
+  const firstId = m_max_nodeID + 1;
+  const nodeIDs = [];
+  for (let i = 0; i < count; i++) nodeIDs.push(firstId + i);
+  m_max_nodeID += count;
+  if (DBG) console.log(PR, `PKT_GetNewNodeIDS ${pkt.Info()} nodeIDs ${nodeIDs}`);
+  return { nodeIDs };
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_GetNewEdgeID = function(pkt) {
   m_max_edgeID += 1;
   if (DBG) console.log(PR, `PKT_GetNewEdgeID ${pkt.Info()} edgeID ${m_max_edgeID}`);
   return { edgeID: m_max_edgeID };
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DB.PKT_GetNewEdgeIDs = function(pkt) {
+  const count = Number(pkt.Data().count);
+  const firstId = m_max_edgeID + 1;
+  const edgeIDs = [];
+  for (let i = 0; i < count; i++) edgeIDs.push(firstId + i);
+  m_max_edgeID += count;
+  if (DBG) console.log(PR, `PKT_GetNewEdgeIDs ${pkt.Info()} edgeIDs ${edgeIDs}`);
+  return { edgeIDs };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_RequestLockNode = function(pkt) {
