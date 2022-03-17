@@ -634,18 +634,18 @@ MOD.Hook("INITIALIZE", () => {
   UDATA.HandleMessage("EDGE_UPDATE", function(data) {
     let { edge } = data;
     if (DBG) console.log("nc-logic.EDGE_UPDATE: received edge", edge);
-    // set matching nodes
+    // set matching edges
     let updatedEdges = m_SetMatchingEdgesByProp({ id: edge.id }, edge);
     if (DBG) console.log("nc-logic.EDGE_UPDATE: updated", updatedEdges);
 
-    // if no nodes had matched, then add a new node!
+    // if no edges had matched, then add a new edge!
     if (updatedEdges.length === 0) {
       if (DBG) console.log("nc-logic.EDGE_UPDATE: adding new edge", edge);
       // created edges should have a default size
       edge.size = 1;
       NCDATA.edges.push(edge);
     }
-    // if there was one node
+    // if there was one edge
     if (updatedEdges.length === 1) {
       console.log('nc-logic.EDGE_UPDATE: updating existing edge', updatedEdges)
     }
