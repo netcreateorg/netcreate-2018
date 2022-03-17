@@ -579,6 +579,7 @@ DB.RequestUnlock = function (uaddr) {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// eslint-disable-next-line complexity
 DB.PKT_Update = function(pkt) {
   let { node, edge, nodeID, replacementNodeID, edgeID } = pkt.Data();
   let retval = {};
@@ -592,7 +593,10 @@ DB.PKT_Update = function(pkt) {
       LOGGER.Write(pkt.Info(), `insert node`, node.id, JSON.stringify(node));
       DB.AppendNodeLog(node, pkt); // log GroupId to node stored in database
       NODES.insert(node);
-      retval = { op: "insert", node };
+      // Return the updated record -- needed to update metadata
+      let updatedNode = NODES.findOne({ id: node.id });
+      if (!updatedNode) console.log(PR, `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id} ${JSON.stringify(node)}`);
+      retval = { op: "insert", node: updatedNode };
     } else if (matches.length === 1) {
       // there was one match to update
       NODES.findAndUpdate({ id: node.id }, n => {
@@ -601,7 +605,10 @@ DB.PKT_Update = function(pkt) {
         DB.AppendNodeLog(n, pkt); // log GroupId to node stored in database
         Object.assign(n, node);
       });
-      retval = { op: "update", node };
+      // Return the updated record -- needed to update metadata
+      let updatedNode = NODES.findOne({ id: node.id });
+      if (!updatedNode) console.log(PR, `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id} ${JSON.stringify(node)}`);
+      retval = { op: "update", node: updatedNode };
     } else {
       if (DBG) console.log(PR,`WARNING: multiple nodeID ${node.id} x${matches.length}`);
       LOGGER.Write(pkt.Info(), `ERROR`, node.id, "duplicate node id");
@@ -620,7 +627,10 @@ DB.PKT_Update = function(pkt) {
       LOGGER.Write(pkt.Info(), `insert edge`, edge.id, JSON.stringify(edge));
       DB.AppendEdgeLog(edge, pkt); // log GroupId to edge stored in database
       EDGES.insert(edge);
-      retval = { op: "insert", edge };
+      // Return the updated record -- needed to update metadata
+      let updatedEdge = EDGES.findOne({ id: edge.id });
+      if (!updatedEdge) console.log(PR, `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id} ${JSON.stringify(node)}`);
+      retval = { op: "insert", edge: updatedEdge };
     } else if (matches.length === 1) {
       // update this edge
       EDGES.findAndUpdate({ id: edge.id }, e => {
@@ -629,7 +639,10 @@ DB.PKT_Update = function(pkt) {
         DB.AppendEdgeLog(e, pkt); // log GroupId to edge stored in database
         Object.assign(e, edge);
       });
-      retval = { op: "update", edge };
+      // Return the updated record -- needed to update metadata
+      let updatedEdge = EDGES.findOne({ id: edge.id });
+      if (!updatedEdge) console.log(PR, `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id} ${JSON.stringify(node)}`);
+      retval = { op: "update", edge: updatedEdge };
     } else {
       console.log(PR, `WARNING: multiple edgeID ${edge.id} x${matches.length}`);
       LOGGER.Write(pkt.Info(), `ERROR`, node.id, "duplicate edge id");
