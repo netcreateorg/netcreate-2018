@@ -114,9 +114,15 @@ function m_renderNodeValues(node, keys) {
     }
     // Special Data Handling
     // -- Number
-    if (['id', 'revision'].includes(key)) {
+    if (['id'].includes(key)) {
       // Export as a number
       RESULT.push(node[key]);
+      return;
+    }
+    // -- Revision
+    if (['revision'].includes(key)) {
+      // Export as a number from meta
+      RESULT.push(node.meta[key]);
       return;
     }
     // -- DATE
@@ -176,7 +182,7 @@ function m_renderEdgeValues(edge, keys) {
     }
     // Special Data Handling
     // -- Number
-    if (['id', 'revision'].includes(key)) {
+    if (['id'].includes(key)) {
       // Export as a number
       RESULT.push(edge[key]);
       return;
@@ -185,6 +191,12 @@ function m_renderEdgeValues(edge, keys) {
     if (['source', 'target'].includes(key)) {
       // source/target is an id not an object
       RESULT.push(edge[key]);
+      return;
+    }
+    // -- Revision
+    if (['revision'].includes(key)) {
+      // Export as a number from meta
+      RESULT.push(edge.meta[key]);
       return;
     }
     // -- DATE

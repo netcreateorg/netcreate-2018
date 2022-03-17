@@ -431,7 +431,7 @@ MOD.TEMPLATE = {
         },
         "created": { // Built-in data DO NOT MODIFY!
           type: 'object',
-          description: 'System-generated date.  This setting only used to show/hide tooltip in graph',
+          description: 'System-generated date.  This setting used to show/hide tooltip in graph and import/export',
           properties: {
             "displayLabel": {
               type: 'string',
@@ -457,15 +457,14 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
-              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
-              description: 'Not used.  "created" has no UI.',
+              description: 'Requires "created" for exports and imports',
               default: false
             }
           }
         },
         "updated": { // Built-in data DO NOT MODIFY!
           type: 'object',
-          description: 'System-generated date.  This setting only used to show/hide tooltip in graph',
+          description: 'System-generated date.  This setting used to show/hide tooltip in graph and import/export',
           properties: {
             "displayLabel": {
               type: 'string',
@@ -491,15 +490,14 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
-              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
-              description: 'Not used.  "updated" has no UI.',
+              description: 'Requires "updated" for exports and imports',
               default: false
             }
           }
         },
         "revision": { // Built-in data DO NOT MODIFY!
           type: 'object',
-          description: 'System-generated revision count.  This setting only used to show/hide tooltip in graph',
+          description: 'System-generated data.  This setting used to show/hide tooltip in graph and import/export',
           properties: {
             "displayLabel": {
               type: 'string',
@@ -525,9 +523,8 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
-              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
-              description: 'Not used.  "revision" has no UI.',
-              default: false
+              description: 'Requires "revision" for exports and imports',
+              default: true
             }
           }
         }
@@ -807,7 +804,7 @@ MOD.TEMPLATE = {
         },
         "created": { // Built-in data DO NOT MODIFY!
           type: 'object',
-          description: 'System-generated date.  This setting only used to show/hide tooltip in graph',
+          description: 'System-generated date.  This setting used to show/hide tooltip in graph and import/export',
           properties: {
             "displayLabel": {
               type: 'string',
@@ -827,21 +824,20 @@ MOD.TEMPLATE = {
             },
             "help": {
               type: 'string',
-              description: 'Help text to display on the Node Editor form',
-              default: 'Date and time node was created'
+              description: 'Help text to display on the Edge Editor form',
+              default: 'Date and time edge was created'
             },
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
-              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
-              description: 'Not used.  "created" has no UI.',
+              description: 'Requires "created" for exports and imports',
               default: false
             }
           }
         },
         "updated": { // Built-in data DO NOT MODIFY!
           type: 'object',
-          description: 'System-generated date.  This setting only used to show/hide tooltip in graph',
+          description: 'System-generated date.  This setting used to show/hide tooltip in graph and import/export',
           properties: {
             "displayLabel": {
               type: 'string',
@@ -861,21 +857,20 @@ MOD.TEMPLATE = {
             },
             "help": {
               type: 'string',
-              description: 'Help text to display on the Node Editor form',
-              default: 'Date and time node was last modified'
+              description: 'Help text to display on the Edge Editor form',
+              default: 'Date and time edge was last modified'
             },
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
-              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
-              description: 'Not used.  "updated" has no UI.',
+              description: 'Requires "updated" for exports and imports',
               default: false
             }
           }
         },
         "revision": { // Built-in data DO NOT MODIFY!
           type: 'object',
-          description: 'System-generated revision count.  This setting only used to show/hide tooltip in graph',
+          description: 'System-generated data.  This setting used to show/hide tooltip in graph and import/export',
           properties: {
             "displayLabel": {
               type: 'string',
@@ -895,15 +890,14 @@ MOD.TEMPLATE = {
             },
             "help": {
               type: 'string',
-              description: 'Help text to display on the Node Editor form',
-              default: 'Number of times this node has been revised'
+              description: 'Help text to display on the Edge Editor form',
+              default: 'Number of times this edge has been revised'
             },
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
-              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
-              description: 'Not used.  "revision" has no UI.',
-              default: false
+              description: 'Requires "revision" for exports and imports',
+              default: true
             }
           }
         }

@@ -100,6 +100,14 @@ help = "Date and time node was last modified"
 includeInGraphTooltip = true
 hidden = false
 
+[nodeDefs.revision]
+type = "string"
+displayLabel = "Revisions"
+exportLabel = "Revisions"
+help = "Number of times node has been revised"
+includeInGraphTooltip = true
+hidden = true
+
 [edgeDefs.id]
 type = "number"
 displayLabel = "Id"
@@ -174,3 +182,27 @@ displayLabel = "Category"
 exportLabel = "Category"
 help = "Category?"
 hidden = false
+
+[edgeDefs.created]
+type = "string"
+displayLabel = "Created"
+exportLabel = "Created"
+help = "Date and time edge was created"
+includeInGraphTooltip = true
+hidden = false
+
+[edgeDefs.updated]
+type = "string"
+displayLabel = "Last Updated"
+exportLabel = "Last Updated"
+help = "Date and time edge was last modified"
+includeInGraphTooltip = true
+hidden = false
+
+[edgeDefs.revision]
+type = "string"
+displayLabel = "Revisions"
+exportLabel = "Revisions"
+help = "Number of times edge has been revised"
+includeInGraphTooltip = true
+hidden = true
