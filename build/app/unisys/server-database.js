@@ -877,7 +877,7 @@ DB.CloneTemplateTOML = function (filePath) {
 /*/
 const EDITOR = { TEMPLATE: 'template', NONTEMPLATE: 'nonTemplate' };
 
-function GetEditStatus() {
+DB.GetEditStatus = () => {
   // If there are any 'node' or 'edge' open editors, then request fails: template cannot be locked
   // If there are any 'template' open editors, then request fails: template cannot be locked
   const templateBeingEdited = m_open_editors.length === 1 && m_open_editors.includes( EDITOR.TEMPLATE );
@@ -890,7 +890,7 @@ function GetEditStatus() {
  */
 DB.GetTemplateEditState = pkt => {
   // return { isBeingEdited: GetTemplateIsBeingEdited() };
-  return GetEditStatus();
+  return DB.GetEditStatus();
 }
 /**
  * Requester is always the Template editor.
@@ -911,7 +911,7 @@ DB.RequestTemplateEdit = () => {
 DB.ReleaseTemplateEdit = pkt => {
   const i = m_open_editors.findIndex(e => e === EDITOR.TEMPLATE);
   if (i > -1) m_open_editors.splice(i, 1);
-  return GetEditStatus();
+  return DB.GetEditStatus();
 }
 /**
  * Requester is always node or edge editor
@@ -922,7 +922,7 @@ DB.ReleaseTemplateEdit = pkt => {
 DB.RequestTemplateLock = pkt => {
   console.log(PR,'RequestTemplateLock', pkt)
   m_open_editors.push(pkt.Data().editor);
-  return GetEditStatus();
+  return DB.GetEditStatus();
 }
 /**
  * @returns { templateBeingEdited: boolean, nodeOrEdgeBeingEdited: boolean }
@@ -930,7 +930,7 @@ DB.RequestTemplateLock = pkt => {
 DB.ReleaseTemplateLock = pkt => {
   const i = m_open_editors.findIndex(e => e === pkt.Data().editor);
   if (i > -1) m_open_editors.splice(i, 1);
-  return GetEditStatus();
+  return DB.GetEditStatus();
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

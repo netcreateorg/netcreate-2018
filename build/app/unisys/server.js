@@ -210,6 +210,9 @@ var UNISYS = {};
       });
       UNET.HandleMessage('SRV_DBUNLOCKALL', function (pkt) {
         if (DBG) console.log(PR, sprint_message(pkt));
+        // Broadcast Lock State
+        const data = UDB.GetEditStatus();
+        UNET.NetCall('EDIT_PERMITTED', data);
         return UDB.PKT_RequestUnlockAll(pkt);
       });
 
