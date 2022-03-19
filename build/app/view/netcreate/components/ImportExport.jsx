@@ -76,7 +76,7 @@ class ImportExport extends UNISYS.Component {
     let disableImport = false;
     UDATA.NetCall("SRV_GET_EDIT_STATUS")
       .then(data => {
-        disableImport = data.templateBeingEdited || data.importActive || data.nodeOrEdgeBeingEdited;
+        disableImport = data.templateBeingEdited || data.importActive || data.nodeOrEdgeBeingEdited || UNISYS.IsStandaloneMode();
         this.setState({ disableImport });
       });
   }
@@ -269,7 +269,7 @@ class ImportExport extends UNISYS.Component {
           }}
         >
           <p><i>You cannot import data while someone is editing a node, edge,
-            or template.</i></p>
+            or template, or in standalone view.</i></p>
           <p><i>Please finish editing and try again.</i></p>
         </div>
       );
