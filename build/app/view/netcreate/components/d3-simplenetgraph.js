@@ -62,7 +62,7 @@ const M_FORCEPROPERTIES = {   // values for all forces
         // 'charge' provides a repelling force against other nodes
         enabled: true,
         // -50 works well for small networks with no links
-        strength: -50, // during _UpdateForces, 'strength' is multipled by the size of the node (degrees+1)
+        strength: -200, // during _UpdateForces, 'strength' is multipled by the size of the node (degrees+1)
                        // -50 close < -1000 pushes nodes far apart
         distanceMin: 1, // use 'collide' to keep nodes from intersecting, not distance
         distanceMax: 750 // max keeps large clusters from pushing unattached nodes too far away
@@ -101,7 +101,7 @@ const M_FORCEPROPERTIES = {   // values for all forces
       },
       link: {
         enabled: true,
-        distance: 25, // sets the basic link distance between nodes
+        distance: 50, // sets the basic link distance between nodes
                       // 10 is a little too close
                       // 25 is cozy
                       // 50 is spacious
