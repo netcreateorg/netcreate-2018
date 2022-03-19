@@ -163,8 +163,13 @@ MOD.TEMPLATE = {
     },
     "templateIsLockedMessage": {
       type: 'string',
-      description: 'Warning message to display if user is trying to edit a node or edge while the template is being edited.',
+      description: 'Warning message to display if user is trying to edit a node or edge or import while the template is being edited.',
       default: 'The template is currently being edited, please try again later.'
+    },
+    "importIsLockedMessage": {
+      type: 'string',
+      description: 'Warning message to display if user is trying to edit a node, edge, or template import is active.',
+      default: 'Data is currently being imported, please try again later.'
     },
     "nodeDefaultTransparency": {
       type: 'number',

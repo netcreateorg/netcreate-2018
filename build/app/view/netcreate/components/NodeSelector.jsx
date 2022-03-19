@@ -154,7 +154,7 @@ class NodeSelector extends UNISYS.Component {
         citation: TEMPLATE.citation,
         duplicateWarning: TEMPLATE.duplicateWarning,
         nodeIsLockedMessage: TEMPLATE.nodeIsLockedMessage,
-        templateIsLockedMessage: TEMPLATE.templateIsLockedMessage,
+        editLockMessage: '',
         hideDeleteNodeButton: TEMPLATE.hideDeleteNodeButton,
         formData: {
             label:     '',
@@ -413,7 +413,11 @@ class NodeSelector extends UNISYS.Component {
     }
     setEditState(data) {
       const disableEdit = data.templateBeingEdited || data.importActive;
-      this.setState({ disableEdit });
+      const TEMPLATE = this.AppState('TEMPLATE');
+      let editLockMessage = '';
+      if (data.templateBeingEdited) editLockMessage = TEMPLATE.templateIsLockedMessage;
+      if (data.importActive) editLockMessage = TEMPLATE.importIsLockedMessage;
+      this.setState({ disableEdit, editLockMessage });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Deregister as an open editor
@@ -975,7 +979,7 @@ class NodeSelector extends UNISYS.Component {
         nodeDefs,
         duplicateWarning,
         nodeIsLockedMessage,
-        templateIsLockedMessage,
+        editLockMessage,
         hideDeleteNodeButton,
         formData,
         isLocked,
@@ -1104,7 +1108,7 @@ class NodeSelector extends UNISYS.Component {
                       onClick={this.onForceUnlock}
                     >Force Unlock</Button></span>
                 </p>
-                <p hidden={!disableEdit} className="small text-danger warning">{templateIsLockedMessage}</p>
+                <p hidden={!disableEdit} className="small text-danger warning">{editLockMessage}</p>
               </div>
             </FormGroup>
             <FormGroup className="text-right" style={{ paddingRight: '5px' }}>

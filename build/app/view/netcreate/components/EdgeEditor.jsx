@@ -222,7 +222,7 @@ class EdgeEditor extends UNISYS.Component {
         edgeDefs: TEMPLATE.edgeDefs,
         citation: TEMPLATE.citation,
         edgeIsLockedMessage: TEMPLATE.edgeIsLockedMessage,
-        templateIsLockedMessage: TEMPLATE.templateIsLockedMessage,
+        editLockMessage: '',
         formData: {                 // Holds the state of the form fields
           sourceId:     '',
           targetId:     '',
@@ -381,7 +381,12 @@ class EdgeEditor extends UNISYS.Component {
     setEditState(data) {
       if (DBG) console.log(PR, 'SRV_GET_EDIT_STATUS received', data)
       const disableEdit = data.templateBeingEdited || data.importActive;
-      this.setState({ disableEdit });
+      const TEMPLATE = this.AppState('TEMPLATE');
+      let editLockMessage = '';
+      if (data.templateBeingEdited) editLockMessage = TEMPLATE.templateIsLockedMessage;
+      if (data.importActive) editLockMessage = TEMPLATE.importIsLockedMessage;
+      console.error('EDIT LOCK', editLockMessage)
+      this.setState({ disableEdit, editLockMessage });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ populate formdata from NCDATA
@@ -928,7 +933,7 @@ class EdgeEditor extends UNISYS.Component {
         edgeDefs,
         isStandalone,
         edgeIsLockedMessage,
-        templateIsLockedMessage,
+        editLockMessage,
         disableEdit
       } = this.state;
       let {citation} = this.state;
@@ -1148,7 +1153,7 @@ class EdgeEditor extends UNISYS.Component {
                 >Save</Button>
                 <div hidden={this.state.isLocked || this.state.isBeingEdited || parentNodeIsLocked} style={{ display: 'inline' }}>
                   <p hidden={!this.state.dbIsLocked} className="small text-danger warning">{edgeIsLockedMessage}</p>
-                  <p hidden={!disableEdit} className="small text-danger warning">{templateIsLockedMessage}</p>
+                  <p hidden={!disableEdit} className="small text-danger warning">{editLockMessage}</p>
                 </div>
               </FormGroup>
             </Form>
