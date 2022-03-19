@@ -208,6 +208,7 @@ const AutoComplete = require('./AutoComplete');
 const NodeDetail   = require('./NodeDetail');
 
 const UNISYS   = require('unisys/client');
+const { EDITORTYPE } = require("system/util/enum");
 var   UDATA    = null;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
@@ -266,6 +267,7 @@ class EdgeEditor extends UNISYS.Component {
 
       this.setTemplate = this.setTemplate.bind(this);
       this.updateEditState = this.updateEditState.bind(this);
+      this.setEditState = this.setEditState.bind(this);
       this.handleSelection        = this.handleSelection.bind(this);
       this.handleEdgeSelection    = this.handleEdgeSelection.bind(this);
       this.handleEdgeEdit         = this.handleEdgeEdit.bind(this);
@@ -308,7 +310,7 @@ class EdgeEditor extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // Template handlers
       this.OnAppStateChange('TEMPLATE', this.setTemplate);
-      UDATA.HandleMessage('EDIT_PERMITTED', this.updateEditState);
+      UDATA.HandleMessage('EDIT_PERMISSIONS_UPDATE', this.setEditState);
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Prevent editing if server is disconnected.
@@ -371,13 +373,15 @@ class EdgeEditor extends UNISYS.Component {
 /*/ Disable Edge Edit if a Template is being edited
 /*/
     updateEditState() {
-      let disableEdit = false;
-      UDATA.NetCall("SRV_GET_TEMPLATE_EDIT_STATE")
+      UDATA.NetCall("SRV_GET_EDIT_STATUS")
         .then(data => {
-          if (DBG) console.log(PR, 'SRV_GET_TEMPLATE_EDIT_STATE received', data)
-          disableEdit = data.templateBeingEdited;
-          this.setState({ disableEdit });
+          this.setEditState(data);
         });
+    }
+    setEditState(data) {
+      if (DBG) console.log(PR, 'SRV_GET_EDIT_STATUS received', data)
+      const disableEdit = data.templateBeingEdited || data.importActive;
+      this.setState({ disableEdit });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ populate formdata from NCDATA
@@ -630,7 +634,7 @@ class EdgeEditor extends UNISYS.Component {
           // Tell parent node to exit out of edge edit mode
           this.AppCall('EDGEEDIT_UNLOCK', { edgeID: this.props.edgeID });
           // Deregister as an open editor
-          if (this.state.isBeingEdited) UDATA.NetCall("SRV_RELEASE_TEMPLATE_LOCK", { editor: 'edge' });
+          if (this.state.isBeingEdited) UDATA.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.EDGE });
 
           // Cancel edit existing or cancel edit new?
           let originalEdge = NCDATA.edges.filter(edge => parseInt(edge.id) === this.props.edgeID)[0];
@@ -672,7 +676,7 @@ class EdgeEditor extends UNISYS.Component {
 /*/ onDeleteButtonClick () {
       this.clearForm();
       this.AppCall('AUTOCOMPLETE_SELECT', { id: 'search' });
-      if (this.state.isBeingEdited) UDATA.NetCall("SRV_RELEASE_TEMPLATE_LOCK", { editor: 'edge' });
+      if (this.state.isBeingEdited) UDATA.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.EDGE });
       this.AppCall('EDGEEDIT_UNLOCK', { edgeID: this.props.edgeID }); // inform NodeSelector
       this.AppCall('DB_UPDATE',{edgeID:this.props.edgeID});
     }
@@ -744,7 +748,7 @@ class EdgeEditor extends UNISYS.Component {
               });
               this.Signal('EDGEEDIT_LOCK', { edgeID: this.props.edgeID });
               // When a edge is being edited, lock the Template from being edited
-              UDATA.NetCall("SRV_REQ_TEMPLATE_LOCK", { editor: 'edge' })
+              UDATA.NetCall("SRV_REQ_EDIT_LOCK", { editor: EDITORTYPE.EDGE })
                 .then(res => {
                   const disableEdit = res.isBeingEdited;
                   this.setState({ disableEdit });
@@ -884,7 +888,7 @@ class EdgeEditor extends UNISYS.Component {
       }
 
       // Deregister as an open editor
-      UDATA.NetCall("SRV_RELEASE_TEMPLATE_LOCK", { editor: 'edge' });
+      UDATA.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: 'edge' });
       this.AppCall('EDGEEDIT_UNLOCK', { edgeID: this.props.edgeID }); // inform NodeSelector
       // pass currentAutoComplete back to nodeselector
       this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
@@ -1204,7 +1208,7 @@ class EdgeEditor extends UNISYS.Component {
       UDATA.UnhandleMessage('EDGE_SELECT', this.handleEdgeSelection);
       UDATA.UnhandleMessage('EDGE_EDIT', this.handleEdgeEdit);
       UDATA.UnhandleMessage('EDGE_CLOSE', this.handleEdgeClose);
-      UDATA.UnhandleMessage('EDIT_PERMITTED', this.updateEditState);
+      UDATA.UnhandleMessage('EDIT_PERMISSIONS_UPDATE', this.setEditState);
     }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

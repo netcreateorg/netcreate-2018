@@ -20,6 +20,7 @@ const SETTINGS = require("settings");
 const NetMessage = require("unisys/common-netmessage-class");
 
 const UNISYS   = require('unisys/client');
+const { EDITORTYPE } = require("system/util/enum");
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -35,6 +36,8 @@ class ImportExport extends UNISYS.Component {
     const TEMPLATE = this.AppState('TEMPLATE');
     this.state = {
       isExpanded: true,
+      disableImport: false,
+      isBeingImported: false,
       nodefile: undefined,
       nodefileStatus: NODEFILESTATUS_DEFAULT,
       nodefileErrors: undefined,
@@ -46,6 +49,7 @@ class ImportExport extends UNISYS.Component {
       importMsgs: undefined,
       allowLoggedInUserToImport: TEMPLATE.allowLoggedInUserToImport
     };
+    this.updateEditState = this.updateEditState.bind(this);
     this.onNodesExportSelect = this.onNodesExportSelect.bind(this);
     this.onEdgesExportSelect = this.onEdgesExportSelect.bind(this);
     this.onNodeImportFileSelect = this.onNodeImportFileSelect.bind(this);
@@ -53,10 +57,30 @@ class ImportExport extends UNISYS.Component {
     this.onDoImport = this.onDoImport.bind(this);
 
     UDATA = UNISYS.NewDataLink(this);
+    UDATA.HandleMessage("EDIT_PERMISSIONS_UPDATE", this.updateEditState);
   } // constructor
+
+  componentDidMount() {
+    this.updateEditState();
+  }
+
+  componentWillUnmount() {
+    UDATA.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.IMPORTER});
+    UDATA.UnhandleMessage("EDIT_PERMISSIONS_UPDATE", this.updateEditState);
+  }
 
   /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  updateEditState() {
+    // disable edit if someone else is editing a template, node, or edge
+    let disableImport = false;
+    UDATA.NetCall("SRV_GET_EDIT_STATUS")
+      .then(data => {
+        disableImport = data.templateBeingEdited || data.importActive || data.nodeOrEdgeBeingEdited;
+        this.setState({ disableImport });
+      });
+  }
+
   onNodesExportSelect() { UDATA.LocalCall('EXPORT_NODES'); }
   onEdgesExportSelect() { UDATA.LocalCall('EXPORT_EDGES'); }
 
@@ -65,17 +89,21 @@ class ImportExport extends UNISYS.Component {
     UDATA.LocalCall('VALIDATE_NODEFILE', { nodefile })
       .then(result => {
         if (result.isValid) {
-          this.setState({
-            nodefile,
-            nodefileStatus: "Ready for import",
-            nodefileErrors: undefined,
-            nodeImportErrors: undefined,
-            importMsgs: undefined
+          UDATA.NetCall("SRV_REQ_EDIT_LOCK", { editor: EDITORTYPE.IMPORTER }).then(data => {
+            this.setState({
+              isBeingImported: true,
+              nodefile,
+              nodefileStatus: "Ready for import",
+              nodefileErrors: undefined,
+              nodeImportErrors: undefined,
+              importMsgs: undefined
+            });
           });
         } else {
           if (result.missingKeys.length > 0) {
             // user selected file with missing keys
             this.setState({
+              isBeingImported: false,
               nodefile: undefined,
               nodefileStatus: `"${nodefile.name}" is not a valid nodes csv file!!!`,
               nodefileErrors: (
@@ -90,6 +118,7 @@ class ImportExport extends UNISYS.Component {
           } else {
             // User Cancelled, reset to default
             this.setState({
+              isBeingImported: false,
               nodefile: undefined,
               nodefileStatus: NODEFILESTATUS_DEFAULT,
               nodefileErrors: undefined,
@@ -110,17 +139,21 @@ class ImportExport extends UNISYS.Component {
     UDATA.LocalCall('VALIDATE_EDGEFILE', { edgefile })
       .then(result => {
         if (result.isValid) {
-          this.setState({
-            edgefile,
-            edgefileStatus: "Ready for import",
-            edgefileErrors: undefined,
-            edgeImportErrors: undefined,
-            importMsgs: undefined
-          });
+          UDATA.NetCall("SRV_REQ_EDIT_LOCK", { editor: EDITORTYPE.IMPORTER }).then(data => {
+            this.setState({
+              isBeingImported: true,
+              edgefile,
+              edgefileStatus: "Ready for import",
+              edgefileErrors: undefined,
+              edgeImportErrors: undefined,
+              importMsgs: undefined
+            });
+          })
         } else {
           if (result.missingKeys.length > 0) {
             // user selected file with missing keys
             this.setState({
+              isBeingImported: false,
               edgefile: undefined,
               edgefileStatus: `"${edgefile.name}" is not a valid edges csv file!!!`,
               edgefileErrors: (
@@ -135,6 +168,7 @@ class ImportExport extends UNISYS.Component {
           } else {
             // User Cancelled, reset to default
             this.setState({
+              isBeingImported: false,
               edgefile: undefined,
               edgefileStatus: EDGEFILESTATUS_DEFAULT,
               edgefileErrors: undefined,
@@ -156,6 +190,7 @@ class ImportExport extends UNISYS.Component {
     UDATA.LocalCall('IMPORT').then(result => {
       if (result.nodeImportErrors || result.edgeImportErrors) {
         this.setState({
+          isBeingImported: false,
           nodefileStatus: NODEFILESTATUS_DEFAULT,
           nodeImportErrors: result.nodeImportErrors && result.nodeImportErrors.length>0 &&(
             <div>IMPORT NODES ERROR: "{nodeFilename}" not imported.<br />
@@ -173,6 +208,7 @@ class ImportExport extends UNISYS.Component {
 
         // clear files for next import
         this.setState({
+          isBeingImported: false,
           nodefile: undefined,
           nodefileStatus: NODEFILESTATUS_DEFAULT,
           nodefileErrors: undefined,
@@ -187,9 +223,7 @@ class ImportExport extends UNISYS.Component {
             </div>)
         });
       }
-      // Always clear inputs so user can reselect
-      document.getElementById('nodefileInput').value = "";
-      document.getElementById('edgefileInput').value = "";
+      UDATA.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.IMPORTER});
     }); // nc-logic -> export-logic
   }
 
@@ -199,6 +233,8 @@ class ImportExport extends UNISYS.Component {
 
   render() {
     const {
+      disableImport,
+      isBeingImported,
       nodefile,
       nodefileStatus,
       nodefileErrors,
@@ -222,25 +258,23 @@ class ImportExport extends UNISYS.Component {
       nodefileErrors !== undefined || nodeImportErrors !== undefined ||
       edgefileErrors !== undefined || edgeImportErrors !== undefined;
 
-    return (
-      <div>
+    let importjsx;
+    if (disableImport && !isBeingImported) {
+      importjsx = (
         <div
           style={{
             backgroundColor: 'rgba(240,240,240,0.95)',
+            marginTop: '10px',
             padding: '10px 20px'
           }}
         >
-          <h1>Export Data</h1>
-
-          <i className="small text-muted">Export data in .csv format.</i><br/>
-          <Button size="sm" outline onClick={this.onNodesExportSelect}>
-            Export Nodes
-          </Button>&nbsp;
-          <Button size="sm" outline onClick={this.onEdgesExportSelect}>
-            Export Edges
-          </Button>&nbsp;
+          <p><i>You cannot import data while someone is editing a node, edge,
+            or template.</i></p>
+          <p><i>Please finish editing and try again.</i></p>
         </div>
-
+      );
+    } else {
+      importjsx = (
         <div
           hidden={importDisabled}
           style={{
@@ -269,6 +303,28 @@ class ImportExport extends UNISYS.Component {
             Import
           </Button>&nbsp;
         </div>
+      )
+    }
+    return (
+      <div>
+        <div
+          style={{
+            backgroundColor: 'rgba(240,240,240,0.95)',
+            padding: '10px 20px'
+          }}
+        >
+          <h1>Export Data</h1>
+
+          <i className="small text-muted">Export data in .csv format.</i><br/>
+          <Button size="sm" outline onClick={this.onNodesExportSelect}>
+            Export Nodes
+          </Button>&nbsp;
+          <Button size="sm" outline onClick={this.onEdgesExportSelect}>
+            Export Edges
+          </Button>&nbsp;
+        </div>
+
+        {importjsx}
       </div>
     );
   }

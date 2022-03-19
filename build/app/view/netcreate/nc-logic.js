@@ -780,7 +780,7 @@ MOD.Hook("APP_READY", function(info) {
       `NODE_DELETE`,
       "EDGE_UPDATE",
       "EDGE_DELETE",
-      "EDIT_PERMITTED",
+      "EDIT_PERMISSIONS_UPDATE",
       "NET_TEMPLATE_UPDATE"
     ]).then(d => {
       clearTimeout(timeout);

@@ -134,6 +134,7 @@ const EdgeEditor   = require('./EdgeEditor');
 const UNISYS       = require('unisys/client');
 const DATASTORE    = require('system/datastore');
 const SETTINGS     = require('settings');
+const { EDITORTYPE } = require("system/util/enum");
 
 const thisIdentifier = 'nodeSelector';   // SELECTION identifier
 
@@ -181,6 +182,7 @@ class NodeSelector extends UNISYS.Component {
       this.clearForm                             = this.clearForm.bind(this);
       this.setTemplate = this.setTemplate.bind(this);
       this.updateEditState = this.updateEditState.bind(this);
+      this.setEditState = this.setEditState.bind(this);
       this.releaseOpenEditor = this.releaseOpenEditor.bind(this);
       this.getNewNodeID                          = this.getNewNodeID.bind(this);
       this.handleSelection                       = this.handleSelection.bind(this);
@@ -228,7 +230,7 @@ class NodeSelector extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // Handle Template updates
       this.OnAppStateChange('TEMPLATE', this.setTemplate);
-      UDATA.HandleMessage("EDIT_PERMITTED", this.updateEditState);
+      UDATA.HandleMessage("EDIT_PERMISSIONS_UPDATE", this.setEditState);
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ If someone on the network updates a node or edge, SOURCE_UPDATE is broadcast.
@@ -404,12 +406,14 @@ class NodeSelector extends UNISYS.Component {
 /*/
     updateEditState() {
       // disable edit if template is being edited
-      let disableEdit = false;
-      UDATA.NetCall("SRV_GET_TEMPLATE_EDIT_STATE")
+      this.NetCall("SRV_GET_EDIT_STATUS")
         .then(data => {
-          disableEdit = data.templateBeingEdited;
-          this.setState({ disableEdit });
+          this.setEditState(data);
         });
+    }
+    setEditState(data) {
+      const disableEdit = data.templateBeingEdited || data.importActive;
+      this.setState({ disableEdit });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Deregister as an open editor
@@ -418,7 +422,7 @@ class NodeSelector extends UNISYS.Component {
     releaseOpenEditor() {
       // NOTE: We only deregister if we're currently actively editing
       //       otherwise we might inadvertently deregister
-      if (this.state.isBeingEdited) UDATA.NetCall("SRV_RELEASE_TEMPLATE_LOCK", { editor: 'node' });
+      if (this.state.isBeingEdited) this.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.NODE });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return a new unique ID
@@ -836,7 +840,7 @@ class NodeSelector extends UNISYS.Component {
     this.validateForm();
 
     // When a node is being edited, lock the Template from being edited
-    UDATA.NetCall("SRV_REQ_TEMPLATE_LOCK", { editor: 'node' })
+    this.NetCall("SRV_REQ_EDIT_LOCK", { editor: EDITORTYPE.NODE })
       .then(data => {
         const disableEdit = data.isBeingEdited;
         this.setState({ disableEdit });
@@ -895,7 +899,7 @@ class NodeSelector extends UNISYS.Component {
             });
         }
         this.AppCall('AUTOCOMPLETE_SELECT', { id: 'search' });
-        UDATA.NetCall("SRV_RELEASE_TEMPLATE_LOCK", { editor: 'node' });
+        this.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.NODE });
       }
     } // onCancelButtonClick
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -959,7 +963,7 @@ class NodeSelector extends UNISYS.Component {
         });
       });
       // probably should unlock the node:
-      UDATA.NetCall("SRV_RELEASE_TEMPLATE_LOCK", { editor: 'node' });
+      this.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.NODE });
     } // onSubmit
 
 
@@ -1253,6 +1257,7 @@ markdownIterate(Tag, props, children, level){
       this.AppStateChangeOff('SELECTION', this.handleSelection);
       this.AppStateChangeOff('SEARCH', this.onStateChange_SEARCH);
       this.AppStateChangeOff('TEMPLATE', this.setTemplate);
+      UDATA.UnhandleMessage("EDIT_PERMISSIONS_UPDATE", this.setEditState);
     }
 
 } // class NodeSelector

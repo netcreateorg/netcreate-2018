@@ -19,6 +19,7 @@ const SESSION = require("../unisys/common-session");
 const LOGGER = require("../unisys/server-logger");
 const PROMPTS = require("../system/util/prompts");
 const TEMPLATE_SCHEMA = require("../view/netcreate/template-schema");
+const { EDITORTYPE } = require("../system/util/enum");
 
 const PR = PROMPTS.Pad("ServerDB");
 const RUNTIMEPATH = './runtime/';
@@ -860,74 +861,78 @@ DB.CloneTemplateTOML = function (filePath) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ OPENEDITORS
 
-    Used to coordinate Template editing vs Node/Edge editing.  Since Nodes and
-    Edges should not be edited while the Template is being edited, any editor
-    that is opened registers as an OPENEDITOR and will check on the status of
-    existing open editors.
+    Used to coordinate Template editing, Importing, and Node/Edge editing.
+    They are mutually exclusive: if one is active, the others should be disabled
+    to prevent overwriting data.
 
-    * When a Template editor is open, "Node Edit", "Edge Edit", and "Add New Edge"
-      buttons are all disabled.
-    * When "Node Edit", "Edge Edit", or "Add New Edge" has been triggered,
-      the Template buttons on the Template panel are all disabled.
+    Since Nodes and Edges should not be edited while the Template is being
+    edited or data is being imported, any editor that is opened registers
+    as an OPENEDITOR.  The UI will also pre-emptively disable edit buttons
+    whenever the open editors have been updated via a broacast of the
+    `EDIT_PERMISSIONS_UPDATE` message by server.js.
 
-    m_open_editors is an array of all the editors (node, edge, template) that are
-    currently open.  Used to coordinate template vs node/edge editing
-    because nodes and edges should not be edited while the template
-    is being edited.
+    * When a Template editor is open, "Import", "Node Edit", "Edge Edit",
+      "Add New Node", and "Add New Edge" buttons are all disabled.
+    * When an Import file has been successfully selected and validated,
+      "Template", "Node Edit", "Edge Edit", "Add New Node", and
+      "Add New Edge" buttons are disabled.
+    * When "Node Edit", "Edge Edit", "Add New Node" or "Add New Edge" has
+      been triggered, the Template buttons on the Template panel and the
+      "Import" pane on the "More" panel are disabled.
+
+    m_open_editors is an array of all the editors (node, edge, template,
+    importer) that are currently open.
+
+    Whenever a template is being edited, import is requested, or a node or
+    edge is being edited:
+    1. They will register with `RequestEditLock`.
+    2. When they are finished, they will deregister using `ReleaseEditLock`.
+    3. `GetEditStatus` returns the current state of `m_open_editors`.
+
+    UI elements query `GetEditStatus` to figure out what they should
+    enable or disable.
+
+    UI elements should also listen to `EDIT_PERMISSIONS_UPDATE` to
+    enable or disable elements.
+
+    Note that this is a different system from the instance-specific Node/Edge
+    lock that locks out individual node/edge objects for editing used with
+    `PKT_RequestLockNode` and `PKT_RequestLockEdge`.  m_open_editors focuses
+    on categories of editor types rather than locking out individual nodes
+    and edges to prevent others from editing the same node or edge.
+
 /*/
-const EDITOR = { TEMPLATE: 'template', NONTEMPLATE: 'nonTemplate' };
-
+/**
+ * Returns object with flags indicating whether the template is being edited,
+ * data is being imported, or node or edge are being edited
+ * @returns {templateBeingEdited:boolean, importActive:boolean, nodeOrEdgeBeingEdited:boolean}
+ */
 DB.GetEditStatus = () => {
-  // If there are any 'node' or 'edge' open editors, then request fails: template cannot be locked
-  // If there are any 'template' open editors, then request fails: template cannot be locked
-  const templateBeingEdited = m_open_editors.length === 1 && m_open_editors.includes( EDITOR.TEMPLATE );
-  const nodeOrEdgeBeingEdited = m_open_editors.length > 0 && !m_open_editors.includes( EDITOR.TEMPLATE );
-  return { templateBeingEdited, nodeOrEdgeBeingEdited };
-}
-
-/**
- * @returns { temtemplateBeingEditedplate: boolean, nodeOrEdgeBeingEdited: boolean }
- */
-DB.GetTemplateEditState = pkt => {
-  // return { isBeingEdited: GetTemplateIsBeingEdited() };
-  return DB.GetEditStatus();
+  // If there are any 'template' open editors, then templateBeingEdited is true
+  const templateBeingEdited = m_open_editors.length === 1 && m_open_editors.includes(EDITORTYPE.TEMPLATE);
+  // If there are any 'importers' open editors, then importActive is true
+  const importActive = m_open_editors.length === 1 && m_open_editors.includes(EDITORTYPE.IMPORTER);
+  // If there are any 'node' or 'edge' open editors, then nodeOrEdgeBeingEdited is true
+  const nodeOrEdgeBeingEdited = m_open_editors.length > 0 && (m_open_editors.includes( EDITORTYPE.NODE ) || m_open_editors.includes( EDITORTYPE.EDGE ));
+  return { templateBeingEdited, importActive, nodeOrEdgeBeingEdited };
 }
 /**
- * Requester is always the Template editor.
- * @returns { okToEdit: boolean }
- */
-DB.RequestTemplateEdit = () => {
-  console.log(PR,'RequestTemplateEdit', m_open_editors)
-  const okToEdit = m_open_editors.length < 1; // okToEdit only if no node/edge/template is open
-  // return edit state
-  if (okToEdit) m_open_editors.push(EDITOR.TEMPLATE);
-  return { okToEdit };
-}
-/**
- * Requester is always the Template editor
+ * Register a template, import, node or edge as being actively edited.
  * @param {Object} pkt
- * @returns { temtemplateBeingEditedplate: boolean, nodeOrEdgeBeingEdited: boolean }
+ * @param {string} pkt.editor - 'template', 'importer', 'node', or 'edge'
+ * @returns { templateBeingEdited: boolean, importActive: boolean, nodeOrEdgeBeingEdited: boolean }
  */
-DB.ReleaseTemplateEdit = pkt => {
-  const i = m_open_editors.findIndex(e => e === EDITOR.TEMPLATE);
-  if (i > -1) m_open_editors.splice(i, 1);
-  return DB.GetEditStatus();
-}
-/**
- * Requester is always node or edge editor
- * @param {Object} pkt
- * @param {string} pkt.editor - 'node' or 'edge'
- * @returns { templateBeingEdited: boolean, nodeOrEdgeBeingEdited: boolean }
- */
-DB.RequestTemplateLock = pkt => {
-  console.log(PR,'RequestTemplateLock', pkt)
+DB.RequestEditLock = pkt => {
   m_open_editors.push(pkt.Data().editor);
   return DB.GetEditStatus();
 }
 /**
- * @returns { templateBeingEdited: boolean, nodeOrEdgeBeingEdited: boolean }
+ * Deregister a template, import, node or edge as being actively edited.
+ * @param {Object} pkt
+ * @param {string} pkt.editor - 'template', 'importer', 'node', or 'edge'
+ * @returns { templateBeingEdited: boolean, importActive: boolean, nodeOrEdgeBeingEdited: boolean }
  */
-DB.ReleaseTemplateLock = pkt => {
+DB.ReleaseEditLock = pkt => {
   const i = m_open_editors.findIndex(e => e === pkt.Data().editor);
   if (i > -1) m_open_editors.splice(i, 1);
   return DB.GetEditStatus();

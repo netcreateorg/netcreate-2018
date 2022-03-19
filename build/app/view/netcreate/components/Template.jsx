@@ -15,9 +15,10 @@
 
   Templates can only be edited if:
   * There are no nodes or edges being edited
+  * No one is trying to import data
   * There are no other templates being edited
 
-  Conversely, if a Template is being edited, Node and Edge editing
+  Conversely, if a Template is being edited, Import, Node and Edge editing
   will be disabled.
 
   ##  BACKGROUND
@@ -37,6 +38,7 @@ const ReactStrap = require('reactstrap');
 const { Button } = ReactStrap;
 import { JSONEditor } from '@json-editor/json-editor';
 const UNISYS = require('unisys/client');
+const { EDITORTYPE } = require("system/util/enum");
 const TEMPLATE_LOGIC = require("../template-logic");
 const SCHEMA = require("../template-schema");
 
@@ -53,7 +55,10 @@ class Template extends UNISYS.Component {
     this.state = {
       disableEdit: false,
       isBeingEdited: false,
-      editScope: undefined, // root, nodeTypeOptions, edgeTypeOptions
+      editScope: undefined, // Determines whether the user is tring to edit the
+                            // template's root (everything in the template),
+                            // or just focused on a subsection: nodeTypeOptions,
+                            // edgeTypeOptions
       tomlfile: undefined,
       tomlfileStatus: '',
       tomlfileErrors: undefined
@@ -72,7 +77,7 @@ class Template extends UNISYS.Component {
     this.onCancelEdit = this.onCancelEdit.bind(this);
 
     UDATA = UNISYS.NewDataLink(this);
-    UDATA.HandleMessage("EDIT_PERMITTED", this.updateEditState);
+    UDATA.HandleMessage("EDIT_PERMISSIONS_UPDATE", this.updateEditState);
 
   } // constructor
 
@@ -82,7 +87,8 @@ class Template extends UNISYS.Component {
 
   componentWillUnmount() {
     if (EDITOR) EDITOR.destroy();
-    UDATA.UnhandleMessage("EDIT_PERMITTED", this.updateEditState);
+    this.releaseOpenEditor();
+    UDATA.UnhandleMessage("EDIT_PERMISSIONS_UPDATE", this.updateEditState);
   }
 
   /// METHODS /////////////////////////////////////////////////////////////////
@@ -96,12 +102,8 @@ class Template extends UNISYS.Component {
    * @param {function} cb - Callback function
    */
   loadEditor(parms, cb) {
-    UDATA.NetCall("SRV_REQ_TEMPLATE_EDIT")
+    UDATA.NetCall("SRV_REQ_EDIT_LOCK", { editor: EDITORTYPE.TEMPLATE })
       .then(data => {
-        if (!data.okToEdit) {
-          console.warn('Template Locked!  Cannot edit.');
-          return;
-        }
         const el = document.getElementById('editor');
         const schema = (parms && parms.schema) || SCHEMA.TEMPLATE;
         const startval = parms && parms.startval;
@@ -131,9 +133,10 @@ class Template extends UNISYS.Component {
   updateEditState() {
     // disable edit if someone else is editing a template, node, or edge
     let disableEdit = false;
-    UDATA.NetCall("SRV_GET_TEMPLATE_EDIT_STATE")
+    UDATA.NetCall("SRV_GET_EDIT_STATUS")
       .then(data => {
-        disableEdit = data.templateBeingEdited || data.nodeOrEdgeBeingEdited;
+        // someone else might be editing a template or importing or editing node or edge
+        disableEdit = data.templateBeingEdited || data.importActive || data.nodeOrEdgeBeingEdited;
         this.setState({ disableEdit });
       });
   }
@@ -147,18 +150,18 @@ class Template extends UNISYS.Component {
   }
 
   releaseOpenEditor() {
-    UDATA.NetCall("SRV_RELEASE_TEMPLATE_EDIT");
+    UDATA.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.TEMPLATE});
   }
 
   onNewTemplate() {
-    this.setState({ editScope: 'root' });
+    this.setState({ editScope: 'root', isBeingEdited: true });
     this.loadEditor(); // new blank template with default schema
   }
 
   onCurrentTemplateLoad(e) {
     UDATA.LocalCall('EDIT_CURRENT_TEMPLATE') // nc-logic
       .then(result => {
-        this.setState({ editScope: 'root' });
+        this.setState({ editScope: 'root', isBeingEdited: true });
         this.loadEditor({ startval: result.template });
       })
   }
@@ -173,7 +176,7 @@ class Template extends UNISYS.Component {
         // This is added back in in template-logic.UpdateTemplate after saving
         typeOptions = result.template.nodeDefs.type.options.filter(o => o.label !== '');
         const startval = { options: typeOptions }
-        this.setState({ editScope: 'nodeTypeOptions' });
+        this.setState({ editScope: 'nodeTypeOptions', isBeingEdited: true });
         this.loadEditor(
           {
             schema: nodeTypeEditorSchema,
@@ -200,7 +203,7 @@ class Template extends UNISYS.Component {
         // This is added back in in template-logic.UpdateTemplate after saving
         typeOptions = result.template.edgeDefs.type.options.filter(o => o.label !== '');
         const startval = { options: typeOptions }
-        this.setState({ editScope: 'edgeTypeOptions' });
+        this.setState({ editScope: 'edgeTypeOptions', isBeingEdited: true });
         this.loadEditor({
           schema: edgeTypeEditorSchema,
           startval
@@ -275,19 +278,19 @@ class Template extends UNISYS.Component {
       tomlfileStatus,
       tomlfileErrors
     } = this.state;
-    let jsx;
+    let editorjsx;
     if (disableEdit && !isBeingEdited) {
       // Node or Edge is being edited, show disabled message
-      jsx = (
+      editorjsx = (
         <div>
           <p><i>Templates cannot be edited while someone is editing a node, edge,
-            or template.</i></p>
+            or template, or importing data.</i></p>
           <p><i>Please finish editing and try again.</i></p>
         </div>
       )
     } else {
       // OK to Edit, show edit buttons
-      jsx = (
+      editorjsx = (
         <div hidden={isBeingEdited}>
           <p><b>PROCEED WITH CAUTION!</b>: Editing templates will modify the data
             in your dataset and may leave your dataset in an unusable state.
@@ -335,7 +338,7 @@ class Template extends UNISYS.Component {
           padding: '10px 20px'
         }}
       >
-        {jsx}
+        {editorjsx}
         <div hidden={!isBeingEdited} >
           <Button
             onClick={this.onCancelEdit}
