@@ -300,7 +300,7 @@ function m_LoadTOMLTemplate(templateFilePath) {
     json.nodeIsLockedMessage = json.nodeIsLockedMessage || SCHEMA.nodeIsLockedMessage.default;
     json.edgeIsLockedMessage = json.edgeIsLockedMessage || SCHEMA.edgeIsLockedMessage.default;
     json.templateIsLockedMessage = json.templateIsLockedMessage || SCHEMA.templateIsLockedMessage.default;
-    json.importIsLockedMessage = json.importIsLockedMessage || SCHEMA.importIsLockedMessage;
+    json.importIsLockedMessage = json.importIsLockedMessage || SCHEMA.importIsLockedMessage.default;
     TEMPLATE = json;
     console.log(PR, 'Template loaded', templateFilePath);
   });
