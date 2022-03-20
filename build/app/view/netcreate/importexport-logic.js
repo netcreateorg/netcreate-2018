@@ -396,7 +396,9 @@ MOD.ValidateNodeFile = async data => {
   const lines = result.split(REGEXMatchLFNotInQuotes);
   // First line should list the headers
   // Remove headers, so 'lines' is just data
-  const headers = lines.shift().split(',');
+  const headers = lines.shift()
+    .trim()
+    .split(',');
   // get keys
   const nodeKeys = m_flattenKeys(NODEKEYS);
   const fileKeys = m_flattenKeys(headers);
@@ -431,7 +433,9 @@ MOD.ValidateEdgeFile = async data => {
   const lines = result.split(REGEXMatchLFNotInQuotes);
   // First line should list the headers
   // Remove headers, so 'lines' is just data
-  const headers = lines.shift().split(',');
+  const headers = lines.shift()
+    .trim()
+    .split(',');
   // get keys
   const edgeKeys = m_flattenKeys(EDGEKEYS);
   const fileKeys = m_flattenKeys(headers);
