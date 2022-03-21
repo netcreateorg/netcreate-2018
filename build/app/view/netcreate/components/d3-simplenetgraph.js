@@ -571,21 +571,14 @@ tooltipForNode(d)
     return titleText;
 }
 
-displayUpdated(nodeEdge)
-{
-      // BL FIX 2022-02
-      // safely return empty dateTime if ._nlog is missing
-      // ._nlog can be missing if data was imported
-      if (nodeEdge._nlog === undefined) return; // catch bad or missing _nlog
-
-      var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
-
-      var year = "" + d.getFullYear();
-      var date = (d.getMonth()+1)+"/"+d.getDate()+"/"+ year.substr(2,4);
-      var time = d.toTimeString().substr(0,5);
-      var dateTime = date+' at '+time + " by " + nodeEdge._nlog[nodeEdge._nlog.length-1];
-
-      return dateTime;
+displayUpdated(nodeEdge) {
+  const d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
+  const year = String(d.getFullYear());
+  const date = (d.getMonth()+1)+"/"+d.getDate()+"/"+ year.substr(2,4);
+  const time = d.toTimeString().substr(0, 5);
+  const author = nodeEdge._nlog ? nodeEdge._nlog[nodeEdge._nlog.length-1] : 'unknown';
+  const dateTime = date + ' at ' + time + " by " + author;
+  return dateTime;
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
