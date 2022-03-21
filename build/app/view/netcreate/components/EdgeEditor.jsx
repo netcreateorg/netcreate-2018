@@ -385,7 +385,6 @@ class EdgeEditor extends UNISYS.Component {
       let editLockMessage = '';
       if (data.templateBeingEdited) editLockMessage = TEMPLATE.templateIsLockedMessage;
       if (data.importActive) editLockMessage = TEMPLATE.importIsLockedMessage;
-      console.error('EDIT LOCK', editLockMessage)
       this.setState({ disableEdit, editLockMessage });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
