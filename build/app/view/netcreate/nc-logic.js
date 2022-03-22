@@ -177,6 +177,25 @@ const TARGET_COLOR = "#FF0000";
 const DATASET = window.NC_CONFIG.dataset || "netcreate";
 const TEMPLATE_URL = `templates/${DATASET}.toml`;
 
+/// DB LOADER HELPERS /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Used by LOADASSETS and RELOAD_DB to reload NCDATA from the database.
+/*/
+function m_PromiseLoadDB() {
+  return DATASTORE.PromiseD3Data()
+  .then(data => {
+    if (DBG) console.log(PR, "DATASTORE returned data", data);
+    m_MigrateData(data.d3data);
+    UTILS.RecalculateAllEdgeSizes(data.d3data);
+    UTILS.RecalculateAllNodeDegrees(data.d3data);
+    UDATA.SetAppState("NCDATA", data.d3data);
+    UDATA.SetAppState("TEMPLATE", data.template);
+    // Save off local reference because we don't have NCDATA AppStateChange handler
+    NCDATA = data.d3data;
+    TEMPLATE = data.template;
+  });
+}
+
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -232,21 +251,7 @@ MOD.Hook("LOADASSETS", () => {
       })();
     });
   }
-
-  // NOT STANDALONE MODE so load data into NCDATA
-  let p1 = DATASTORE.PromiseD3Data()
-  .then(data => {
-    if (DBG) console.log(PR, "DATASTORE returned data", data);
-    m_MigrateData(data.d3data);
-    UTILS.RecalculateAllEdgeSizes(data.d3data);
-    UTILS.RecalculateAllNodeDegrees(data.d3data);
-    UDATA.SetAppState("NCDATA", data.d3data);
-    UDATA.SetAppState("TEMPLATE", data.template);
-    // Save off local reference because we don't have NCDATA AppStateChange handler
-    NCDATA = data.d3data;
-    TEMPLATE = data.template;
-  });
-  return Promise.all([p1]);
+  return Promise.all([m_PromiseLoadDB()]);
 }); // loadassets
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
@@ -278,6 +283,18 @@ MOD.Hook("DISCONNECT", () => {
 /*/ lifecycle INITIALIZE handler
 /*/
 MOD.Hook("INITIALIZE", () => {
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /*/ RELOAD_DB
+      Called by importexport-logic.js.MOD.Import:818
+      During import, DB_MERGE will be called to merge the import data
+      into the DB.  Then it will call RELOAD_DB to re-read the updated
+      NCDATA from the database.  This is necessary because new ids will
+      have been generated during the merge.
+  /*/
+  UDATA.HandleMessage("RELOAD_DB", () => {
+     return Promise.all([m_PromiseLoadDB()]);
+  });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ NCDATA
   /*/
