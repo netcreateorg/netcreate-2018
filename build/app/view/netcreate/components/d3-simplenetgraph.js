@@ -550,7 +550,7 @@ tooltipForNode(d)
             titleText += this.nodeDefs.type.displayLabel + ": " + d.type + "\n";
         // Add degrees
           if(this.nodeDefs.degrees.includeInGraphTooltip)
-            titleText += this.nodeDefs.degrees.displayLabel + ": " + d.weight + "\n";
+            titleText += this.nodeDefs.degrees.displayLabel + ": " + d.degrees + "\n";
         // Add notes
           if(this.nodeDefs.notes.includeInGraphTooltip)
             titleText += this.nodeDefs.notes.displayLabel + ": " + d.notes + "\n";
