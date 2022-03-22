@@ -406,7 +406,7 @@ MOD.ValidateNodeFile = async data => {
   nodeKeys.forEach(k => {
     if (!fileKeys.includes(k)) {
       isValid = false;
-      missingKeys.push(k);
+      missingKeys.push(`"${k}"`);
     }
   });
   if (isValid) MOD.NodefileData = { headers, lines };
@@ -443,7 +443,7 @@ MOD.ValidateEdgeFile = async data => {
   edgeKeys.forEach(k => {
     if (!fileKeys.includes(k)) {
       isValid = false;
-      missingKeys.push(k);
+      missingKeys.push(`"${k}"`);
     }
   });
   if (isValid) MOD.EdgefileData = { headers, lines };
@@ -653,17 +653,17 @@ MOD.Import = async data => {
   const importNodes = m_LoadNodes(MOD.NodefileData);
   const importEdges = m_LoadEdges(MOD.EdgefileData);
 
-  let NCDATA = clone(UDATA.AppState('NCDATA'));
+  const NCDATA = UDATA.AppState('NCDATA');
 
-  // A. Merge nodes to NCDATA
-  const nodesToAdd = []; // [ node ]
-  const nodesToReplace = []; // [ {node, index}, ... ]
-  //    A1. Construct 'nodesToAdd' and 'nodesToReplace'
+  // A. Validate Nodes to import
+  let nodesToAdd = 0; // counter
+  let nodesToReplace = 0; // counter
   importNodes.forEach((n, i) => {
     const row = i + 2; // to account for header row
     if (String(n.id).toLowerCase() === NEW_ID_KEYWORD) {
       //  A1.1 "new" node
-      nodesToAdd.push(n);
+      importMsgs.push(`New node "${n.label}" with auto-generated id added.`);
+      nodesToAdd++;
     } else {
       n.id = Number(n.id); // csv imports as string, so convert to Number
       if (isNaN(n.id)) {
@@ -674,39 +674,22 @@ MOD.Import = async data => {
         if (existingNodeIdx > -1) {
           // A1.3 Replace existing node
           importMsgs.push(`Existing node id ${n.id} "${NCDATA.nodes[existingNodeIdx].label}" replaced by node "${n.label}" in row ${row} with matching id.`);
-          nodesToReplace.push({ node: n, index: existingNodeIdx });
+          nodesToReplace++;
         } else {
-          // A1.4 Referenced unknown id
-          nodeImportErrors.push(`Node in row ${row} referenced unknown id "${n.id}".  Use id "${NEW_ID_KEYWORD}" to add a new node.`);
+          // A1.4 Referenced unknown id, add if valid
+          importMsgs.push(`New node id ${n.id} "${n.label}" added.`);
+          nodesToAdd++;
         }
       }
     }
-  })
-  //    A2. Modify NCDATA if there were no errors
-  if (importNodes.length > 0 && nodeImportErrors.length < 1) {
-    //   A2.1 Replace existing nodes
-    nodesToReplace.forEach(def => { // def = {node, index}
-      NCDATA.nodes.splice(def.index, 1, def.node);
-    });
-    //   A2.2 Add new nodes
-    await DATASTORE.PromiseNewNodeIDs(nodesToAdd.length)
-      .then(newNodeIDs => {
-        nodesToAdd.forEach(node => {
-          node.id = newNodeIDs.shift();
-          importMsgs.push(`New node "${node.label}" with auto-generated id ${node.id} added.`);
-          NCDATA.nodes.push(node);
-        });
-      });
-  }
+  });
 
-  // B. Merge edges to NCDATA
-  const edgesToAdd = [];
-  const edgesToReplace = [];
+  // B.  Validate Edges to import
+  let edgesToAdd = 0;
+  let edgesToReplace = 0;
   //    B1. Construct 'edgesToAdd' and 'edgesToReplace'
   importEdges.forEach((e, i) => {
     const row = i + 2; // to account for header row
-
-    // REVIEW: Recalculate edge size?
     e.size = 1; // Set default edge size
 
     // Make sure each edge has a valid source and target
@@ -714,68 +697,48 @@ MOD.Import = async data => {
 
     if (String(e.id).toLowerCase() === NEW_ID_KEYWORD) {
       // B1.1 New Edge
-      edgesToAdd.push(e);
+      importMsgs.push(`New edge added with auto-generated id.`);
+      edgesToAdd++;
     } else {
       e.id = Number(e.id);
       if (isNaN(e.id)) {
         // B1.2 Invalid edge id, usually a string
         edgeImportErrors.push(`Edge in row ${row} does not have a valid id.  Found: "${e.id}".`);
       } else {
-        const existingEdgeIdx = NCDATA.edges.find(existingEdge => e.id === existingEdge.id);
+        const existingEdgeIdx = NCDATA.edges.findIndex(existingEdge => e.id === existingEdge.id);
         if (existingEdgeIdx > -1) {
           // B1.3 Replace Existing Edge
           importMsgs.push(`Existing edge id ${existingEdgeIdx} replaced by edge in row ${row} with matching id.`);
-          edgesToReplace.push({ edge: e, index: existingEdgeIdx });
+          edgesToReplace++;
         } else {
-          // B1.4 Error Unknown Id
-          edgeImportErrors.push(`Edge in row ${row} referenced unknown id "${e.id}".  Use id "${NEW_ID_KEYWORD}" to add a new edge.`);
+          // B1.4 Unknown Id, add if valid
+          importMsgs.push(`New edge id ${e.id} added.`);
+          edgesToAdd++;
         }
       }
     }
   })
-  //    B2. Modify NCDATA if there were no errors
-  if (importEdges.length > 0 && edgeImportErrors.length < 1) {
-    //  B2.1 Replace existing edges
-    edgesToReplace.forEach(def => { // def = {edge, index}
-      NCDATA.edges.splice(def.index, 1, def.edge);
-    });
-    //  B2.2 Add new edges
-    await DATASTORE.PromiseNewEdgeIDs(edgesToAdd.length)
-      .then((newEdgeIDs) => {
-        edgesToAdd.forEach(edge => {
-          edge.id = newEdgeIDs.shift();
-          importMsgs.push(`New edge with auto-generated id ${edge.id} added.`);
-          NCDATA.edges.push(edge);
-        });
-      });
-  }
 
-  // C. Calculate degrees and sizes
-  UTILS.RecalculateAllEdgeSizes(NCDATA);
-  UTILS.RecalculateAllNodeDegrees(NCDATA);
+  // C. Post summary of results
+  importMsgs.unshift(`Edges -- Added: ${edgesToAdd} Replaced: ${edgesToReplace}`);
+  importMsgs.unshift(`Nodes -- Added: ${nodesToAdd} Replaced: ${nodesToReplace}`);
 
-  // D. Post summary of results
-  importMsgs.unshift(`Edges -- Added: ${edgesToAdd.length} Replaced: ${edgesToReplace.length}`);
-  importMsgs.unshift(`Nodes -- Added: ${nodesToAdd.length} Replaced: ${nodesToReplace.length}`);
-
-  // E, If there were errors, abort!!!
+  // D, If there were errors, abort!!!
   let errors = { messages: importMsgs };
   if (nodeImportErrors.length > 0) errors.nodeImportErrors = nodeImportErrors;
   if (edgeImportErrors.length > 0) errors.edgeImportErrors = edgeImportErrors;
   if (errors.nodeImportErrors || errors.edgeImportErrors) return errors;
 
-  // F. Reset Form
+  // E. Reset Form
   //    Clear file data, otherwise data will be re-used on next import
   MOD.NodefileData = {};
   MOD.EdgefileData = {};
 
-  // G.  Write to database!
+  // F.  Write to database!
   const mergeData = { nodes: importNodes, edges: importEdges };
   UDATA.LocalCall("DB_MERGE", mergeData).then(res => {
-    console.log('DB_MERGE Comlete.  Constructing graph and updating NCDATA', NCDATA)
-    UDATA.LocalCall('CONSTRUCT_GRAPH').then(() => {
-      UDATA.SetAppState("NCDATA", NCDATA); // data was merged into NCDATA before the merge, now publish it
-    });
+    // Reload NCDATA from the DB to get new Node and Edge Ids created during the merge
+    UDATA.LocalCall("RELOAD_DB");
   });
 
   return { nodeImportErrors: undefined, edgeImportErrors: undefined, messages: importMsgs };
