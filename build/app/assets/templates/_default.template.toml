@@ -142,20 +142,12 @@ label = ""
 color = "#c2c2c2"
 
 [[edgeDefs.type.options]]
-label = "you've got, a \"friend\""
+label = "is interested in"
 color = "#0dbd00"
 
 [[edgeDefs.type.options]]
-label = "has unfriendly interaction with"
+label = "is not interested in"
 color = "#ff0000"
-
-[[edgeDefs.type.options]]
-label = "is a member of"
-color = "#9ebeff"
-
-[[edgeDefs.type.options]]
-label = "visits"
-color = "#ffae00"
 
 [edgeDefs.notes]
 type = "string"
