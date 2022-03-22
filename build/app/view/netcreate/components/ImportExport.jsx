@@ -20,6 +20,7 @@ const SETTINGS = require("settings");
 const NetMessage = require("unisys/common-netmessage-class");
 
 const UNISYS   = require('unisys/client');
+const DATASTORE = require("system/datastore");
 const { EDITORTYPE } = require("system/util/enum");
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
@@ -79,6 +80,12 @@ class ImportExport extends UNISYS.Component {
         disableImport = data.templateBeingEdited || data.importActive || data.nodeOrEdgeBeingEdited || UNISYS.IsStandaloneMode();
         this.setState({ disableImport });
       });
+    DATASTORE.PromiseCalculateMaxNodeId().then(data => {
+      this.setState({nextNodeId: data + 1})
+    })
+    DATASTORE.PromiseCalculateMaxEdgeId().then(data => {
+      this.setState({nextEdgeId: data + 1})
+    })
   }
 
   onNodesExportSelect() { UDATA.LocalCall('EXPORT_NODES'); }
@@ -244,7 +251,9 @@ class ImportExport extends UNISYS.Component {
       edgefileErrors,
       edgeImportErrors,
       importMsgs,
-      allowLoggedInUserToImport
+      allowLoggedInUserToImport,
+      nextNodeId,
+      nextEdgeId
     } = this.state;
 
     // Set Import Permissions
@@ -285,7 +294,14 @@ class ImportExport extends UNISYS.Component {
         >
           <h1>Import Data</h1>
 
-          <i className="small text-muted">Import .csv data</i><br/>
+          <div className="small text-muted">
+            To specify node and edge IDs in your import file, use the next unused ID:
+            <ul>
+              <li>Next unused NODE ID: {nextNodeId}</li>
+              <li>Next unused EDGE ID: {nextEdgeId}</li>
+            </ul>
+          </div>
+          <i className="small text-muted">Import .csv data</i><br />
           <label>
             <input type="file" accept="text/csv" id="nodefileInput" onChange={this.onNodeImportFileSelect}/>
             &nbsp;<i>{nodefileStatus}</i><br />
