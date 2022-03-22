@@ -146,6 +146,10 @@ var UNISYS = {};
         return { OK:true, info:'SRC_DBUPDATE' };
       });
 
+      UNET.HandleMessage('SRV_CALCULATE_MAXNODEID',function(pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_CalculateMaxNodeID(pkt);
+      });
       UNET.HandleMessage('SRV_DBGETNODEID',function(pkt) {
         if (DBG) console.log(PR,sprint_message(pkt));
         return UDB.PKT_GetNewNodeID(pkt);
@@ -192,6 +196,10 @@ var UNISYS = {};
         return res;
       });
 
+      UNET.HandleMessage('SRV_CALCULATE_MAXEDGEID',function(pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_CalculateMaxEdgeID(pkt);
+      });
       UNET.HandleMessage('SRV_DBGETEDGEID', function (pkt) {
         if (DBG) console.log(PR,sprint_message(pkt));
         return UDB.PKT_GetNewEdgeID(pkt);

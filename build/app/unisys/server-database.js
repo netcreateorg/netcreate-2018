@@ -395,7 +395,7 @@ DB.PKT_InsertDatabase = function (pkt) {
     REVIEW: Consider batch operations ala `NODES.insert(nodes)`?
 /*/
 DB.PKT_MergeDatabase = function (pkt) {
-  if (DBG) console.log(PR, `PKT_InsertDatabase`);
+  if (DBG) console.log(PR, `PKT_MergeDatabase`);
   let { nodes = [], edges = [] } = pkt.Data();
 
   // insert nodes one by one
@@ -437,10 +437,30 @@ DB.PKT_UpdateDatabase = function (pkt) {
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DB.PKT_GetNewNodeID = function(pkt) {
+/// Side Effect: Changes `m_max_nodeID`
+function m_CalculateMaxNodeID() {
+  if (NODES.count() > 0) {
+    m_max_nodeID = NODES.mapReduce(
+      obj => obj.id,
+      arr => Math.max(...arr)
+    );
+  } else {
+    m_max_nodeID = 0;
+  }
+  return m_max_nodeID;
+}
+DB.PKT_CalculateMaxNodeID = function(pkt) {
+  if (DBG) console.log(PR, `PKT_CalculateMaxNodeID ${pkt.Info()}`);
+  return { maxNodeID: m_CalculateMaxNodeID() };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_GetNewNodeID() {
   m_max_nodeID += 1;
+  return m_max_nodeID;
+}
+DB.PKT_GetNewNodeID = function (pkt) {
   if (DBG) console.log(PR, `PKT_GetNewNodeID ${pkt.Info()} nodeID ${m_max_nodeID}`);
-  return { nodeID: m_max_nodeID };
+  return { nodeID: m_GetNewNodeID() };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_GetNewNodeIDs = function (pkt) {
@@ -453,10 +473,29 @@ DB.PKT_GetNewNodeIDs = function (pkt) {
   return { nodeIDs };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DB.PKT_GetNewEdgeID = function(pkt) {
+function m_CalculateMaxEdgeID () {
+  if (EDGES.count() > 0) {
+    m_max_edgeID = EDGES.mapReduce(
+      obj => obj.id,
+      arr => Math.max(...arr)
+    );
+  } else {
+    m_max_edgeID = 0;
+  }
+  return { maxEdgeID: m_max_edgeID };
+}
+DB.PKT_CalculateMaxEdgeID = function(pkt) {
+  if (DBG) console.log(PR, `PKT_CalculateMaxEdgeID ${pkt.Info()}`);
+  return { maxEdgeID: m_CalculateMaxEdgeID() };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_GetNewEdgeID() {
   m_max_edgeID += 1;
+  return m_max_edgeID;
+}
+DB.PKT_GetNewEdgeID = function (pkt) {
   if (DBG) console.log(PR, `PKT_GetNewEdgeID ${pkt.Info()} edgeID ${m_max_edgeID}`);
-  return { edgeID: m_max_edgeID };
+  return { edgeID: m_GetNewEdgeID() };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_GetNewEdgeIDs = function(pkt) {
@@ -592,6 +631,13 @@ DB.PKT_Update = function(pkt) {
     if (matches.length === 0) {
       // if there was no node, then this is an insert new operation
       if (DBG) console.log(PR,`PKT_Update ${pkt.Info()} INSERT nodeID ${JSON.stringify(node)}`);
+
+      // Handle different id types
+      if (isNaN(node.id)) {
+        // If the node id has NOT been defined, generate a new node id
+        node.id = m_GetNewNodeID();
+      }
+
       LOGGER.Write(pkt.Info(), `insert node`, node.id, JSON.stringify(node));
       DB.AppendNodeLog(node, pkt); // log GroupId to node stored in database
       NODES.insert(node);
@@ -616,6 +662,8 @@ DB.PKT_Update = function(pkt) {
       LOGGER.Write(pkt.Info(), `ERROR`, node.id, "duplicate node id");
       retval = { op: "error-multinodeid" };
     }
+    // Always update m_max_nodeID
+    m_CalculateMaxNodeID();
     return retval;
   } // if node
 
@@ -626,6 +674,13 @@ DB.PKT_Update = function(pkt) {
     if (matches.length === 0) {
       // this is a new edge
       if (DBG) console.log(PR,`PKT_Update ${pkt.Info()} INSERT edgeID ${edge.id} ${JSON.stringify(edge)}`);
+
+      // Handle different id types
+      if (isNaN(edge.id)) {
+        // If the edge id has NOT been defined, generate a new edge id
+        edge.id = m_GetNewEdgeID();
+      }
+
       LOGGER.Write(pkt.Info(), `insert edge`, edge.id, JSON.stringify(edge));
       DB.AppendEdgeLog(edge, pkt); // log GroupId to edge stored in database
       EDGES.insert(edge);
@@ -650,6 +705,8 @@ DB.PKT_Update = function(pkt) {
       LOGGER.Write(pkt.Info(), `ERROR`, node.id, "duplicate edge id");
       retval = { op: "error-multiedgeid" };
     }
+    // Always update m_max_edgeID
+    m_CalculateMaxEdgeID();
     return retval;
   } // if edge
 

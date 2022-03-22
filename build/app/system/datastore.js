@@ -108,6 +108,21 @@ DSTOR.UpdateServerDB = function(data) {
   });
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ update max node id count for generating new ids
+/*/
+DSTOR.PromiseCalculateMaxNodeId = function () {
+  return new Promise((resolve, reject) => {
+    UDATA.NetCall("SRV_CALCULATE_MAXNODEID").then(data => {
+      if (data.maxNodeID !== undefined) {
+        if (DBG) console.log(PR, "server calculated max_node_id", data.maxNodeID);
+        resolve(data.maxNodeID);
+      } else {
+        reject(new Error("unknown error" + JSON.stringify(data)));
+      }
+    });
+  });
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ get a unique NodeID
 /*/
 DSTOR.PromiseNewNodeID = function() {
@@ -135,6 +150,21 @@ DSTOR.PromiseNewNodeIDs = function(count) {
       if (data.nodeIDs) {
         if (DBG) console.log(PR, "server allocated node_id", data.nodeIDs);
         resolve(data.nodeIDs);
+      } else {
+        reject(new Error("unknown error" + JSON.stringify(data)));
+      }
+    });
+  });
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ update max edge id count for generating new ids
+/*/
+DSTOR.PromiseCalculateMaxEdgeId = function () {
+  return new Promise((resolve, reject) => {
+    UDATA.NetCall("SRV_CALCULATE_MAXEDGEID").then(data => {
+      if (data.maxEdgeID !== undefined) {
+        if (DBG) console.log(PR, "server calculated max_edge_id", data.maxEdgeID);
+        resolve(data.maxEdgeID);
       } else {
         reject(new Error("unknown error" + JSON.stringify(data)));
       }
