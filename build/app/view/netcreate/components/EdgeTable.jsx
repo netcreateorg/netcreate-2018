@@ -333,7 +333,7 @@ class EdgeTable extends UNISYS.Component {
       if (DBG) console.log('EdgeTable: Edge id',edge.id,'selected for editing');
 
       // Load Source then Edge
-      UDATA.LocalCall('SOURCE_SELECT',{ nodeIDs: [edge.source.id] })
+      UDATA.LocalCall('SOURCE_SELECT',{ nodeIDs: [edge.source] })
       .then(()=>{
         UDATA.LocalCall('EDGE_EDIT',{ edgeID: edge.id });
       });
