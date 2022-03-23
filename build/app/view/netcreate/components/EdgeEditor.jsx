@@ -1177,15 +1177,19 @@ class EdgeEditor extends UNISYS.Component {
     }
 
     checkUnload(e) {
+      e.preventDefault();
       if (this.state.isBeingEdited) {
         (e || window.event).returnValue = null;
-        return null;
+      } else {
+        Reflect.deleteProperty(e, 'returnValue');
       }
+      return e;
     }
 
     doUnload(e) {
       if (this.state.isBeingEdited) {
-        this.NetCall('SRV_DBUNLOCKEDGE', { edgeID: this.state.formData.id })
+        this.NetCall('SRV_DBUNLOCKEDGE', { edgeID: this.state.formData.id });
+        this.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.EDGE });
       }
     }
 
@@ -1203,6 +1207,8 @@ class EdgeEditor extends UNISYS.Component {
               this.setState({ dbIsLocked: false });
             }
           });
+        // Deregister as an open editor
+        this.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.EDGE });
       }
       // deregister ACTIVEAUTOMPLETE when component unmounts
       // otherwise state updates trigger a setState on unmounted component error

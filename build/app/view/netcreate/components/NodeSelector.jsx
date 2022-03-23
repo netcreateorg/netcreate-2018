@@ -1223,22 +1223,21 @@ markdownIterate(Tag, props, children, level){
       window.addEventListener("unload", this.doUnload);
     }
 
-    checkUnload(e)
-    {
-        if(this.state.isBeingEdited)
-        {
-          (e || window.event).returnValue = null;
-          return null;
-        }
+    checkUnload(e) {
+      e.preventDefault();
+      if (this.state.isBeingEdited) {
+        (e || window.event).returnValue = null;
+      } else {
+        Reflect.deleteProperty(e, 'returnValue');
+      }
+      return e;
     }
 
-    doUnload(e)
-    {
-          if(this.state.isBeingEdited)
-          {
-              this.NetCall('SRV_DBUNLOCKNODE', { nodeID: this.state.formData.id });
-          }
-
+    doUnload(e) {
+      if (this.state.isBeingEdited) {
+        this.NetCall('SRV_DBUNLOCKNODE', { nodeID: this.state.formData.id });
+        this.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.NODE });
+      }
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Release the lock if we're unmounting
@@ -1254,6 +1253,7 @@ markdownIterate(Tag, props, children, level){
               this.setState({ dbIsLocked: false });
             }
           });
+        this.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.NODE });
       }
       // deregister ACTIVEAUTOMPLETE when component unmounts
       // otherwise state updates trigger a setState on unmounted component error
