@@ -25,11 +25,13 @@ const PR = PROMPTS.Pad("ServerDB");
 const RUNTIMEPATH = './runtime/';
 const TEMPLATEPATH = './app/assets/templates/';
 const TEMPLATE_EXT = '.template.toml'
+const BACKUPPATH = 'backups/'; // combined with RUNTIMEPATH, so no leading './'
 const DB_CLONEMASTER = "blank.loki";
 const NC_CONFIG = require("../assets/netcreate-config");
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+let db_file;
 let m_options; // saved initialization options
 let m_db; // loki database
 let m_max_edgeID;
@@ -46,12 +48,27 @@ let m_open_editors = []; // array of template, node, or edge editors
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 let DB = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Backup Database File Utility
+    Used by PKT_MergeDatabase to clone the db before importing.
+    Saves the db in the runtime folder with a timestamp suffix.
+/*/
+function m_BackupDatabase() {
+  FS.ensureDirSync(PATH.dirname(db_file));
+  if (FS.existsSync(db_file)) {
+    const timestamp = new Date().toISOString()
+      .replace(/:/g, '.');
+    const backupDBFilePath = m_GetValidDBFilePath(BACKUPPATH + NC_CONFIG.dataset + '_' + timestamp);
+    console.log(PR, 'Saving database backup to', backupDBFilePath)
+    FS.copySync(db_file, backupDBFilePath);
+  }
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Initialize the database
 /*/
 DB.InitializeDatabase = function (options = {}) {
 
   let dataset = NC_CONFIG.dataset;
-  let db_file = m_GetValidDBFilePath(dataset);
+  db_file = m_GetValidDBFilePath(dataset);
   FS.ensureDirSync(PATH.dirname(db_file));
   if (!FS.existsSync(db_file)) {
     console.log(PR, `NO EXISTING DATABASE ${db_file}, so creating BLANK DATABASE...`);
@@ -397,6 +414,9 @@ DB.PKT_InsertDatabase = function (pkt) {
 DB.PKT_MergeDatabase = function (pkt) {
   if (DBG) console.log(PR, `PKT_MergeDatabase`);
   let { nodes = [], edges = [] } = pkt.Data();
+
+  // Save Backup First!
+  m_BackupDatabase();
 
   // insert nodes one by one
   nodes.forEach(n => {
