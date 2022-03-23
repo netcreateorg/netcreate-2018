@@ -52,10 +52,11 @@ class EdgeTable extends UNISYS.Component {
       super(props);
 
       this.state = {
-        edgeDefs:  this.AppState('TEMPLATE').edgeDefs,
-        edges:        [],
+        edgeDefs: this.AppState('TEMPLATE').edgeDefs,
+        edges: [],
         filteredEdges: [],
-        isExpanded:   true,
+        nodes: [], // needed for dereferencing source/target
+        isExpanded: true,
         sortkey:      'Relationship'
       };
 
@@ -70,6 +71,7 @@ class EdgeTable extends UNISYS.Component {
       this.m_FindEdgeById           = this.m_FindEdgeById.bind(this);
       this.setSortKey               = this.setSortKey.bind(this);
       this.sortSymbol               = this.sortSymbol.bind(this);
+      this.lookupNodeLabel = this.lookupNodeLabel.bind(this);
 
       this.sortDirection = 1;
 
@@ -147,8 +149,11 @@ class EdgeTable extends UNISYS.Component {
   /*/ Handle updated SELECTION
   /*/
   handleDataUpdate(data) {
-    if (data && data.edges) {
+    if (data && data.edges && data.nodes) {
       const edges = this.sortTable(this.state.sortkey, data.edges);
+      // NCDATA.edges no longer uses source/target objects, but instead
+      // references source/target as ids.  So we need to save nodes for dereferencing.
+      this.setState({ edges, nodes: data.nodes });
       const { filteredEdges } = this.state;
       this.updateEdgeFilterState(edges, filteredEdges);
     }
@@ -302,13 +307,21 @@ class EdgeTable extends UNISYS.Component {
           break;
       }
     }
-
-    sortSymbol(key) {
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ sortSymbol(key) {
       if (key !== this.state.sortkey) return ""; // this is not the current sort, so don't show anything
       else return this.sortDirection===1?"▼":"▲"; // default to "decreasing" and flip if clicked again
     }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ lookupNodeLabel(nodeId) {
+      const node = this.state.nodes.find(n => n.id === nodeId);
+      if (node === undefined) throw new Error('EdgeTable: Could not find node', nodeId);
+      return node.label;
+    }
 
-/// UI EVENT HANDLERS /////////////////////////////////////////////////////////
+    /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onButtonClick (event) {
@@ -484,7 +497,7 @@ class EdgeTable extends UNISYS.Component {
               <tr key={i}
                 style={{
                   color: edge.isFiltered ? 'red' : 'black',
-                  opacity: edge.filteredTransparency
+                  opacity: edge.isFiltered ? edge.filteredTransparency : 1
                 }}>
                 <td hidden={!DBG}>{edge.id}</td>
                 <td hidden={!DBG}>{edge.size}</td>
@@ -493,13 +506,13 @@ class EdgeTable extends UNISYS.Component {
                       onClick={this.onButtonClick}
                     >Edit</Button>
                 </td>
-                <td hidden={!DBG}>{edge.source.id}</td>
-                <td><a href="#" onClick={(e)=>this.selectNode(edge.source.id,e)}
-                    >{edge.source.label || edge.source}</a></td>
+                <td hidden={!DBG}>{edge.source}</td>
+                <td><a href="#" onClick={(e)=>this.selectNode(edge.source,e)}
+                    >{this.lookupNodeLabel(edge.source)}</a></td>
                 <td hidden={edgeDefs.type.hidden}>{edge.type}</td>
-                <td hidden={!DBG}>{edge.target.id}</td>
-                <td><a href="#" onClick={(e)=>this.selectNode(edge.target.id,e)}
-                    >{edge.target.label || edge.target}</a></td>
+                <td hidden={!DBG}>{edge.target}</td>
+                <td><a href="#" onClick={(e)=>this.selectNode(edge.target,e)}
+                    >{this.lookupNodeLabel(edge.target)}</a></td>
                 <td hidden={edgeDefs.category.hidden}>{edge.category}</td>
                 <td hidden={edgeDefs.citation.hidden}>{edge.citation}</td>
                 <td hidden={edgeDefs.notes.hidden}>
