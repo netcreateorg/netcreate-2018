@@ -502,7 +502,7 @@ function m_CalculateMaxEdgeID () {
   } else {
     m_max_edgeID = 0;
   }
-  return { maxEdgeID: m_max_edgeID };
+  return m_max_edgeID;
 }
 DB.PKT_CalculateMaxEdgeID = function(pkt) {
   if (DBG) console.log(PR, `PKT_CalculateMaxEdgeID ${pkt.Info()}`);
