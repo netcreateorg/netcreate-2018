@@ -450,12 +450,12 @@ class EdgeTable extends UNISYS.Component {
           <Button size="sm" outline hidden
             onClick={this.onToggleExpanded}
           >{this.state.isExpanded ? "Hide Edge Table" : "Show Edge Table"}</Button>
-      <table hidden={!this.state.isExpanded}
-        // size="sm" hover responsive striped // ReactStrap properties
-        // Need to use a standard 'table' not ReactStrap so that we can set
-        // the container div height and support non-scrolling headers
-        className="table table-striped table-responsive table-hover table-sm edgetable w-auto"
-      >
+          <table hidden={!this.state.isExpanded}
+            // size="sm" hover responsive striped // ReactStrap properties
+            // Need to use a standard 'table' not ReactStrap so that we can set
+            // the container div height and support non-scrolling headers
+            className="table table-striped table-responsive table-hover table-sm edgetable w-auto"
+          >
             <thead>
               <tr>
                 <th width="4%" hidden={!DBG}><Button size="sm"
