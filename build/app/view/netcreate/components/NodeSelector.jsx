@@ -1262,6 +1262,8 @@ markdownIterate(Tag, props, children, level){
       this.AppStateChangeOff('SEARCH', this.onStateChange_SEARCH);
       this.AppStateChangeOff('TEMPLATE', this.setTemplate);
       UDATA.UnhandleMessage("EDIT_PERMISSIONS_UPDATE", this.setEditState);
+      window.removeEventListener("beforeunload", this.checkUnload);
+      window.removeEventListener("unload", this.doUnload);
     }
 
 } // class NodeSelector

@@ -1219,6 +1219,8 @@ class EdgeEditor extends UNISYS.Component {
       UDATA.UnhandleMessage('EDGE_EDIT', this.handleEdgeEdit);
       UDATA.UnhandleMessage('EDGE_CLOSE', this.handleEdgeClose);
       UDATA.UnhandleMessage('EDIT_PERMISSIONS_UPDATE', this.setEditState);
+      window.removeEventListener("beforeunload", this.checkUnload);
+      window.removeEventListener("unload", this.doUnload);
     }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
