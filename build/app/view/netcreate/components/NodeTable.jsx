@@ -52,10 +52,12 @@ class NodeTable extends UNISYS.Component {
       nodeDefs: this.AppState('TEMPLATE').nodeDefs,
       nodes: [],
       filteredNodes: [],
+      isLocked: false,
       isExpanded: true,
       sortkey: 'label'
     };
 
+    this.onStateChange_SESSION = this.onStateChange_SESSION.bind(this);
     this.displayUpdated = this.displayUpdated.bind(this);
     this.updateNodeFilterState = this.updateNodeFilterState.bind(this);
     this.handleDataUpdate = this.handleDataUpdate.bind(this);
@@ -70,6 +72,10 @@ class NodeTable extends UNISYS.Component {
 
     /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
+
+    // SESSION is called by SessionSHell when the ID changes
+    //  set system-wide. data: { classId, projId, hashedId, groupId, isValid }
+    this.OnAppStateChange('SESSION',this.onStateChange_SESSION);
 
     // Always make sure class methods are bind()'d before using them
     // as a handler, otherwise object context is lost
@@ -90,6 +96,8 @@ class NodeTable extends UNISYS.Component {
       // Explicitly retrieve data because we may not have gotten a NCDATA
       // update while we were hidden.
 
+      this.onStateChange_SESSION(this.AppState('SESSION'));
+
       // filtered data needs to be set before D3Data
       const FILTEREDD3DATA = UDATA.AppState('FILTEREDD3DATA');
       this.setState({ filteredNodes: FILTEREDD3DATA.nodes },
@@ -101,11 +109,23 @@ class NodeTable extends UNISYS.Component {
     }
 
     componentWillUnmount() {
+      this.AppStateChangeOff('SESSION', this.onStateChange_SESSION);
       this.AppStateChangeOff('NCDATA', this.handleDataUpdate);
       this.AppStateChangeOff('FILTEREDD3DATA', this.handleFilterDataUpdate);
       this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
     }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Handle change in SESSION data
+    Called both by componentWillMount() and AppStateChange handler.
+    The 'SESSION' state change is triggered in two places in SessionShell during
+    its handleChange() when active typing is occuring, and also during
+    SessionShell.componentWillMount()
+/*/ onStateChange_SESSION( decoded ) {
+      this.setState({ isLocked: !decoded.isValid });
+    }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   displayUpdated(nodeEdge) {
       // Prevent error if `meta` info is not defined yet, or not properly imported
       if (!nodeEdge.meta) return;
@@ -347,7 +367,7 @@ class NodeTable extends UNISYS.Component {
 /*/
 render() {
   if (this.state.nodes === undefined) return "";
-  const { nodeDefs } = this.state;
+  const { nodeDefs, isLocked } = this.state;
   const { tableHeight } = this.props;
   const styles = `thead, tbody { font-size: 0.8em }
                   .table {
@@ -419,7 +439,7 @@ render() {
             <td><Button size="sm" outline
                   value={node.id}
                   onClick={this.onButtonClick}
-                >Edit</Button>
+            >{isLocked ? "View" : "Edit"}</Button>
             </td>
             <td hidden={!DBG}>{node.id}</td>
             <td>{node.degrees}</td>

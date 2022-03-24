@@ -56,10 +56,12 @@ class EdgeTable extends UNISYS.Component {
         edges: [],
         filteredEdges: [],
         nodes: [], // needed for dereferencing source/target
+        isLocked: false,
         isExpanded: true,
         sortkey:      'Relationship'
       };
 
+      this.onStateChange_SESSION = this.onStateChange_SESSION.bind(this);
       this.updateEdgeFilterState = this.updateEdgeFilterState.bind(this);
       this.handleDataUpdate = this.handleDataUpdate.bind(this);
       this.handleFilterDataUpdate = this.handleFilterDataUpdate.bind(this);
@@ -79,6 +81,10 @@ class EdgeTable extends UNISYS.Component {
       /// Initialize UNISYS DATA LINK for REACT
       UDATA = UNISYS.NewDataLink(this);
 
+      // SESSION is called by SessionSHell when the ID changes
+      //  set system-wide. data: { classId, projId, hashedId, groupId, isValid }
+      this.OnAppStateChange('SESSION',this.onStateChange_SESSION);
+
       // Always make sure class methods are bind()'d before using them
       // as a handler, otherwise object context is lost
       this.OnAppStateChange('NCDATA', this.handleDataUpdate);
@@ -95,6 +101,9 @@ class EdgeTable extends UNISYS.Component {
 /*/
 /*/ componentDidMount () {
       if (DBG) console.log('EdgeTable.componentDidMount!');
+
+      this.onStateChange_SESSION(this.AppState('SESSION'));
+
       // Explicitly retrieve data because we may not have gotten a NCDATA
       // update while we were hidden.
       // filtered data needs to be set before D3Data
@@ -108,11 +117,23 @@ class EdgeTable extends UNISYS.Component {
 }
 
     componentWillUnmount() {
+      this.AppStateChangeOff('SESSION', this.onStateChange_SESSION);
       this.AppStateChangeOff('NCDATA', this.handleDataUpdate);
       this.AppStateChangeOff('FILTEREDD3DATA', this.handleFilterDataUpdate);
       this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
     }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Handle change in SESSION data
+    Called both by componentWillMount() and AppStateChange handler.
+    The 'SESSION' state change is triggered in two places in SessionShell during
+    its handleChange() when active typing is occuring, and also during
+    SessionShell.componentWillMount()
+/*/ onStateChange_SESSION( decoded ) {
+      this.setState({ isLocked: !decoded.isValid });
+    }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   displayUpdated(nodeEdge) {
       // Prevent error if `meta` info is not defined yet, or not properly imported
       if (!nodeEdge.meta) return;
@@ -413,7 +434,7 @@ class EdgeTable extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ render () {
-      let { edgeDefs } = this.state;
+      let { edgeDefs, isLocked } = this.state;
 
       if (edgeDefs.category === undefined) { // for backwards compatability
         edgeDefs.category = {};
@@ -504,7 +525,7 @@ class EdgeTable extends UNISYS.Component {
                 <td><Button size="sm" outline
                       value={edge.id}
                       onClick={this.onButtonClick}
-                    >Edit</Button>
+                    >{isLocked ? "View" : "Edit"}</Button>
                 </td>
                 <td hidden={!DBG}>{edge.source}</td>
                 <td><a href="#" onClick={(e)=>this.selectNode(edge.source,e)}
