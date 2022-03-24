@@ -423,7 +423,7 @@ class ImportExport extends UNISYS.Component {
             else on the network is prevented from editing a template or importing data and editing nodes and edges.<br />
             ADMINS: Use this force the server to release the lock on editing if you know the lock was left on in error,
             e.g. you know that there is no one on the network actively editing a template, importing, editing a node or an edge.
-            <p><b>WARNING</b>: Use this with utomost caution!  If someone is actively editing or importing, you can delete their work, or even worse, <b>corrupt the database!</b></p>
+            <p><b>WARNING</b>: Use this with utmost caution!  If someone is actively editing or importing, you can delete their work, or even worse, <b>corrupt the database!</b></p>
           </label>
         </div>
       )
