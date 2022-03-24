@@ -23,6 +23,8 @@ const UNISYS   = require('unisys/client');
 const DATASTORE = require("system/datastore");
 const { EDITORTYPE } = require("system/util/enum");
 
+const IELOGIC = require("../importexport-logic");
+
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NODEFILESTATUS_DEFAULT = 'Select a node .csv file to import';
@@ -118,12 +120,12 @@ class ImportExport extends UNISYS.Component {
     })
   }
 
-  onNodesExportSelect() { UDATA.LocalCall('EXPORT_NODES'); }
-  onEdgesExportSelect() { UDATA.LocalCall('EXPORT_EDGES'); }
+  onNodesExportSelect() { IELOGIC.ExportNodes(); }
+  onEdgesExportSelect() { IELOGIC.ExportEdges(); }
 
   onNodeImportFileSelect(e) {
     const nodefile = e.target.files[0];
-    UDATA.LocalCall('VALIDATE_NODEFILE', { nodefile })
+    IELOGIC.ValidateNodeFile({ nodefile })
       .then(result => {
         if (result.isValid) {
           // First set importIsActive, and then request lock
@@ -169,7 +171,7 @@ class ImportExport extends UNISYS.Component {
 
   onEdgeImportFileSelect(e) {
     const edgefile = e.target.files[0];
-    UDATA.LocalCall('VALIDATE_EDGEFILE', { edgefile })
+    IELOGIC.ValidateEdgeFile({ edgefile })
       .then(result => {
         if (result.isValid) {
           // A. Valid edge file, ready for import
@@ -258,7 +260,7 @@ class ImportExport extends UNISYS.Component {
   onDoImport() {
     const nodeFilename = this.state.nodefile && this.state.nodefile.name; // save off for error messages
     const edgeFilename = this.state.edgefile && this.state.edgefile.name; // save off for error messages
-    UDATA.LocalCall('IMPORT').then(result => {
+    IELOGIC.Import().then(result => {
       if (result.nodeImportErrors || result.edgeImportErrors) {
         this.setState({
           importIsActive: false,

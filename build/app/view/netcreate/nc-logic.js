@@ -43,7 +43,6 @@ const SETTINGS = require("settings");
 const UNISYS = require("unisys/client");
 const JSCLI = require("system/util/jscli");
 const D3 = require("d3");
-const IMPORTEXPORT = require("./importexport-logic");
 const UTILS = require("./nc-utils");
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
@@ -731,19 +730,6 @@ MOD.Hook("INITIALIZE", () => {
     m_UpdateColorMap();
   });
 
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/
-  /*/
-  UDATA.HandleMessage("EXPORT_NODES", data => {
-    IMPORTEXPORT.ExportNodes();
-  });
-  UDATA.HandleMessage("EXPORT_EDGES", data => {
-    IMPORTEXPORT.ExportEdges();
-  });
-
-  UDATA.HandleMessage("IMPORT", IMPORTEXPORT.Import);
-  UDATA.HandleMessage("VALIDATE_NODEFILE", IMPORTEXPORT.ValidateNodeFile);
-  UDATA.HandleMessage("VALIDATE_EDGEFILE", IMPORTEXPORT.ValidateEdgeFile);
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   UDATA.HandleMessage("EDIT_CURRENT_TEMPLATE", () => {
