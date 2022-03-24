@@ -736,7 +736,7 @@ MOD.Import = async data => {
 
   // F.  Write to database!
   const mergeData = { nodes: importNodes, edges: importEdges };
-  UDATA.LocalCall("DB_MERGE", mergeData).then(res => {
+  await UDATA.LocalCall("DB_MERGE", mergeData).then(res => {
     // Reload NCDATA from the DB to get new Node and Edge Ids created during the merge
     UDATA.LocalCall("RELOAD_DB");
   });
