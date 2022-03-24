@@ -161,6 +161,7 @@ class NodeSelector extends UNISYS.Component {
             type:      '',
             info:      '',
             notes:     '',
+            degrees: -1,
             id:        '',   // Always convert this to a Number
             isNewNode: true
         },
@@ -385,6 +386,7 @@ class NodeSelector extends UNISYS.Component {
             type:      '',
             info:      '',
             notes:     '',
+            degrees: -1,
             id:         '',   // Always convert this to a Number
             isNewNode: true
         },
@@ -606,6 +608,7 @@ class NodeSelector extends UNISYS.Component {
       node.type = newNode.type;
       node.info = newNode.info;
       node.notes = newNode.notes;
+      node.degrees = newNode.degrees;
 
       // Copy to form
       this.releaseOpenEditor();
@@ -615,6 +618,7 @@ class NodeSelector extends UNISYS.Component {
           type:      node.type,
           info:      node.info,
           notes:     node.notes,
+          degrees: node.degrees,
           id:        node.id,
           isNewNode: false
         },
@@ -715,6 +719,7 @@ class NodeSelector extends UNISYS.Component {
                 type:      '',
                 info:      '',
                 notes:     '',
+                degrees: -1,
                 id:        newNodeID,
                 isNewNode: true
             },
@@ -944,7 +949,8 @@ class NodeSelector extends UNISYS.Component {
         id: formData.id,
         type: formData.type,
         info: formData.info,
-        notes: formData.notes
+        notes: formData.notes,
+        degrees: formData.degrees
       };
       this.releaseOpenEditor();
       this.setState({ isBeingEdited: false });
