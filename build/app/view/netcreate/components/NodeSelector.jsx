@@ -258,10 +258,13 @@ class NodeSelector extends UNISYS.Component {
       Ignore the request if we're already editing a node.
   /*/
       UDATA.HandleMessage("NODE_EDIT", (data) => {
-        if ( (data.nodeID!==undefined) && (typeof data.nodeID==="number") && !this.state.isBeingEdited && !this.state.isLocked ) {
+        const { isBeingEdited, isLocked } = this.state;
+        if ( (data.nodeID!==undefined) && (typeof data.nodeID==="number") && !isBeingEdited && !isLocked ) {
           this.requestEditNode(data.nodeID);
         } else {
-          console.error("NodeSelector.NODE_EDIT called with bad data.nodeID:", data.nodeID);
+          if (typeof data.nodeID !== "number") console.warn("NodeSelector.NODE_EDIT called with bad data.nodeID:", data.nodeID);
+          if (isBeingEdited) console.warn("NodeSelector.NODE_EDIT denied because isBeingEdited", isBeingEdited);
+          if (isLocked) console.warn("NodeSelector.NODE_EDIT denied because isLocked", isLocked);
         }
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
