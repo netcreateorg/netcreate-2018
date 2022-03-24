@@ -595,15 +595,18 @@ class EdgeEditor extends UNISYS.Component {
     Usually someone has clicked a button in the EdgeTable to edit an edge
 /*/ handleEdgeEdit ( data ) {
       if (DBG) console.log('EdgeEditor',this.state.formData.id,': got state EDGE_EDIT',data,'formData is',this.state.formData);
-      const { formData, isBeingEdited, isLocked } = this.state;
-      if ((data.edgeID !== undefined) && (typeof data.edgeID === "number") && !isBeingEdited && !isLocked &&
+      if ((data.edgeID !== undefined) && (typeof data.edgeID === "number") && !isBeingEdited &&
         data.edgeID === formData.id
       ) {
-        this.requestEdit();
+        if (!isLocked) {
+          this.requestEdit();
+        } else {
+          console.warn("EdgeEditor.EDGE_EDIT denied because isLocked", isLocked, 'but we will gladly show it!');
+          this.handleEdgeSelection(data);
+        }
       } else {
-        if (typeof data.edgeID !== "number") console.warn("NodeSelector.NODE_EDIT called with bad data.nodeID:", data.edgeID);
-        if (isBeingEdited) console.warn("NodeSelector.NODE_EDIT denied because isBeingEdited", isBeingEdited);
-        if (isLocked) console.warn("NodeSelector.NODE_EDIT denied because isLocked", isLocked);
+        if (typeof data.edgeID !== "number") console.warn("EdgeEditor.EDGE_EDIT called with bad data.nodeID:", data.edgeID);
+        if (isBeingEdited) console.warn("EdgeEditor.EDGE_EDIT denied because isBeingEdited", isBeingEdited);
       }
 
     } // handleEdgeEdit
