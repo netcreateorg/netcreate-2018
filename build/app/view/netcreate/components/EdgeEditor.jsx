@@ -593,7 +593,8 @@ class EdgeEditor extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Someone externally has selected an edge for editing.
     Usually someone has clicked a button in the EdgeTable to edit an edge
-/*/ handleEdgeEdit ( data ) {
+/*/ handleEdgeEdit(data) {
+      const { formData, isBeingEdited, isLocked } = this.state;
       if (DBG) console.log('EdgeEditor',this.state.formData.id,': got state EDGE_EDIT',data,'formData is',this.state.formData);
       if ((data.edgeID !== undefined) && (typeof data.edgeID === "number") && !isBeingEdited &&
         data.edgeID === formData.id
