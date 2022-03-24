@@ -93,11 +93,11 @@ class NodeTable extends UNISYS.Component {
 /*/
 /*/ componentDidMount () {
       if (DBG) console.error('NodeTable.componentDidMount!');
-      // Explicitly retrieve data because we may not have gotten a NCDATA
-      // update while we were hidden.
 
       this.onStateChange_SESSION(this.AppState('SESSION'));
 
+      // Explicitly retrieve data because we may not have gotten a NCDATA
+      // update while we were hidden.
       // filtered data needs to be set before D3Data
       const FILTEREDD3DATA = UDATA.AppState('FILTEREDD3DATA');
       this.setState({ filteredNodes: FILTEREDD3DATA.nodes },
