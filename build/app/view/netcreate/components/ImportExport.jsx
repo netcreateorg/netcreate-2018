@@ -37,8 +37,8 @@ class ImportExport extends UNISYS.Component {
     const TEMPLATE = this.AppState('TEMPLATE');
     this.state = {
       isExpanded: true,
-      disableImport: false,
-      isBeingImported: false,
+      preventImport: false, // an external source has disabled import for us
+      importIsActive: false, // internal source: keeps track of whether THIS panel has valid import files selected
       nodefile: undefined,
       nodefileStatus: NODEFILESTATUS_DEFAULT,
       nodefileErrors: undefined,
@@ -56,6 +56,7 @@ class ImportExport extends UNISYS.Component {
     this.onNodeImportFileSelect = this.onNodeImportFileSelect.bind(this);
     this.onEdgeImportFileSelect = this.onEdgeImportFileSelect.bind(this);
     this.onDoImport = this.onDoImport.bind(this);
+    this.unlockAll = this.unlockAll.bind(this);
 
     UDATA = UNISYS.NewDataLink(this);
     UDATA.HandleMessage("EDIT_PERMISSIONS_UPDATE", this.updateEditState);
@@ -234,6 +235,9 @@ class ImportExport extends UNISYS.Component {
     }); // nc-logic -> export-logic
   }
 
+  unlockAll() {
+    UDATA.NetCall("SRV_DBUNLOCKALL");
+  }
 
 /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -321,6 +325,28 @@ class ImportExport extends UNISYS.Component {
         </div>
       )
     }
+
+    let unlockAlljsx;
+    if (ISADMIN) {
+      unlockAlljsx = (
+        <div>
+          <hr />
+          <h1>Admin Tools</h1>
+          <Button size="sm" outline color={"warning"} onClick={this.unlockAll}>
+            Force Unlock All
+          </Button>
+          <label className="small text-muted">
+            Unlock ALL Template, Import, Node, and Edge Editing.<br />
+            When someone on the network is editing a template, importing data, or editing a node or edge, everyone
+            else on the network is prevented from editing a template or importing data and editing nodes and edges.<br />
+            ADMINS: Use this force the server to release the lock on editing if you know the lock was left on in error,
+            e.g. you know that there is no one on the network actively editing a template, importing, editing a node or an edge.
+            <p><b>WARNING</b>: Use this with utomost caution!  If someone is actively editing or importing, you can delete their work, or even worse, <b>corrupt the database!</b></p>
+          </label>
+        </div>
+      )
+    }
+
     return (
       <div>
         <div
@@ -341,6 +367,7 @@ class ImportExport extends UNISYS.Component {
         </div>
 
         {importjsx}
+        {unlockAlljsx}
       </div>
     );
   }
