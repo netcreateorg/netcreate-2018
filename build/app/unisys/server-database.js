@@ -973,6 +973,11 @@ DB.CloneTemplateTOML = function (filePath) {
     UI elements should also listen to `EDIT_PERMISSIONS_UPDATE` to
     enable or disable elements.
 
+    Note that multiple `node` and `edge` editors can be open at the same
+    time and ALL must be closed before the lock is released.  We support
+    this because each node or edge will have its own entry in m_open_editors,
+    though we do not distinguish between the individual nodes/edges.
+
     Note that this is a different system from the instance-specific Node/Edge
     lock that locks out individual node/edge objects for editing used with
     `PKT_RequestLockNode` and `PKT_RequestLockEdge`.  m_open_editors focuses
