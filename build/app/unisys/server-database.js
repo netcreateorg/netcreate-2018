@@ -992,9 +992,9 @@ DB.CloneTemplateTOML = function (filePath) {
  */
 DB.GetEditStatus = () => {
   // If there are any 'template' open editors, then templateBeingEdited is true
-  const templateBeingEdited = m_open_editors.length === 1 && m_open_editors.includes(EDITORTYPE.TEMPLATE);
+  const templateBeingEdited = m_open_editors.includes(EDITORTYPE.TEMPLATE);
   // If there are any 'importers' open editors, then importActive is true
-  const importActive = m_open_editors.length === 1 && m_open_editors.includes(EDITORTYPE.IMPORTER);
+  const importActive = m_open_editors.includes(EDITORTYPE.IMPORTER);
   // If there are any 'node' or 'edge' open editors, then nodeOrEdgeBeingEdited is true
   const nodeOrEdgeBeingEdited = m_open_editors.length > 0 && (m_open_editors.includes( EDITORTYPE.NODE ) || m_open_editors.includes( EDITORTYPE.EDGE ));
   return { templateBeingEdited, importActive, nodeOrEdgeBeingEdited };
