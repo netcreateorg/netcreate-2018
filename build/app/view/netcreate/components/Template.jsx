@@ -221,8 +221,8 @@ class Template extends UNISYS.Component {
 
   onTOMLfileSelect(e) { // import
     const tomlfile = e.target.files[0];
-    UDATA.LocalCall('VALIDATE_TOMLFILE', { tomlfile }) // nc-logic
-      .then(result => {
+    TEMPLATE_LOGIC.ValidateTOMLFile({ tomlfile })
+    .then(result => {
         if (result.isValid) {
           this.setState({
             editScope: 'root'

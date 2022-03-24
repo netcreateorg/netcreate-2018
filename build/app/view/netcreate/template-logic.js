@@ -39,6 +39,24 @@ var UDATA = UNISYS.NewDataLink(MOD);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ///
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Used when importing a TOML file
+    Makes sure TOML file is readable.
+    Returns JSON
+/*/
+MOD.ValidateTOMLFile = async data => {
+  const { tomlfile } = data;
+  try {
+    let tomlText = await tomlfile.text();
+    const json = TOML.parse(tomlText);
+    const isValid = true;
+    return {isValid, templateJSON: json};
+  }
+  catch (err) {
+    return { isValid: false, error: err };
+  }
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Update TEMPLATE AppState
     Called by Template.jsx to update the template data with the info from the form.

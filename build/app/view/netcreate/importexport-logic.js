@@ -449,24 +449,6 @@ MOD.ValidateEdgeFile = async data => {
   if (isValid) MOD.EdgefileData = { headers, lines };
   return {isValid, missingKeys, fileKeys};
 }
-
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Used when importing a TOML file
-    Makes sure TOML file is readable.
-    Returns JSON
-/*/
-MOD.ValidateTOMLFile = async data => {
-  const { tomlfile } = data;
-  try {
-    let tomlText = await tomlfile.text();
-    const json = TOML.parse(tomlText);
-    const isValid = true;
-    return {isValid, templateJSON: json};
-  }
-  catch (err) {
-    return { isValid: false, error: err };
-  }
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

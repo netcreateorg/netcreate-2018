@@ -744,7 +744,6 @@ MOD.Hook("INITIALIZE", () => {
   UDATA.HandleMessage("IMPORT", IMPORTEXPORT.Import);
   UDATA.HandleMessage("VALIDATE_NODEFILE", IMPORTEXPORT.ValidateNodeFile);
   UDATA.HandleMessage("VALIDATE_EDGEFILE", IMPORTEXPORT.ValidateEdgeFile);
-  UDATA.HandleMessage("VALIDATE_TOMLFILE", IMPORTEXPORT.ValidateTOMLFile);
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   UDATA.HandleMessage("EDIT_CURRENT_TEMPLATE", () => {
