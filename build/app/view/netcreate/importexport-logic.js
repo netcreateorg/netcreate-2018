@@ -4,11 +4,12 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = false;
+const DBG = true;
 const PR = 'importexport-logic: ';
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const React = require('react');
 const UNISYS = require("unisys/client");
 const DATASTORE = require("system/datastore");
 const TOML = require("@iarna/toml");
@@ -30,15 +31,6 @@ const NEW_ID_KEYWORD = "new"; // use id "new" to add a new record during import
 const REGEXMatchLFNotInQuotes = /\n(?=(?:[^"]*"[^"]*")*[^"]*$)/;
 /// * To read fields, we need to ignore commas that are between two double quotes
 const REGEXMatchCommasNotInQuotes = /,(?=(?:[^"]*"[^"]*")*[^"]*$)/;
-
-/// DATA //////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// These are set by MOD.ValidateNodeFile and MOD.ValidateEdgeFile if the
-/// file to import matches the headers.  They are not actually imported
-/// until MOD.Import() is called.
-MOD.NodefileData = {}; // { headers, lines }
-MOD.EdgefileData = {}; // { headers, lines }
-// REVIEW: Is this too confusing with `nodefileData`?
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -87,8 +79,9 @@ function m_flattenKeys(keys, prefix) {
   }
 }
 
-/// IMPORT / EXPORT METHODS ///////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+///////////////////////////////////////////////////////////////////////////////
+/// IMPORT / EXPORT HELPERS ///////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -372,16 +365,75 @@ MOD.ExportEdges = () => {
 ///////////////////////////////////////////////////////////////////////////////
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// IMPORT FILE HEADER VALIDATION /////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// IMPORT MODULE VARIABLES ///////////////////////////////////////////////////
+let nodeFile;
+let edgeFile;
+let nodesToImport = [];
+let edgesToImport = [];
+let IMPORT_NCDATA;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// This only checks to make sure the expected headers are present
-/// It does not actually validate the data
-/// Headers are defined in the template schema.
-MOD.ValidateNodeFile = async data => {
+/**
+ * Called by ImportExport when user clicks "Clear File Selections".
+ * Resets the loaded/validated data for a new set of data
+ */
+MOD.ResetImportData = () => {
+  nodeFile = undefined;
+  edgeFile = undefined;
+  nodesToImport = [];
+  edgesToImport = [];
+  IMPORT_NCDATA = clone(UDATA.AppState('NCDATA'));
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// IMPORT HELPERS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/// Make sure source and target have valid ids
+/// If not, add message to edgeImportErrors
+/// `row` is the line number in the import csv file
+function m_hasValidSourceTarget(edge, NCDATA, edgeImportErrors, row) {
+  const source = NCDATA.nodes.find(n => n.id === Number(edge.source));
+  const target = NCDATA.nodes.find(n => n.id === Number(edge.target));
+  if (source === undefined) edgeImportErrors.push(`Edge id ${edge.id}, row ${row} references unknown source node id ${edge.source}`);
+  if (target === undefined) edgeImportErrors.push(`Edge id ${edge.id}, row ${row} references unknown target node id ${edge.target}`);
+  return (source && target);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// IMPORT MODULE METHODS /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/**
+ * Called by ImportExport if the user Cancels selecting a node file
+ */
+MOD.ResetNodeImportData = () => {
+  nodeFile = undefined;
+  nodesToImport = [];
+  if (IMPORT_NCDATA) IMPORT_NCDATA.nodes = clone(UDATA.AppState('NCDATA').nodes);
+}
+/**
+ * Called by IMportExport if the user Cancels selecting a node file
+ */
+MOD.ResetEdgeImportData = () => {
+  edgeFile = undefined;
+  edgesToImport = [];
+  if (IMPORT_NCDATA) IMPORT_NCDATA.edges = clone(UDATA.AppState('NCDATA').edges);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// NODE IMPORT ///////////////////////////////////////////////////////////////
+/**
+ * Loads the file and checks the first row headers to make sure all the required
+ * headers have been defined.
+ * @param {Object} data
+ * @param {File} data.nodefile - https://developer.mozilla.org/en-US/docs/Web/API/File
+ * @returns {isValid:boolean, messageJsx:jsx, headers:[], lines:[]}
+ */
+async function m_NodefileCheckHeaders(data) {
   let isValid = true;
   let missingKeys = [];
+  let messageJsx = '';
 
   // Retrieve import file node keys defined in template
   const TEMPLATE = UDATA.AppState('TEMPLATE');
@@ -409,16 +461,189 @@ MOD.ValidateNodeFile = async data => {
       missingKeys.push(`"${k}"`);
     }
   });
-  if (isValid) MOD.NodefileData = { headers, lines };
-  return {isValid, missingKeys, fileKeys};
+  if (!isValid) {
+    // construct missing keys jsx
+    messageJsx = (
+      <div style={{ color: 'red' }}>
+        <div>Error trying to import {data.nodefile.name}!</div>
+        <div>Missing keys: {missingKeys.join(', ')}</div>
+        <div>Keys found in file: {fileKeys.join(', ')}</div>
+      </div>
+    )
+  }
+  return {isValid, messageJsx, headers, lines};
 }
+/**
+ * Reads each line, mapping data fields to internal representation fields
+ * @param {array} headers
+ * @param {array} lines
+ * @returns { isValid:boolean, messageJsx:jsx, nodes:[] }
+ */
+function m_NodefileLoadNodes(headers, lines) {
+  // Map import fields (exportLabel) to internal representation fields, e.g. ID => id,
+  // essentially a reverse look up map
+  const TEMPLATE = UDATA.AppState('TEMPLATE');
+  const INTERNAL_FIELDS_MAP = new Map();
+  Object.entries(TEMPLATE.nodeDefs).map(e => INTERNAL_FIELDS_MAP.set(e[1].exportLabel, e[0]));
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// This only checks to make sure the expected headers are present
-/// It does not actually validate the data
-MOD.ValidateEdgeFile = async data => {
+  // convert nodefileData to JSON
+  // Load JSON
+  let isValid = true;
+  let messageJsx = '';
+  const nodes = lines.map(l => {
+    const node = {};
+    const subcategories = new Map();
+    const importFields = l.split(REGEXMatchCommasNotInQuotes); // ?=" needed to match commas in strings
+    importFields.forEach((f, index) => {
+      const field = f.replace(/^"/, "").replace(/"$/, ""); // strip start and end quotes from strings
+      const key = headers[index];
+      const keysplit = String(key).split(':');
+      // Subcategory and subkey are DEPRECATED
+      const subcategory = keysplit[0]; // e.g. 'attributes' of 'attributes:Node_type'
+      const subkey = keysplit[1]; // e.g. 'Node_type'
+      if (subkey) {
+        isValid = false;
+        messageJsx = (<div color="red">`subkey ${subkey} is deprecated!`</div>)
+        console.error(PR, `subkey ${subkey} is deprecated!`);
+        // DEPRECATED: Review if we decide to use this again.
+        // // Using a sub category?  e.g. 'attributes:Node_type'
+        // const currSubfields = subcategories.get(subcategory) || {};
+        // console.log('...currSubfields', currSubfields, field)
+        // currSubfields[subkey] = field;
+        // subcategories.set(subcategory, currSubfields);
+        // console.log('adding subfields', key, currSubfields, subcategories)
+      } else {
+        // not using a subcategory, just a regular field
+        const exportLabel = headers[index];
+        if (exportLabel === undefined) console.error(PR, 'could not find exportLabel for index', index, 'in', headers);
+        const internalLabel = INTERNAL_FIELDS_MAP.get(exportLabel);
+        // special handling for internal fields
+        if (['id'].includes(internalLabel)) {
+          // Note that Number("") => 0
+          // We don't want empty ids to be converted to id 0
+          // so we explicitly replace it with NaN
+          node[internalLabel] = field==='' ? NaN : field; // ids are numbers
+        } else if (['created', 'updated', 'revision'].includes(internalLabel)) {
+          // meta fields
+          if (node.meta === undefined) node.meta = {};
+          node.meta[internalLabel] = field;
+        } else {
+          node[internalLabel] = m_decode(field); // convert double quotes
+        }
+      }
+    })
+    // DEPRECATED
+    // collapse 'attributes' and 'meta' into objects
+    // subcategories.forEach((val, key) => {
+    //   node[key] = val
+    // });
+    return node;
+  });
+  return { isValid, messageJsx, nodes };
+}
+/**
+ * Checks to make sure all nodes to import have a valid id or specify "new"
+ * @param {array} nodes
+ * @returns { isValid:boolean, messageJsx:jsx, nodes, IMPORT_NCDATA }
+ *          At the end of this method, IMPORT_NCDATA will have imported nodes added EXCEPT for "new" id nodes
+ */
+function m_NodefileValidateNodes(nodes) {
+  let isValid = true;
+  let messageJsx = '';
+  let nodesAdded = 0; // counter
+  let nodesReplaced = 0; // counter
+  const importMsgs = [];
+  const nodeImportErrors = [];
+  nodes.forEach((n, i) => {
+    const row = i + 2; // to account for header row
+    if (String(n.id).toLowerCase() === NEW_ID_KEYWORD) {
+      //  A1.1 "new" node
+      importMsgs.push(`New node "${n.label}" with auto-generated id will be added.`);
+      //  NOTE: "new" nodes are not added until after DB_MERGE since they do not have an id
+      //        Edge imports should not be referencing these new nodes.
+      nodesAdded++;
+    } else {
+      n.id = Number(n.id); // csv imports as string, so convert to Number
+      if (isNaN(n.id)) {
+        // A1.2 Invalid node id, usually a string
+        isValid = false;
+        nodeImportErrors.push(`Node in row ${row} does not have a valid id.  Found: "${n.id}".`);
+      } else {
+        const existingNodeIdx = IMPORT_NCDATA.nodes.findIndex(node => node.id === n.id);
+        if (existingNodeIdx > -1) {
+          // A1.3 Replace existing node
+          importMsgs.push(`Existing node id ${n.id} "${IMPORT_NCDATA.nodes[existingNodeIdx].label}" will be replaced by node "${n.label}" in row ${row} with matching id.`);
+          IMPORT_NCDATA.nodes.splice(existingNodeIdx, 1, n);
+          nodesReplaced++;
+        } else {
+          // A1.4 Referenced unknown id, add if valid
+          importMsgs.push(`New node id ${n.id} "${n.label}" will be added.`);
+          IMPORT_NCDATA.nodes.push(n);
+          nodesAdded++;
+        }
+      }
+    }
+  });
+  if (isValid) {
+    messageJsx = (
+      <ul>{importMsgs.map((e, i) => (<li key={i}>{e}</li>))}</ul>
+    );
+  } else {
+    messageJsx = (
+      <ul style={{color: 'red'}}>{nodeImportErrors.map((e, i) => (<li key={i}>{e}</li>))}</ul>
+    )
+  }
+  return { isValid, messageJsx, nodes, IMPORT_NCDATA }
+}
+/**
+ * Side effect: Updates `nodesToImport` with validated nodes
+ * @param {object} data
+ * @param {File} data.nodefile - https://developer.mozilla.org/en-US/docs/Web/API/File
+ * @return { isValid:boolean, messages:[], errors:[] }
+ */
+MOD.NodefileValidate = async (data) => {
+  // No nodefile passed, user probably clicked cancel
+  if (!data.nodefile) return { isValid: false }
+
+  if (!IMPORT_NCDATA) IMPORT_NCDATA = clone(UDATA.AppState('NCDATA'));
+  const nodeFileName = data.nodefile.name;
+
+  const headerResults = await m_NodefileCheckHeaders(data);
+  if (!headerResults.isValid) return Object.assign(headerResults, {
+    messageTitle: `${nodeFileName} Header Validation Failed!`
+  });
+
+  const importResults = m_NodefileLoadNodes(headerResults.headers, headerResults.lines);
+  if (!importResults.isValid) return Object.assign(importResults, {
+    messageTitle: `${nodeFileName} Load File Failed!`
+  });
+
+  const nodeResults = m_NodefileValidateNodes(importResults.nodes, IMPORT_NCDATA);
+  if (!nodeResults.isValid) return Object.assign(nodeResults, {
+    messageTitle: `${nodeFileName} Data Validation Failed!`
+  });
+
+  // set module-wide vars
+  nodesToImport = nodeResults.nodes;
+  nodeFile = data.nodefile;
+  IMPORT_NCDATA.nodes = Object.assign(IMPORT_NCDATA.nodes, nodeResults.nodes);
+  return Object.assign(nodeResults, {
+    messageTitle: `${nodeFileName} Validated!`
+  });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// EDGE IMPORT ///////////////////////////////////////////////////////////////
+/**
+ * Loads the file and checks the first row headers to make sure all the required
+ * headers have been defined.
+ * @param {Object} data
+ * @param {File} data.edgefile - https://developer.mozilla.org/en-US/docs/Web/API/File
+ * @returns {isValid:boolean, messageJsx:jsx, headers:[], lines:[]}
+ */
+async function m_EdgefileCheckHeaders(data) {
   let isValid = true;
   let missingKeys = [];
+  let messageJsx = '';
 
   // Retrieve import file node keys defined in template
   const TEMPLATE = UDATA.AppState('TEMPLATE');
@@ -439,47 +664,44 @@ MOD.ValidateEdgeFile = async data => {
   // get keys
   const edgeKeys = m_flattenKeys(EDGEKEYS);
   const fileKeys = m_flattenKeys(headers);
-  // check that ALL nodeKeys are in the fileKeys
+  // check that ALL edgeKeys are in the fileKeys
   edgeKeys.forEach(k => {
     if (!fileKeys.includes(k)) {
       isValid = false;
       missingKeys.push(`"${k}"`);
     }
   });
-  if (isValid) MOD.EdgefileData = { headers, lines };
-  return {isValid, missingKeys, fileKeys};
+  if (!isValid) {
+    // construct missing keys jsx
+    messageJsx = (
+      <div style={{ color: 'red' }}>
+        <div>Error trying to import {data.edgefile.name}!</div>
+        <div>Missing keys: {missingKeys.join(', ')}</div>
+        <div>Keys found in file: {fileKeys.join(', ')}</div>
+      </div>
+    )
+  }
+  return {isValid, messageJsx, headers, lines};
 }
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// IMPORT FILE LOADERS ///////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /**
- * Load Nodes from node csv file
- * @param {object} nodefileData
- * @param {array} nodefileData.headers
- * @param {array} nodefileData.lines
- * @returns
+ * Reads each line, mapping data fields to internal representation fields
+ * @param {array} headers
+ * @param {array} lines
+ * @returns { isValid:boolean, messageJsx:jsx, nodes:[] }
  */
-function m_LoadNodes(nodefileData) {
-  // If nodefileData is not defined, just return an empty array
-  if (!nodefileData || !nodefileData.headers || !nodefileData.lines) return [];
-
-  // Retrieve import file node keys defined in template
-  const TEMPLATE = UDATA.AppState('TEMPLATE');
-  const NODEKEYS = Object.values(TEMPLATE.nodeDefs).map(k => k.exportLabel);
-
-  // Map import fields (exportLabel) to internal fields, e.g. ID => id,
+function m_EdgefileLoadEdges(headers, lines) {
+  // Map import fields (exportLabel) to internal representation fields, e.g. ID => id,
   // essentially a reverse look up map
+  const TEMPLATE = UDATA.AppState('TEMPLATE');
   const INTERNAL_FIELDS_MAP = new Map();
-  Object.entries(TEMPLATE.nodeDefs).map(e => INTERNAL_FIELDS_MAP.set(e[1].exportLabel, e[0]));
+  Object.entries(TEMPLATE.edgeDefs).map(e => INTERNAL_FIELDS_MAP.set(e[1].exportLabel, e[0]));
 
   // convert nodefileData to JSON
   // Load JSON
-  const headers = nodefileData.headers;
-  const nodes = nodefileData.lines.map(l => {
-    const node = {};
+  let isValid = true;
+  let messageJsx = '';
+  const edges = lines.map(l => {
+    const edge = {};
     const subcategories = new Map();
     const importFields = l.split(REGEXMatchCommasNotInQuotes); // ?=" needed to match commas in strings
     importFields.forEach((f, index) => {
@@ -490,80 +712,8 @@ function m_LoadNodes(nodefileData) {
       const subcategory = keysplit[0]; // e.g. 'attributes' of 'attributes:Node_type'
       const subkey = keysplit[1]; // e.g. 'Node_type'
       if (subkey) {
-        console.error(PR, `subkey ${subkey} is deprecated!`);
-        // DEPRECATED: Review if we decide to use this again.
-        // // Using a sub category?  e.g. 'attributes:Node_type'
-        // const currSubfields = subcategories.get(subcategory) || {};
-        // console.log('...currSubfields', currSubfields, field)
-        // currSubfields[subkey] = field;
-        // subcategories.set(subcategory, currSubfields);
-        // console.log('adding subfields', key, currSubfields, subcategories)
-      } else {
-        // not using a subcategory, just a regular field
-        // meta field?
-        const exportLabel = headers[index];
-        if (exportLabel === undefined) console.error(PR, 'could not find exportLabel for index', index, 'in', headers);
-        const internalLabel = INTERNAL_FIELDS_MAP.get(exportLabel);
-        // special handling for internal fields
-        if (['id'].includes(internalLabel)) {
-          // Note that Number("") => 0
-          // We don't want empty ids to be converted to id 0
-          // so we explicitly replace it with NaN
-          node[internalLabel] = field==='' ? NaN : field; // ids are numbers
-        } else if (['created', 'updated', 'revision'].includes(internalLabel)) {
-          if (node.meta === undefined) node.meta = {};
-          node.meta[internalLabel] = field;
-        } else {
-          node[internalLabel] = m_decode(field); // convert double quotes
-        }
-      }
-    })
-    // DEPRECATED
-    // collapse 'attributes' and 'meta' into objects
-    // subcategories.forEach((val, key) => {
-    //   node[key] = val
-    // });
-    return node;
-  });
-  return nodes;
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Load Edges from edge csv file
- * @param {object} edgefileData
- * @param {array} edgefileData.headers
- * @param {array} edgefileData.lines
- * @returns
- */
-function m_LoadEdges(edgefileData) {
-  // If edgefileData is not defined, just return an empty array
-  if (!edgefileData || !edgefileData.headers || !edgefileData.lines) return [];
-
-  // Retrieve import file node keys defined in template
-  const TEMPLATE = UDATA.AppState('TEMPLATE');
-  const EDGEKEYS = Object.values(TEMPLATE.edgeDefs).map(k => k.exportLabel);
-
-  // Map import fields (exportLabel) to internal fields, e.g. ID => id,
-  // essentially a reverse look up map
-  const INTERNAL_FIELDS_MAP = new Map();
-  Object.entries(TEMPLATE.edgeDefs).map(e => INTERNAL_FIELDS_MAP.set(e[1].exportLabel, e[0]));
-
-  // convert edgefileData to JSON
-  // Load JSON
-  const headers = edgefileData.headers;
-  const edges = edgefileData.lines.map(l => {
-    const edge = {};
-    const subcategories = new Map();
-    const importFields = l.split(REGEXMatchCommasNotInQuotes); // ?=" needed to match commas in strings
-    importFields.forEach((f, index) => {
-      const field = f.replace(/^"/, "").replace(/"$/, ""); // strip quotes
-      const key = headers[index];
-      const keysplit = String(key).split(':');
-      // Subcategory and subkey are DEPRECATED
-      const subcategory = keysplit[0]; // e.g. 'attributes' of 'attributes:Node_type'
-      const subkey = keysplit[1]; // e.g. 'Node_type'
-      if (subkey) {
+        isValid = false;
+        messageJsx = (<div color="red">`subkey ${subkey} is deprecated!`</div>)
         console.error(PR, `subkey ${subkey} is deprecated!`);
         // DEPRECATED: Review if we decide to use this again.
         // // Using a sub category?  e.g. 'attributes:Node_type'
@@ -585,10 +735,11 @@ function m_LoadEdges(edgefileData) {
           // so we explicitly replace it with NaN
           edge[internalLabel] = field==='' ? NaN : field; // ids are numbers
         } else if (['created', 'updated', 'revision'].includes(internalLabel)) {
+          // meta fields
           if (edge.meta === undefined) edge.meta = {};
           edge.meta[internalLabel] = field;
         } else {
-          edge[internalLabel] = field;
+          edge[internalLabel] = m_decode(field); // convert double quotes
         }
       }
     })
@@ -599,133 +750,118 @@ function m_LoadEdges(edgefileData) {
     // });
     return edge;
   });
-  return edges;
+  return { isValid, messageJsx, edges };
 }
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// IMPORT HELPERS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// Make sure source and target have valid ids
-/// If not, add message to edgeImportErrors
-/// `row` is the line number in the import csv file
-function m_hasValidSourceTarget(edge, NCDATA, edgeImportErrors, row) {
-  const source = NCDATA.nodes.find(n => n.id === Number(edge.source));
-  const target = NCDATA.nodes.find(n => n.id === Number(edge.target));
-  if (source === undefined) edgeImportErrors.push(`Edge id ${edge.id}, row ${row} references unknown source node id ${edge.source} ${typeof edge.source}`);
-  if (target === undefined) edgeImportErrors.push(`Edge id ${edge.id}, row ${row} references unknown target node id ${edge.target}`);
-  return (source && target);
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// MAIN IMPORT ///////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
- * Import will first try to validate the data.  If the data is valid
- * it will write the results to the database and NCDATA AppState is updated.
- * If the data is not valid neither the database nor NCDATA will be updated.
- * @param {object} data - not used currently
- * @returns { error } - 'error' is 'undefined' if there are no errors
- *                      otherwise it is an array of error messages.
+ * Checks to make sure all edges to import have a valid id or specify "new"
+ * @param {array} edges
+ * @returns { isValid:boolean, messageJsx:jsx, nodes, IMPORT_NCDATA }
+ *          At the end of this method, IMPORT_NCDATA will have imported edges added EXCEPT for "new" id edges
  */
-MOD.Import = async data => {
-  const importMsgs = []; // general non-error notes about the import
-  const nodeImportErrors = [];
+function m_EdgefileValidateEdges(edges) {
+  let isValid = true;
+  let messageJsx = '';
+  let edgesAdded = 0; // counter
+  let edgesReplaced = 0; // counter
+  const importMsgs = [];
   const edgeImportErrors = [];
-  const importNodes = m_LoadNodes(MOD.NodefileData);
-  const importEdges = m_LoadEdges(MOD.EdgefileData);
-
-  const NCDATA = UDATA.AppState('NCDATA');
-
-  // A. Validate Nodes to import
-  let nodesToAdd = 0; // counter
-  let nodesToReplace = 0; // counter
-  importNodes.forEach((n, i) => {
-    const row = i + 2; // to account for header row
-    if (String(n.id).toLowerCase() === NEW_ID_KEYWORD) {
-      //  A1.1 "new" node
-      importMsgs.push(`New node "${n.label}" with auto-generated id added.`);
-      nodesToAdd++;
-    } else {
-      n.id = Number(n.id); // csv imports as string, so convert to Number
-      if (isNaN(n.id)) {
-        // A1.2 Invalid node id, usually a string
-        nodeImportErrors.push(`Node in row ${row} does not have a valid id.  Found: "${n.id}".`);
-      } else {
-        const existingNodeIdx = NCDATA.nodes.findIndex(node => node.id === n.id);
-        if (existingNodeIdx > -1) {
-          // A1.3 Replace existing node
-          importMsgs.push(`Existing node id ${n.id} "${NCDATA.nodes[existingNodeIdx].label}" replaced by node "${n.label}" in row ${row} with matching id.`);
-          nodesToReplace++;
-        } else {
-          // A1.4 Referenced unknown id, add if valid
-          importMsgs.push(`New node id ${n.id} "${n.label}" added.`);
-          nodesToAdd++;
-        }
-      }
-    }
-  });
-
-  // B.  Validate Edges to import
-  let edgesToAdd = 0;
-  let edgesToReplace = 0;
-  //    B1. Construct 'edgesToAdd' and 'edgesToReplace'
-  importEdges.forEach((e, i) => {
+  edges.forEach((e, i) => {
     const row = i + 2; // to account for header row
     e.size = 1; // Set default edge size
 
     // Make sure each edge has a valid source and target
-    if (!m_hasValidSourceTarget(e, NCDATA, edgeImportErrors, row)) return;
+    if (!m_hasValidSourceTarget(e, IMPORT_NCDATA, edgeImportErrors, row)) isValid = false;
 
     if (String(e.id).toLowerCase() === NEW_ID_KEYWORD) {
-      // B1.1 New Edge
-      importMsgs.push(`New edge added with auto-generated id.`);
-      edgesToAdd++;
+      //  A1.1 "new" edge
+      importMsgs.push(`New edge with auto-generated id will be added.`);
+      //  NOTE: "new" edges are not added until after DB_MERGE since they do not have an id
+      edgesAdded++;
     } else {
-      e.id = Number(e.id);
+      e.id = Number(e.id); // csv imports as string, so convert to Number
       if (isNaN(e.id)) {
-        // B1.2 Invalid edge id, usually a string
+        // A1.2 Invalid edge id, usually a string
+        isValid = false;
         edgeImportErrors.push(`Edge in row ${row} does not have a valid id.  Found: "${e.id}".`);
       } else {
-        const existingEdgeIdx = NCDATA.edges.findIndex(existingEdge => e.id === existingEdge.id);
+        const existingEdgeIdx = IMPORT_NCDATA.edges.findIndex(edge => edge.id === e.id);
         if (existingEdgeIdx > -1) {
-          // B1.3 Replace Existing Edge
-          importMsgs.push(`Existing edge id ${existingEdgeIdx} replaced by edge in row ${row} with matching id.`);
-          edgesToReplace++;
+          // A1.3 Replace existing node
+          importMsgs.push(`Existing edge id ${e.id} will be replaced by edge in row ${row} with matching id.`);
+          IMPORT_NCDATA.edges.splice(existingEdgeIdx, 1, e);
+          edgesReplaced++;
         } else {
-          // B1.4 Unknown Id, add if valid
-          importMsgs.push(`New edge id ${e.id} added.`);
-          edgesToAdd++;
+          // A1.4 Referenced unknown id, add if valid
+          importMsgs.push(`New edge id ${e.id} will be added.`);
+          IMPORT_NCDATA.edges.push(e);
+          edgesAdded++;
         }
       }
     }
-  })
+  });
+  if (isValid) {
+    messageJsx = (
+      <ul>{importMsgs.map((e, i) => (<li key={i}>{e}</li>))}</ul>
+    );
+  } else {
+    messageJsx = (
+      <ul style={{color: 'red'}}>{edgeImportErrors.map((e, i) => (<li key={i}>{e}</li>))}</ul>
+    )
+  }
+  return { isValid, messageJsx, edges, IMPORT_NCDATA }
+}
+/**
+ * Side effect: Updates `edgesToImport` with validated edges
+ * @param {object} data
+ * @param {File} data.edgefile - https://developer.mozilla.org/en-US/docs/Web/API/File
+ * @return { isValid:boolean, messages:[], errors:[] }
+ */
+MOD.EdgefileValidate = async (data) => {
+  // No edgefile passed, user probably clicked cancel
+  if (!data.edgefile) return { isValid: false }
 
-  // C. Post summary of results
-  importMsgs.unshift(`Edges -- Added: ${edgesToAdd} Replaced: ${edgesToReplace}`);
-  importMsgs.unshift(`Nodes -- Added: ${nodesToAdd} Replaced: ${nodesToReplace}`);
+  if (!IMPORT_NCDATA) IMPORT_NCDATA = clone(UDATA.AppState('NCDATA'));
+  const edgeFileName = data.edgefile.name;
 
-  // D, If there were errors, abort!!!
-  let errors = { messages: importMsgs };
-  if (nodeImportErrors.length > 0) errors.nodeImportErrors = nodeImportErrors;
-  if (edgeImportErrors.length > 0) errors.edgeImportErrors = edgeImportErrors;
-  if (errors.nodeImportErrors || errors.edgeImportErrors) return errors;
+  const headerResults = await m_EdgefileCheckHeaders(data);
+  if (!headerResults.isValid) return Object.assign(headerResults, {
+    messageTitle: `${edgeFileName} Header Validation Failed!`
+  });
 
-  // E. Reset Form
-  //    Clear file data, otherwise data will be re-used on next import
-  MOD.NodefileData = {};
-  MOD.EdgefileData = {};
+  const importResults = m_EdgefileLoadEdges(headerResults.headers, headerResults.lines);
+  if (!importResults.isValid) return Object.assign(importResults, {
+    messageTitle: `${edgeFileName} Load File Failed!`
+  });
 
-  // F.  Write to database!
-  const mergeData = { nodes: importNodes, edges: importEdges };
+  const edgeResults = m_EdgefileValidateEdges(importResults.edges, IMPORT_NCDATA);
+  if (!edgeResults.isValid) return Object.assign(edgeResults, {
+    messageTitle: `${edgeFileName} Data Validation Failed!`
+  });
+
+  // set module-wide vars
+  edgesToImport = edgeResults.edges; // set module-wide var
+  edgeFile = data.edgefile; // set module-wide var
+  return Object.assign(edgeResults, {
+    messageTitle: `${edgeFileName} Validated!`
+  });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// MAIN IMPORT ///////////////////////////////////////////////////////////////
+MOD.Import = async () => {
+  // Write to database!
+  const mergeData = { nodes: nodesToImport, edges: edgesToImport };
   await UDATA.LocalCall("DB_MERGE", mergeData).then(res => {
     // Reload NCDATA from the DB to get new Node and Edge Ids created during the merge
     UDATA.LocalCall("RELOAD_DB");
   });
-
-  return { nodeImportErrors: undefined, edgeImportErrors: undefined, messages: importMsgs };
+  const importedFiles = [];
+  if (nodeFile) importedFiles.push(nodeFile.name);
+  if (edgeFile) importedFiles.push(edgeFile.name);
+  const importedFileNames = importedFiles.join(',');
+  return {
+    messageJsx: (<div>{importedFileNames} Import Completed!</div>)
+  }
 }
-
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
