@@ -171,12 +171,22 @@ class EdgeTable extends UNISYS.Component {
   /*/
   handleDataUpdate(data) {
     if (data && data.edges && data.nodes) {
-      const edges = this.sortTable(this.state.sortkey, data.edges);
-      // NCDATA.edges no longer uses source/target objects, but instead
-      // references source/target as ids.  So we need to save nodes for dereferencing.
-      this.setState({ edges, nodes: data.nodes });
-      const { filteredEdges } = this.state;
-      this.updateEdgeFilterState(edges, filteredEdges);
+      // NCDATA.edges no longer uses source/target objects
+      // ...1. So we need to save nodes for dereferencing.
+      this.setState({ nodes: data.nodes }, () => {
+        // ...2. So we stuff 'sourceLabel' and 'targetLabel' into the local edges array
+        let edges = data.edges.map(e => {
+          e.sourceLabel = this.lookupNodeLabel(e.source); // requires `state.nodes` be set
+          e.targetLabel = this.lookupNodeLabel(e.target);
+          return e;
+        })
+        // ...   sort it also
+        edges = this.sortTable(this.state.sortkey, edges);
+        // ...1. So we need to save nodes for dereferencing.
+        this.setState({ edges });
+        const { filteredEdges } = this.state;
+        this.updateEdgeFilterState(edges, filteredEdges);
+      });
     }
   }
 
@@ -217,8 +227,8 @@ class EdgeTable extends UNISYS.Component {
 /*/ sortBySourceLabel (edges) {
       if (edges) {
         return edges.sort( (a,b) => {
-          let akey = a.source.label,
-              bkey = b.source.label;
+          let akey = a.sourceLabel,
+              bkey = b.sourceLabel;
           return (akey.localeCompare(bkey)*this.sortDirection);
         });
       }
@@ -229,8 +239,8 @@ class EdgeTable extends UNISYS.Component {
 /*/ sortByTargetLabel (edges) {
       if (edges) {
         return edges.sort( (a,b) => {
-          let akey = a.target.label,
-              bkey = b.target.label;
+          let akey = a.targetLabel,
+              bkey = b.targetLabel;
 
           return (akey.localeCompare(bkey)*this.sortDirection);
 
@@ -249,8 +259,8 @@ class EdgeTable extends UNISYS.Component {
           if (akey>bkey) return 1*Number(this.sortDirection);
           if (akey===bkey) {
             // Secondary sort on Source label
-            let source_a = a.source.label;
-            let source_b = b.source.label;
+            let source_a = a.sourceLabel;
+            let source_b = b.sourceLabel;
             if (source_a<source_b) return -1*Number(this.sortDirection);
             if (source_a>source_b) return 1*Number(this.sortDirection);
           }
@@ -270,8 +280,8 @@ class EdgeTable extends UNISYS.Component {
           if (akey>bkey) return 1*Number(this.sortDirection);
           if (akey===bkey) {
             // Secondary sort on Source label
-            let source_a = a.source.label;
-            let source_b = b.source.label;
+            let source_a = a.sourceLabel;
+            let source_b = b.sourceLabel;
             if (source_a<source_b) return -1*Number(this.sortDirection);
             if (source_a>source_b) return 1*Number(this.sortDirection);
           }
@@ -335,7 +345,7 @@ class EdgeTable extends UNISYS.Component {
       else return this.sortDirection===1?"▼":"▲"; // default to "decreasing" and flip if clicked again
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
+/*/ Look up the Node label for source / target ids
 /*/ lookupNodeLabel(nodeId) {
       const node = this.state.nodes.find(n => n.id === nodeId);
       if (node === undefined) throw new Error('EdgeTable: Could not find node', nodeId);
@@ -529,11 +539,11 @@ class EdgeTable extends UNISYS.Component {
                 </td>
                 <td hidden={!DBG}>{edge.source}</td>
                 <td><a href="#" onClick={(e)=>this.selectNode(edge.source,e)}
-                    >{this.lookupNodeLabel(edge.source)}</a></td>
+                    >{edge.sourceLabel}</a></td>
                 <td hidden={edgeDefs.type.hidden}>{edge.type}</td>
                 <td hidden={!DBG}>{edge.target}</td>
                 <td><a href="#" onClick={(e)=>this.selectNode(edge.target,e)}
-                    >{this.lookupNodeLabel(edge.target)}</a></td>
+                    >{edge.targetLabel}</a></td>
                 <td hidden={edgeDefs.category.hidden}>{edge.category}</td>
                 <td hidden={edgeDefs.citation.hidden}>{edge.citation}</td>
                 <td hidden={edgeDefs.notes.hidden}>
