@@ -581,7 +581,6 @@ class EdgeEditor extends UNISYS.Component {
     Usually someone has clicked a button in the EdgeList to view/edit an edge
 /*/ handleEdgeSelection ( data ) {
       if (DBG) console.log('EdgeEditor',this.props.edgeID,': got state EDGE_SELECT',data);
-
       if (this.state.formData.id === data.edgeID) {
         // pass currentAutoComplete back to search
         this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
@@ -594,8 +593,8 @@ class EdgeEditor extends UNISYS.Component {
 /*/ Someone externally has selected an edge for editing.
     Usually someone has clicked a button in the EdgeTable to edit an edge
 /*/ handleEdgeEdit ( data ) {
-      if (DBG) console.log('EdgeEditor',this.state.formData.id,': got state EDGE_EDIT',data,'formData is',this.state.formData);
       const { formData, isBeingEdited, isLocked } = this.state;
+      if (DBG) console.log('EdgeEditor',this.state.formData.id,': got state EDGE_EDIT',data,'formData is',this.state.formData);
       if ((data.edgeID !== undefined) && (typeof data.edgeID === "number") && !isBeingEdited &&
         data.edgeID === formData.id
       ) {

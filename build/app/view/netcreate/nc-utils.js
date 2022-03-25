@@ -17,7 +17,6 @@
  * @param {array} data.edges
  */
 export function RecalculateAllNodeDegrees(data) {
-  console.error('m_RecalculateAllNodeDegrees')
   const degrees = new Map();
   function inc(nodeId) {
     const val = degrees.get(nodeId) || 0;
@@ -43,7 +42,6 @@ export function RecalculateAllNodeDegrees(data) {
  * @param {array} data.edges
  */
 export function RecalculateAllEdgeSizes(data) {
-  console.error('m_RecalculateAllEdgeWeights')
   const size = new Map();
   function getKey(sourceId, targetId) {
     // key always starts with the smaller value
