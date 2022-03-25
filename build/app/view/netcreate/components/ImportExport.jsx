@@ -141,7 +141,8 @@ class ImportExport extends UNISYS.Component {
           nodeOkToImport: result.isValid,
           okToImport,
           nodefileStatus: result.isValid ? 'Ready to Import' : NODEFILESTATUS_DEFAULT,
-          nodeValidationMsgs: msg
+          nodeValidationMsgs: msg,
+          importMsgs: undefined
         });
         // Clear "Choose File"
         if (!result.isValid) document.getElementById('nodefileInput').value = "";
@@ -163,7 +164,8 @@ class ImportExport extends UNISYS.Component {
           edgeOkToImport: result.isValid,
           okToImport,
           edgefileStatus: result.isValid ? 'Ready to Import' : EDGEFILESTATUS_DEFAULT,
-          edgeValidationMsgs: msg
+          edgeValidationMsgs: msg,
+          importMsgs: undefined
         });
         // Clear "Choose File"
         if (!result.isValid) document.getElementById('edgefileInput').value = "";
@@ -221,8 +223,12 @@ class ImportExport extends UNISYS.Component {
     IELOGIC.Import().then(result => {
       this.setState({
         okToImport: false, // imported, so hide "Import" button
+        nodeOkToImport: false,
+        edgeOkToImport: false,
         importMsgs: result.messageJsx
       });
+      document.getElementById('nodefileInput').value = "";
+      document.getElementById('edgefileInput').value = "";
     });
   }
 
