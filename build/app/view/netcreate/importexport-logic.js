@@ -610,17 +610,17 @@ MOD.NodefileValidate = async (data) => {
 
   const headerResults = await m_NodefileCheckHeaders(data);
   if (!headerResults.isValid) return Object.assign(headerResults, {
-    messageTitle: `${nodeFileName} Header Validation Failed!`
+    messageTitle: `Nodes import file "${nodeFileName}": Header Validation Failed!`
   });
 
   const importResults = m_NodefileLoadNodes(headerResults.headers, headerResults.lines);
   if (!importResults.isValid) return Object.assign(importResults, {
-    messageTitle: `${nodeFileName} Load File Failed!`
+    messageTitle: `Nodes import file "${nodeFileName}": Load File Failed!`
   });
 
   const nodeResults = m_NodefileValidateNodes(importResults.nodes, IMPORT_NCDATA);
   if (!nodeResults.isValid) return Object.assign(nodeResults, {
-    messageTitle: `${nodeFileName} Data Validation Failed!`
+    messageTitle: `Nodes import file "${nodeFileName}": Data Validation Failed!`
   });
 
   // set module-wide vars
@@ -628,7 +628,7 @@ MOD.NodefileValidate = async (data) => {
   nodeFile = data.nodefile;
   IMPORT_NCDATA.nodes = Object.assign(IMPORT_NCDATA.nodes, nodeResults.nodes);
   return Object.assign(nodeResults, {
-    messageTitle: `${nodeFileName} Validated!`
+    messageTitle: `Nodes import file "${nodeFileName}": Validated!`
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -825,24 +825,24 @@ MOD.EdgefileValidate = async (data) => {
 
   const headerResults = await m_EdgefileCheckHeaders(data);
   if (!headerResults.isValid) return Object.assign(headerResults, {
-    messageTitle: `${edgeFileName} Header Validation Failed!`
+    messageTitle: `Edges import file "${edgeFileName}": Header Validation Failed!`
   });
 
   const importResults = m_EdgefileLoadEdges(headerResults.headers, headerResults.lines);
   if (!importResults.isValid) return Object.assign(importResults, {
-    messageTitle: `${edgeFileName} Load File Failed!`
+    messageTitle: `Edges mport file "${edgeFileName}": Load File Failed!`
   });
 
   const edgeResults = m_EdgefileValidateEdges(importResults.edges, IMPORT_NCDATA);
   if (!edgeResults.isValid) return Object.assign(edgeResults, {
-    messageTitle: `${edgeFileName} Data Validation Failed!`
+    messageTitle: `Edges import file "${edgeFileName}": Data Validation Failed!`
   });
 
   // set module-wide vars
   edgesToImport = edgeResults.edges; // set module-wide var
   edgeFile = data.edgefile; // set module-wide var
   return Object.assign(edgeResults, {
-    messageTitle: `${edgeFileName} Validated!`
+    messageTitle: `Edges import file "${edgeFileName}": Validated!`
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -857,7 +857,7 @@ MOD.Import = async () => {
   const importedFiles = [];
   if (nodeFile) importedFiles.push(nodeFile.name);
   if (edgeFile) importedFiles.push(edgeFile.name);
-  const importedFileNames = importedFiles.join(',');
+  const importedFileNames = importedFiles.join(', ');
   return {
     messageJsx: (<div>{importedFileNames} Import Completed!</div>)
   }
