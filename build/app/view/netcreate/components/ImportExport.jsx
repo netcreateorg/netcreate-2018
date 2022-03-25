@@ -44,10 +44,13 @@ class ImportExport extends UNISYS.Component {
       importIsActive: false, // internal source: keeps track of whether THIS panel has valid import files selected
       nodefile: undefined,
       nodefileStatus: NODEFILESTATUS_DEFAULT,
+      nodeValidationMsgs: undefined,
+      nodeOkToImport: false,
       edgefile: undefined,
       edgefileStatus: EDGEFILESTATUS_DEFAULT,
-      nodeValidationMsgs: undefined,
       edgeValidationMsgs: undefined,
+      edgeOkToImport: false,
+      okToImport: false,
       importMsgs: undefined,
       allowLoggedInUserToImport: TEMPLATE.allowLoggedInUserToImport
     };
@@ -132,8 +135,11 @@ class ImportExport extends UNISYS.Component {
             {result.messageJsx}
           </div>
         )
+        // if edge file was already okToImport, then this remains OK.
+        const okToImport = this.state.edgeOkToImport || result.isValid;
         this.setState({
-          okToImport: result.isValid,
+          nodeOkToImport: result.isValid,
+          okToImport,
           nodefileStatus: result.isValid ? 'Ready to Import' : NODEFILESTATUS_DEFAULT,
           nodeValidationMsgs: msg
         });
@@ -151,8 +157,11 @@ class ImportExport extends UNISYS.Component {
             {result.messageJsx}
           </div>
         )
+        // if edge file was already okToImport, then this remains OK.
+        const okToImport = this.state.nodeOkToImport || result.isValid;
         this.setState({
-          okToImport: result.isValid,
+          edgeOkToImport: result.isValid,
+          okToImport,
           edgefileStatus: result.isValid ? 'Ready to Import' : EDGEFILESTATUS_DEFAULT,
           edgeValidationMsgs: msg
         });
