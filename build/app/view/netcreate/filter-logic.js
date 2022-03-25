@@ -301,6 +301,16 @@ function m_FiltersApply() {
   // skip if FDATA has not been defined yet
   if (Object.keys(FDATA).length < 1) return;
 
+  // stuff 'sourceLabel' and 'targetLabel' into edges for quicker filtering
+  // otherwise we have to constantly look up the node label
+  FILTEREDD3DATA.edges = FILTEREDD3DATA.edges.map(e => {
+    const source = FILTEREDD3DATA.nodes.find(n => n.id === e.source);
+    const target = FILTEREDD3DATA.nodes.find(n => n.id === e.target);
+    e.sourceLabel = source.label;
+    e.targetLabel = target.label;
+    return e;
+  })
+
   m_FiltersApplyToNodes(FDATA, FILTEREDD3DATA);
   m_FiltersApplyToEdges(FDATA, FILTEREDD3DATA);
   // Update FILTEREDD3DATA
@@ -584,9 +594,10 @@ function m_IsEdgeMatchedByFilter(edge, filter) {
 
   let edgeValue;
   if (filter.type === FILTER.TYPES.NODE) {
-    // edges require special handling because `source` and `target`
+    // edges fields that poitn to nodes require special handling because `source` and `target`
     // point to node objects, not simple strings.
-    edgeValue = edge[filter.key].label; // search on the source/target node label
+    if (filter.key === 'source') edgeValue = edge.sourceLabel;
+    if (filter.key === 'target') edgeValue = edge.targetLabel;
   } else {
     edgeValue = edge[filter.key];
   }
