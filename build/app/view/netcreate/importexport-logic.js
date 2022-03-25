@@ -610,17 +610,17 @@ MOD.NodefileValidate = async (data) => {
 
   const headerResults = await m_NodefileCheckHeaders(data);
   if (!headerResults.isValid) return Object.assign(headerResults, {
-    messageTitle: `Nodes import file "${nodeFileName}": Header Validation Failed!`
+    messageTitle: `Nodes import file "${nodeFileName}" will not be imported: Header Validation Failed!`
   });
 
   const importResults = m_NodefileLoadNodes(headerResults.headers, headerResults.lines);
   if (!importResults.isValid) return Object.assign(importResults, {
-    messageTitle: `Nodes import file "${nodeFileName}": Load File Failed!`
+    messageTitle: `Nodes import file "${nodeFileName}" will not be imported: Load File Failed!`
   });
 
   const nodeResults = m_NodefileValidateNodes(importResults.nodes, IMPORT_NCDATA);
   if (!nodeResults.isValid) return Object.assign(nodeResults, {
-    messageTitle: `Nodes import file "${nodeFileName}": Data Validation Failed!`
+    messageTitle: `Nodes import file "${nodeFileName}" will not be imported: Data Validation Failed!`
   });
 
   // set module-wide vars
@@ -825,17 +825,17 @@ MOD.EdgefileValidate = async (data) => {
 
   const headerResults = await m_EdgefileCheckHeaders(data);
   if (!headerResults.isValid) return Object.assign(headerResults, {
-    messageTitle: `Edges import file "${edgeFileName}": Header Validation Failed!`
+    messageTitle: `Edges import file "${edgeFileName}" will not be imported: Header Validation Failed!`
   });
 
   const importResults = m_EdgefileLoadEdges(headerResults.headers, headerResults.lines);
   if (!importResults.isValid) return Object.assign(importResults, {
-    messageTitle: `Edges mport file "${edgeFileName}": Load File Failed!`
+    messageTitle: `Edges mport file "${edgeFileName}" will not be imported: Load File Failed!`
   });
 
   const edgeResults = m_EdgefileValidateEdges(importResults.edges, IMPORT_NCDATA);
   if (!edgeResults.isValid) return Object.assign(edgeResults, {
-    messageTitle: `Edges import file "${edgeFileName}": Data Validation Failed!`
+    messageTitle: `Edges import file "${edgeFileName}" will not be imported: Data Validation Failed!`
   });
 
   // set module-wide vars
