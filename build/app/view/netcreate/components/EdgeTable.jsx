@@ -167,7 +167,7 @@ class EdgeTable extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Handle updated SELECTION
+  /*/ Handle updated SELECTION: NCDATA updates
   /*/
   handleDataUpdate(data) {
     if (data && data.edges && data.nodes) {
@@ -191,6 +191,10 @@ class EdgeTable extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Handle FILTEREDD3DATA updates sent by filters-logic.m_FiltersApply
+      Note that edge.soourceLabel and edge.targetLabe should already be set
+      by filter-logic.
+  /*/
   handleFilterDataUpdate(data) {
     if (data.edges) {
       const filteredEdges = data.edges;
