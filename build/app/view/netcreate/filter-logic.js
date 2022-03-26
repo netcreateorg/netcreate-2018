@@ -182,7 +182,7 @@ function m_ImportFilters() {
       group: "edges", // this needs to be passed to StringFilter
       label: "Edge Filters",
       filters: m_ImportPrompts(edgeDefs),
-      transparency: 0.05 // Default transparency form for Highlight should be 0.05, not template default which is usu 0.3
+      transparency: 0.03 // Default transparency form for Highlight should be 0.03, not template default which is usu 0.3
     }
   };
 

@@ -179,7 +179,7 @@ MOD.TEMPLATE = {
     "edgeDefaultTransparency": {
       type: 'number',
       description: 'Default transparency for edges.',
-      default: 0.3
+      default: 0.7
     },
     "searchColor": {
       type: 'string',

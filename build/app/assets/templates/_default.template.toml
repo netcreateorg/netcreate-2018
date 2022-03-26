@@ -9,7 +9,7 @@ edgeIsLockedMessage = "This edge is currently being edited by someone else, plea
 templateIsLockedMessage = "The template is currently being edited, please try again later."
 importIsLockedMessage = "Data is currently being imported, please try again later."
 nodeDefaultTransparency = 1.0
-edgeDefaultTransparency = 0.3
+edgeDefaultTransparency = 0.7
 searchColor = "#FFFF00"
 sourceColor = "#FFa500"
 
