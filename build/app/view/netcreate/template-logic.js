@@ -2,12 +2,31 @@
 
   Template Logic
 
-  The default schema is defined here.
+  This handles the UI logic for the "Edit Template" subpanel on the "More..."
+  tab.
+
+  The actual template loading is handled by `server-database.js`.
+
+  The internal template representation is JSON.
+  The template definition itself is stored as a TOML file, which is then
+  converted to JSON when loaded.
+
+  The default json-editor schema is defined in `template-schema.js`
 
 
   ##  BACKGROUND
 
-      Template data is loaded by `server-database` DB.InitializeDatabase call.
+  Template data is loaded by `server-database` DB.InitializeDatabase call.
+
+  With Version 1.4 of NetCreate, we introduce a new TOML template format that
+  is easier to work with directly.
+  * If you open a project that does not have a TOML template, the app will
+    try to load the old JSON version and convert it.  See
+    server-database.m_LoadJSONTemplate() and m_MigrateJSONtoTOML().
+  * If you try to load a TOML template that is missing some key fields
+    (e.g. error message definitions), then the app will fall back on
+    fields defined in the schema.  See server-database.m_LoadTOMLTemplate()).
+
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 

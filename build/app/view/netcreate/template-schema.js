@@ -2,12 +2,27 @@
 
   Template Schema
 
-  The default schema is defined here.
+  The Template Schema defines a spec for
+  `[json-editor](https://github.com/json-editor/json-editor)`
+  to generate a UI for editing the template.  It identifies the objects that
+  the json-editor needs to support and provides meta data about how to
+  display and handle the edits.
 
+  `template-logic.js` handles initialization.
 
-  ##  BACKGROUND
+  NOTE: This schema is NOT the same as the `toml` template file schema.  This
+  schema is used by `json-editor` to know how to display a UI for editing the
+  template itself.
 
-      Template data is loaded by `server-database` DB.InitializeDatabase call.
+  FUTURE WORK: We should be able to generate a new
+  `default.template.toml` file from the schema.  That would ensure that
+  default template is up to date.  There isn't a single-button UI for this
+  currently, but you CAN basically do this by:
+  1. Start NetCreate with a new db, e.g. `./nc.js --dataset=newdefault`
+  2. Clicking "New Template" on the "More... > Edit Template" tab.
+  3. Clicking "Save Changes"
+  4. Copy the file to `netcreate-2018/build/app/assets/templates/`
+  5. Renaming the saved template to `_default.template.toml`
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -24,6 +39,18 @@ const MOD = {};
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+/**
+ * Node Type Schema
+ * This is a subset of the full template schema.
+ *
+ * We pull it out separately so that Node Types can be edited by themselves
+ * without having to scroll through the whole template.
+ *
+ * When editing the main Template, this is loaded as a subset of the main schema.
+ * When editing node types, this is loaded by MOD.GetTypeEditorSchema to
+ * provide additional UI elements to manage deleting and renaming
+ * existing field types
+ */
 MOD.NODETYPEOPTIONS = {
   type: 'array',
   title: 'Node Types',
@@ -54,6 +81,18 @@ MOD.NODETYPEOPTIONS = {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+/**
+ * Edge Type Schema
+ * This is a subset of the full template schema.
+ *
+ * We pull it out separately so that Edge Types can be edited by themselves
+ * without having to scroll through the whole template.
+ *
+ * When editing the main Template, this is loaded as a subset of the main schema.
+ * When editing edge types, this is loaded by MOD.GetTypeEditorSchema to
+ * provide additional UI elements to manage deleting and renaming
+ * existing field types
+ */
 MOD.EDGETYPEOPTIONS = {
   type: 'array',
   title: 'Edge Types',
@@ -917,10 +956,15 @@ MOD.TEMPLATE = {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Schema definition for the Type Editor UI
+/*/ Extra schema definition for the Type Editor UI
+
     This introduces a wrapper around the Node or Edge Type Schema to provide
-    extra UI elements for managing Type changes.
-    * Map deleted types to another type
+    extra UI elements for managing Type changes that the normal Template
+    editor does not have:
+    * Adds a checkbox to mark a type for deletion
+    * Adds a field to map a deleted type to another type
+
+    Used by the "Edit Node Types" and "Edit Edge Types" buttons.
 /*/
 MOD.GetTypeEditorSchema = schemaTypeOptions => {
   const typeOptions = clone(schemaTypeOptions);

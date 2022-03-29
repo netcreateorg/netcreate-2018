@@ -1,6 +1,69 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  * Import / Export Logic
+  ## Import / Export Logic
+
+  See ImportExport.jsx for the UI.
+
+
+  #### Data Format
+
+  The import/export data format is '.csv'.
+
+  The first row should define the headers.
+  Each data row should be comma-delimited and ended with a CR/LF.
+
+  We support:
+  * CR/LF inside of double quotes
+  * Double quotes need to be escaped by repeating the quote, e.g. `""quoted text"""
+  * Dates can be exported and imported as UTCStrings
+
+  In general, any valid '.csv' file exported by Excel ought to work.
+
+
+  #### Permissions
+
+  Everyone is allowed to EXPORT data.
+  * The data fields that are exported are defined in the project's template.
+    Any field that is NOT marked "hidden" is exported.
+
+  In general, only admins are allowed IMPORT data.
+  * If the `allowLoggedInUserToImport` flag is set in the template, then
+    logged-in users are also allowed to import data.
+  * When anyone on the net is importing data, "Edit Lock" is set and no
+    one else is allowed to import, edit a node or edge, or edit a template.
+    This is because each of those activities can potentially conflict with
+    each other.
+
+
+  #### How it works
+
+  Coordinating the selection of node and edge files for imports is a complex
+  dance of selection, validation, and reporting.  When an import file is
+  selected, we:
+
+  1. Make sure any headers required by the Template are present
+  2. Attempt to load the field data into memory
+  3. Validate the data, either adding new objects or replacing existing objects
+     For edges, we also check that the sources and targets point to valid nodes
+  4. Display the expected import -- kind of like a dry run output.
+  5. Wait fo the user to confirm and click Import.
+  6. After the user clicks import, erge the data into the database and
+  refresh global NCDATA.
+
+  If there is a failure at any point, we abort immediately and display an error
+  and clear the UI for the user to fix the import file and select a
+  replacement file.  Importing can be a complex process, so we want to provide
+  as much feedback as we can along the way so users know how to fix problems.
+
+  Node and edge import files can be selected separately and in any order.
+  The import data is temporarily stored in `IMPORT_NCDATA` for validation.
+
+  The DB is NOT updated until the user clicks "Import".
+
+
+  ####
+
+
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -596,6 +659,12 @@ function m_NodefileValidateNodes(nodes) {
   return { isValid, messageJsx, nodes, IMPORT_NCDATA }
 }
 /**
+ * Walks down the checkers/validators one by one and aborts/returns an error message if an
+ * an error is encountered.  Data is stored temporarily in `IMPORT_NCDATA` so that we can
+ * process edges -- e.g. an edge might refer to a node that is currently being imported.
+ *
+ * Data is not actually imported in the DB until the user clicks "Import"
+ *
  * Side effect: Updates `nodesToImport` with validated nodes
  * @param {object} data
  * @param {File} data.nodefile - https://developer.mozilla.org/en-US/docs/Web/API/File
@@ -811,6 +880,12 @@ function m_EdgefileValidateEdges(edges) {
   return { isValid, messageJsx, edges, IMPORT_NCDATA }
 }
 /**
+ * Walks down the checkers/validators one by one and aborts/returns an error message if an
+ * an error is encountered.  Data is stored temporarily in `IMPORT_NCDATA` so that we can
+ * process edges -- e.g. an edge might refer to a node that is currently being imported.
+ *
+ * Data is not actually imported in the DB until the user clicks "Import"
+ *
  * Side effect: Updates `edgesToImport` with validated edges
  * @param {object} data
  * @param {File} data.edgefile - https://developer.mozilla.org/en-US/docs/Web/API/File
@@ -847,6 +922,11 @@ MOD.EdgefileValidate = async (data) => {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// MAIN IMPORT ///////////////////////////////////////////////////////////////
+/**
+ * This is triggered when the user clicks the "Import" button.
+ * Forces a RELOAD_DB after the import data is merged into the database.
+ * @returns {messageJsx} -- summary of file imported
+ */
 MOD.Import = async () => {
   // Write to database!
   const mergeData = { nodes: nodesToImport, edges: edgesToImport };

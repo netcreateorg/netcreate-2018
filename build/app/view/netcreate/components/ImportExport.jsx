@@ -2,9 +2,16 @@
 
   ## OVERVIEW
 
-    Help displays a hideable generic help screen.
+  Provides tools to import and export node/edge data files.
 
+  This also provides a "Force Unlock All" button that can be used by Admins
+  to unlock all edit locks requested by node editors, edge editors, template
+  editors, and importers on the network.
 
+  This displays a subpanel on the "More..." tab.
+
+  `importexport-logic.js` (IELOGIC) handles all of the business logic for
+  importing and exporting.  See that file for details.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
