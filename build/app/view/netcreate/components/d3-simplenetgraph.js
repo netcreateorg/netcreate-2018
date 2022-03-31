@@ -642,11 +642,13 @@ displayUpdated(nodeEdge) {
     and mouseover events.
 /*/
 _UpdateLinkStrokeWidth(edge) {
-  if (DBG) console.log(PR, '_UpdateLinkStrokeWidth', edge)
+  if (DBG) console.log(PR, '_UpdateLinkStrokeWidth', edge);
+  const sourceId = typeof edge.source === 'number' ? edge.source : edge.source.id;
+  const targetId = typeof edge.target === 'number' ? edge.target : edge.target.id;
   if (edge.selected ||
-    (edge.source.id === mouseoverNodeId) ||
-    (edge.target.id === mouseoverNodeId) ||
-    (mouseoverNodeId === -1)
+    (mouseoverNodeId === -1) ||
+    (sourceId === mouseoverNodeId) ||
+    (targetId === mouseoverNodeId)
   ) {
     return edge.size ** 2;  // Use **2 to make size differences more noticeable
   } else {

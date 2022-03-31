@@ -246,7 +246,7 @@ class NodeSelector extends UNISYS.Component {
         let updatedNodeID = data.node.id;
         if (currentNodeID === updatedNodeID) needsUpdate = true;
         this.state.edges.forEach(edge => {
-          if ((edge.source && edge.source.id === updatedNodeID) || (edge.target && edge.target.id === updatedNodeID)) needsUpdate = true;
+          if ((edge.source === updatedNodeID) || (edge.target === updatedNodeID)) needsUpdate = true;
         })
         if (needsUpdate) {
           if (DBG) console.log('NodeSelector.SOURCE_UPDATE triggering SOURCE_SELECT with', currentNodeID)
@@ -490,18 +490,19 @@ class NodeSelector extends UNISYS.Component {
           // Load edges
           let thisId = this.state.formData.id;
           // -- First, sort edges by source, then target
-          data.edges.sort( (a,b) => {
-            if (a.source.label === b.source.label) {
-              // same source label, sort on target
-              if (a.target.label < b.target.label) { return -1; }
-              if (a.target.label > b.target.label) { return 1;  }
+          data.edges.sort((a, b) => {
+            // same source label, sort on target
+            if (a.sourceLabel === b.sourceLabel) {
+              if (a.targetLabel < b.targetLabel) { return -1; }
+              if (a.targetLabel > b.targetLabel) { return 1;  }
             }
             // Always list `this` node first
-            if (a.source.id === thisId) { return -1; }
-            if (b.source.id === thisId) { return 1;  }
+            if (a.source === thisId) { return -1; }
+            if (b.source === thisId) { return 1;  }
             // Otherwise sort on source
-            if (a.source.label < b.source.label) { return -1; }
-            if (a.source.label > b.source.label) { return 1;  }
+            if (a.sourceLabel < b.sourceLabel) { return -1; }
+            if (a.sourceLabel > b.sourceLabel) { return 1;  }
+
             return 0;
           });
           this.setState({

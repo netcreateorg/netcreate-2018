@@ -535,18 +535,18 @@ MOD.Hook("INITIALIZE", () => {
     // Remove or replace edges
     let edgesToProcess;
     if (replacementNodeID !== -1) {
-      // replace
+      // replace source/target with replacement node ID
       let replacementNode = m_FindNodeById(replacementNodeID);
       edgesToProcess = NCDATA.edges.map(edge => {
-        if (edge.source.id === nodeID) edge.source = replacementNode;
-        if (edge.target.id === nodeID) edge.target = replacementNode;
+        if (edge.source === nodeID) edge.source = replacementNodeID;
+        if (edge.target === nodeID) edge.target = replacementNodeID;
         return edge;
       });
     } else {
-      // delete nodes
+      // delete edges
       edgesToProcess = NCDATA.edges.filter(edge => {
         let pass = false;
-        if (edge.source.id !== nodeID && edge.target.id !== nodeID) {
+        if (edge.source !== nodeID && edge.target !== nodeID) {
           pass = true;
         }
         return pass;
@@ -596,8 +596,12 @@ MOD.Hook("INITIALIZE", () => {
       }
       return n;
     });
-    // Convert D3 source/target nodes objects into ids
-    NCDATA.edges = m_ConvertSourceTarget2ID(NCDATA.edges);
+    // DEPRECATED
+    // As of 3/2022 edge source and target use ids, so there's no longer
+    // a need to convert them.
+    // // Convert D3 source/target nodes objects into ids
+    // NCDATA.edges = m_ConvertSourceTarget2ID(NCDATA.edges);
+
     // Write to database!
     // IMPORTANT: We have to update the db BEFORE calling SetAppState
     // because SetAppState will cause d3 to convert edge source/targets
@@ -1101,18 +1105,22 @@ function m_MigrateData(data) {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Converts edge.source and edge.target from objects to ids
-    d3 converts edge.source and edget.target from ids to node objects
-    when it renders NCDATA.  When getting ready to save edges to the database
-    we need to convert them back to ids.
-/*/
-function m_ConvertSourceTarget2ID(edges) {
-  return edges.map(e => {
-    e.source = e.source && e.source.id;
-    e.target = e.target && e.target.id;
-    return e;
-  });
-}
+// DEPRECATED
+// As of 3/2022 edge source and target use ids, so there's no longer
+// a need to convert them.
+//
+// /*/ Converts edge.source and edge.target from objects to ids
+//     d3 converts edge.source and edget.target from ids to node objects
+//     when it renders NCDATA.  When getting ready to save edges to the database
+//     we need to convert them back to ids.
+// /*/
+// function m_ConvertSourceTarget2ID(edges) {
+//   return edges.map(e => {
+//     e.source = e.source && e.source.id;
+//     e.target = e.target && e.target.id;
+//     return e;
+//   });
+// }
 
 /// NODE MARKING METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1193,7 +1201,7 @@ function m_MarkSelectedEdges(edges, node) {
   // Find connected edges
   let id = node.id;
   NCDATA.edges.forEach(edge => {
-    if (edge.source.id === id || edge.target.id === id) {
+    if (edge.source === id || edge.target === id) {
       edge.selected = true;
     } else {
       edge.selected = false;

@@ -306,8 +306,8 @@ function m_FiltersApply() {
   FILTEREDD3DATA.edges = FILTEREDD3DATA.edges.map(e => {
     const source = FILTEREDD3DATA.nodes.find(n => n.id === e.source);
     const target = FILTEREDD3DATA.nodes.find(n => n.id === e.target);
-    e.sourceLabel = source.label;
-    e.targetLabel = target.label;
+    e.sourceLabel = source ? source.label : 'deleted';
+    e.targetLabel = target ? target.label : 'deleted';
     return e;
   })
 
