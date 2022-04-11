@@ -19,16 +19,19 @@ const SESSION = require("../unisys/common-session");
 const LOGGER = require("../unisys/server-logger");
 const PROMPTS = require("../system/util/prompts");
 const TEMPLATE_SCHEMA = require("../view/netcreate/template-schema");
+const { EDITORTYPE } = require("../system/util/enum");
 
 const PR = PROMPTS.Pad("ServerDB");
 const RUNTIMEPATH = './runtime/';
 const TEMPLATEPATH = './app/assets/templates/';
 const TEMPLATE_EXT = '.template.toml'
+const BACKUPPATH = 'backups/'; // combined with RUNTIMEPATH, so no leading './'
 const DB_CLONEMASTER = "blank.loki";
 const NC_CONFIG = require("../assets/netcreate-config");
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+let db_file;
 let m_options; // saved initialization options
 let m_db; // loki database
 let m_max_edgeID;
@@ -45,12 +48,27 @@ let m_open_editors = []; // array of template, node, or edge editors
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 let DB = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Backup Database File Utility
+    Used by PKT_MergeDatabase to clone the db before importing.
+    Saves the db in the runtime folder with a timestamp suffix.
+/*/
+function m_BackupDatabase() {
+  FS.ensureDirSync(PATH.dirname(db_file));
+  if (FS.existsSync(db_file)) {
+    const timestamp = new Date().toISOString()
+      .replace(/:/g, '.');
+    const backupDBFilePath = m_GetValidDBFilePath(BACKUPPATH + NC_CONFIG.dataset + '_' + timestamp);
+    console.log(PR, 'Saving database backup to', backupDBFilePath)
+    FS.copySync(db_file, backupDBFilePath);
+  }
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Initialize the database
 /*/
 DB.InitializeDatabase = function (options = {}) {
 
   let dataset = NC_CONFIG.dataset;
-  let db_file = m_GetValidDBFilePath(dataset);
+  db_file = m_GetValidDBFilePath(dataset);
   FS.ensureDirSync(PATH.dirname(db_file));
   if (!FS.existsSync(db_file)) {
     console.log(PR, `NO EXISTING DATABASE ${db_file}, so creating BLANK DATABASE...`);
@@ -156,6 +174,7 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
     description: jt.description,
     requireLogin: jt.requireLogin || SCHEMA.requireLogin.default,
     hideDeleteNodeButton: (jt.nodePrompts && jt.nodePrompts.delete && jt.nodePrompts.delete.hidden) || SCHEMA.hideDeleteNodeButton.default,
+    allowLoggedInUserToImport: SCHEMA.allowLoggedInUserToImport.default, // new parameter not in old json template
     duplicateWarning: (jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.duplicateWarning) || SCHEMA.duplicateWarning.default,
     nodeIsLockedMessage: (jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.sourceNodeIsLockedMessage) || SCHEMA.nodeIsLockedMessage.default,
     edgeIsLockedMessage: (jt.edgePrompts && jt.edgePrompts.edgeIsLockedMessage) || SCHEMA.edgeIsLockedMessage.default,
@@ -298,6 +317,7 @@ function m_LoadTOMLTemplate(templateFilePath) {
     json.nodeIsLockedMessage = json.nodeIsLockedMessage || SCHEMA.nodeIsLockedMessage.default;
     json.edgeIsLockedMessage = json.edgeIsLockedMessage || SCHEMA.edgeIsLockedMessage.default;
     json.templateIsLockedMessage = json.templateIsLockedMessage || SCHEMA.templateIsLockedMessage.default;
+    json.importIsLockedMessage = json.importIsLockedMessage || SCHEMA.importIsLockedMessage.default;
     TEMPLATE = json;
     console.log(PR, 'Template loaded', templateFilePath);
   });
@@ -366,6 +386,59 @@ DB.PKT_SetDatabase = function (pkt) {
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: Add nodes/edges to an existing db
+/*/
+DB.PKT_InsertDatabase = function (pkt) {
+  if (DBG) console.log(PR, `PKT_InsertDatabase`);
+  let { nodes = [], edges = [] } = pkt.Data();
+  if (!nodes.length) console.log(PR, "WARNING: empty nodes array");
+  else console.log(PR, `setting ${nodes.length} nodes...`);
+  if (!edges.length) console.log(PR, "WARNING: empty edges array");
+  else console.log(PR, `setting ${edges.length} edges...`);
+  NODES.insert(nodes);
+  EDGES.insert(edges);
+  console.log(PR, `PKT_InsertDatabase complete. Data available on next get.`);
+  m_db.close();
+  DB.InitializeDatabase();
+  LOGGER.Write(pkt.Info(), `setdatabase`);
+  return { OK: true };
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: Update or add nodes/edges to an existing db
+    If the node/edge exists, update it.
+    Otherwise, insert it.
+    This walks down the node and edge arrays one by one,
+    using PKT_Update to decide whether to insert or update the data.
+    REVIEW: Consider batch operations ala `NODES.insert(nodes)`?
+/*/
+DB.PKT_MergeDatabase = function (pkt) {
+  if (DBG) console.log(PR, `PKT_MergeDatabase`);
+  let { nodes = [], edges = [] } = pkt.Data();
+
+  // Save Backup First!
+  m_BackupDatabase();
+
+  // insert nodes one by one
+  nodes.forEach(n => {
+    pkt.data.node = n;
+    DB.PKT_Update(pkt);
+  });
+  pkt.data.node = undefined; // clear, no longer needed
+
+  edges.forEach(e => {
+    pkt.data.edge = e;
+    DB.PKT_Update(pkt);
+  });
+  pkt.data.edge = undefined; // clear, no longer needed
+
+  return new Promise((resolve, reject) => m_db.saveDatabase(err => {
+    if (err) reject(new Error('rejected'));
+    DB.InitializeDatabase();
+    LOGGER.Write(pkt.Info(), `mergedatabase`);
+    resolve({ OK: true });
+  }));
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Update all data in existing database.
     Used to update node/edge types after template edit
 /*/
@@ -384,16 +457,75 @@ DB.PKT_UpdateDatabase = function (pkt) {
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DB.PKT_GetNewNodeID = function(pkt) {
+/// Side Effect: Changes `m_max_nodeID`
+function m_CalculateMaxNodeID() {
+  if (NODES.count() > 0) {
+    m_max_nodeID = NODES.mapReduce(
+      obj => obj.id,
+      arr => Math.max(...arr)
+    );
+  } else {
+    m_max_nodeID = 0;
+  }
+  return m_max_nodeID;
+}
+DB.PKT_CalculateMaxNodeID = function(pkt) {
+  if (DBG) console.log(PR, `PKT_CalculateMaxNodeID ${pkt.Info()}`);
+  return { maxNodeID: m_CalculateMaxNodeID() };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_GetNewNodeID() {
   m_max_nodeID += 1;
+  return m_max_nodeID;
+}
+DB.PKT_GetNewNodeID = function (pkt) {
   if (DBG) console.log(PR, `PKT_GetNewNodeID ${pkt.Info()} nodeID ${m_max_nodeID}`);
-  return { nodeID: m_max_nodeID };
+  return { nodeID: m_GetNewNodeID() };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DB.PKT_GetNewEdgeID = function(pkt) {
+DB.PKT_GetNewNodeIDs = function (pkt) {
+  const count = Number(pkt.Data().count);
+  const firstId = m_max_nodeID + 1;
+  const nodeIDs = [];
+  for (let i = 0; i < count; i++) nodeIDs.push(firstId + i);
+  m_max_nodeID += count;
+  if (DBG) console.log(PR, `PKT_GetNewNodeIDS ${pkt.Info()} nodeIDs ${nodeIDs}`);
+  return { nodeIDs };
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_CalculateMaxEdgeID () {
+  if (EDGES.count() > 0) {
+    m_max_edgeID = EDGES.mapReduce(
+      obj => obj.id,
+      arr => Math.max(...arr)
+    );
+  } else {
+    m_max_edgeID = 0;
+  }
+  return m_max_edgeID;
+}
+DB.PKT_CalculateMaxEdgeID = function(pkt) {
+  if (DBG) console.log(PR, `PKT_CalculateMaxEdgeID ${pkt.Info()}`);
+  return { maxEdgeID: m_CalculateMaxEdgeID() };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_GetNewEdgeID() {
   m_max_edgeID += 1;
+  return m_max_edgeID;
+}
+DB.PKT_GetNewEdgeID = function (pkt) {
   if (DBG) console.log(PR, `PKT_GetNewEdgeID ${pkt.Info()} edgeID ${m_max_edgeID}`);
-  return { edgeID: m_max_edgeID };
+  return { edgeID: m_GetNewEdgeID() };
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DB.PKT_GetNewEdgeIDs = function(pkt) {
+  const count = Number(pkt.Data().count);
+  const firstId = m_max_edgeID + 1;
+  const edgeIDs = [];
+  for (let i = 0; i < count; i++) edgeIDs.push(firstId + i);
+  m_max_edgeID += count;
+  if (DBG) console.log(PR, `PKT_GetNewEdgeIDs ${pkt.Info()} edgeIDs ${edgeIDs}`);
+  return { edgeIDs };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DB.PKT_RequestLockNode = function(pkt) {
@@ -508,6 +640,7 @@ DB.RequestUnlock = function (uaddr) {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// eslint-disable-next-line complexity
 DB.PKT_Update = function(pkt) {
   let { node, edge, nodeID, replacementNodeID, edgeID } = pkt.Data();
   let retval = {};
@@ -518,10 +651,20 @@ DB.PKT_Update = function(pkt) {
     if (matches.length === 0) {
       // if there was no node, then this is an insert new operation
       if (DBG) console.log(PR,`PKT_Update ${pkt.Info()} INSERT nodeID ${JSON.stringify(node)}`);
+
+      // Handle different id types
+      if (isNaN(node.id)) {
+        // If the node id has NOT been defined, generate a new node id
+        node.id = m_GetNewNodeID();
+      }
+
       LOGGER.Write(pkt.Info(), `insert node`, node.id, JSON.stringify(node));
       DB.AppendNodeLog(node, pkt); // log GroupId to node stored in database
       NODES.insert(node);
-      retval = { op: "insert", node };
+      // Return the updated record -- needed to update metadata
+      let updatedNode = NODES.findOne({ id: node.id });
+      if (!updatedNode) console.log(PR, `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id} ${JSON.stringify(node)}`);
+      retval = { op: "insert", node: updatedNode };
     } else if (matches.length === 1) {
       // there was one match to update
       NODES.findAndUpdate({ id: node.id }, n => {
@@ -530,12 +673,17 @@ DB.PKT_Update = function(pkt) {
         DB.AppendNodeLog(n, pkt); // log GroupId to node stored in database
         Object.assign(n, node);
       });
-      retval = { op: "update", node };
+      // Return the updated record -- needed to update metadata
+      let updatedNode = NODES.findOne({ id: node.id });
+      if (!updatedNode) console.log(PR, `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id} ${JSON.stringify(node)}`);
+      retval = { op: "update", node: updatedNode };
     } else {
       if (DBG) console.log(PR,`WARNING: multiple nodeID ${node.id} x${matches.length}`);
       LOGGER.Write(pkt.Info(), `ERROR`, node.id, "duplicate node id");
       retval = { op: "error-multinodeid" };
     }
+    // Always update m_max_nodeID
+    m_CalculateMaxNodeID();
     return retval;
   } // if node
 
@@ -546,10 +694,20 @@ DB.PKT_Update = function(pkt) {
     if (matches.length === 0) {
       // this is a new edge
       if (DBG) console.log(PR,`PKT_Update ${pkt.Info()} INSERT edgeID ${edge.id} ${JSON.stringify(edge)}`);
+
+      // Handle different id types
+      if (isNaN(edge.id)) {
+        // If the edge id has NOT been defined, generate a new edge id
+        edge.id = m_GetNewEdgeID();
+      }
+
       LOGGER.Write(pkt.Info(), `insert edge`, edge.id, JSON.stringify(edge));
       DB.AppendEdgeLog(edge, pkt); // log GroupId to edge stored in database
       EDGES.insert(edge);
-      retval = { op: "insert", edge };
+      // Return the updated record -- needed to update metadata
+      let updatedEdge = EDGES.findOne({ id: edge.id });
+      if (!updatedEdge) console.log(PR, `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id} ${JSON.stringify(node)}`);
+      retval = { op: "insert", edge: updatedEdge };
     } else if (matches.length === 1) {
       // update this edge
       EDGES.findAndUpdate({ id: edge.id }, e => {
@@ -558,12 +716,17 @@ DB.PKT_Update = function(pkt) {
         DB.AppendEdgeLog(e, pkt); // log GroupId to edge stored in database
         Object.assign(e, edge);
       });
-      retval = { op: "update", edge };
+      // Return the updated record -- needed to update metadata
+      let updatedEdge = EDGES.findOne({ id: edge.id });
+      if (!updatedEdge) console.log(PR, `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id} ${JSON.stringify(node)}`);
+      retval = { op: "update", edge: updatedEdge };
     } else {
       console.log(PR, `WARNING: multiple edgeID ${edge.id} x${matches.length}`);
       LOGGER.Write(pkt.Info(), `ERROR`, node.id, "duplicate edge id");
       retval = { op: "error-multiedgeid" };
     }
+    // Always update m_max_edgeID
+    m_CalculateMaxEdgeID();
     return retval;
   } // if edge
 
@@ -776,77 +939,86 @@ DB.CloneTemplateTOML = function (filePath) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ OPENEDITORS
 
-    Used to coordinate Template editing vs Node/Edge editing.  Since Nodes and
-    Edges should not be edited while the Template is being edited, any editor
-    that is opened registers as an OPENEDITOR and will check on the status of
-    existing open editors.
+    Used to coordinate Template editing, Importing, and Node/Edge editing.
+    They are mutually exclusive: if one is active, the others should be disabled
+    to prevent overwriting data.
 
-    * When a Template editor is open, "Node Edit", "Edge Edit", and "Add New Edge"
-      buttons are all disabled.
-    * When "Node Edit", "Edge Edit", or "Add New Edge" has been triggered,
-      the Template buttons on the Template panel are all disabled.
+    Since Nodes and Edges should not be edited while the Template is being
+    edited or data is being imported, any editor that is opened registers
+    as an OPENEDITOR.  The UI will also pre-emptively disable edit buttons
+    whenever the open editors have been updated via a broacast of the
+    `EDIT_PERMISSIONS_UPDATE` message by server.js.
 
-    m_open_editors is an array of all the editors (node, edge, template) that are
-    currently open.  Used to coordinate template vs node/edge editing
-    because nodes and edges should not be edited while the template
-    is being edited.
+    * When a Template editor is open, "Import", "Node Edit", "Edge Edit",
+      "Add New Node", and "Add New Edge" buttons are all disabled.
+    * When an Import file has been successfully selected and validated,
+      "Template", "Node Edit", "Edge Edit", "Add New Node", and
+      "Add New Edge" buttons are disabled.
+    * When "Node Edit", "Edge Edit", "Add New Node" or "Add New Edge" has
+      been triggered, the Template buttons on the Template panel and the
+      "Import" pane on the "More" panel are disabled.
+
+    m_open_editors is an array of all the editors (node, edge, template,
+    importer) that are currently open.
+
+    Whenever a template is being edited, import is requested, or a node or
+    edge is being edited:
+    1. They will register with `RequestEditLock`.
+    2. When they are finished, they will deregister using `ReleaseEditLock`.
+    3. `GetEditStatus` returns the current state of `m_open_editors`.
+
+    UI elements query `GetEditStatus` to figure out what they should
+    enable or disable.
+
+    UI elements should also listen to `EDIT_PERMISSIONS_UPDATE` to
+    enable or disable elements.
+
+    Note that multiple `node` and `edge` editors can be open at the same
+    time and ALL must be closed before the lock is released.  We support
+    this because each node or edge will have its own entry in m_open_editors,
+    though we do not distinguish between the individual nodes/edges.
+
+    Note that this is a different system from the instance-specific Node/Edge
+    lock that locks out individual node/edge objects for editing used with
+    `PKT_RequestLockNode` and `PKT_RequestLockEdge`.  m_open_editors focuses
+    on categories of editor types rather than locking out individual nodes
+    and edges to prevent others from editing the same node or edge.
+
 /*/
-const EDITOR = { TEMPLATE: 'template', NONTEMPLATE: 'nonTemplate' };
-
-function GetEditStatus() {
-  // If there are any 'node' or 'edge' open editors, then request fails: template cannot be locked
-  // If there are any 'template' open editors, then request fails: template cannot be locked
-  const templateBeingEdited = m_open_editors.length === 1 && m_open_editors.includes( EDITOR.TEMPLATE );
-  const nodeOrEdgeBeingEdited = m_open_editors.length > 0 && !m_open_editors.includes( EDITOR.TEMPLATE );
-  return { templateBeingEdited, nodeOrEdgeBeingEdited };
-}
-
 /**
- * @returns { temtemplateBeingEditedplate: boolean, nodeOrEdgeBeingEdited: boolean }
+ * Returns object with flags indicating whether the template is being edited,
+ * data is being imported, or node or edge are being edited
+ * @returns {templateBeingEdited:boolean, importActive:boolean, nodeOrEdgeBeingEdited:boolean}
  */
-DB.GetTemplateEditState = pkt => {
-  // return { isBeingEdited: GetTemplateIsBeingEdited() };
-  return GetEditStatus();
+DB.GetEditStatus = () => {
+  // If there are any 'template' open editors, then templateBeingEdited is true
+  const templateBeingEdited = m_open_editors.includes(EDITORTYPE.TEMPLATE);
+  // If there are any 'importers' open editors, then importActive is true
+  const importActive = m_open_editors.includes(EDITORTYPE.IMPORTER);
+  // If there are any 'node' or 'edge' open editors, then nodeOrEdgeBeingEdited is true
+  const nodeOrEdgeBeingEdited = m_open_editors.length > 0 && (m_open_editors.includes( EDITORTYPE.NODE ) || m_open_editors.includes( EDITORTYPE.EDGE ));
+  return { templateBeingEdited, importActive, nodeOrEdgeBeingEdited };
 }
 /**
- * Requester is always the Template editor.
- * @returns { okToEdit: boolean }
- */
-DB.RequestTemplateEdit = () => {
-  console.log(PR,'RequestTemplateEdit', m_open_editors)
-  const okToEdit = m_open_editors.length < 1; // okToEdit only if no node/edge/template is open
-  // return edit state
-  if (okToEdit) m_open_editors.push(EDITOR.TEMPLATE);
-  return { okToEdit };
-}
-/**
- * Requester is always the Template editor
+ * Register a template, import, node or edge as being actively edited.
  * @param {Object} pkt
- * @returns { temtemplateBeingEditedplate: boolean, nodeOrEdgeBeingEdited: boolean }
+ * @param {string} pkt.editor - 'template', 'importer', 'node', or 'edge'
+ * @returns { templateBeingEdited: boolean, importActive: boolean, nodeOrEdgeBeingEdited: boolean }
  */
-DB.ReleaseTemplateEdit = pkt => {
-  const i = m_open_editors.findIndex(e => e === EDITOR.TEMPLATE);
-  if (i > -1) m_open_editors.splice(i, 1);
-  return GetEditStatus();
-}
-/**
- * Requester is always node or edge editor
- * @param {Object} pkt
- * @param {string} pkt.editor - 'node' or 'edge'
- * @returns { templateBeingEdited: boolean, nodeOrEdgeBeingEdited: boolean }
- */
-DB.RequestTemplateLock = pkt => {
-  console.log(PR,'RequestTemplateLock', pkt)
+DB.RequestEditLock = pkt => {
   m_open_editors.push(pkt.Data().editor);
-  return GetEditStatus();
+  return DB.GetEditStatus();
 }
 /**
- * @returns { templateBeingEdited: boolean, nodeOrEdgeBeingEdited: boolean }
+ * Deregister a template, import, node or edge as being actively edited.
+ * @param {Object} pkt
+ * @param {string} pkt.editor - 'template', 'importer', 'node', or 'edge'
+ * @returns { templateBeingEdited: boolean, importActive: boolean, nodeOrEdgeBeingEdited: boolean }
  */
-DB.ReleaseTemplateLock = pkt => {
+DB.ReleaseEditLock = pkt => {
   const i = m_open_editors.findIndex(e => e === pkt.Data().editor);
   if (i > -1) m_open_editors.splice(i, 1);
-  return GetEditStatus();
+  return DB.GetEditStatus();
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

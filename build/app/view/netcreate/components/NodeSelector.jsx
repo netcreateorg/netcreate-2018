@@ -134,6 +134,7 @@ const EdgeEditor   = require('./EdgeEditor');
 const UNISYS       = require('unisys/client');
 const DATASTORE    = require('system/datastore');
 const SETTINGS     = require('settings');
+const { EDITORTYPE } = require("system/util/enum");
 
 const thisIdentifier = 'nodeSelector';   // SELECTION identifier
 
@@ -153,13 +154,14 @@ class NodeSelector extends UNISYS.Component {
         citation: TEMPLATE.citation,
         duplicateWarning: TEMPLATE.duplicateWarning,
         nodeIsLockedMessage: TEMPLATE.nodeIsLockedMessage,
-        templateIsLockedMessage: TEMPLATE.templateIsLockedMessage,
+        editLockMessage: '',
         hideDeleteNodeButton: TEMPLATE.hideDeleteNodeButton,
         formData: {
             label:     '',
             type:      '',
             info:      '',
             notes:     '',
+            degrees: -1,
             id:        '',   // Always convert this to a Number
             isNewNode: true
         },
@@ -181,6 +183,7 @@ class NodeSelector extends UNISYS.Component {
       this.clearForm                             = this.clearForm.bind(this);
       this.setTemplate = this.setTemplate.bind(this);
       this.updateEditState = this.updateEditState.bind(this);
+      this.setEditState = this.setEditState.bind(this);
       this.releaseOpenEditor = this.releaseOpenEditor.bind(this);
       this.getNewNodeID                          = this.getNewNodeID.bind(this);
       this.handleSelection                       = this.handleSelection.bind(this);
@@ -228,7 +231,7 @@ class NodeSelector extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // Handle Template updates
       this.OnAppStateChange('TEMPLATE', this.setTemplate);
-      UDATA.HandleMessage("EDIT_PERMITTED", this.updateEditState);
+      UDATA.HandleMessage("EDIT_PERMISSIONS_UPDATE", this.setEditState);
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ If someone on the network updates a node or edge, SOURCE_UPDATE is broadcast.
@@ -243,7 +246,7 @@ class NodeSelector extends UNISYS.Component {
         let updatedNodeID = data.node.id;
         if (currentNodeID === updatedNodeID) needsUpdate = true;
         this.state.edges.forEach(edge => {
-          if ((edge.source && edge.source.id === updatedNodeID) || (edge.target && edge.target.id === updatedNodeID)) needsUpdate = true;
+          if ((edge.source === updatedNodeID) || (edge.target === updatedNodeID)) needsUpdate = true;
         })
         if (needsUpdate) {
           if (DBG) console.log('NodeSelector.SOURCE_UPDATE triggering SOURCE_SELECT with', currentNodeID)
@@ -256,10 +259,13 @@ class NodeSelector extends UNISYS.Component {
       Ignore the request if we're already editing a node.
   /*/
       UDATA.HandleMessage("NODE_EDIT", (data) => {
-        if ( (data.nodeID!==undefined) && (typeof data.nodeID==="number") && !this.state.isBeingEdited && !this.state.isLocked ) {
+        const { isBeingEdited, isLocked } = this.state;
+        if ( (data.nodeID!==undefined) && (typeof data.nodeID==="number") && !isBeingEdited && !isLocked ) {
           this.requestEditNode(data.nodeID);
         } else {
-          console.error("NodeSelector.NODE_EDIT called with bad data.nodeID:", data.nodeID);
+          if (typeof data.nodeID !== "number") console.warn("NodeSelector.NODE_EDIT called with bad data.nodeID:", data.nodeID);
+          if (isBeingEdited) console.warn("NodeSelector.NODE_EDIT denied because isBeingEdited", isBeingEdited);
+          if (isLocked) console.warn("NodeSelector.NODE_EDIT denied because isLocked", isLocked);
         }
       });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -380,6 +386,7 @@ class NodeSelector extends UNISYS.Component {
             type:      '',
             info:      '',
             notes:     '',
+            degrees: -1,
             id:         '',   // Always convert this to a Number
             isNewNode: true
         },
@@ -404,12 +411,18 @@ class NodeSelector extends UNISYS.Component {
 /*/
     updateEditState() {
       // disable edit if template is being edited
-      let disableEdit = false;
-      UDATA.NetCall("SRV_GET_TEMPLATE_EDIT_STATE")
+      this.NetCall("SRV_GET_EDIT_STATUS")
         .then(data => {
-          disableEdit = data.templateBeingEdited;
-          this.setState({ disableEdit });
+          this.setEditState(data);
         });
+    }
+    setEditState(data) {
+      const disableEdit = data.templateBeingEdited || data.importActive;
+      const TEMPLATE = this.AppState('TEMPLATE');
+      let editLockMessage = '';
+      if (data.templateBeingEdited) editLockMessage = TEMPLATE.templateIsLockedMessage;
+      if (data.importActive) editLockMessage = TEMPLATE.importIsLockedMessage;
+      this.setState({ disableEdit, editLockMessage });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Deregister as an open editor
@@ -418,7 +431,7 @@ class NodeSelector extends UNISYS.Component {
     releaseOpenEditor() {
       // NOTE: We only deregister if we're currently actively editing
       //       otherwise we might inadvertently deregister
-      if (this.state.isBeingEdited) UDATA.NetCall("SRV_RELEASE_TEMPLATE_LOCK", { editor: 'node' });
+      if (this.state.isBeingEdited) this.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.NODE });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return a new unique ID
@@ -477,18 +490,19 @@ class NodeSelector extends UNISYS.Component {
           // Load edges
           let thisId = this.state.formData.id;
           // -- First, sort edges by source, then target
-          data.edges.sort( (a,b) => {
-            if (a.source.label === b.source.label) {
-              // same source label, sort on target
-              if (a.target.label < b.target.label) { return -1; }
-              if (a.target.label > b.target.label) { return 1;  }
+          data.edges.sort((a, b) => {
+            // same source label, sort on target
+            if (a.sourceLabel === b.sourceLabel) {
+              if (a.targetLabel < b.targetLabel) { return -1; }
+              if (a.targetLabel > b.targetLabel) { return 1;  }
             }
             // Always list `this` node first
-            if (a.source.id === thisId) { return -1; }
-            if (b.source.id === thisId) { return 1;  }
+            if (a.source === thisId) { return -1; }
+            if (b.source === thisId) { return 1;  }
             // Otherwise sort on source
-            if (a.source.label < b.source.label) { return -1; }
-            if (a.source.label > b.source.label) { return 1;  }
+            if (a.sourceLabel < b.sourceLabel) { return -1; }
+            if (a.sourceLabel > b.sourceLabel) { return 1;  }
+
             return 0;
           });
           this.setState({
@@ -545,7 +559,7 @@ class NodeSelector extends UNISYS.Component {
       // This is a case insensitive search
       var isDuplicateNodeLabel = false;
       var duplicateNodeID = void 0;
-      if (formData.label !== '' && this.AppState('D3DATA').nodes.find(function (node) {
+      if (formData.label !== '' && this.AppState('NCDATA').nodes.find(function (node) {
         if (node.id !== formData.id)
         {
 
@@ -595,6 +609,7 @@ class NodeSelector extends UNISYS.Component {
       node.type = newNode.type;
       node.info = newNode.info;
       node.notes = newNode.notes;
+      node.degrees = newNode.degrees;
 
       // Copy to form
       this.releaseOpenEditor();
@@ -604,6 +619,7 @@ class NodeSelector extends UNISYS.Component {
           type:      node.type,
           info:      node.info,
           notes:     node.notes,
+          degrees: node.degrees,
           id:        node.id,
           isNewNode: false
         },
@@ -672,7 +688,7 @@ class NodeSelector extends UNISYS.Component {
     let isValid = false;
     // Allow `` because we use a a blank field to indicate delete node without relinking edges.
     if ((event.target.value === '') ||
-        (this.AppState('D3DATA').nodes.find(node => { return node.id === replacementNodeID; })) ) {
+        (this.AppState('NCDATA').nodes.find(node => { return node.id === replacementNodeID; })) ) {
       isValid = true;
     }
     this.setState({
@@ -704,6 +720,7 @@ class NodeSelector extends UNISYS.Component {
                 type:      '',
                 info:      '',
                 notes:     '',
+                degrees: -1,
                 id:        newNodeID,
                 isNewNode: true
             },
@@ -836,7 +853,7 @@ class NodeSelector extends UNISYS.Component {
     this.validateForm();
 
     // When a node is being edited, lock the Template from being edited
-    UDATA.NetCall("SRV_REQ_TEMPLATE_LOCK", { editor: 'node' })
+    this.NetCall("SRV_REQ_EDIT_LOCK", { editor: EDITORTYPE.NODE })
       .then(data => {
         const disableEdit = data.isBeingEdited;
         this.setState({ disableEdit });
@@ -874,7 +891,7 @@ class NodeSelector extends UNISYS.Component {
 /*/ onCancelButtonClick () {
       // If we were editing, then revert and exit
       if (this.state.isBeingEdited) {
-        let originalNode = this.AppState('D3DATA').nodes.filter( node => { return node.id === this.state.formData.id; } )[0];
+        let originalNode = this.AppState('NCDATA').nodes.filter( node => { return node.id === this.state.formData.id; } )[0];
         if (originalNode===undefined) {
           // user abandoned editing a new node that was never saved
           this.clearForm();
@@ -895,7 +912,7 @@ class NodeSelector extends UNISYS.Component {
             });
         }
         this.AppCall('AUTOCOMPLETE_SELECT', { id: 'search' });
-        UDATA.NetCall("SRV_RELEASE_TEMPLATE_LOCK", { editor: 'node' });
+        this.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.NODE });
       }
     } // onCancelButtonClick
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -933,7 +950,8 @@ class NodeSelector extends UNISYS.Component {
         id: formData.id,
         type: formData.type,
         info: formData.info,
-        notes: formData.notes
+        notes: formData.notes,
+        degrees: formData.degrees
       };
       this.releaseOpenEditor();
       this.setState({ isBeingEdited: false });
@@ -959,7 +977,7 @@ class NodeSelector extends UNISYS.Component {
         });
       });
       // probably should unlock the node:
-      UDATA.NetCall("SRV_RELEASE_TEMPLATE_LOCK", { editor: 'node' });
+      this.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.NODE });
     } // onSubmit
 
 
@@ -971,7 +989,7 @@ class NodeSelector extends UNISYS.Component {
         nodeDefs,
         duplicateWarning,
         nodeIsLockedMessage,
-        templateIsLockedMessage,
+        editLockMessage,
         hideDeleteNodeButton,
         formData,
         isLocked,
@@ -1100,7 +1118,7 @@ class NodeSelector extends UNISYS.Component {
                       onClick={this.onForceUnlock}
                     >Force Unlock</Button></span>
                 </p>
-                <p hidden={!disableEdit} className="small text-danger warning">{templateIsLockedMessage}</p>
+                <p hidden={!disableEdit} className="small text-danger warning">{editLockMessage}</p>
               </div>
             </FormGroup>
             <FormGroup className="text-right" style={{ paddingRight: '5px' }}>
@@ -1215,22 +1233,21 @@ markdownIterate(Tag, props, children, level){
       window.addEventListener("unload", this.doUnload);
     }
 
-    checkUnload(e)
-    {
-        if(this.state.isBeingEdited)
-        {
-          (e || window.event).returnValue = null;
-          return null;
-        }
+    checkUnload(e) {
+      e.preventDefault();
+      if (this.state.isBeingEdited) {
+        (e || window.event).returnValue = null;
+      } else {
+        Reflect.deleteProperty(e, 'returnValue');
+      }
+      return e;
     }
 
-    doUnload(e)
-    {
-          if(this.state.isBeingEdited)
-          {
-              this.NetCall('SRV_DBUNLOCKNODE', { nodeID: this.state.formData.id });
-          }
-
+    doUnload(e) {
+      if (this.state.isBeingEdited) {
+        this.NetCall('SRV_DBUNLOCKNODE', { nodeID: this.state.formData.id });
+        this.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.NODE });
+      }
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Release the lock if we're unmounting
@@ -1246,6 +1263,7 @@ markdownIterate(Tag, props, children, level){
               this.setState({ dbIsLocked: false });
             }
           });
+        this.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.NODE });
       }
       // deregister ACTIVEAUTOMPLETE when component unmounts
       // otherwise state updates trigger a setState on unmounted component error
@@ -1253,6 +1271,9 @@ markdownIterate(Tag, props, children, level){
       this.AppStateChangeOff('SELECTION', this.handleSelection);
       this.AppStateChangeOff('SEARCH', this.onStateChange_SEARCH);
       this.AppStateChangeOff('TEMPLATE', this.setTemplate);
+      UDATA.UnhandleMessage("EDIT_PERMISSIONS_UPDATE", this.setEditState);
+      window.removeEventListener("beforeunload", this.checkUnload);
+      window.removeEventListener("unload", this.doUnload);
     }
 
 } // class NodeSelector

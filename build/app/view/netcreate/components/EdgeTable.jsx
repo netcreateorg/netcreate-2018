@@ -4,13 +4,13 @@
 
     EdgeTable is used to to display a table of edges for review.
 
-    It displays D3DATA.
+    It displays NCDATA.
     But also read FILTEREDD3DATA to show highlight/filtered state
 
 
   ## TO USE
 
-    EdgeTable is self contained and relies on global D3DATA to load.
+    EdgeTable is self contained and relies on global NCDATA to load.
 
       <EdgeTable/>
 
@@ -52,13 +52,16 @@ class EdgeTable extends UNISYS.Component {
       super(props);
 
       this.state = {
-        edgeDefs:  this.AppState('TEMPLATE').edgeDefs,
-        edges:        [],
+        edgeDefs: this.AppState('TEMPLATE').edgeDefs,
+        edges: [],
         filteredEdges: [],
-        isExpanded:   true,
+        nodes: [], // needed for dereferencing source/target
+        isLocked: false,
+        isExpanded: true,
         sortkey:      'Relationship'
       };
 
+      this.onStateChange_SESSION = this.onStateChange_SESSION.bind(this);
       this.updateEdgeFilterState = this.updateEdgeFilterState.bind(this);
       this.handleDataUpdate = this.handleDataUpdate.bind(this);
       this.handleFilterDataUpdate = this.handleFilterDataUpdate.bind(this);
@@ -70,6 +73,7 @@ class EdgeTable extends UNISYS.Component {
       this.m_FindEdgeById           = this.m_FindEdgeById.bind(this);
       this.setSortKey               = this.setSortKey.bind(this);
       this.sortSymbol               = this.sortSymbol.bind(this);
+      this.lookupNodeLabel = this.lookupNodeLabel.bind(this);
 
       this.sortDirection = 1;
 
@@ -77,9 +81,13 @@ class EdgeTable extends UNISYS.Component {
       /// Initialize UNISYS DATA LINK for REACT
       UDATA = UNISYS.NewDataLink(this);
 
+      // SESSION is called by SessionSHell when the ID changes
+      //  set system-wide. data: { classId, projId, hashedId, groupId, isValid }
+      this.OnAppStateChange('SESSION',this.onStateChange_SESSION);
+
       // Always make sure class methods are bind()'d before using them
       // as a handler, otherwise object context is lost
-      this.OnAppStateChange('D3DATA', this.handleDataUpdate);
+      this.OnAppStateChange('NCDATA', this.handleDataUpdate);
 
       // Handle Template updates
       this.OnAppStateChange('TEMPLATE', this.OnTemplateUpdate);
@@ -93,25 +101,43 @@ class EdgeTable extends UNISYS.Component {
 /*/
 /*/ componentDidMount () {
       if (DBG) console.log('EdgeTable.componentDidMount!');
-      // Explicitly retrieve data because we may not have gotten a D3DATA
+
+      this.onStateChange_SESSION(this.AppState('SESSION'));
+
+      // Explicitly retrieve data because we may not have gotten a NCDATA
       // update while we were hidden.
       // filtered data needs to be set before D3Data
       const FILTEREDD3DATA = UDATA.AppState('FILTEREDD3DATA');
       this.setState({ filteredEdges: FILTEREDD3DATA.edges },
         () => {
-          let D3DATA = this.AppState('D3DATA');
-          this.handleDataUpdate(D3DATA);
+          let NCDATA = this.AppState('NCDATA');
+          this.handleDataUpdate(NCDATA);
         }
       )
 }
 
     componentWillUnmount() {
-      this.AppStateChangeOff('D3DATA', this.handleDataUpdate);
+      this.AppStateChangeOff('SESSION', this.onStateChange_SESSION);
+      this.AppStateChangeOff('NCDATA', this.handleDataUpdate);
       this.AppStateChangeOff('FILTEREDD3DATA', this.handleFilterDataUpdate);
       this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
     }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Handle change in SESSION data
+    Called both by componentWillMount() and AppStateChange handler.
+    The 'SESSION' state change is triggered in two places in SessionShell during
+    its handleChange() when active typing is occuring, and also during
+    SessionShell.componentWillMount()
+/*/ onStateChange_SESSION( decoded ) {
+      this.setState({ isLocked: !decoded.isValid });
+    }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   displayUpdated(nodeEdge) {
+      // Prevent error if `meta` info is not defined yet, or not properly imported
+      if (!nodeEdge.meta) return;
+
       var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
 
       var year = String(d.getFullYear());
@@ -141,17 +167,34 @@ class EdgeTable extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Handle updated SELECTION
+  /*/ Handle updated SELECTION: NCDATA updates
   /*/
   handleDataUpdate(data) {
-    if (data && data.edges) {
-      const edges = this.sortTable(this.state.sortkey, data.edges);
-      const { filteredEdges } = this.state;
-      this.updateEdgeFilterState(edges, filteredEdges);
+    if (data && data.edges && data.nodes) {
+      // NCDATA.edges no longer uses source/target objects
+      // ...1. So we need to save nodes for dereferencing.
+      this.setState({ nodes: data.nodes }, () => {
+        // ...2. So we stuff 'sourceLabel' and 'targetLabel' into the local edges array
+        let edges = data.edges.map(e => {
+          e.sourceLabel = this.lookupNodeLabel(e.source); // requires `state.nodes` be set
+          e.targetLabel = this.lookupNodeLabel(e.target);
+          return e;
+        })
+        // ...   sort it also
+        edges = this.sortTable(this.state.sortkey, edges);
+        // ...1. So we need to save nodes for dereferencing.
+        this.setState({ edges });
+        const { filteredEdges } = this.state;
+        this.updateEdgeFilterState(edges, filteredEdges);
+      });
     }
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Handle FILTEREDD3DATA updates sent by filters-logic.m_FiltersApply
+      Note that edge.soourceLabel and edge.targetLabe should already be set
+      by filter-logic.
+  /*/
   handleFilterDataUpdate(data) {
     if (data.edges) {
       const filteredEdges = data.edges;
@@ -188,8 +231,8 @@ class EdgeTable extends UNISYS.Component {
 /*/ sortBySourceLabel (edges) {
       if (edges) {
         return edges.sort( (a,b) => {
-          let akey = a.source.label,
-              bkey = b.source.label;
+          let akey = a.sourceLabel,
+              bkey = b.sourceLabel;
           return (akey.localeCompare(bkey)*this.sortDirection);
         });
       }
@@ -200,8 +243,8 @@ class EdgeTable extends UNISYS.Component {
 /*/ sortByTargetLabel (edges) {
       if (edges) {
         return edges.sort( (a,b) => {
-          let akey = a.target.label,
-              bkey = b.target.label;
+          let akey = a.targetLabel,
+              bkey = b.targetLabel;
 
           return (akey.localeCompare(bkey)*this.sortDirection);
 
@@ -220,8 +263,8 @@ class EdgeTable extends UNISYS.Component {
           if (akey>bkey) return 1*Number(this.sortDirection);
           if (akey===bkey) {
             // Secondary sort on Source label
-            let source_a = a.source.label;
-            let source_b = b.source.label;
+            let source_a = a.sourceLabel;
+            let source_b = b.sourceLabel;
             if (source_a<source_b) return -1*Number(this.sortDirection);
             if (source_a>source_b) return 1*Number(this.sortDirection);
           }
@@ -241,8 +284,8 @@ class EdgeTable extends UNISYS.Component {
           if (akey>bkey) return 1*Number(this.sortDirection);
           if (akey===bkey) {
             // Secondary sort on Source label
-            let source_a = a.source.label;
-            let source_b = b.source.label;
+            let source_a = a.sourceLabel;
+            let source_b = b.sourceLabel;
             if (source_a<source_b) return -1*Number(this.sortDirection);
             if (source_a>source_b) return 1*Number(this.sortDirection);
           }
@@ -299,13 +342,21 @@ class EdgeTable extends UNISYS.Component {
           break;
       }
     }
-
-    sortSymbol(key) {
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ sortSymbol(key) {
       if (key !== this.state.sortkey) return ""; // this is not the current sort, so don't show anything
       else return this.sortDirection===1?"▼":"▲"; // default to "decreasing" and flip if clicked again
     }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Look up the Node label for source / target ids
+/*/ lookupNodeLabel(nodeId) {
+      const node = this.state.nodes.find(n => n.id === nodeId);
+      if (node === undefined) throw new Error('EdgeTable: Could not find node', nodeId);
+      return node.label;
+    }
 
-/// UI EVENT HANDLERS /////////////////////////////////////////////////////////
+    /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onButtonClick (event) {
@@ -317,7 +368,7 @@ class EdgeTable extends UNISYS.Component {
       if (DBG) console.log('EdgeTable: Edge id',edge.id,'selected for editing');
 
       // Load Source then Edge
-      UDATA.LocalCall('SOURCE_SELECT',{ nodeIDs: [edge.source.id] })
+      UDATA.LocalCall('SOURCE_SELECT',{ nodeIDs: [edge.source] })
       .then(()=>{
         UDATA.LocalCall('EDGE_EDIT',{ edgeID: edge.id });
       });
@@ -397,7 +448,7 @@ class EdgeTable extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ render () {
-      let { edgeDefs } = this.state;
+      let { edgeDefs, isLocked } = this.state;
 
       if (edgeDefs.category === undefined) { // for backwards compatability
         edgeDefs.category = {};
@@ -434,12 +485,12 @@ class EdgeTable extends UNISYS.Component {
           <Button size="sm" outline hidden
             onClick={this.onToggleExpanded}
           >{this.state.isExpanded ? "Hide Edge Table" : "Show Edge Table"}</Button>
-      <table hidden={!this.state.isExpanded}
-        // size="sm" hover responsive striped // ReactStrap properties
-        // Need to use a standard 'table' not ReactStrap so that we can set
-        // the container div height and support non-scrolling headers
-        className="table table-striped table-responsive table-hover table-sm edgetable w-auto"
-      >
+          <table hidden={!this.state.isExpanded}
+            // size="sm" hover responsive striped // ReactStrap properties
+            // Need to use a standard 'table' not ReactStrap so that we can set
+            // the container div height and support non-scrolling headers
+            className="table table-striped table-responsive table-hover table-sm edgetable w-auto"
+          >
             <thead>
               <tr>
                 <th width="4%" hidden={!DBG}><Button size="sm"
@@ -451,7 +502,7 @@ class EdgeTable extends UNISYS.Component {
                 <th  width="10%"><Button size="sm"
                       onClick={()=>this.setSortKey("source")}
                     >{edgeDefs.source.displayLabel} {this.sortSymbol("source")}</Button></th>
-                <th width="10%"><Button size="sm"
+                <th hidden={edgeDefs.type.hidden} width="10%"><Button size="sm"
                       onClick={()=>this.setSortKey("Relationship")}
                     >{edgeDefs.type.displayLabel} {this.sortSymbol("Relationship")}</Button></th>
                 <th hidden={!DBG}>Target ID</th>
@@ -481,22 +532,22 @@ class EdgeTable extends UNISYS.Component {
               <tr key={i}
                 style={{
                   color: edge.isFiltered ? 'red' : 'black',
-                  opacity: edge.filteredTransparency
+                  opacity: edge.isFiltered ? edge.filteredTransparency : 1
                 }}>
                 <td hidden={!DBG}>{edge.id}</td>
                 <td hidden={!DBG}>{edge.size}</td>
                 <td><Button size="sm" outline
                       value={edge.id}
                       onClick={this.onButtonClick}
-                    >Edit</Button>
+                    >{isLocked ? "View" : "Edit"}</Button>
                 </td>
-                <td hidden={!DBG}>{edge.source.id}</td>
-                <td><a href="#" onClick={(e)=>this.selectNode(edge.source.id,e)}
-                    >{edge.source.label || edge.source}</a></td>
-                <td>{edge.type}</td>
-                <td hidden={!DBG}>{edge.target.id}</td>
-                <td><a href="#" onClick={(e)=>this.selectNode(edge.target.id,e)}
-                    >{edge.target.label || edge.target}</a></td>
+                <td hidden={!DBG}>{edge.source}</td>
+                <td><a href="#" onClick={(e)=>this.selectNode(edge.source,e)}
+                    >{edge.sourceLabel}</a></td>
+                <td hidden={edgeDefs.type.hidden}>{edge.type}</td>
+                <td hidden={!DBG}>{edge.target}</td>
+                <td><a href="#" onClick={(e)=>this.selectNode(edge.target,e)}
+                    >{edge.targetLabel}</a></td>
                 <td hidden={edgeDefs.category.hidden}>{edge.category}</td>
                 <td hidden={edgeDefs.citation.hidden}>{edge.citation}</td>
                 <td hidden={edgeDefs.notes.hidden}>

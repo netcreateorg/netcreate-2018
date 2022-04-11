@@ -28,7 +28,7 @@ const HASH_MINLEN = 3;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let DSTOR = UNISYS.NewModule(module.id);
 let UDATA = UNISYS.NewDataLink(DSTOR);
-let D3DATA = {};
+let NCDATA = {};
 
 /// LIFECYCLE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,7 +36,7 @@ let D3DATA = {};
 /*/
 DSTOR.Hook("INITIALIZE", () => {
   // DBUPDATE_ALL is a local call originating from within the app
-  // Used to update the full D3DATA object during template updates
+  // Used to update the full NCDATA object during template updates
   UDATA.HandleMessage("DBUPDATE_ALL", function(data) {
     DSTOR.UpdateDataPromise(data);
   });
@@ -46,6 +46,17 @@ DSTOR.Hook("INITIALIZE", () => {
   UDATA.HandleMessage("DB_UPDATE", function(data) {
     DSTOR.UpdateServerDB(data);
   });
+
+  // DB_INSERT is a local call originating from within the app
+  // Generally used to add new nodes and edges after an import
+  UDATA.HandleMessage("DB_INSERT", function(data) {
+    DSTOR.InsertServerDB(data);
+  });
+
+  // DB_MERGE is a local call originating from within the app
+  // Generally used to update or add new nodes and edges after an import
+  // Unlike DB_INSERT, it'll update existing nodes/edges
+  UDATA.HandleMessage("DB_MERGE", DSTOR.MergeServerDB);
 
   UDATA.OnAppStateChange('SESSION', function( decodedData ) {
     let { isValid, token } = decodedData;
@@ -76,7 +87,7 @@ DSTOR.SetSessionGroupID = function ( decodedData ) {
 /*/ API: Placeholder DATA access function
 /*/
 DSTOR.Data = function() {
-  return D3DATA;
+  return NCDATA;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Write update to database
@@ -97,6 +108,21 @@ DSTOR.UpdateServerDB = function(data) {
   });
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ update max node id count for generating new ids
+/*/
+DSTOR.PromiseCalculateMaxNodeId = function () {
+  return new Promise((resolve, reject) => {
+    UDATA.NetCall("SRV_CALCULATE_MAXNODEID").then(data => {
+      if (data.maxNodeID !== undefined) {
+        if (DBG) console.log(PR, "server calculated max_node_id", data.maxNodeID);
+        resolve(data.maxNodeID);
+      } else {
+        reject(new Error("unknown error" + JSON.stringify(data)));
+      }
+    });
+  });
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ get a unique NodeID
 /*/
 DSTOR.PromiseNewNodeID = function() {
@@ -111,6 +137,36 @@ DSTOR.PromiseNewNodeID = function() {
         } else {
           reject(new Error("unknown error" + JSON.stringify(data)));
         }
+      }
+    });
+  });
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ get multiple unique NodeIDs
+/*/
+DSTOR.PromiseNewNodeIDs = function(count) {
+  return new Promise((resolve, reject) => {
+    UDATA.NetCall("SRV_DBGETNODEIDS", {count}).then(data => {
+      if (data.nodeIDs) {
+        if (DBG) console.log(PR, "server allocated node_id", data.nodeIDs);
+        resolve(data.nodeIDs);
+      } else {
+        reject(new Error("unknown error" + JSON.stringify(data)));
+      }
+    });
+  });
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ update max edge id count for generating new ids
+/*/
+DSTOR.PromiseCalculateMaxEdgeId = function () {
+  return new Promise((resolve, reject) => {
+    UDATA.NetCall("SRV_CALCULATE_MAXEDGEID").then(data => {
+      if (data.maxEdgeID !== undefined) {
+        if (DBG) console.log(PR, "server calculated max_edge_id", data.maxEdgeID);
+        resolve(data.maxEdgeID);
+      } else {
+        reject(new Error("unknown error" + JSON.stringify(data)));
       }
     });
   });
@@ -134,6 +190,21 @@ DSTOR.PromiseNewEdgeID = function() {
     });
   });
 };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ get multiple unique EdgeIDs
+/*/
+DSTOR.PromiseNewEdgeIDs = function(count) {
+  return new Promise((resolve, reject) => {
+    UDATA.NetCall("SRV_DBGETEDGEIDS", {count}).then(data => {
+      if (data.edgeIDs) {
+        if (DBG) console.log(PR, "server allocated edge_id:", data.edgeIDs);
+        resolve(data.edgeIDs);
+      } else {
+        reject(new Error("unknown error" + JSON.stringify(data)));
+      }
+    });
+  });
+};
 
 /// DATABASE LOADER ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -151,8 +222,8 @@ DSTOR.PromiseJSONFile = function(jsonFile) {
         return;
       }
       let data = event.target.responseText;
-      D3DATA = Object.assign(D3DATA, JSON.parse(data));
-      resolve(D3DATA);
+      NCDATA = Object.assign(NCDATA, JSON.parse(data));
+      resolve(NCDATA);
     });
     xobj.open("GET", `${jsonFile}`, true);
     xobj.send();
@@ -174,7 +245,7 @@ DSTOR.PromiseTOMLFile = function (tomlFile) {
         return;
       }
       const data = event.target.responseText;
-      const tomlData = Object.assign(D3DATA, TOML.parse(data));
+      const tomlData = Object.assign(NCDATA, TOML.parse(data));
       resolve(tomlData);
     });
     xobj.open("GET", `${tomlFile}`, true);
@@ -209,6 +280,41 @@ DSTOR.GetTemplateTOMLFileName = () => {
 DSTOR.UpdateDataPromise = function (d3data) {
   return new Promise((resolve, reject) => {
     UDATA.Call("SRV_DBUPDATE_ALL", d3data).then(res => {
+      if (res.OK) {
+        console.log(PR, `database update OK`);
+        resolve(res);
+      } else {
+        reject(new Error(JSON.stringify(res)));
+      }
+    });
+  });
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ API: Insert new records into database from d3data-formatted object
+/*/
+DSTOR.InsertServerDB = function (d3data) {
+  return new Promise((resolve, reject) => {
+    UDATA.Call("SRV_DBINSERT", d3data).then(res => {
+      if (res.OK) {
+        console.log(PR, `database update OK`);
+        resolve(res);
+      } else {
+        reject(new Error(JSON.stringify(res)));
+      }
+    });
+  });
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * API: Add or Insert records into database from d3data-formatted object
+ * @param {object} mergeData
+ * @param {array} mergeData.nodes
+ * @param {array} mergeData.edges
+ * @returns
+ */
+DSTOR.MergeServerDB = function (mergeData) {
+  return new Promise((resolve, reject) => {
+    UDATA.Call("SRV_DBMERGE", mergeData).then(res => {
       if (res.OK) {
         console.log(PR, `database update OK`);
         resolve(res);

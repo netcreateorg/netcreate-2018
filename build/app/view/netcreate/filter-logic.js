@@ -49,12 +49,12 @@
         nodes/edges from the display without affecting the underlying data.
 
   * With Version 1.4, the only data that is graphed is FILTEREDD3DATA.
-    --  d3-simplenetgraph no longer plots on D3DATA changes.
-    --  Instead, it plots the new FILTEREDD3DATA state.  Whenever D3DATA changes,
+    --  d3-simplenetgraph no longer plots on NCDATA changes.
+    --  Instead, it plots the new FILTEREDD3DATA state.  Whenever NCDATA changes,
         FILTERDD3DATA is udpated.
     --  This way there is only one source of truth: all draw updates
         are routed through filter-logic.
-    --  If filters have not been defined, we just pass the raw D3DATA
+    --  If filters have not been defined, we just pass the raw NCDATA
 
   * Filters can be stacked.
         You can define two "Label" filters, for example.
@@ -141,9 +141,9 @@ MOD.Hook("INITIALIZE", () => {
     UDATA.SetAppState("FDATA", FDATA);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Listen for D3DATA updates so we know to trigger change?
+  /*/ Listen for NCDATA updates so we know to trigger change?
   /*/
-  UDATA.OnAppStateChange('D3DATA', (data) => {
+  UDATA.OnAppStateChange('NCDATA', (data) => {
     m_UpdateFilters();
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -182,7 +182,7 @@ function m_ImportFilters() {
       group: "edges", // this needs to be passed to StringFilter
       label: "Edge Filters",
       filters: m_ImportPrompts(edgeDefs),
-      transparency: 0.05 // Default transparency form for Highlight should be 0.05, not template default which is usu 0.3
+      transparency: 0.03 // Default transparency form for Highlight should be 0.03, not template default which is usu 0.3
     }
   };
 
@@ -295,11 +295,21 @@ function m_FilterDefine(data) {
  * @param {Object} data A UDATA pkt {defs}
  */
 function m_FiltersApply() {
-  const FILTEREDD3DATA = UDATA.AppState("D3DATA");
+  const FILTEREDD3DATA = UDATA.AppState("NCDATA");
   const FDATA = UDATA.AppState("FDATA");
 
   // skip if FDATA has not been defined yet
   if (Object.keys(FDATA).length < 1) return;
+
+  // stuff 'sourceLabel' and 'targetLabel' into edges for quicker filtering
+  // otherwise we have to constantly look up the node label
+  FILTEREDD3DATA.edges = FILTEREDD3DATA.edges.map(e => {
+    const source = FILTEREDD3DATA.nodes.find(n => n.id === e.source);
+    const target = FILTEREDD3DATA.nodes.find(n => n.id === e.target);
+    e.sourceLabel = source ? source.label : 'deleted';
+    e.targetLabel = target ? target.label : 'deleted';
+    return e;
+  })
 
   m_FiltersApplyToNodes(FDATA, FILTEREDD3DATA);
   m_FiltersApplyToEdges(FDATA, FILTEREDD3DATA);
@@ -497,6 +507,7 @@ function m_IsNodeMatchedByFilter(node, filter) {
 function m_FiltersApplyToEdges(FDATA, FILTEREDD3DATA) {
   const { filterAction } = FDATA;
   const { filters, transparency } = FDATA.edges;
+  if (!FILTEREDD3DATA.edges) return; // no data
   FILTEREDD3DATA.edges = FILTEREDD3DATA.edges.filter(edge => {
     return m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3DATA);
   });
@@ -583,9 +594,10 @@ function m_IsEdgeMatchedByFilter(edge, filter) {
 
   let edgeValue;
   if (filter.type === FILTER.TYPES.NODE) {
-    // edges require special handling because `source` and `target`
+    // edges fields that poitn to nodes require special handling because `source` and `target`
     // point to node objects, not simple strings.
-    edgeValue = edge[filter.key].label; // search on the source/target node label
+    if (filter.key === 'source') edgeValue = edge.sourceLabel;
+    if (filter.key === 'target') edgeValue = edge.targetLabel;
   } else {
     edgeValue = edge[filter.key];
   }

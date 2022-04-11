@@ -53,39 +53,62 @@ var   UDATA           = null;
 let m_width  = 800;
 let m_height = 800;
 let mouseoverNodeId = -1;   // id of the node the mouse is currently over
-let m_forceProperties = {   // values for all forces
+const M_FORCEPROPERTIES = {   // values for all forces
       center: {
         x: 0.5,
         y: 0.5
       },
       charge: {
+        // 'charge' provides a repelling force against other nodes
         enabled: true,
-        strength: -1000,  //-1000, // -20, was 1500 - JD
-        distanceMin: 20,  //20, 50, // 1,
-        distanceMax: 1000 //2000
+        // -50 works well for small networks with no links
+        strength: -200, // during _UpdateForces, 'strength' is multipled by the size of the node (degrees+1)
+                       // -50 close < -1000 pushes nodes far apart
+        distanceMin: 1, // use 'collide' to keep nodes from intersecting, not distance
+        distanceMax: 750 // max keeps large clusters from pushing unattached nodes too far away
+                         // 250 close < 500 med < 1000 spacious < 10000 far away
       },
       collide: {
+        // 'collide' keeps nodes from overlapping each other
+        // collide's `radius` value maintains a minimum distance between nodes
         enabled: true,
-        strength: 0.3, // was .7 - JD
-        iterations: 1,
-        radius: 4
+        strength: 0.75, // 1 keeps nodes from intersecting during drag so nodes feel more solid
+                        // 0.75 softens the collisions so they don't feel so jarring
+                        // 0.3 will allow nodes to intersect, then iterations will push them out
+        iterations: 5, // need at least 3 iterations to stabilize
+                       // at 1 graph takes a long time to reach equilibrium
+        radius: 7 // `radius` is added to node.degrees + defaultSize during _UpdateForces with the node radius
       },
       forceX: {
+        // 'forceX' pushes nodes towards a normalized x position
+        // x is calculated relative to the m_width
+        // e.g. x=0.5 is the center
+        // higher strength will push harder towards the x point
+        // e.g. to create a narrow tall graph, use strength: 2
         enabled: true,
-        strength: 0.2,    // 0.03,
+        strength: 0.25, // 1 clumped < 0.3 med  < 0.2 loose < 0.1 very loose
         x: 0.5
       },
       forceY: {
+        // 'forceY' pushes nodes towards a normalized y position
+        // y is calculated relative to the m_height
+        // e.g. y=0.5 is the center
+        // higher strength will push harder towards the y point
+        // e.g. to create a wide short graph, use strength: 2
         enabled: true,
-        strength: 0.2,    // 0.03,
+        strength: 0.25, // 1 clumped < 0.3 med  < 0.2 loose < 0.1 very loose
         y: 0.5
       },
       link: {
         enabled: true,
-        distance: 130, // 60, 30,
-        iterations: 2 // 1
+        distance: 50, // sets the basic link distance between nodes
+                      // 10 is a little too close
+                      // 25 is cozy
+                      // 50 is spacious
+                      // 100 leaves everything too far apart
+        iterations: 5 // Orig val = 1.  More iterations will give graph time to settle
       }
-    }; // m_forceProperties
+    }; // M_FORCEPROPERTIES
 
 
 
@@ -100,7 +123,7 @@ class D3NetGraph {
       this.zoom = {};
       this.zoomWrapper  = {};
       this.simulation   = {};
-      this.data         = {};
+      this.data         = { nodes: [], edges: [] };
 
       this.clickFn      = {};
 
@@ -157,11 +180,17 @@ class D3NetGraph {
 
       // bind 'this' to function objects so event handlers can access
       // contents of this class+module instance
+      this._HandleFilteredD3DataUpdate = this._HandleFilteredD3DataUpdate.bind(this);
       this._SetData           = this._SetData.bind(this);
       this._Initialize        = this._Initialize.bind(this);
       this._UpdateGraph       = this._UpdateGraph.bind(this);
       this._UpdateForces      = this._UpdateForces.bind(this);
       this._Tick              = this._Tick.bind(this);
+      this._ColorMap = this._ColorMap.bind(this);
+      this._ZoomReset = this._ZoomReset.bind(this);
+      this._ZoomIn = this._ZoomIn.bind(this);
+      this._ZoomOut = this._ZoomOut.bind(this);
+      this._ZoomPanReset = this._ZoomPanReset.bind(this);
       this._HandleZoom        = this._HandleZoom.bind(this);
       this._Dragstarted       = this._Dragstarted.bind(this);
       this._Dragged           = this._Dragged.bind(this);
@@ -177,74 +206,82 @@ class D3NetGraph {
       //   this._SetData(data);
       // });
 
-      // Special handler for the remove filter
-      UDATA.OnAppStateChange('FILTEREDD3DATA',(data)=>{
-        // expect { nodes, edges } for this namespace
-        if (DBG) console.log(PR,'got state FILTEREDD3DATA',data);
-        this._SetData(data);
-      });
+      UDATA.OnAppStateChange('FILTEREDD3DATA', this._HandleFilteredD3DataUpdate);
+      UDATA.OnAppStateChange('COLORMAP', this._ColorMap);
+      UDATA.HandleMessage('ZOOM_RESET', this._ZoomReset);
+      UDATA.HandleMessage('ZOOM_IN', this._ZoomIn);
+      UDATA.HandleMessage('ZOOM_OUT', this._ZoomOut);
+      UDATA.HandleMessage('ZOOM_PAN_RESET', this._ZoomPanReset);
+      // UDATA.HandleMessage('GROUP_PROPS', (data) => {
+      //   console.log('GROUP_PROPS got ... ');
+      // });
 
-      // The template may be loaded or changed after D3DATA is loaded.
-      // So we need to explicitly update the colors if the color
-      // definitions have changed.
-      UDATA.OnAppStateChange('COLORMAP',(data)=>{
-        if (DBG) console.log(PR, 'got state COLORMAP', data);
-        this._UpdateGraph();
-      });
-
-      UDATA.HandleMessage('ZOOM_RESET', (data) => {
-        if (DBG) console.log(PR, 'ZOOM_RESET got state D3DATA', data);
-        // NOTE: The transition/duration call means _HandleZoom will be called multiple times
-        this.d3svg.transition()
-          .duration(200)
-          .call(this.zoom.scaleTo, 1);
-      });
-
-      UDATA.HandleMessage('ZOOM_IN', (data) => {
-        if (DBG) console.log(PR, 'ZOOM_IN got state D3DATA', data);
-        this._Transition(1.2);
-      });
-
-      UDATA.HandleMessage('ZOOM_OUT', (data) => {
-        if (DBG) console.log(PR, 'ZOOM_OUT got state D3DATA', data);
-        this._Transition(0.8);
-      });
-
-      // Pan to 0,0 and zoom scale to 1
-      // (Currently not used)
-      UDATA.HandleMessage('ZOOM_PAN_RESET', (data) => {
-        if (DBG) console.log(PR, 'ZOOM_PAN_RESET got state D3DATA', data);
-        const transform = d3.zoomIdentity.translate(0, 0).scale(1);
-        this.d3svg.call(this.zoom.transform, transform);
-      });
-
-      UDATA.HandleMessage('GROUP_PROPS', (data) => {
-        console.log('GROUP_PROPS got ... ');
-      });
 
 
   }
 
 
-/// CLASS PUBLIC METHODS //////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// CLASS PUBLIC METHODS //////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  Deregister() {
+    if (DBG) console.log(PR, 'd3-simplenetgraph.DESTRUCT!!!')
+    UDATA.AppStateChangeOff('FILTEREDD3DATA', this._HandleFilteredD3DataUpdate);
+    UDATA.AppStateChangeOff('COLORMAP', this._ColorMap);
+    UDATA.UnhandleMessage('ZOOM_RESET', this._ZoomReset);
+    UDATA.UnhandleMessage('ZOOM_IN', this._ZoomIn);
+    UDATA.UnhandleMessage('ZOOM_OUT', this._ZoomOut);
+    UDATA.UnhandleMessage('ZOOM_PAN_RESET', this._ZoomPanReset);
+  }
+
+  /// CLASS PRIVATE METHODS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+   *
+   * @param {object} data
+   * @param {array} data.nodes
+   * @param {array} data.edges
+   */
+  _HandleFilteredD3DataUpdate(data) {
+    if (DBG) console.log(PR, 'got state FILTEREDD3DATA', data);
+    this._SetData(data);
+  }
+
+/*/ Clear the SVG data
+    Currently not used because we just deconstruct d3-simplenetgraph insead.
+    Was thought to be needed during imports otherwise _UpdateGraph reads data from existing
+    SVG elements rather than the new data.
+/*/
+  _ClearSVG() {
+    this.zoomWrapper.selectAll(".edge").remove();
+    this.zoomWrapper.selectAll(".node").remove();
+  }
 
 
-/// CLASS PRIVATE METHODS /////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ The parent container passes data to the d3 graph via this SetData call
     which then triggers all the internal updates
-/*/ _SetData ( newData ) {
-      this.data = newData
-      if (newData && newData.nodes) {
-        this._Initialize()
-        this._UpdateForces()
-        this._UpdateGraph()
-        // updates ignored until this is run restarts the simulation
-        // (important if simulation has already slowed down)
-        this.simulation.alpha(.3).restart()  // was 1 - JD
-      }
+/*/
+  _SetData(newData) {
+    if (newData) {
+      // Make a shallow copy to protect against mutation, while
+      // recycling old nodes to preserve position and velocity.
+      // From https://observablehq.com/@d3/modifying-a-force-directed-graph?collection=@d3/d3-force
+      // grab the SVG nodes
+      const svgNodes = this.zoomWrapper.selectAll(".node");
+      const oldNodes = new Map(svgNodes.data().map(d => [d.id, d]));
+
+      this.data.nodes = newData.nodes.map(d => Object.assign(oldNodes.get(d.id) || {}, d));
+      this.data.edges = newData.edges.map(d => Object.assign({}, d));
+
+      this._Initialize()
+      this._UpdateForces()
+      this._UpdateGraph()
+
+      // updates ignored until this is run restarts the simulation
+      // (important if simulation has already slowed down)
+      this.simulation.alpha(.3).restart()  // was 1 - JD
     }
+  }
+
 /*/ This sets up the force properties for the simulation and tick handler.
 /*/ _Initialize () {
       // Create the force layout.  After a call to force.start(), the tick
@@ -292,7 +329,7 @@ class D3NetGraph {
       let nodeElements = this.zoomWrapper.selectAll(".node")
         .data(this.data.nodes, (d) => { return d.id }); // fn returns the calculated key for the data object
 
-      // edges is a d3.selection object
+      // linkElements is a d3.selection object
       let linkElements = this.zoomWrapper.selectAll(".edge")
         .data(this.data.edges, (d) => { return d.id }); // fn returns the calculated key for the data object
 
@@ -329,14 +366,7 @@ class D3NetGraph {
         .append("circle")
         // "r" has to be set here or circles don't draw.
         .attr("r", (d) => {
-          let radius = this.data.edges.reduce((acc, ed) => {
-            return (ed.source === d.id || ed.target === d.id) ? acc + 1 : acc;
-          }, 1);
-
-          d.weight = radius
-          d.size = radius // save the calculated size
-          d.degrees = radius - 1 // hack for filters that read degrees
-          return this.defaultSize + (this.defaultSize * d.weight / 2)
+          return this.defaultSize + d.degrees;
         })
         //        .attr("r", (d) => { return this.defaultSize }) // d.size ?  d.size/10 : this.defaultSize; })
         .attr("fill", (d) => {
@@ -375,7 +405,7 @@ class D3NetGraph {
 
       /*/ TRICKY D3 CODE CONCEPTS AHEAD
 
-          CONTEXT: The author of this code has assumed that D3DATA may
+          CONTEXT: The author of this code has assumed that NCDATA may
           completely changed, so his update code is written with this in mind.
 
           At this point in the code, nodeElements is operating on the enter()
@@ -427,16 +457,7 @@ class D3NetGraph {
           })
           .attr("r", (d) => {
             // this "r" is necessary to resize after a link is added
-            let radius = this.data.edges.reduce((acc,ed)=>{
-              return (ed.source.id===d.id || ed.target.id===d.id) ? acc+1 : acc
-            },1);
-
-            d.weight = radius
-            d.size = radius // save the calculated size
-            // radius is calculated by counting the number of edges attached
-            // (+ 1 for a minimum radius), so we hack degrees by using radius-1
-            d.degrees = radius - 1
-            return this.defaultSize + (this.defaultSize * d.weight / 2)
+            return this.defaultSize + d.degrees;
           })
           .transition()
           .duration(500)
@@ -510,8 +531,9 @@ class D3NetGraph {
       // UPDATE ANIMATED SIMULATION
       // this is a plugin
       this.simulation.nodes(this.data.nodes)
-      this.simulation.force("link").links(this.data.edges)
-
+      if (this.data.edges) {
+        this.simulation.force("link").links(this.data.edges)
+      }
     }
 
 // added by Joshua to generate the text, based on the template, for the tooltip on the node
@@ -528,7 +550,7 @@ tooltipForNode(d)
             titleText += this.nodeDefs.type.displayLabel + ": " + d.type + "\n";
         // Add degrees
           if(this.nodeDefs.degrees.includeInGraphTooltip)
-            titleText += this.nodeDefs.degrees.displayLabel + ": " + d.weight + "\n";
+            titleText += this.nodeDefs.degrees.displayLabel + ": " + d.degrees + "\n";
         // Add notes
           if(this.nodeDefs.notes.includeInGraphTooltip)
             titleText += this.nodeDefs.notes.displayLabel + ": " + d.notes + "\n";
@@ -549,50 +571,46 @@ tooltipForNode(d)
     return titleText;
 }
 
-displayUpdated(nodeEdge)
-{
-      var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
-
-      var year = "" + d.getFullYear();
-      var date = (d.getMonth()+1)+"/"+d.getDate()+"/"+ year.substr(2,4);
-      var time = d.toTimeString().substr(0,5);
-      var dateTime = date+' at '+time + " by " + nodeEdge._nlog[nodeEdge._nlog.length-1];
-
-      return dateTime;
+displayUpdated(nodeEdge) {
+  const d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
+  const year = String(d.getFullYear());
+  const date = (d.getMonth()+1)+"/"+d.getDate()+"/"+ year.substr(2,4);
+  const time = d.toTimeString().substr(0, 5);
+  const author = nodeEdge._nlog ? nodeEdge._nlog[nodeEdge._nlog.length-1] : 'unknown';
+  const dateTime = date + ' at ' + time + " by " + author;
+  return dateTime;
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Apply new force properties
     Call this on construct and if forceProperties have changed.
-/*/ _UpdateForces ( data ) {
+/*/ _UpdateForces() {
       this.simulation
         .force("link", d3.forceLink()
-            .id((d) => {return d.id})
-            .distance( (d)=>{return m_forceProperties.link.distance} )
-// this doesn't seem to change anything?!?  The m_forceProperties.link.distance is the only value that seems to matter?
-//            .distance( (d)=>{return m_forceProperties.link.distance+d.size*10 } )
-//            .distance( (d)=>{return m_forceProperties.link.distance * (1/d.size) } )
-//            .distance( m_forceProperties.link.distance )
-            .iterations(m_forceProperties.link.iterations))
+            .id(d => d.id) // note `d` is an edge, not a node
+            // all edges use the same link distance, charge is what pushes them apart
+            .distance(M_FORCEPROPERTIES.link.distance)
+            .iterations(M_FORCEPROPERTIES.link.iterations))
         .force("charge", d3.forceManyBody()
-//            .strength(m_forceProperties.charge.strength * m_forceProperties.charge.enabled)
-//            .strength( (d)=>{return d.size/6 * m_forceProperties.charge.strength * m_forceProperties.charge.enabled} )
-            .strength( (d)=>{return d.size/4 * m_forceProperties.charge.strength * m_forceProperties.charge.enabled} )
-            .distanceMin(m_forceProperties.charge.distanceMin)
-            .distanceMax(m_forceProperties.charge.distanceMax))
+            // the larger the node, the harder it pushes
+            .strength(d => (this.defaultSize+d.degrees) * M_FORCEPROPERTIES.charge.strength * M_FORCEPROPERTIES.charge.enabled )
+            .distanceMin(M_FORCEPROPERTIES.charge.distanceMin)
+            .distanceMax(M_FORCEPROPERTIES.charge.distanceMax))
         .force("collide", d3.forceCollide()
-            .strength(m_forceProperties.collide.strength * m_forceProperties.collide.enabled)
-            .radius((d) => {return d.size/m_forceProperties.collide.radius;})
-            .iterations(m_forceProperties.collide.iterations))
+            .strength(M_FORCEPROPERTIES.collide.strength * M_FORCEPROPERTIES.collide.enabled)
+            // node radius (defaultSize+degrees) + preset radius keeps nodes separated
+            // from each other like bouncing balls
+            .radius(d => this.defaultSize+d.degrees+M_FORCEPROPERTIES.collide.radius)
+            .iterations(M_FORCEPROPERTIES.collide.iterations))
         .force("center", d3.forceCenter()
-            .x(m_width * m_forceProperties.center.x)
-            .y(m_height * m_forceProperties.center.y))
+            .x(m_width * M_FORCEPROPERTIES.center.x)
+            .y(m_height * M_FORCEPROPERTIES.center.y))
         .force("forceX", d3.forceX()
-            .strength(m_forceProperties.forceX.strength * m_forceProperties.forceX.enabled)
-            .x(m_width * m_forceProperties.forceX.x))
+            .strength(M_FORCEPROPERTIES.forceX.strength * M_FORCEPROPERTIES.forceX.enabled)
+            .x(m_width * M_FORCEPROPERTIES.forceX.x))
         .force("forceY", d3.forceY()
-            .strength(m_forceProperties.forceY.strength * m_forceProperties.forceY.enabled)
-            .y(m_height * m_forceProperties.forceY.y))
+            .strength(M_FORCEPROPERTIES.forceY.strength * M_FORCEPROPERTIES.forceY.enabled)
+            .y(m_height * M_FORCEPROPERTIES.forceY.y))
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Update the display positions after each simulation tick
@@ -624,10 +642,13 @@ displayUpdated(nodeEdge)
     and mouseover events.
 /*/
 _UpdateLinkStrokeWidth(edge) {
+  if (DBG) console.log(PR, '_UpdateLinkStrokeWidth', edge);
+  const sourceId = typeof edge.source === 'number' ? edge.source : edge.source.id;
+  const targetId = typeof edge.target === 'number' ? edge.target : edge.target.id;
   if (edge.selected ||
-    (edge.source.id === mouseoverNodeId) ||
-    (edge.target.id === mouseoverNodeId) ||
-    (mouseoverNodeId === -1)
+    (mouseoverNodeId === -1) ||
+    (sourceId === mouseoverNodeId) ||
+    (targetId === mouseoverNodeId)
   ) {
     return edge.size ** 2;  // Use **2 to make size differences more noticeable
   } else {
@@ -636,6 +657,7 @@ _UpdateLinkStrokeWidth(edge) {
 }
 
 _UpdateLinkStrokeColor(edge) {
+  if (DBG) console.log(PR, '_UpdateLinkStrokeColor', edge)
   let COLORMAP = UDATA.AppState('COLORMAP');
   let color = COLORMAP.edgeColorMap[edge.type]
   return color;
@@ -644,14 +666,50 @@ _UpdateLinkStrokeColor(edge) {
 
 /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // The template may be loaded or changed after NCDATA is loaded.
+  // So we need to explicitly update the colors if the color
+  // definitions have changed.
+  _ColorMap(data) {
+    if (DBG) console.log(PR, 'got state COLORMAP', data);
+    this._UpdateGraph();
+  }
+
+  _ZoomReset(data) {
+    if (DBG) console.log(PR, 'ZOOM_RESET got state NCDATA', data);
+    // NOTE: The transition/duration call means _HandleZoom will be called multiple times
+    this.d3svg.transition()
+      .duration(200)
+      .call(this.zoom.scaleTo, 1);
+  }
+
+  _ZoomIn(data) {
+    if (DBG) console.log(PR, 'ZOOM_IN got state NCDATA', data);
+    this._Transition(1.2);
+  }
+
+  _ZoomOut(data) {
+    if (DBG) console.log(PR, 'ZOOM_OUT got state NCDATA', data);
+    this._Transition(0.8);
+  }
+
+  // Pan to 0,0 and zoom scale to 1
+  // (Currently not used)
+  _ZoomPanReset(data) {
+    if (DBG) console.log(PR, 'ZOOM_PAN_RESET got state NCDATA', data);
+    const transform = d3.zoomIdentity.translate(0, 0).scale(1);
+    this.d3svg.call(this.zoom.transform, transform);
+  }
+
 /*/ This primarily handles mousewheel zooms
 /*/
 _HandleZoom() {
+  if (DBG) console.log(PR, '_HandleZoom')
   d3.select('.zoomer').attr("transform", d3.event.transform);
 }
 /*/ This handles zoom button zooms.
 /*/
 _Transition(zoomLevel) {
+  if (DBG) console.log(PR, '_Transition')
   this.d3svg.transition()
     //.delay(100)
     .duration(200)
@@ -661,6 +719,7 @@ _Transition(zoomLevel) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ _Dragstarted (d, self) {
+      if (DBG) console.log(PR, '_Dragstarted', d.x, d.y)
       if (!d3.event.active) self.simulation.alphaTarget(0.3).restart();
       d.fx = d.x;
       d.fy = d.y;
@@ -668,12 +727,14 @@ _Transition(zoomLevel) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ _Dragged (d) {
+      if (DBG) console.log(PR, '_Dragged')
       d.fx = d3.event.x;
       d.fy = d3.event.y;
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ _Dragended (d, self) {
+      if (DBG) console.log(PR, '_Dragended')
       if (!d3.event.active) self.simulation.alphaTarget(0.0001);
       d.fx = null;
       d.fy = null;

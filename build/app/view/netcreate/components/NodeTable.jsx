@@ -4,12 +4,12 @@
 
     NodeTable is used to to display a table of nodes for review.
 
-    It displays D3DATA.
+    It displays NCDATA.
     But also checks FILTEREDD3DATA to show highlight/filtered state
 
   ## TO USE
 
-    NodeTable is self contained and relies on global D3DATA to load.
+    NodeTable is self contained and relies on global NCDATA to load.
 
       <NodeTable/>
 
@@ -52,10 +52,12 @@ class NodeTable extends UNISYS.Component {
       nodeDefs: this.AppState('TEMPLATE').nodeDefs,
       nodes: [],
       filteredNodes: [],
+      isLocked: false,
       isExpanded: true,
       sortkey: 'label'
     };
 
+    this.onStateChange_SESSION = this.onStateChange_SESSION.bind(this);
     this.displayUpdated = this.displayUpdated.bind(this);
     this.updateNodeFilterState = this.updateNodeFilterState.bind(this);
     this.handleDataUpdate = this.handleDataUpdate.bind(this);
@@ -71,9 +73,13 @@ class NodeTable extends UNISYS.Component {
     /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
 
+    // SESSION is called by SessionSHell when the ID changes
+    //  set system-wide. data: { classId, projId, hashedId, groupId, isValid }
+    this.OnAppStateChange('SESSION',this.onStateChange_SESSION);
+
     // Always make sure class methods are bind()'d before using them
     // as a handler, otherwise object context is lost
-    this.OnAppStateChange('D3DATA', this.handleDataUpdate);
+    this.OnAppStateChange('NCDATA', this.handleDataUpdate);
 
     // Track Filtered Data Updates too
     this.OnAppStateChange('FILTEREDD3DATA', this.handleFilterDataUpdate);
@@ -87,26 +93,43 @@ class NodeTable extends UNISYS.Component {
 /*/
 /*/ componentDidMount () {
       if (DBG) console.error('NodeTable.componentDidMount!');
-      // Explicitly retrieve data because we may not have gotten a D3DATA
-      // update while we were hidden.
 
+      this.onStateChange_SESSION(this.AppState('SESSION'));
+
+      // Explicitly retrieve data because we may not have gotten a NCDATA
+      // update while we were hidden.
       // filtered data needs to be set before D3Data
       const FILTEREDD3DATA = UDATA.AppState('FILTEREDD3DATA');
       this.setState({ filteredNodes: FILTEREDD3DATA.nodes },
         () => {
-          let D3DATA = this.AppState('D3DATA');
-          this.handleDataUpdate(D3DATA);
+          let NCDATA = this.AppState('NCDATA');
+          this.handleDataUpdate(NCDATA);
         }
       )
     }
 
     componentWillUnmount() {
-      this.AppStateChangeOff('D3DATA', this.handleDataUpdate);
+      this.AppStateChangeOff('SESSION', this.onStateChange_SESSION);
+      this.AppStateChangeOff('NCDATA', this.handleDataUpdate);
       this.AppStateChangeOff('FILTEREDD3DATA', this.handleFilterDataUpdate);
       this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
     }
 
-    displayUpdated(nodeEdge) {
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Handle change in SESSION data
+    Called both by componentWillMount() and AppStateChange handler.
+    The 'SESSION' state change is triggered in two places in SessionShell during
+    its handleChange() when active typing is occuring, and also during
+    SessionShell.componentWillMount()
+/*/ onStateChange_SESSION( decoded ) {
+      this.setState({ isLocked: !decoded.isValid });
+    }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  displayUpdated(nodeEdge) {
+      // Prevent error if `meta` info is not defined yet, or not properly imported
+      if (!nodeEdge.meta) return;
+
       var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
 
       var year = String(d.getFullYear());
@@ -344,7 +367,7 @@ class NodeTable extends UNISYS.Component {
 /*/
 render() {
   if (this.state.nodes === undefined) return "";
-  const { nodeDefs } = this.state;
+  const { nodeDefs, isLocked } = this.state;
   const { tableHeight } = this.props;
   const styles = `thead, tbody { font-size: 0.8em }
                   .table {
@@ -380,7 +403,9 @@ render() {
         <thead>
           <tr>
             <th width="4%"><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
-            <th width="4%" hidden={!DBG}>ID</th>
+            <th width="4%" hidden={!DBG}><Button size="sm"
+                  onClick={() => this.setSortKey("id")}
+                >ID</Button></th>
             <th width="4%"><Button size="sm"
                   onClick={() => this.setSortKey("edgeCount")}
                 >{nodeDefs.degrees.displayLabel} {this.sortSymbol("edgeCount")}</Button></th>
@@ -414,7 +439,7 @@ render() {
             <td><Button size="sm" outline
                   value={node.id}
                   onClick={this.onButtonClick}
-                >Edit</Button>
+            >{isLocked ? "View" : "Edit"}</Button>
             </td>
             <td hidden={!DBG}>{node.id}</td>
             <td>{node.degrees}</td>

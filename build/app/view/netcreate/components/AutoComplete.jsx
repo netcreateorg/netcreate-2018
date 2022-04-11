@@ -293,7 +293,7 @@ class AutoComplete extends UNISYS.Component {
     of all possible suggestions that are then filtered based on the user typing
     for suggestions.
 
-    We construct the list on the fly based on the D3DATA data.  If the data model
+    We construct the list on the fly based on the NCDATA data.  If the data model
     changes, we'll need to update this lexicon constructor.
 /*/ onSuggestionsFetchRequested () {
       let data = this.AppState('SEARCH');

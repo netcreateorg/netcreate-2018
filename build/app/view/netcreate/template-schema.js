@@ -2,12 +2,27 @@
 
   Template Schema
 
-  The default schema is defined here.
+  The Template Schema defines a spec for
+  `[json-editor](https://github.com/json-editor/json-editor)`
+  to generate a UI for editing the template.  It identifies the objects that
+  the json-editor needs to support and provides meta data about how to
+  display and handle the edits.
 
+  `template-logic.js` handles initialization.
 
-  ##  BACKGROUND
+  NOTE: This schema is NOT the same as the `toml` template file schema.  This
+  schema is used by `json-editor` to know how to display a UI for editing the
+  template itself.
 
-      Template data is loaded by `server-database` DB.InitializeDatabase call.
+  FUTURE WORK: We should be able to generate a new
+  `default.template.toml` file from the schema.  That would ensure that
+  default template is up to date.  There isn't a single-button UI for this
+  currently, but you CAN basically do this by:
+  1. Start NetCreate with a new db, e.g. `./nc.js --dataset=newdefault`
+  2. Clicking "New Template" on the "More... > Edit Template" tab.
+  3. Clicking "Save Changes"
+  4. Copy the file to `netcreate-2018/build/app/assets/templates/`
+  5. Renaming the saved template to `_default.template.toml`
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -24,6 +39,18 @@ const MOD = {};
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+/**
+ * Node Type Schema
+ * This is a subset of the full template schema.
+ *
+ * We pull it out separately so that Node Types can be edited by themselves
+ * without having to scroll through the whole template.
+ *
+ * When editing the main Template, this is loaded as a subset of the main schema.
+ * When editing node types, this is loaded by MOD.GetTypeEditorSchema to
+ * provide additional UI elements to manage deleting and renaming
+ * existing field types
+ */
 MOD.NODETYPEOPTIONS = {
   type: 'array',
   title: 'Node Types',
@@ -54,6 +81,18 @@ MOD.NODETYPEOPTIONS = {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+/**
+ * Edge Type Schema
+ * This is a subset of the full template schema.
+ *
+ * We pull it out separately so that Edge Types can be edited by themselves
+ * without having to scroll through the whole template.
+ *
+ * When editing the main Template, this is loaded as a subset of the main schema.
+ * When editing edge types, this is loaded by MOD.GetTypeEditorSchema to
+ * provide additional UI elements to manage deleting and renaming
+ * existing field types
+ */
 MOD.EDGETYPEOPTIONS = {
   type: 'array',
   title: 'Edge Types',
@@ -116,6 +155,7 @@ MOD.TEMPLATE = {
         "hidden": {
           type: 'boolean',
           format: 'checkbox',
+          description: 'Hides the "Cite Node" and "Cite Edge" buttons.',
           default: false
         }
       }
@@ -129,10 +169,20 @@ MOD.TEMPLATE = {
       // Normally, only admins can delete nodes.  You're an admin if:
       // -- is localhost (e.g. IP is 127.0.0.71)
       // -- or has `?admin=true` GET parameter
-      // This will force hide the delete button even if you're an admin
+      // This will force hide the delete button even if you're an admin.
       type: 'boolean',
       format: 'checkbox',
       description: 'Always hide Node delete button, even for admins.',
+      default: false
+    },
+    "allowLoggedInUserToImport": {
+      // Normally, only admins can import data.  You're an admin if:
+      // -- is localhost (e.g. IP is 127.0.0.71)
+      // -- or has `?admin=true` GET parameter
+      // This will allow any logged in user to import data.
+      type: 'boolean',
+      format: 'checkbox',
+      description: 'Allow any logged in user to import data.  Admins can always import data.',
       default: false
     },
     "duplicateWarning": {
@@ -152,8 +202,13 @@ MOD.TEMPLATE = {
     },
     "templateIsLockedMessage": {
       type: 'string',
-      description: 'Warning message to display if user is trying to edit a node or edge while the template is being edited.',
+      description: 'Warning message to display if user is trying to edit a node or edge or import while the template is being edited.',
       default: 'The template is currently being edited, please try again later.'
+    },
+    "importIsLockedMessage": {
+      type: 'string',
+      description: 'Warning message to display if user is trying to edit a node, edge, or template import is active.',
+      default: 'Data is currently being imported, please try again later.'
     },
     "nodeDefaultTransparency": {
       type: 'number',
@@ -163,7 +218,7 @@ MOD.TEMPLATE = {
     "edgeDefaultTransparency": {
       type: 'number',
       description: 'Default transparency for edges.',
-      default: 0.3
+      default: 0.7
     },
     "searchColor": {
       type: 'string',
@@ -215,9 +270,9 @@ MOD.TEMPLATE = {
             },
             "hidden": {
               type: 'boolean',
-              // not editable
-              options: { hidden: true },
               format: 'checkbox',
+              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
+              description: 'Not used.  "id" is always hidden.',
               default: false
             }
           }
@@ -256,8 +311,8 @@ MOD.TEMPLATE = {
             },
             "hidden": {
               type: 'boolean',
-              // not editable
-              options: { hidden: true },
+              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
+              description: 'Not used.  "label" is always shown.',
               format: 'checkbox',
               default: false
             }
@@ -298,12 +353,13 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Hides "type" from Node Editor, Nodes Table, and exports',
               default: false
             },
             "options": Object.assign({}, MOD.NODETYPEOPTIONS, { description: 'NOTE: We recommend using the "Edit Node Types" feature to edit Node Types.  It provides additional dataset migration tools.' })
           }
         },
-        "notes": { // Signficance
+        "notes": { // Significance
           type: 'object',
           description: 'Display name of the node',
           properties: {
@@ -336,6 +392,7 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Hides "notes" from Node Editor, Nodes Table, and exports',
               default: false
             }
           }
@@ -373,11 +430,12 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Hides "info" from Node Editor, Nodes Table, and exports',
               default: false
             }
           }
         },
-        "degrees": { // Weight
+        "degrees": {
           type: 'object',
           description: 'Display name of the node',
           properties: {
@@ -394,7 +452,7 @@ MOD.TEMPLATE = {
             "exportLabel": {
               type: 'string',
               description: 'Label to use for exported csv file field name',
-              default: 'Weight'
+              default: 'Degrees'
             },
             "help": {
               type: 'string',
@@ -410,13 +468,14 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Hides "degrees" from Node Editor, Nodes Table, and exports',
               default: false
             }
           }
         },
-        "created": { // HACK setting.  Only used in d3-simplenetgraph tooltip.  Does not define a new data field.
+        "created": { // Built-in data DO NOT MODIFY!
           type: 'object',
-          description: 'System-generated date.  This setting only used to show/hide tooltip in graph',
+          description: 'System-generated date.  This setting used to show/hide tooltip in graph and import/export',
           properties: {
             "displayLabel": {
               type: 'string',
@@ -442,13 +501,14 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Requires "created" for exports and imports',
               default: false
             }
           }
         },
-        "updated": { // HACK setting.  Only used in d3-simplenetgraph tooltip.  Does not define a new data field.
+        "updated": { // Built-in data DO NOT MODIFY!
           type: 'object',
-          description: 'System-generated date.  This setting only used to show/hide tooltip in graph',
+          description: 'System-generated date.  This setting used to show/hide tooltip in graph and import/export',
           properties: {
             "displayLabel": {
               type: 'string',
@@ -474,7 +534,41 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Requires "updated" for exports and imports',
               default: false
+            }
+          }
+        },
+        "revision": { // Built-in data DO NOT MODIFY!
+          type: 'object',
+          description: 'System-generated data.  This setting used to show/hide tooltip in graph and import/export',
+          properties: {
+            "displayLabel": {
+              type: 'string',
+              description: 'Label to use for system display',
+              default: 'Revision'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Revision'
+            },
+            "includeInGraphTooltip": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Show "revision" value in tooltip on graph',
+              default: true
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Node Editor form',
+              default: 'Number of times this node has been revised'
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Requires "revision" for exports and imports',
+              default: true
             }
           }
         }
@@ -512,9 +606,9 @@ MOD.TEMPLATE = {
             },
             "hidden": {
               type: 'boolean',
-              // not editable
-              options: { hidden: true },
               format: 'checkbox',
+              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
+              description: 'Not used.  "id" is always hidden.',
               default: false
             }
           }
@@ -547,9 +641,9 @@ MOD.TEMPLATE = {
             },
             "hidden": {
               type: 'boolean',
-              // not editable
-              options: { hidden: true },
               format: 'checkbox',
+              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
+              description: 'Not used.  "source" is always shown.',
               default: false
             }
           }
@@ -582,9 +676,9 @@ MOD.TEMPLATE = {
             },
             "hidden": {
               type: 'boolean',
-              // not editable
-              options: { hidden: true },
               format: 'checkbox',
+              options: { hidden: true }, // not end-user editable, always hidden from Template Editor
+              description: 'Not used.  "target" is always shown.',
               default: false
             }
           }
@@ -618,6 +712,7 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Hides "type" from Edge Editor, Edges Table, and exports',
               default: false
             },
             "options": Object.assign({}, MOD.EDGETYPEOPTIONS, { description: 'NOTE: We recommend using the "Edit Edge Types" feature to edit Edge Types.  It provides additional dataset migration tools.' })
@@ -650,6 +745,7 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Hides "notes" from Edge Editor, Edges Table, and exports',
               default: false
             }
           }
@@ -681,11 +777,12 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Hides "info" from Edge Editor, Edges Table, and exports',
               default: false
             }
           }
         },
-        "citation": { // Signficance
+        "citation": {
           type: 'object',
           description: 'Display name of the node',
           properties: {
@@ -712,11 +809,12 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Hides "citation" from Edge Editor, Edges Table, and exports',
               default: false
             }
           }
         },
-        "category": { // Signficance
+        "category": {
           type: 'object',
           description: 'Display name of the node',
           properties: {
@@ -743,10 +841,110 @@ MOD.TEMPLATE = {
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
+              description: 'Hides "category" from Edge Editor, Edges Table, and exports',
               default: true
             }
           }
         },
+        "created": { // Built-in data DO NOT MODIFY!
+          type: 'object',
+          description: 'System-generated date.  This setting used to show/hide tooltip in graph and import/export',
+          properties: {
+            "displayLabel": {
+              type: 'string',
+              description: 'Label to use for system display',
+              default: 'Created'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Created'
+            },
+            "includeInGraphTooltip": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Show "created" value in tooltip on graph',
+              default: true
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Edge Editor form',
+              default: 'Date and time edge was created'
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Requires "created" for exports and imports',
+              default: false
+            }
+          }
+        },
+        "updated": { // Built-in data DO NOT MODIFY!
+          type: 'object',
+          description: 'System-generated date.  This setting used to show/hide tooltip in graph and import/export',
+          properties: {
+            "displayLabel": {
+              type: 'string',
+              description: 'Label to use for system display',
+              default: 'Updated'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Updated'
+            },
+            "includeInGraphTooltip": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Show "updated" value in tooltip on graph',
+              default: true
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Edge Editor form',
+              default: 'Date and time edge was last modified'
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Requires "updated" for exports and imports',
+              default: false
+            }
+          }
+        },
+        "revision": { // Built-in data DO NOT MODIFY!
+          type: 'object',
+          description: 'System-generated data.  This setting used to show/hide tooltip in graph and import/export',
+          properties: {
+            "displayLabel": {
+              type: 'string',
+              description: 'Label to use for system display',
+              default: 'Revision'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Revision'
+            },
+            "includeInGraphTooltip": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Show "revision" value in tooltip on graph',
+              default: true
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Edge Editor form',
+              default: 'Number of times this edge has been revised'
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Requires "revision" for exports and imports',
+              default: true
+            }
+          }
+        }
       }
     }
   }
@@ -758,10 +956,15 @@ MOD.TEMPLATE = {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Schema definition for the Type Editor UI
+/*/ Extra schema definition for the Type Editor UI
+
     This introduces a wrapper around the Node or Edge Type Schema to provide
-    extra UI elements for managing Type changes.
-    * Map deleted types to another type
+    extra UI elements for managing Type changes that the normal Template
+    editor does not have:
+    * Adds a checkbox to mark a type for deletion
+    * Adds a field to map a deleted type to another type
+
+    Used by the "Edit Node Types" and "Edit Edge Types" buttons.
 /*/
 MOD.GetTypeEditorSchema = schemaTypeOptions => {
   const typeOptions = clone(schemaTypeOptions);

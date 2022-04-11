@@ -63,85 +63,76 @@ var UNISYS = {};
         return UDB.PKT_SetDatabase(pkt);
       });
 
-      UNET.HandleMessage('SRV_TEMPLATESAVE', pkt => { // server-database
-        if (DBG) console.log(PR, sprint_message(pkt));
-        UNET.NetCall('NET_TEMPLATE_UPDATE', pkt.data.template); // Broadcast template to other computers on the net
-        return UDB.WriteTemplateTOML(pkt);
+      /// Add new node/edges to db after an import
+      UNET.HandleMessage('SRV_DBINSERT', function (pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_InsertDatabase(pkt);
+      });
+
+      /// Update or add new node/edges to db after an import
+      UNET.HandleMessage('SRV_DBMERGE', function (pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_MergeDatabase(pkt);
       });
 
       /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      /// TEMPLATE / NODE / EDGE EDITOR LOCKING
+      /// TEMPLATE / IMPORT / NODE / EDGE EDITOR LOCKING
       /**
-       * Requested by Template.jsx when user wants to edit template
-       * @return { templateBeingEdited: boolean, nodeOrEdgeBeingEdited: boolean }
+       * Reports on whether template, import, or node/edge are being edited
+       * @return { templateBeingEdited: boolean, importActive: boolean, nodeOrEdgeBeingEdited: boolean }
        */
-      UNET.HandleMessage('SRV_REQ_TEMPLATE_EDIT', pkt => { // server-database
+      UNET.HandleMessage('SRV_GET_EDIT_STATUS', pkt => { // server-database
         if (DBG) console.log(PR, sprint_message(pkt));
-        console.log(PR, 'SRV_REQ_TEMPLATE_EDIT', sprint_message(pkt));
-        const data = UDB.RequestTemplateEdit();
-        const editState = UDB.GetTemplateEditState();
-        UNET.NetCall('EDIT_PERMITTED', editState); // Broadcast Lock State
-        return data;
-      });
-      /**
-       * Requested by Template.jsx when user is finished editing template
-       * @return { templateBeingEdited: boolean, nodeOrEdgeBeingEdited: boolean }
-       */
-      UNET.HandleMessage('SRV_RELEASE_TEMPLATE_EDIT', pkt => { // server-database
-        if (DBG) console.log(PR, sprint_message(pkt));
-        console.log(PR, 'SRV_RELEASE_TEMPLATE_EDIT', sprint_message(pkt));
-        const data = UDB.ReleaseTemplateEdit();
-        UNET.NetCall('EDIT_PERMITTED', data); // Broadcast Lock State
-        return data;
-      });
-      /**
-       * @return { templateBeingEdited: boolean, nodeOrEdgeBeingEdited: boolean }
-       */
-      UNET.HandleMessage('SRV_GET_TEMPLATE_EDIT_STATE', pkt => { // server-database
-        if (DBG) console.log(PR, sprint_message(pkt));
-        console.log(PR, 'SRV_GET_TEMPLATE_EDIT_STATE', sprint_message(pkt));
-        const data = UDB.GetTemplateEditState(pkt);
+        const data = UDB.GetEditStatus(pkt);
         return data;
       });
       /**
        * Requested by Node / Edge Editor when user wants to edit node / edge
-       * @return { templateBeingEdited: boolean, nodeOrEdgeBeingEdited: boolean }
+       * @return { templateBeingEdited: boolean, importActive: boolean, nodeOrEdgeBeingEdited: boolean }
        */
-      UNET.HandleMessage('SRV_REQ_TEMPLATE_LOCK', pkt => { // server-database
+      UNET.HandleMessage('SRV_REQ_EDIT_LOCK', pkt => { // server-database
         if (DBG) console.log(PR, sprint_message(pkt));
-        console.log(PR, 'SRV_REQ_TEMPLATE_LOCK', sprint_message(pkt));
-        const data = UDB.RequestTemplateLock(pkt);
+        const data = UDB.RequestEditLock(pkt);
         // Broadcast Lock State
-        UNET.NetCall('EDIT_PERMITTED', data);
+        UNET.NetCall('EDIT_PERMISSIONS_UPDATE', data);
         return data;
       });
       /**
-       * @return { templateBeingEdited: boolean, nodeOrEdgeBeingEdited: boolean }
+       * @return { templateBeingEdited: boolean, importActive: boolean, nodeOrEdgeBeingEdited: boolean }
        */
-      UNET.HandleMessage('SRV_RELEASE_TEMPLATE_LOCK', pkt => { // server-database
+      UNET.HandleMessage('SRV_RELEASE_EDIT_LOCK', pkt => { // server-database
         if (DBG) console.log(PR, sprint_message(pkt));
-        console.log(PR, 'SRV_RELEASE_TEMPLATE_LOCK', sprint_message(pkt));
-        const data = UDB.ReleaseTemplateLock(pkt);
+        const data = UDB.ReleaseEditLock(pkt);
         // Broadcast Lock State
-        UNET.NetCall('EDIT_PERMITTED', data);
+        UNET.NetCall('EDIT_PERMISSIONS_UPDATE', data);
         return data;
       });
 
 
       /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       /// TEMPLATE EDITING
+      UNET.HandleMessage('SRV_TEMPLATESAVE', pkt => { // server-database
+        if (DBG) console.log(PR, sprint_message(pkt));
+        UNET.NetCall('NET_TEMPLATE_UPDATE', pkt.data.template); // Broadcast template to other computers on the net
+        return UDB.WriteTemplateTOML(pkt);
+      });
+
       UNET.HandleMessage('SRV_GET_TEMPLATETOML_FILENAME', () => {
         return UDB.GetTemplateTOMLFileName();
       })
 
+      /// Update all EXISTING nodes/edges after a Template edit
       UNET.HandleMessage('SRV_DBUPDATE_ALL', function (pkt) {
-        if (DBG) console.log(PR,sprint_message(pkt));
+        if (DBG) console.log(PR, sprint_message(pkt));
         return UDB.PKT_UpdateDatabase(pkt);
       });
 
+      /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      /// NODE/EDGE EDITING
+
       // receives a packet from a client
       UNET.HandleMessage('SRV_DBUPDATE',function(pkt) {
-        if (DBG) console.log(PR,sprint_message(pkt));
+        if (DBG) console.log(PR, sprint_message(pkt));
         let data = UDB.PKT_Update(pkt);
         // add src attribute for client SOURCE_UPDATE to know
         // this is a remote update
@@ -155,13 +146,21 @@ var UNISYS = {};
         return { OK:true, info:'SRC_DBUPDATE' };
       });
 
+      UNET.HandleMessage('SRV_CALCULATE_MAXNODEID',function(pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_CalculateMaxNodeID(pkt);
+      });
       UNET.HandleMessage('SRV_DBGETNODEID',function(pkt) {
         if (DBG) console.log(PR,sprint_message(pkt));
         return UDB.PKT_GetNewNodeID(pkt);
       });
+      UNET.HandleMessage('SRV_DBGETNODEIDS',function(pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_GetNewNodeIDs(pkt);
+      });
 
       UNET.HandleMessage('SRV_DBLOCKNODE', function (pkt) {
-        if (DBG) console.log(PR,sprint_message(pkt));
+        if (DBG) console.log(PR, sprint_message(pkt));
         return UDB.PKT_RequestLockNode(pkt);
       });
 
@@ -190,12 +189,24 @@ var UNISYS = {};
       });
       UNET.HandleMessage('SRV_DBUNLOCKALL', function (pkt) {
         if (DBG) console.log(PR, sprint_message(pkt));
-        return UDB.PKT_RequestUnlockAll(pkt);
+        const res = UDB.PKT_RequestUnlockAll(pkt);
+        // Broadcast Lock State
+        const data = UDB.GetEditStatus();
+        UNET.NetCall('EDIT_PERMISSIONS_UPDATE', data);
+        return res;
       });
 
+      UNET.HandleMessage('SRV_CALCULATE_MAXEDGEID',function(pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_CalculateMaxEdgeID(pkt);
+      });
       UNET.HandleMessage('SRV_DBGETEDGEID', function (pkt) {
         if (DBG) console.log(PR,sprint_message(pkt));
         return UDB.PKT_GetNewEdgeID(pkt);
+      });
+      UNET.HandleMessage('SRV_DBGETEDGEIDS', function (pkt) {
+        if (DBG) console.log(PR,sprint_message(pkt));
+        return UDB.PKT_GetNewEdgeIDs(pkt);
       });
 
       UNET.HandleMessage('SRV_LOG_EVENT',function(pkt) {

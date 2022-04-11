@@ -60,10 +60,11 @@ class InfoPanel extends UNISYS.Component {
     this.handleDrag = this.handleDrag.bind(this);
     this.UpdateFilterSummary = this.UpdateFilterSummary.bind(this);
     this.OnClearBtnClick = this.OnClearBtnClick.bind(this);
+    this.CloseMore = this.CloseMore.bind(this);
 
     UDATA = UNISYS.NewDataLink(this);
     UDATA.HandleMessage("FILTER_SUMMARY_UPDATE", this.UpdateFilterSummary);
-
+    UDATA.HandleMessage("UI_CLOSE_MORE", this.CloseMore);
   } // constructor
 
 
@@ -127,8 +128,12 @@ class InfoPanel extends UNISYS.Component {
     this.setState({ filtersSummary: data.filtersSummary });
   }
 
-   OnClearBtnClick() {
+  OnClearBtnClick() {
     UDATA.LocalCall('FILTER_CLEAR');
+  }
+
+  CloseMore() {
+    this.toggle('1');
   }
 
 
@@ -146,6 +151,11 @@ class InfoPanel extends UNISYS.Component {
     this.setState({
       tabpanelTop: tabpanel.offsetTop
     });
+  }
+
+  componentWillUnmount() {
+    UDATA.UnhandleMessage("FILTER_SUMMARY_UPDATE", this.UpdateFilterSummary);
+    UDATA.UnhandleMessage("UI_CLOSE_MORE", this.CloseMore);
   }
 
   shouldComponentUpdate(props) {

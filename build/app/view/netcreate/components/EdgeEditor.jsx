@@ -68,6 +68,10 @@
 
   ## TECHNICAL DESCRIPTION
 
+    EdgeEditor works directly with raw NCDATA, unprocessed by d3.
+    This means that `edge.source` and `edge.target` are IDs, NOT the node objects
+    that d3 will convert them into.
+
 
   ## TESTING
 
@@ -204,6 +208,7 @@ const AutoComplete = require('./AutoComplete');
 const NodeDetail   = require('./NodeDetail');
 
 const UNISYS   = require('unisys/client');
+const { EDITORTYPE } = require("system/util/enum");
 var   UDATA    = null;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
@@ -217,7 +222,7 @@ class EdgeEditor extends UNISYS.Component {
         edgeDefs: TEMPLATE.edgeDefs,
         citation: TEMPLATE.citation,
         edgeIsLockedMessage: TEMPLATE.edgeIsLockedMessage,
-        templateIsLockedMessage: TEMPLATE.templateIsLockedMessage,
+        editLockMessage: '',
         formData: {                 // Holds the state of the form fields
           sourceId:     '',
           targetId:     '',
@@ -262,9 +267,11 @@ class EdgeEditor extends UNISYS.Component {
 
       this.setTemplate = this.setTemplate.bind(this);
       this.updateEditState = this.updateEditState.bind(this);
+      this.setEditState = this.setEditState.bind(this);
       this.handleSelection        = this.handleSelection.bind(this);
       this.handleEdgeSelection    = this.handleEdgeSelection.bind(this);
       this.handleEdgeEdit         = this.handleEdgeEdit.bind(this);
+      this.handleEdgeClose = this.handleEdgeClose.bind(this);
       this.onStateChange_SESSION  = this.onStateChange_SESSION.bind(this);
       this.onEdgeClick            = this.onEdgeClick.bind(this);
       this.onDeleteButtonClick    = this.onDeleteButtonClick.bind(this);
@@ -295,21 +302,15 @@ class EdgeEditor extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       this.OnAppStateChange('SELECTION', this.handleSelection);
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      UDATA.HandleMessage('EDGE_SELECT',(data) => {
-        this.handleEdgeSelection(data);
-      });
+      UDATA.HandleMessage('EDGE_SELECT', this.handleEdgeSelection);
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      UDATA.HandleMessage('EDGE_EDIT',(data) => {
-        this.handleEdgeEdit(data);
-      });
+      UDATA.HandleMessage('EDGE_EDIT', this.handleEdgeEdit);
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      UDATA.HandleMessage('EDGE_CLOSE',(data) => {
-        if (this.state.isExpanded) this.setState({ isExpanded: false });
-      });
+      UDATA.HandleMessage('EDGE_CLOSE', this.handleEdgeClose);
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      // Template handler
+      // Template handlers
       this.OnAppStateChange('TEMPLATE', this.setTemplate);
-      UDATA.HandleMessage('EDIT_PERMITTED', this.updateEditState);
+      UDATA.HandleMessage('EDIT_PERMISSIONS_UPDATE', this.setEditState);
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Prevent editing if server is disconnected.
@@ -372,15 +373,22 @@ class EdgeEditor extends UNISYS.Component {
 /*/ Disable Edge Edit if a Template is being edited
 /*/
     updateEditState() {
-      let disableEdit = false;
-      UDATA.NetCall("SRV_GET_TEMPLATE_EDIT_STATE")
+      UDATA.NetCall("SRV_GET_EDIT_STATUS")
         .then(data => {
-          disableEdit = data.templateBeingEdited;
-          this.setState({ disableEdit });
+          this.setEditState(data);
         });
     }
+    setEditState(data) {
+      if (DBG) console.log(PR, 'SRV_GET_EDIT_STATUS received', data)
+      const disableEdit = data.templateBeingEdited || data.importActive;
+      const TEMPLATE = this.AppState('TEMPLATE');
+      let editLockMessage = '';
+      if (data.templateBeingEdited) editLockMessage = TEMPLATE.templateIsLockedMessage;
+      if (data.importActive) editLockMessage = TEMPLATE.importIsLockedMessage;
+      this.setState({ disableEdit, editLockMessage });
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ populate formdata from D3DATA
+/*/ populate formdata from NCDATA
 /*/ loadSourceAndTarget () {
       if (DBG) console.log('EdgeEditor.loadSourceAndTarget!')
 
@@ -388,12 +396,12 @@ class EdgeEditor extends UNISYS.Component {
       // Clean Data
       if (isNaN(edgeID)) { edgeID = parseInt(edgeID); }
 
-      let D3DATA = this.AppState('D3DATA');
+      const NCDATA = this.AppState('NCDATA');
 
       // parseInt in case of old bad string id
-      let edges = D3DATA.edges.filter( edge=>parseInt(edge.id)===edgeID );
+      let edges = NCDATA.edges ? NCDATA.edges.filter( edge=>parseInt(edge.id)===edgeID ) : [];
       if (!edges) {
-        throw 'EdgeEditor: Passed edgeID'+edgeID+'not found!';
+        throw 'EdgeEditor: Passed edgeID '+edgeID+' not found!';
       }
       let edge = edges[0];
       if (DBG) console.log('EdgeEditor.loadSourceAndTarget: Loading edge', edge);
@@ -409,7 +417,7 @@ class EdgeEditor extends UNISYS.Component {
         if (DBG) console.log('...EdgeEditor.loadSourceAndTarget: New edge!  No target yet!');
         // Get a real source node, since we know the parent of this link is the currently
         // selected source node.
-        sourceNodes = D3DATA.nodes.filter( node => node.label===this.props.parentNodeLabel );
+        sourceNodes = NCDATA.nodes.filter( node => node.label===this.props.parentNodeLabel );
         // We don't know what target the user is going to pick yet, so just display a
         // placeholder for now, otherwise, the render will choke on an invalid targetNode.
         targetNodes = [{label:'pick one...'}];
@@ -442,8 +450,9 @@ class EdgeEditor extends UNISYS.Component {
 
         // LOAD EXISTING EDGE
 
-        sourceNodes = D3DATA.nodes.filter( node => parseInt(node.id)===parseInt(edge.source.id) );
-        targetNodes = D3DATA.nodes.filter( node => parseInt(node.id)===parseInt(edge.target.id) );
+        // NOTE: NCDATA has not expanded source/target into objects, but remain ids
+        sourceNodes = NCDATA.nodes.filter( node => parseInt(node.id)===parseInt(edge.source) );
+        targetNodes = NCDATA.nodes.filter( node => parseInt(node.id)===parseInt(edge.target) );
 
         // Assume we have a valid target node
         this.setState({
@@ -572,7 +581,6 @@ class EdgeEditor extends UNISYS.Component {
     Usually someone has clicked a button in the EdgeList to view/edit an edge
 /*/ handleEdgeSelection ( data ) {
       if (DBG) console.log('EdgeEditor',this.props.edgeID,': got state EDGE_SELECT',data);
-
       if (this.state.formData.id === data.edgeID) {
         // pass currentAutoComplete back to search
         this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
@@ -585,13 +593,28 @@ class EdgeEditor extends UNISYS.Component {
 /*/ Someone externally has selected an edge for editing.
     Usually someone has clicked a button in the EdgeTable to edit an edge
 /*/ handleEdgeEdit ( data ) {
+      const { formData, isBeingEdited, isLocked } = this.state;
       if (DBG) console.log('EdgeEditor',this.state.formData.id,': got state EDGE_EDIT',data,'formData is',this.state.formData);
-
-      if (this.state.formData.id === data.edgeID) {
-        this.requestEdit();
+      if ((data.edgeID !== undefined) && (typeof data.edgeID === "number") && !isBeingEdited &&
+        data.edgeID === formData.id
+      ) {
+        if (!isLocked) {
+          this.requestEdit();
+        } else {
+          console.warn("EdgeEditor.EDGE_EDIT denied because isLocked", isLocked, 'but we will gladly show it!');
+          this.handleEdgeSelection(data);
+        }
+      } else {
+        if (typeof data.edgeID !== "number") console.warn("EdgeEditor.EDGE_EDIT called with bad data.nodeID:", data.edgeID);
+        if (isBeingEdited) console.warn("EdgeEditor.EDGE_EDIT denied because isBeingEdited", isBeingEdited);
       }
 
     } // handleEdgeEdit
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ handleEdgeClose() {
+      if (this.state.isExpanded) this.setState({ isExpanded: false });
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle change in SESSION data
     Called both by componentDidMount() and AppStateChange handler.
@@ -616,7 +639,7 @@ class EdgeEditor extends UNISYS.Component {
 
         // If we were editing, then revert and exit
         if (this.state.isBeingEdited) {
-          const D3DATA = this.AppState('D3DATA');
+          const NCDATA = this.AppState('NCDATA');
 
           this.setState({ isBeingEdited: false, targetIsEditable: false });
           // Return focus of autocomplete to Search field.
@@ -624,13 +647,13 @@ class EdgeEditor extends UNISYS.Component {
           // Tell parent node to exit out of edge edit mode
           this.AppCall('EDGEEDIT_UNLOCK', { edgeID: this.props.edgeID });
           // Deregister as an open editor
-          if (this.state.isBeingEdited) UDATA.NetCall("SRV_RELEASE_TEMPLATE_LOCK", { editor: 'edge' });
+          if (this.state.isBeingEdited) UDATA.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.EDGE });
 
           // Cancel edit existing or cancel edit new?
-          let originalEdge = D3DATA.edges.filter(edge => parseInt(edge.id) === this.props.edgeID)[0];
+          let originalEdge = NCDATA.edges.filter(edge => parseInt(edge.id) === this.props.edgeID)[0];
           if (originalEdge === undefined) {
             // user abandoned editing a new node that was never saved
-            const parentNode = D3DATA.nodes.find(node => node.label === this.props.parentNodeLabel);
+            const parentNode = NCDATA.nodes.find(node => node.label === this.props.parentNodeLabel);
             // parentNode might be missing if the admin user deleted it.
             if (parentNode) {
               // Unlock edges and reselect the source node
@@ -666,7 +689,7 @@ class EdgeEditor extends UNISYS.Component {
 /*/ onDeleteButtonClick () {
       this.clearForm();
       this.AppCall('AUTOCOMPLETE_SELECT', { id: 'search' });
-      if (this.state.isBeingEdited) UDATA.NetCall("SRV_RELEASE_TEMPLATE_LOCK", { editor: 'edge' });
+      if (this.state.isBeingEdited) UDATA.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.EDGE });
       this.AppCall('EDGEEDIT_UNLOCK', { edgeID: this.props.edgeID }); // inform NodeSelector
       this.AppCall('DB_UPDATE',{edgeID:this.props.edgeID});
     }
@@ -738,7 +761,7 @@ class EdgeEditor extends UNISYS.Component {
               });
               this.Signal('EDGEEDIT_LOCK', { edgeID: this.props.edgeID });
               // When a edge is being edited, lock the Template from being edited
-              UDATA.NetCall("SRV_REQ_TEMPLATE_LOCK", { editor: 'edge' })
+              UDATA.NetCall("SRV_REQ_EDIT_LOCK", { editor: EDITORTYPE.EDGE })
                 .then(res => {
                   const disableEdit = res.isBeingEdited;
                   this.setState({ disableEdit });
@@ -859,9 +882,8 @@ class EdgeEditor extends UNISYS.Component {
       // linking to non-existent nodes. This should probably be moved to nc-logic.
       if (edge) {
         // check source
-        const D3DATA = this.AppState('D3DATA');
-        console.log('D3DATA is', D3DATA);
-        const source = D3DATA.nodes.find(node => node.id === edge.source);
+        const NCDATA = this.AppState('NCDATA');
+        const source = NCDATA.nodes.find(node => node.id === edge.source);
         if (!source) {
           alert('Sorry, the source node has been removed.  Please recreate your edge.');
           // Trigger Cancel
@@ -869,7 +891,7 @@ class EdgeEditor extends UNISYS.Component {
           return;
         }
         // check target
-        const target = D3DATA.nodes.find(node => node.id === edge.target);
+        const target = NCDATA.nodes.find(node => node.id === edge.target);
         if (!target) {
           alert('Sorry, the target node has been removed.  Please recreate your edge.');
           // Trigger Cancel
@@ -879,7 +901,7 @@ class EdgeEditor extends UNISYS.Component {
       }
 
       // Deregister as an open editor
-      UDATA.NetCall("SRV_RELEASE_TEMPLATE_LOCK", { editor: 'edge' });
+      UDATA.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: 'edge' });
       this.AppCall('EDGEEDIT_UNLOCK', { edgeID: this.props.edgeID }); // inform NodeSelector
       // pass currentAutoComplete back to nodeselector
       this.AppCall('AUTOCOMPLETE_SELECT',{id:'search'});
@@ -919,7 +941,7 @@ class EdgeEditor extends UNISYS.Component {
         edgeDefs,
         isStandalone,
         edgeIsLockedMessage,
-        templateIsLockedMessage,
+        editLockMessage,
         disableEdit
       } = this.state;
       let {citation} = this.state;
@@ -1139,7 +1161,7 @@ class EdgeEditor extends UNISYS.Component {
                 >Save</Button>
                 <div hidden={this.state.isLocked || this.state.isBeingEdited || parentNodeIsLocked} style={{ display: 'inline' }}>
                   <p hidden={!this.state.dbIsLocked} className="small text-danger warning">{edgeIsLockedMessage}</p>
-                  <p hidden={!disableEdit} className="small text-danger warning">{templateIsLockedMessage}</p>
+                  <p hidden={!disableEdit} className="small text-danger warning">{editLockMessage}</p>
                 </div>
               </FormGroup>
             </Form>
@@ -1164,15 +1186,19 @@ class EdgeEditor extends UNISYS.Component {
     }
 
     checkUnload(e) {
+      e.preventDefault();
       if (this.state.isBeingEdited) {
         (e || window.event).returnValue = null;
-        return null;
+      } else {
+        Reflect.deleteProperty(e, 'returnValue');
       }
+      return e;
     }
 
     doUnload(e) {
       if (this.state.isBeingEdited) {
-        this.NetCall('SRV_DBUNLOCKEDGE', { edgeID: this.state.formData.id })
+        this.NetCall('SRV_DBUNLOCKEDGE', { edgeID: this.state.formData.id });
+        this.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.EDGE });
       }
     }
 
@@ -1190,12 +1216,20 @@ class EdgeEditor extends UNISYS.Component {
               this.setState({ dbIsLocked: false });
             }
           });
+        // Deregister as an open editor
+        this.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.EDGE });
       }
       // deregister ACTIVEAUTOMPLETE when component unmounts
       // otherwise state updates trigger a setState on unmounted component error
       this.AppStateChangeOff('SESSION', this.onStateChange_SESSION);
       this.AppStateChangeOff('SELECTION', this.handleSelection);
       this.AppStateChangeOff('TEMPLATE', this.setTemplate);
+      UDATA.UnhandleMessage('EDGE_SELECT', this.handleEdgeSelection);
+      UDATA.UnhandleMessage('EDGE_EDIT', this.handleEdgeEdit);
+      UDATA.UnhandleMessage('EDGE_CLOSE', this.handleEdgeClose);
+      UDATA.UnhandleMessage('EDIT_PERMISSIONS_UPDATE', this.setEditState);
+      window.removeEventListener("beforeunload", this.checkUnload);
+      window.removeEventListener("unload", this.doUnload);
     }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

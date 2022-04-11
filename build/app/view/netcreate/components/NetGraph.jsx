@@ -38,7 +38,7 @@ const { Button } = ReactStrap;
 const D3NetGraph = require('./d3-simplenetgraph')
 const UNISYS     = require('unisys/client');
 
-
+let UDATA = null;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -56,9 +56,13 @@ class NetGraph extends UNISYS.Component {
       this.onZoomIn    = this.onZoomIn.bind(this);
       this.onZoomOut   = this.onZoomOut.bind(this);
       this.updateLegend = this.updateLegend.bind(this);
+      this.constructGraph = this.constructGraph.bind(this);
+
+      /// Initialize UNISYS DATA LINK for REACT
+      UDATA = UNISYS.NewDataLink(this);
 
       this.OnAppStateChange('TEMPLATE', this.updateLegend);
-
+      UDATA.HandleMessage('CONSTRUCT_GRAPH', this.constructGraph);
 
     } // constructor
 
@@ -92,21 +96,36 @@ class NetGraph extends UNISYS.Component {
     /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
-/*/ componentDidMount () {
+/*/ constructGraph() {
+      // first destroy any existing SVG graph elements
+      const netgraph = document.getElementById('netgraph');
+      if (netgraph) netgraph.remove();
+
       // D3NetGraph Constructor
       const el = ReactDOM.findDOMNode(this);
       const TEMPLATE = this.AppState('TEMPLATE');
+      if (this.state.d3NetGraph && this.state.d3NetGraph.Deregister) {
+        // if d3NetGraph was previously created, deregister it so it stops receiving data updates
+        this.state.d3NetGraph.Deregister();
+      }
       const d3NetGraph = new D3NetGraph(el, TEMPLATE.nodeDefs);
       const nodeTypes = TEMPLATE.nodeDefs.type.options;
       const edgeTypes = TEMPLATE.edgeDefs.type.options;
       this.setState({ d3NetGraph, nodeTypes, edgeTypes });
       this.forceUpdate(); // just once, needed to overcome shouldComponentUpdate override
     }
+
+/// REACT LIFECYCLE ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ componentDidMount() {
+      this.constructGraph();
+    }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ componentWillUnMount() {
       this.AppStateChangeOff('TEMPLATE', this.updateLegend);
-
+      UDATA.UnhandleMessage('CONSTRUCT_GRAPH', this.constructGraph);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
