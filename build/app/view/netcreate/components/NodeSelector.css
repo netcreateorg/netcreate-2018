@@ -8,3 +8,13 @@
 .nodeEntry img, .table img {
   max-width: 100%
 }
+
+.nodeEntry textarea[readonly] {
+  background-color: #ffffff33;
+}
+.nodeEntry textarea[readonly].comments {
+  background-color: #ffff0033;
+}
+.nodeEntry textarea.comments {
+  background-color: #ffff66;
+}

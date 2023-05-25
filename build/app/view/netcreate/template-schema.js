@@ -435,6 +435,82 @@ MOD.TEMPLATE = {
             }
           }
         },
+        "provenance": { // Provenance/Source
+          type: 'object',
+          description: 'Display name of the node',
+          properties: {
+            "type": {
+              type: 'string',
+              description: '"provenance" data type',
+              default: 'string'
+            },
+            "displayLabel": {
+              type: 'string',
+              description: 'Label to use for system display',
+              default: 'Source'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Source'
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Node Editor form',
+              default: 'Who created this?  (aka Provenance)'
+            },
+            "includeInGraphTooltip": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Show "provenance" value in tooltip on graph',
+              default: true
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Hides "provenance" from Node Editor, Nodes Table, and exports',
+              default: false
+            }
+          }
+        },
+        "comments": { // Comments
+          type: 'object',
+          description: 'Display name of the node',
+          properties: {
+            "type": {
+              type: 'string',
+              description: '"comments" data type',
+              default: 'string'
+            },
+            "displayLabel": {
+              type: 'string',
+              description: 'Label to use for system display',
+              default: 'Comments'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Comments'
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Node Editor form',
+              default: 'Enter "<comment> -- <name> <date>"'
+            },
+            "includeInGraphTooltip": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Show "comments" value in tooltip on graph',
+              default: true
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Hides "comments" from Node Editor, Nodes Table, and exports',
+              default: false
+            }
+          }
+        },
         "degrees": {
           type: 'object',
           description: 'Display name of the node',
@@ -778,6 +854,76 @@ MOD.TEMPLATE = {
               type: 'boolean',
               format: 'checkbox',
               description: 'Hides "info" from Edge Editor, Edges Table, and exports',
+              default: false
+            }
+          }
+        },
+        "provenance": { // Provenance/Source
+          type: 'object',
+          description: 'Display name of the edge',
+          properties: {
+            "type": {
+              type: 'string',
+              description: '"provenance" data type',
+              default: 'string'
+            },
+            "displayLabel": {
+              type: 'string',
+              description: 'Label to use for system display',
+              default: 'Source'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Source'
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Node Editor form',
+              default: 'Who created this?  (aka Provenance)'
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Hides "provenance" from Node Editor, Nodes Table, and exports',
+              default: false
+            }
+          }
+        },
+        "comments": { // Comments
+          type: 'object',
+          description: 'Display name of the edge',
+          properties: {
+            "type": {
+              type: 'string',
+              description: '"comments" data type',
+              default: 'string'
+            },
+            "displayLabel": {
+              type: 'string',
+              description: 'Label to use for system display',
+              default: 'Comments'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Comments'
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Edge Editor form',
+              default: 'Enter "<comment> -- <name> <date>"'
+            },
+            "includeInGraphTooltip": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Show "comments" value in tooltip on graph',
+              default: true
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Hides "comments" from Edge Editor, Edges Table, and exports',
               default: false
             }
           }

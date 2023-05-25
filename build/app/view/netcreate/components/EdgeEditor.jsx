@@ -228,6 +228,8 @@ class EdgeEditor extends UNISYS.Component {
           targetId:     '',
           type: '',
           info:         '',
+          provenance: '',
+          comments: '',
           notes:        '',
           citation:     '',
           category:     '',
@@ -238,6 +240,8 @@ class EdgeEditor extends UNISYS.Component {
             label:     '',
             type:      '',
             info:      '',
+            provenance: '',
+            comments: '',
             notes:     '',
             id:        ''
         },
@@ -245,6 +249,8 @@ class EdgeEditor extends UNISYS.Component {
             label:     '',
             type:      '',
             info:      '',
+            provenance: '',
+            comments: '',
             notes:     '',
             id:        ''
         },
@@ -286,6 +292,8 @@ class EdgeEditor extends UNISYS.Component {
       this.onRelationshipChange   = this.onRelationshipChange.bind(this);
       this.onNotesChange          = this.onNotesChange.bind(this);
       this.onInfoChange           = this.onInfoChange.bind(this);
+      this.onProvenanceChange = this.onProvenanceChange.bind(this);
+      this.onCommentsChange = this.onCommentsChange.bind(this);
       this.onCitationChange       = this.onCitationChange.bind(this);
       this.onCategoryChange       = this.onCategoryChange.bind(this);
       this.onSubmit               = this.onSubmit.bind(this);
@@ -334,6 +342,8 @@ class EdgeEditor extends UNISYS.Component {
           targetId:     '',
           type: '',
           info:         '',
+          provenance: '',
+          comments: '',
           notes:        '',
           citation:     '',
           category:     '',
@@ -344,6 +354,8 @@ class EdgeEditor extends UNISYS.Component {
             label:     '',
             type:      '',
             info:      '',
+            provenance: '',
+            comments: '',
             notes:     '',
             id:        ''
         },
@@ -351,6 +363,8 @@ class EdgeEditor extends UNISYS.Component {
             label:     '',
             type:      '',
             info:      '',
+            provenance: '',
+            comments: '',
             notes:     '',
             id:        ''
         },
@@ -430,6 +444,8 @@ class EdgeEditor extends UNISYS.Component {
           type: '',
           notes: '',
           info: '',
+          provenance: '',
+          comments: '',
           citation: '',
           category: ''
         }
@@ -479,6 +495,8 @@ class EdgeEditor extends UNISYS.Component {
           targetId:     edge.target,
           type: edge.type || '',   // Make sure there's valid data
           info: edge.info || '',
+          provenance: edge.provenance || '',
+          comments: edge.comments || '',
           citation: edge.citation || '',
           category: edge.category || '',
           notes: edge.notes || '',
@@ -837,6 +855,20 @@ class EdgeEditor extends UNISYS.Component {
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
+/*/ onProvenanceChange (event) {
+      let formData = this.state.formData;
+      formData.provenance = event.target.value;
+      this.setState({formData: formData});
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ onCommentsChange (event) {
+      let formData = this.state.formData;
+      formData.comments = event.target.value;
+      this.setState({formData: formData});
+    }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
 /*/ onCitationChange (event) {
       let formData = this.state.formData;
       formData.citation = event.target.value;
@@ -871,6 +903,8 @@ class EdgeEditor extends UNISYS.Component {
         target:         this.state.targetNode.id,   // REVIEW: d3data 'target' is id, rename this to 'targetId'?
         type: formData.type,
         info: formData.info,
+        provenance: formData.provenance,
+        comments: formData.comments,
         citation: formData.citation,
         category: formData.category,
         notes: formData.notes
@@ -1129,6 +1163,40 @@ class EdgeEditor extends UNISYS.Component {
                     value={formData.info}
                     onChange={this.onInfoChange}
                     readOnly={!this.state.isBeingEdited}
+                  />
+                </Col>
+              </FormGroup>
+              <FormGroup row hidden={edgeDefs.provenance.hidden}>
+                <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
+                  <Label for="provenance" className="tooltipAnchor small text-muted">
+                    <div className="badge">?</div>
+                    {edgeDefs.provenance.displayLabel}
+                    <span className="tooltiptext">{this.helpText(edgeDefs.provenance)}</span>
+                  </Label>
+                </Col>
+                <Col sm={9}>
+                  <Input type="text" name="provenance"
+                    value={formData.provenance}
+                    onChange={this.onProvenanceChange}
+                    readOnly={!this.state.isBeingEdited}
+                  />
+                </Col>
+              </FormGroup>
+              <FormGroup row hidden={edgeDefs.comments.hidden}>
+                <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
+                  <Label for="comments" className="tooltipAnchor small text-muted">
+                    <div className="badge">?</div>
+                    {edgeDefs.comments.displayLabel}
+                    <span className="tooltiptext">{this.helpText(edgeDefs.comments)}</span>
+                  </Label>
+                </Col>
+                <Col sm={9}>
+                  <textarea type="text" name="comments" className="comments"
+                    cols="28" rows="4"
+                    value={formData.comments}
+                    onChange={this.onCommentsChange}
+                    readOnly={!this.state.isBeingEdited}
+                    disabled={!this.state.isBeingEdited}
                   />
                 </Col>
               </FormGroup>

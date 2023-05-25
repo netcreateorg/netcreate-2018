@@ -869,6 +869,7 @@ MOD.SetAllObjs = m_SetAllObjs; // Expose for filter-logic.js
 
 /*/ Validate Template File
 /*/
+// eslint-disable-next-line complexity
 function m_ValidateTemplate() {
   try {
     // nodeDefs
@@ -887,6 +888,8 @@ function m_ValidateTemplate() {
     }
     if (nodeDefs.notes === undefined) throw "Missing `nodeDefs.notes` notes=" + nodeDefs.notes;
     if (nodeDefs.info === undefined) throw "Missing `nodeDefs.info` info=" + nodeDefs.info;
+    if (nodeDefs.provenance === undefined) throw "Missing `nodeDefs.provenance` provenance=" + nodeDefs.provenance;
+    if (nodeDefs.comments === undefined) throw "Missing `nodeDefs.comments` comments=" + nodeDefs.comments;
 
     // edgeDefs
     let edgeDefs = TEMPLATE.edgeDefs;
@@ -903,6 +906,8 @@ function m_ValidateTemplate() {
     if (edgeDefs.target === undefined) throw "Missing `edgeDefs.target` label=" + edgeDefs.target;
     if (edgeDefs.notes === undefined) throw "Missing `edgeDefs.notes` notes=" + edgeDefs.notes;
     if (edgeDefs.info === undefined) throw "Missing `edgeDefs.info` info=" + edgeDefs.info;
+    if (edgeDefs.provenance === undefined) throw "Missing `edgeDefs.provenance` provenance=" + edgeDefs.provenance;
+    if (edgeDefs.comments === undefined) throw "Missing `edgeDefs.comments` comments=" + edgeDefs.comments;
     if (edgeDefs.citation === undefined) throw "Missing `edgeDefs.citation` info=" + edgeDefs.citation;
     if (edgeDefs.category === undefined) throw "Missing `edgeDefs.category` info=" + edgeDefs.category;
   } catch (error) {
