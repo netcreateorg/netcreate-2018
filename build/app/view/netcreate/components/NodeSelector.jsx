@@ -735,6 +735,12 @@ class NodeSelector extends UNISYS.Component {
       .then(()=>{
         this.AppCall('SOURCE_SEARCH', { searchString: label });
       });
+
+      // provenance
+      const session = this.AppState("SESSION");
+      const timestamp = new Date().toLocaleDateString('en-US');
+      const provenance_str = `Added by ${session.token} on ${timestamp}`;
+
       // HACK: call server to retrieve an unused node ID
       // FIXME: this kind of data manipulation should not be in a GUI component
       DATASTORE.PromiseNewNodeID()
@@ -744,7 +750,7 @@ class NodeSelector extends UNISYS.Component {
                 label:     label,
                 type:      '',
                 info:      '',
-                provenance: '',
+                provenance: provenance_str,
                 comments: '',
                 notes: '',
                 degrees: -1,

@@ -435,7 +435,13 @@ class EdgeEditor extends UNISYS.Component {
         // We don't know what target the user is going to pick yet, so just display a
         // placeholder for now, otherwise, the render will choke on an invalid targetNode.
         targetNodes = [{label:'pick one...'}];
-        // Define `edge` so it can be loaded later during setState.
+
+        // provenance
+        const session = this.AppState("SESSION");
+        const timestamp = new Date().toLocaleDateString('en-US');
+        const provenance_str = `Added by ${session.token} on ${timestamp}`;
+
+      // Define `edge` so it can be loaded later during setState.
         edge = {
           id: edgeID,
           source: parseInt(sourceNodes[0].id),  // REVIEW: d3data 'source' is id, rename this to 'sourceId'?
@@ -444,7 +450,7 @@ class EdgeEditor extends UNISYS.Component {
           type: '',
           notes: '',
           info: '',
-          provenance: '',
+          provenance: provenance_str,
           comments: '',
           citation: '',
           category: ''
