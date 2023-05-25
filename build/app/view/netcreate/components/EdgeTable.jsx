@@ -324,6 +324,12 @@ class EdgeTable extends UNISYS.Component {
         case 'Info':
           return this.sortByKey(edges, 'info');
           break;
+        case 'provenance':
+          return this.sortByKey(edges, 'provenance');
+          break;
+        case 'comments':
+          return this.sortByKey(edges, 'comments');
+          break;
         case 'Notes':
           return this.sortByKey(edges, 'notes');
           break;
@@ -521,6 +527,12 @@ class EdgeTable extends UNISYS.Component {
                 <th  width="10%"hidden={edgeDefs.info.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Info")}
                     >{edgeDefs.info.displayLabel} {this.sortSymbol("Info")}</Button></th>
+                <th  width="10%"hidden={edgeDefs.provenance.hidden}><Button size="sm"
+                      onClick={()=>this.setSortKey("provenance")}
+                    >{edgeDefs.provenance.displayLabel} {this.sortSymbol("provenance")}</Button></th>
+                <th  width="10%"hidden={edgeDefs.comments.hidden}><Button size="sm"
+                      onClick={()=>this.setSortKey("comments")}
+                    >{edgeDefs.comments.displayLabel} {this.sortSymbol("comments")}</Button></th>
                 <th  width="10%"hidden={!isLocalHost}><Button size="sm"
                       onClick={()=>this.setSortKey("Updated")}
                     >Updated {this.sortSymbol("Updated")}</Button></th>
@@ -554,6 +566,8 @@ class EdgeTable extends UNISYS.Component {
                   {edge.notes ? <MarkdownNote text={edge.notes} /> : "" }
                 </td>
                 <td hidden={edgeDefs.info.hidden}>{edge.info}</td>
+                <td hidden={edgeDefs.provenance.hidden}>{edge.provenance}</td>
+                <td hidden={edgeDefs.comments.hidden}>{edge.comments}</td>
                 <td hidden={!isLocalHost}>{this.displayUpdated(edge)}</td>
               </tr>
             ))}

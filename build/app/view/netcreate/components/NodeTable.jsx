@@ -291,6 +291,12 @@ class NodeTable extends UNISYS.Component {
         case 'info':
           return this.sortByKey(nodes, 'info');
           break;
+        case 'provenance':
+          return this.sortByKey(nodes, 'provenance');
+          break;
+        case 'comments':
+          return this.sortByKey(nodes, 'comments');
+          break;
         case 'updated':
           return this.sortByUpdated(nodes);
           break;
@@ -420,6 +426,14 @@ render() {
                 <Button size="sm"
                   onClick={()=>this.setSortKey("info")}
                 >{nodeDefs.info.displayLabel} {this.sortSymbol("info")}</Button></th>
+            <th width="20%"hidden={nodeDefs.provenance.hidden}>
+                <Button size="sm"
+                  onClick={()=>this.setSortKey("provenance")}
+                >{nodeDefs.provenance.displayLabel} {this.sortSymbol("provenance")}</Button></th>
+            <th width="20%"hidden={nodeDefs.comments.hidden}>
+                <Button size="sm"
+                  onClick={()=>this.setSortKey("comments")}
+                >{nodeDefs.comments.displayLabel} {this.sortSymbol("comments")}</Button></th>
             <th width="30%" hidden={nodeDefs.notes.hidden}>
                 <Button size="sm"
                   onClick={()=>this.setSortKey("notes")}
@@ -447,6 +461,8 @@ render() {
                 >{node.label}</a></td>
             <td hidden={nodeDefs.type.hidden}>{node.type}</td>
             <td hidden={nodeDefs.info.hidden}>{node.info}</td>
+            <td hidden={nodeDefs.provenance.hidden}>{node.provenance}</td>
+            <td hidden={nodeDefs.comments.hidden}>{node.comments}</td>
             <td hidden={nodeDefs.notes.hidden}>
               {node.notes ? <MarkdownNote text={node.notes} /> : "" }
             </td>
