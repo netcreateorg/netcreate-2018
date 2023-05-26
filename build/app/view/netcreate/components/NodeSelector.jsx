@@ -1053,7 +1053,6 @@ class NodeSelector extends UNISYS.Component {
             <FormGroup row>
               <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="nodeLabel" className="tooltipAnchor small text-muted">
-                    <div className="badge">?</div>
                     {nodeDefs.label.displayLabel}
                     <span className="tooltiptext">{this.helpText(nodeDefs.label)}</span>
                   </Label>
@@ -1079,7 +1078,6 @@ class NodeSelector extends UNISYS.Component {
             <FormGroup row hidden={nodeDefs.type.hidden}>
               <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="type" className="tooltipAnchor small text-muted">
-                    <div className="badge">?</div>
                     {nodeDefs.type.displayLabel}
                     <span className="tooltiptext">{this.helpText(nodeDefs.type)}</span>
                   </Label>
@@ -1099,7 +1097,6 @@ class NodeSelector extends UNISYS.Component {
             <FormGroup row hidden={nodeDefs.notes.hidden}>
               <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="notes" className="tooltipAnchor small text-muted">
-                    <div className="badge">?</div>
                     {nodeDefs.notes.displayLabel}
                     <span className="tooltiptext">{this.helpText(nodeDefs.notes)}</span>
                   </Label>
@@ -1117,7 +1114,6 @@ class NodeSelector extends UNISYS.Component {
             <FormGroup row hidden={nodeDefs.info.hidden}>
               <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="info" className="tooltipAnchor small text-muted">
-                    <div className="badge">?</div>
                     {nodeDefs.info.displayLabel}
                     <span className="tooltiptext">{this.helpText(nodeDefs.info)}</span>
                   </Label>
@@ -1133,7 +1129,6 @@ class NodeSelector extends UNISYS.Component {
             <FormGroup row hidden={nodeDefs.provenance.hidden}>
               <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="provenance" className="tooltipAnchor small text-muted">
-                    <div className="badge">?</div>
                     {nodeDefs.provenance.displayLabel}
                     <span className="tooltiptext">{this.helpText(nodeDefs.provenance)}</span>
                   </Label>
@@ -1149,7 +1144,6 @@ class NodeSelector extends UNISYS.Component {
             <FormGroup row hidden={nodeDefs.comments.hidden}>
               <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="comments" className="tooltipAnchor small text-muted">
-                    <div className="badge">?</div>
                     {nodeDefs.comments.displayLabel}
                     <span className="tooltiptext">{this.helpText(nodeDefs.comments)}</span>
                   </Label>

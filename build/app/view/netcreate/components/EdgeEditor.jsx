@@ -1030,7 +1030,6 @@ class EdgeEditor extends UNISYS.Component {
               <FormGroup row>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="source" className="tooltipAnchor small text-muted">
-                    <div className="badge">?</div>
                     {edgeDefs.source.displayLabel}
                     <span className="tooltiptext">{this.helpText(edgeDefs.source)}</span>
                   </Label>
@@ -1056,7 +1055,6 @@ class EdgeEditor extends UNISYS.Component {
               <FormGroup row hidden={edgeDefs.type.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="relationship" className="tooltipAnchor small text-muted">
-                    <div className="badge">?</div>
                     {edgeDefs.type.displayLabel}
                     <span className="tooltiptext">{this.helpText(edgeDefs.type)}</span>
                   </Label>
@@ -1076,7 +1074,6 @@ class EdgeEditor extends UNISYS.Component {
               <FormGroup row>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="nodeLabel" className="tooltipAnchor small text-muted">
-                    <div className="badge">?</div>
                     {edgeDefs.target.displayLabel}
                     <span className="tooltiptext">{this.helpText(edgeDefs.target)}</span>
                   </Label>
@@ -1110,7 +1107,6 @@ class EdgeEditor extends UNISYS.Component {
               <FormGroup row hidden={edgeDefs.category.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="category" className="tooltipAnchor small text-muted">
-                    <div className="badge">?</div>
                     {edgeDefs.category.displayLabel}
                     <span className="tooltiptext">{this.helpText(edgeDefs.category)}</span>
                   </Label>
@@ -1125,7 +1121,6 @@ class EdgeEditor extends UNISYS.Component {
               </FormGroup><FormGroup row hidden={edgeDefs.citation.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="citation" className="tooltipAnchor small text-muted">
-                    <div className="badge">?</div>
                     {edgeDefs.citation.displayLabel}
                     <span className="tooltiptext">{this.helpText(edgeDefs.citation)}</span>
                   </Label>
@@ -1141,7 +1136,6 @@ class EdgeEditor extends UNISYS.Component {
               <FormGroup row hidden={edgeDefs.notes.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="notes" className="tooltipAnchor small text-muted">
-                    <div className="badge">?</div>
                     {edgeDefs.notes.displayLabel}
                     <span className="tooltiptext">{this.helpText(edgeDefs.notes)}</span>
                   </Label>
@@ -1159,7 +1153,6 @@ class EdgeEditor extends UNISYS.Component {
               <FormGroup row hidden={edgeDefs.info.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="info" className="tooltipAnchor small text-muted">
-                    <div className="badge">?</div>
                     {edgeDefs.info.displayLabel}
                     <span className="tooltiptext">{this.helpText(edgeDefs.info)}</span>
                   </Label>
@@ -1175,7 +1168,6 @@ class EdgeEditor extends UNISYS.Component {
               <FormGroup row hidden={edgeDefs.provenance.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="provenance" className="tooltipAnchor small text-muted">
-                    <div className="badge">?</div>
                     {edgeDefs.provenance.displayLabel}
                     <span className="tooltiptext">{this.helpText(edgeDefs.provenance)}</span>
                   </Label>
@@ -1191,7 +1183,6 @@ class EdgeEditor extends UNISYS.Component {
               <FormGroup row hidden={edgeDefs.comments.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="comments" className="tooltipAnchor small text-muted">
-                    <div className="badge">?</div>
                     {edgeDefs.comments.displayLabel}
                     <span className="tooltiptext">{this.helpText(edgeDefs.comments)}</span>
                   </Label>
