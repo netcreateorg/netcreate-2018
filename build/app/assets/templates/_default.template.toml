@@ -80,8 +80,8 @@ hidden = false
 
 [nodeDefs.provenance]
 type = "string"
-displayLabel = "Source"
-exportLabel = "Source"
+displayLabel = "Provenance"
+exportLabel = "Provenance"
 help = "Who created this?  (aka Provenance)"
 includeInGraphTooltip = true
 hidden = false
@@ -181,8 +181,8 @@ hidden = false
 
 [edgeDefs.provenance]
 type = "string"
-displayLabel = "Source"
-exportLabel = "Source"
+displayLabel = "Provenance"
+exportLabel = "Provenance"
 help = "Who created this?  (aka Provenance)"
 hidden = false
 
