@@ -318,6 +318,31 @@ function m_LoadTOMLTemplate(templateFilePath) {
     json.edgeIsLockedMessage = json.edgeIsLockedMessage || SCHEMA.edgeIsLockedMessage.default;
     json.templateIsLockedMessage = json.templateIsLockedMessage || SCHEMA.templateIsLockedMessage.default;
     json.importIsLockedMessage = json.importIsLockedMessage || SCHEMA.importIsLockedMessage.default;
+
+    // Migrate v1.4 to v2.0
+    // v2.0 added `provenance` and `comments` -- so we add the template definitions if the toml template does not already have them
+    // hides them by default if they were not previously added
+    const DEFAULT_TEMPLATE = TEMPLATE_SCHEMA.ParseTemplateSchema();
+    const NODEDEFS = DEFAULT_TEMPLATE.nodeDefs;
+    if (json.nodeDefs.provenance === undefined) {
+      json.nodeDefs.provenance = NODEDEFS.provenance;
+      json.nodeDefs.provenance.hidden = true;
+    }
+    if (json.nodeDefs.comments === undefined) {
+      json.nodeDefs.comments = NODEDEFS.comments;
+      json.nodeDefs.comments.hidden = true
+    }
+    const EDGEDEFS = DEFAULT_TEMPLATE.edgeDefs;
+    if (json.edgeDefs.provenance === undefined) {
+      json.edgeDefs.provenance = EDGEDEFS.provenance;
+      json.edgeDefs.provenance.hidden = true;
+    }
+    if (json.edgeDefs.comments === undefined) {
+      json.edgeDefs.comments = EDGEDEFS.comments;
+      json.edgeDefs.comments.hidden = true;
+    }
+    // NOTE: We are not modifying the template permanently, only temporarily inserting definitions so the system can validate
+
     TEMPLATE = json;
     console.log(PR, 'Template loaded', templateFilePath);
   });

@@ -1311,6 +1311,7 @@ class EdgeEditor extends UNISYS.Component {
 /*/
 
     helpText(obj) {
+      if (!obj) return;
       var text = "";
       if (obj.help === undefined || obj.help === "") text = obj.label;
       else text = obj.help;

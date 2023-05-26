@@ -2,6 +2,8 @@
 
   Template Logic
 
+  Client-side
+
   This handles the UI logic for the "Edit Template" subpanel on the "More..."
   tab.
 

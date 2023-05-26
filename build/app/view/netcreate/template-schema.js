@@ -8,16 +8,14 @@
   the json-editor needs to support and provides meta data about how to
   display and handle the edits.
 
-  `template-logic.js` handles initialization.
+  `template-logic.js` handles initialization client-side.
 
   NOTE: This schema is NOT the same as the `toml` template file schema.  This
   schema is used by `json-editor` to know how to display a UI for editing the
   template itself.
 
-  FUTURE WORK: We should be able to generate a new
-  `default.template.toml` file from the schema.  That would ensure that
-  default template is up to date.  There isn't a single-button UI for this
-  currently, but you CAN basically do this by:
+  The default template's JSON can be generated from this schema spec by
+  by calling MOD.ParseTemplateSchema()/  This is the rough equivalent of doing this:
   1. Start NetCreate with a new db, e.g. `./nc.js --dataset=newdefault`
   2. Clicking "New Template" on the "More... > Edit Template" tab.
   3. Clicking "Save Changes"
@@ -447,12 +445,12 @@ MOD.TEMPLATE = {
             "displayLabel": {
               type: 'string',
               description: 'Label to use for system display',
-              default: 'Source'
+              default: 'Provenance'
             },
             "exportLabel": {
               type: 'string',
               description: 'Label to use for exported csv file field name',
-              default: 'Source'
+              default: 'Provenance'
             },
             "help": {
               type: 'string',
@@ -870,12 +868,12 @@ MOD.TEMPLATE = {
             "displayLabel": {
               type: 'string',
               description: 'Label to use for system display',
-              default: 'Source'
+              default: 'Provenance'
             },
             "exportLabel": {
               type: 'string',
               description: 'Label to use for exported csv file field name',
-              default: 'Source'
+              default: 'Provenance'
             },
             "help": {
               type: 'string',
@@ -1153,6 +1151,37 @@ MOD.GetTypeEditorSchema = schemaTypeOptions => {
     }
   }
 }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ ParseTemplateSchema generates and resturns the default template json
+    Use this to create a pristine defaul template json
+/*/
+MOD.ParseTemplateSchema = () => {
+
+  function ParseProperty(prop) {
+    if (prop.type === 'string') return prop.default;
+    if (prop.type === 'number') return prop.default;
+    if (prop.type === 'boolean') return prop.default;
+  }
+
+  function ParseProperties(properties, currJson) {
+    Object.keys(properties).forEach(templatePropertyKey => {
+      const prop = properties[templatePropertyKey];
+      if (prop.properties) {
+        currJson[templatePropertyKey] = ParseProperties(prop.properties, {});
+      } else {
+        currJson[templatePropertyKey] = ParseProperty(prop);
+      }
+    });
+    return currJson;
+  }
+
+  let json = {};
+  ParseProperties(MOD.TEMPLATE.properties, json);
+  return json;
+}
+
+MOD.ParseTemplateSchema();
 
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
