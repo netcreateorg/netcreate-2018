@@ -16,5 +16,6 @@
   background-color: #ffff0033;
 }
 .nodeEntry textarea.comments {
+  width: 100%;
   background-color: #ffff66;
 }
