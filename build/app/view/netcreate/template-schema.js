@@ -154,6 +154,7 @@ MOD.TEMPLATE = {
         "text": {
           type: 'string',
           description: 'Bibliographic reference',
+          default: 'No citation set',
           options: {
             inputAttributes: { placeholder: 'Untitled Network' }
           }
