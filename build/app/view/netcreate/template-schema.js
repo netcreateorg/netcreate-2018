@@ -14,8 +14,16 @@
   schema is used by `json-editor` to know how to display a UI for editing the
   template itself.
 
-  The default template's JSON can be generated from this schema spec by
-  by calling MOD.ParseTemplateSchema()/  This is the rough equivalent of doing this:
+  IMPORTANT: If you modify the schema, generate a new template by
+
+    1. Start NetCreate
+    2. In web browser developer console, run:
+
+        `ncRegenerateDefaultTemplate()`
+    3. This will create a new `_default.template.toml` file.
+
+  Alternatively the default template's JSON can be generated from this schema spec by
+  by calling MOD.ParseTemplateSchema() directly. This is the rough equivalent of doing this:
   1. Start NetCreate with a new db, e.g. `./nc.js --dataset=newdefault`
   2. Clicking "New Template" on the "More... > Edit Template" tab.
   3. Clicking "Save Changes"

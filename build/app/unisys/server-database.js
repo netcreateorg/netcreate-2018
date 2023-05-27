@@ -63,6 +63,12 @@ function m_BackupDatabase() {
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Default Template Path
+/*/
+function m_DefaultTemplatePath() {
+  return TEMPLATEPATH + '_default' + TEMPLATE_EXT;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Initialize the database
 /*/
 DB.InitializeDatabase = function (options = {}) {
@@ -372,7 +378,7 @@ function m_LoadTemplate() {
     } else {
       // 3. Else, no existing template, clone _default.template.toml
       console.log(PR, `NO EXISTING TEMPLATE ${TOMLtemplateFilePath}, so cloning default template...`);
-      FS.copySync(TEMPLATEPATH + '_default' + TEMPLATE_EXT, TOMLtemplateFilePath);
+      FS.copySync(m_DefaultTemplatePath(), TOMLtemplateFilePath);
       // then load it
       m_LoadTOMLTemplate(TOMLtemplateFilePath);
     }
@@ -917,10 +923,14 @@ DB.GetTemplateTOMLFileName = () => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ called by Template Editor to save TOML template changes to disk.
     parm {object} pkt.data.template
+                  pkt.data.path      Will override the current template path in NC_CONFIG.dataset
+                                     Use this to write to the _default template or
+                                     other specific template.
     Loads the template after saving!
 /*/
 DB.WriteTemplateTOML = (pkt) => {
-  const templateFilePath = m_GetTemplateTOMLFilePath();
+  if (pkt.data === undefined) throw 'DB.WriteTemplateTOML pkt received with no `data`';
+  const templateFilePath = pkt.data.path || m_GetTemplateTOMLFilePath();
   FS.ensureDirSync(PATH.dirname(templateFilePath));
   // Does the template exist?  If so, rename the old version with curren timestamp.
   if (FS.existsSync(templateFilePath)) {
@@ -960,6 +970,22 @@ DB.CloneTemplateTOML = function (filePath) {
     console.log(PR, `*** COPIED TEMPLATE ${TOMLtemplateFilePath} to ${filePath}`);
   }
 };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Regenerate Default Template from Template Schema
+    Call this when `template-schema.js` changes so that _default.template.toml will
+    match the schema defined in `template-schema.js`.
+    Use JSCLI `ncRegenerateDefaultTemplate` in the dev console to call this.
+/*/
+DB.RegenerateDefaultTemplate = () => {
+  const pkt = {
+    data: {
+      template: TEMPLATE_SCHEMA.ParseTemplateSchema(),
+      path: m_DefaultTemplatePath()
+    }
+  };
+  const toml = TOML.stringify(pkt.data.template);
+  return DB.WriteTemplateTOML(pkt);
+}
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ OPENEDITORS

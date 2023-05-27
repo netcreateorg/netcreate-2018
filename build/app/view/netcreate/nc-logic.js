@@ -1220,6 +1220,16 @@ function m_MarkSelectedEdges(edges, node) {
 
 /// COMMAND LINE UTILITIES ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Command: REGENERATE DEFAULT TEMPLATE
+    This will regenerate the `_default.template.toml` file from
+    the current `template-schema.js` spec.  This is only necessary to do
+    if you've edited the `template.schema.js`` file.
+/*/ JSCLI.AddFunction(
+  function ncRegenerateDefaultTemplate() {
+    UDATA.Call("SRV_TEMPLATE_REGENERATE_DEFAULT");
+    console.log('_default.template.toml regenerated from `template-schema.js`');
+  });
 /*/ Command: RESET THE DATABASE from default data
 /*/
 JSCLI.AddFunction(function ncPushDatabase(jsonFile) {
