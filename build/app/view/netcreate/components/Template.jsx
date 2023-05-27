@@ -294,26 +294,30 @@ class Template extends UNISYS.Component {
             display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
             columnGap: '10px', rowGap: '5px'
           }}>
-            {/* TYPE OPTIONS */}
+            <i className="small text-muted">Edit Current Template Options</i><br/>
             <Button size="sm" onClick={this.onEditNodeTypes}>
               Edit Node Types
             </Button>
             <Button size="sm" onClick={this.onEditEdgeTypes}>
               Edit Edge Types
             </Button>
-            {/* CURRENT TEMPLATE */}
+            <p></p><p></p>
+            <hr /><hr />
+            <p>ADVANCED USERS ONLY</p><p></p>
+            <i className="small text-muted">Edit Current Template</i><br/>
             <Button size="sm" onClick={this.onCurrentTemplateLoad}>
               Edit Current Template
             </Button>
-            <Button size="sm" onClick={this.onDownloadTemplate}>
+            <Button outline size="sm" onClick={this.onDownloadTemplate}>
               Download Current Template
             </Button>
-            {/* NEW TEMPLATE */}
+            <p></p><p></p>
+            <i className="small text-muted">Create New Template</i><br/>
             <Button size="sm" onClick={this.onNewTemplate}>
               New Template
             </Button>
             <div>
-              <i className="small text-muted">Import TOML template (replace existing)</i><br/>
+              <i className="small text-muted">Import TOML template (replace existing template)</i><br/>
               <label>
                 <input type="file" accept="text/toml" id="tomlfileInput" onChange={this.onTOMLfileSelect}/>
                 &nbsp;<i>{tomlfileStatus}</i><br />
