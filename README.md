@@ -21,12 +21,24 @@ This will get NetCreate installed and ready to run. It may take some time for th
 
 Once you have NetCreate installed, make sure you are in the `netcreate-2018/build` directory. From there, you can execute **scripts** through the `npm` tool that is installed as part of NodeJS. 
 
-You will be using these commands most frequently:
+If this is the first time you're running Net.Create, use the `nc.js` shell command to start up a new database.  Replace `mygraph` with the name of your graph (no spaces, no punctuation).  This will also automatically generate an `nc-config` file for you so that your graph will open whenever you run the other `npm` commands during development.
+```
+cd netcreate-2018/build
+./nc.js --dataset=mygraph
+```
+
+If you are a developer, you will be using these commands most frequently:
 
 * `npm run dev` - Run the NetCreate Server in developer mode. This is the mode that most people use the most. The terminal will print status and instructions on how to connect to the NetCreate Server with the Chrome browser. An optional command (`./nc.js --dataset=projectname`) can create/load a specific database and template file. See the User Guide for more information.
 * `npm run log` - While NetCreate is running, use another terminal window to print the contents of the current **session log**. You can use this to monitor the activity of the running server.
 * `npm run package` - Make the 'standalone' version! After a NetCreate classroom session, use this command to make a snapshot of the current database and placed in the `netcreate-2018/build/public` directory. You can copy this directory to a webserver for read-only access to the netgraph!
 * `npm run package:debug` - Run/debug the current standalone version from http://localhost:3000
+
+If you see the error...
+```
+error: Initialization error - Cannot find module './app/assets/netcreate-config' Cannot find module './app/assets/netcreate-config'
+```
+...run `./nc.js --dataset=mygraph` as noted above.  This will automatically create the `netcreate-config` file.
 
 ## QUICK-START USER GUIDE
 
