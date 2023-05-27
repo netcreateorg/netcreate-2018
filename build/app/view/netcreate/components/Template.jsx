@@ -172,10 +172,7 @@ class Template extends UNISYS.Component {
         const schemaNodeTypeOptions = SCHEMA.NODETYPEOPTIONS;
         // Wrap options in custom Schema to show Delete management UI
         const nodeTypeEditorSchema = SCHEMA.GetTypeEditorSchema(schemaNodeTypeOptions);
-        // Remove default selected (blank) option
-        // This is added back in in template-logic.UpdateTemplate after saving
-        typeOptions = result.template.nodeDefs.type.options.filter(o => o.label !== '');
-        const startval = { options: typeOptions }
+        const startval = { options: result.template.nodeDefs.type.options };
         this.setState({ editScope: 'nodeTypeOptions', isBeingEdited: true });
         this.loadEditor(
           {
@@ -199,10 +196,7 @@ class Template extends UNISYS.Component {
         const schemaEdgeTypeOptions = SCHEMA.EDGETYPEOPTIONS;
         // Wrap options in custom Schema to show Delete management UI
         const edgeTypeEditorSchema = SCHEMA.GetTypeEditorSchema(schemaEdgeTypeOptions);
-        // Remove default selected (blank) option
-        // This is added back in in template-logic.UpdateTemplate after saving
-        typeOptions = result.template.edgeDefs.type.options.filter(o => o.label !== '');
-        const startval = { options: typeOptions }
+        const startval = { options: result.template.edgeDefs.type.options };
         this.setState({ editScope: 'edgeTypeOptions', isBeingEdited: true });
         this.loadEditor({
           schema: edgeTypeEditorSchema,

@@ -56,6 +56,10 @@ const MOD = {};
  * When editing node types, this is loaded by MOD.GetTypeEditorSchema to
  * provide additional UI elements to manage deleting and renaming
  * existing field types
+ *
+ * Default "No Type Selected" has a label of ""
+ * Templates should always have one default.
+ *
  */
 MOD.NODETYPEOPTIONS = {
   type: 'array',
@@ -75,11 +79,13 @@ MOD.NODETYPEOPTIONS = {
       'color': {
         type: 'string',
         title: 'Color',
-        format: 'color'
+        format: 'color',
+        default: '#eeeeee' // for "No Type Selected", must be in form '#nnnnnn' -- alpha or short '#nnn' do not work
       },
       'label': {
         type: 'string',
-        title: 'Label'
+        title: 'Label',
+        default: '' // leave '' for "No Type Selected"
       }
     }
   }
@@ -117,11 +123,13 @@ MOD.EDGETYPEOPTIONS = {
       'color': { // currently unused
         type: 'string',
         title: 'Color',
-        format: 'color'
+        format: 'color',
+        default: '#eeeeee' // for "No Type Selected", must be in form '#nnnnnn' -- alpha or short '#nnn' do not work
       },
       'label': {
         type: 'string',
-        title: 'Label'
+        title: 'Label',
+        default: '' // leave '' for "No Type Selected"
       },
     }
   }
@@ -1166,18 +1174,45 @@ MOD.GetTypeEditorSchema = schemaTypeOptions => {
     Use this to create a pristine defaul template json
 /*/
 MOD.ParseTemplateSchema = () => {
+  let currNodeOrEdge;
+
+  // optionsDefinition is eithert MOD.NODETYPEOPTIONS or MOD.EDGETYPEOPTIONS
+  function ParseOptions(optionsDefinition) {
+    const json = {};
+    const options = optionsDefinition.items.properties;
+    Object.keys(options).forEach(key => {
+      json[key] = options[key].default;
+    })
+    return [json];
+  }
 
   function ParseProperty(prop) {
-    if (prop.type === 'string') return prop.default;
-    if (prop.type === 'number') return prop.default;
-    if (prop.type === 'boolean') return prop.default;
+    if (prop.type === 'string') return prop.default || ''; // fall back to '' if default is not defined
+    if (prop.type === 'number') return prop.default || 0; // fall back to 0 if no default
+    if (prop.type === 'boolean') return prop.default || false; // fall back to false if no default
+    return '';
   }
 
   function ParseProperties(properties, currJson) {
     Object.keys(properties).forEach(templatePropertyKey => {
+      if (templatePropertyKey === 'nodeDefs') currNodeOrEdge = 'nodes';
+      if (templatePropertyKey === 'edgeDefs') currNodeOrEdge = 'edges';
+      // REVIEW logic assumes that `edgeDefs` is the last category that has `options`
+      // if we add a new category, we may need to clear `currNodeOrEdge`
+
       const prop = properties[templatePropertyKey];
       if (prop.properties) {
         currJson[templatePropertyKey] = ParseProperties(prop.properties, {});
+      } else if (templatePropertyKey === "options") {
+        // Special handling for nodeDef and edgeDef `type` options as these are not defined in the main
+        // schema, but are instead separated
+        if (currNodeOrEdge === 'nodes') {
+          currJson.options = ParseOptions(MOD.NODETYPEOPTIONS);
+        } else if (currNodeOrEdge === 'edges') {
+          currJson.options = ParseOptions(MOD.EDGETYPEOPTIONS);
+        } else {
+          throw `${PR}.ParseTemplateSchema encountered unknown 'options' in ${JSON.stringify(properties)} at ${templatePropertyKey}`;
+        }
       } else {
         currJson[templatePropertyKey] = ParseProperty(prop);
       }
