@@ -867,7 +867,7 @@ DB.WriteDbJSON = function (filePath) {
 
   // Ideally we should use m_otions value, but in standlone mode,
   // m_options might not be defined.
-  let db_file = m_options ? m_options.db_file : m_GetValidDBFilePath(dataset);
+  db_file = m_options ? m_options.db_file : m_GetValidDBFilePath(dataset);
   let db = new Loki(db_file,{
       autoload: true,
       autoloadCallback: () => {
