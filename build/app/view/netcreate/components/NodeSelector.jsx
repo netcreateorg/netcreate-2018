@@ -1134,7 +1134,7 @@ class NodeSelector extends UNISYS.Component {
                   </Label>
               </Col>
               <Col sm={9}>
-                <Input type="text" name="provenance" id="provenance"
+                <Input type="textarea" name="provenance" id="provenance"
                   value={formData.provenance||''}
                   onChange={this.onProvenanceChange}
                   readOnly={!isBeingEdited}
