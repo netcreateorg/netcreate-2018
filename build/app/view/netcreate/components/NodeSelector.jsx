@@ -1149,8 +1149,7 @@ class NodeSelector extends UNISYS.Component {
                   </Label>
               </Col>
               <Col sm={9}>
-                <textarea type="text" name="comments" id="comments" className="comments"
-                  rows="4"
+                <Input type="textarea" name="comments" id="comments" className="comments"
                   value={formData.comments || ''}
                   onChange={this.onCommentsChange}
                   readOnly={!isBeingEdited}
