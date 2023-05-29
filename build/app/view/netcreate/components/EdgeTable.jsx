@@ -35,6 +35,7 @@ const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1') || (locatio
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+import FILTER from './filter/FilterEnums';
 const React        = require('react');
 const ReactStrap   = require('reactstrap');
 const { Button }    = ReactStrap;
@@ -275,11 +276,22 @@ class EdgeTable extends UNISYS.Component {
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
-/*/ sortByKey (edges, key) {
+/*/ sortByKey (edges, key, type) {
       if (edges) {
         return edges.sort( (a,b) => {
-          let akey = a[key],
-              bkey = b[key];
+          let akey, bkey;
+          if (type === FILTER.TYPES.STRING) {
+            akey = a[key] || ''; // fall back to blank if a[key] is not defined
+                                 // a[key] might be undefined if the template/db
+                                 // was changed but the full db wasn't updated
+            bkey = b[key] || '';
+          } else if (type === FILTER.TYPES.NUMBER) {
+            akey = Number(a[key]); // force number for sorting
+            bkey = Number(b[key]);
+          } else {
+            akey = a[key];
+            bkey = b[key];
+          }
           if (akey<bkey) return -1*Number(this.sortDirection);
           if (akey>bkey) return 1*Number(this.sortDirection);
           if (akey===bkey) {
@@ -310,7 +322,7 @@ class EdgeTable extends UNISYS.Component {
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ If no `sortkey` is passed, the sort will use the existing state.sortkey
-/*/ sortTable ( sortkey=this.state.sortkey, edges) {
+/*/ sortTable ( sortkey=this.state.sortkey, edges, type) {
       switch (sortkey) {
         case 'id':
           return this.sortByID(edges);
@@ -322,29 +334,29 @@ class EdgeTable extends UNISYS.Component {
           return this.sortByTargetLabel(edges);
           break;
         case 'Info':
-          return this.sortByKey(edges, 'info');
+          return this.sortByKey(edges, 'info', type);
           break;
         case 'provenance':
-          return this.sortByKey(edges, 'provenance');
+          return this.sortByKey(edges, 'provenance', type);
           break;
         case 'comments':
-          return this.sortByKey(edges, 'comments');
+          return this.sortByKey(edges, 'comments', type);
           break;
         case 'Notes':
-          return this.sortByKey(edges, 'notes');
+          return this.sortByKey(edges, 'notes', type);
           break;
         case 'Category':
-          return this.sortByKey(edges, 'category');
+          return this.sortByKey(edges, 'category', type);
           break;
         case 'Citations':
-          return this.sortByKey(edges, 'citation');
+          return this.sortByKey(edges, 'citation', type);
           break;
         case 'Updated':
           return this.sortByUpdated(edges);
           break;
         case 'Relationship':
         default:
-          return this.sortByKey(edges, 'type');
+          return this.sortByKey(edges, 'type', type);
           break;
       }
     }
@@ -389,11 +401,11 @@ class EdgeTable extends UNISYS.Component {
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
-/*/ setSortKey (key) {
+/*/ setSortKey (key, type) {
       if (key === this.state.sortkey) this.sortDirection = (-1 * this.sortDirection);// if this was already the key, flip the direction
       else this.sortDirection = 1;
 
-      const edges = this.sortTable(key, this.state.edges);
+      const edges = this.sortTable(key, this.state.edges, type);
       this.setState({
         edges,
         sortkey: key
@@ -500,43 +512,42 @@ class EdgeTable extends UNISYS.Component {
             <thead>
               <tr>
                 <th width="4%" hidden={!DBG}><Button size="sm"
-                      onClick={()=>this.setSortKey("id")}
+                      onClick={()=>this.setSortKey("id", edgeDefs.id.type)}
                     >ID {this.sortSymbol("id")}</Button></th>
                 <th hidden={!DBG}>Size</th>
                 <th width="4%"><div style={{color: '#f3f3ff'}}>_Edit_</div></th>
                 <th hidden={!DBG}>Src ID</th>
                 <th  width="10%"><Button size="sm"
-                      onClick={()=>this.setSortKey("source")}
+                      onClick={()=>this.setSortKey("source", edgeDefs.source.type)}
                     >{edgeDefs.source.displayLabel} {this.sortSymbol("source")}</Button></th>
                 <th hidden={edgeDefs.type.hidden} width="10%"><Button size="sm"
-                      onClick={()=>this.setSortKey("Relationship")}
+                      onClick={()=>this.setSortKey("Relationship", edgeDefs.type.type)}
                     >{edgeDefs.type.displayLabel} {this.sortSymbol("Relationship")}</Button></th>
                 <th hidden={!DBG}>Target ID</th>
                 <th width="10%"><Button size="sm"
-                      onClick={()=>this.setSortKey("target")}
+                      onClick={()=>this.setSortKey("target", edgeDefs.target.type)}
                     >{edgeDefs.target.displayLabel} {this.sortSymbol("target")}</Button></th>
                 <th width="8%" hidden={edgeDefs.category.hidden}><Button size="sm"
-                      onClick={()=>this.setSortKey("Category")}
+                      onClick={()=>this.setSortKey("Category", edgeDefs.category.type)}
                     >{edgeDefs.category.displayLabel} {this.sortSymbol("Category")}</Button></th>
                 <th width="10%" hidden={edgeDefs.citation.hidden}><Button size="sm"
-                      onClick={()=>this.setSortKey("Citations")}
+                      onClick={()=>this.setSortKey("Citations", edgeDefs.citation.type)}
                     >{edgeDefs.citation.displayLabel} {this.sortSymbol("Citations")}</Button></th>
                 <th width="20%" hidden={edgeDefs.notes.hidden}><Button size="sm"
-                      onClick={()=>this.setSortKey("Notes")}
+                      onClick={()=>this.setSortKey("Notes", edgeDefs.notes.type)}
                     >{edgeDefs.notes.displayLabel} {this.sortSymbol("Notes")}</Button></th>
                 <th  width="10%"hidden={edgeDefs.info.hidden}><Button size="sm"
-                      onClick={()=>this.setSortKey("Info")}
+                      onClick={()=>this.setSortKey("Info", edgeDefs.info.type)}
                     >{edgeDefs.info.displayLabel} {this.sortSymbol("Info")}</Button></th>
-                <th  width="10%"hidden={edgeDefs.provenance.hidden}><Button size="sm"
-                      onClick={()=>this.setSortKey("provenance")}
+                <th  width="4%"hidden={edgeDefs.provenance.hidden}><Button size="sm"
+                      onClick={()=>this.setSortKey("provenance", edgeDefs.provenance.type)}
                     >{edgeDefs.provenance.displayLabel} {this.sortSymbol("provenance")}</Button></th>
-                <th  width="10%"hidden={edgeDefs.comments.hidden}><Button size="sm"
-                      onClick={()=>this.setSortKey("comments")}
-                    >{edgeDefs.comments.displayLabel} {this.sortSymbol("comments")}</Button></th>
                 <th  width="10%"hidden={!isLocalHost}><Button size="sm"
-                      onClick={()=>this.setSortKey("Updated")}
+                      onClick={()=>this.setSortKey("Updated", FILTER.TYPES.STRING)}
                     >Updated {this.sortSymbol("Updated")}</Button></th>
-
+                <th  width="10%"hidden={edgeDefs.comments.hidden}><Button size="sm"
+                      onClick={()=>this.setSortKey("comments", edgeDefs.comment.type)}
+                    >{edgeDefs.comments.displayLabel} {this.sortSymbol("comments")}</Button></th>
               </tr>
             </thead>
             <tbody style={{ maxHeight: tableHeight }}>
