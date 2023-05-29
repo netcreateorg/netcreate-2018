@@ -48,7 +48,9 @@ var UDATA = null;
 const OPERATORS = [
   FILTER.OPERATORS.NO_OP,
   FILTER.OPERATORS.CONTAINS,
-  FILTER.OPERATORS.NOT_CONTAINS
+  FILTER.OPERATORS.NOT_CONTAINS,
+  FILTER.OPERATORS.IS_EMPTY,
+  FILTER.OPERATORS.IS_NOT_EMPTY
 ]
 
 
@@ -134,7 +136,9 @@ class StringFilter extends React.Component {
           <Input type="text" value={value} placeholder="..."
             style={{ maxWidth: '12em', height: '1.5em' }}
             onChange={this.OnChangeValue} bsSize="sm"
-            disabled={operator === FILTER.OPERATORS.NO_OP.key}/>
+            disabled={operator === FILTER.OPERATORS.NO_OP.key}
+            hidden={operator === FILTER.OPERATORS.IS_EMPTY.key || operator === FILTER.OPERATORS.IS_NOT_EMPTY.key}
+          />
         </FormGroup>
       </Form>
     );
