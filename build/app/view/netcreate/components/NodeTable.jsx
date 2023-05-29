@@ -455,7 +455,7 @@ render() {
                 >{nodeDefs.comments.displayLabel} {this.sortSymbol("comments")}</Button></th>
           </tr>
         </thead>
-        <tbody style={{maxHeight: tableHeight}}>
+        <tbody style={{maxHeight: tableHeight, fontSize: '12px'}}>
         {this.state.nodes.map( (node,i) => (
           <tr key={i}
             style={{
@@ -473,12 +473,18 @@ render() {
                 >{node.label}</a></td>
             <td hidden={nodeDefs.type.hidden}>{node.type}</td>
             <td hidden={nodeDefs.info.hidden}>{node.info}</td>
-            <td hidden={nodeDefs.provenance.hidden}>{node.provenance}</td>
-            <td hidden={nodeDefs.comments.hidden}>{node.comments}</td>
+            <td hidden={nodeDefs.provenance.hidden}
+              style={{ fontSize: '9px' }}
+            >{node.provenance}</td>
             <td hidden={nodeDefs.notes.hidden}>
               {node.notes ? <MarkdownNote text={node.notes} /> : "" }
             </td>
-            <td hidden={!isLocalHost}>{this.displayUpdated(node)}</td>
+            <td hidden={!isLocalHost}
+              style={{ fontSize: '9px' }}
+            >{this.displayUpdated(node)}</td>
+            <td hidden={nodeDefs.comments.hidden}
+              style={{ backgroundColor: '#ffff6633' }}
+            >{node.comments}</td>
           </tr>
         ))}
         </tbody>

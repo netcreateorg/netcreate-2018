@@ -550,7 +550,7 @@ class EdgeTable extends UNISYS.Component {
                     >{edgeDefs.comments.displayLabel} {this.sortSymbol("comments")}</Button></th>
               </tr>
             </thead>
-            <tbody style={{ maxHeight: tableHeight }}>
+            <tbody style={{ maxHeight: tableHeight, fontSize: '12px' }}>
             {this.state.edges.map( (edge,i) => (
               <tr key={i}
                 style={{
@@ -577,9 +577,13 @@ class EdgeTable extends UNISYS.Component {
                   {edge.notes ? <MarkdownNote text={edge.notes} /> : "" }
                 </td>
                 <td hidden={edgeDefs.info.hidden}>{edge.info}</td>
-                <td hidden={edgeDefs.provenance.hidden}>{edge.provenance}</td>
+                <td hidden={edgeDefs.provenance.hidden}
+                  style={{ fontSize: '9px' }}
+                >{edge.provenance}</td>
                 <td hidden={edgeDefs.comments.hidden}>{edge.comments}</td>
-                <td hidden={!isLocalHost}>{this.displayUpdated(edge)}</td>
+                <td hidden={!isLocalHost}
+                    style={{ fontSize: '9px' }}
+                >{this.displayUpdated(edge)}</td>
               </tr>
             ))}
             </tbody>
