@@ -869,6 +869,7 @@ MOD.SetAllObjs = m_SetAllObjs; // Expose for filter-logic.js
 
 /*/ Validate Template File
 /*/
+// eslint-disable-next-line complexity
 function m_ValidateTemplate() {
   try {
     // nodeDefs
@@ -887,6 +888,9 @@ function m_ValidateTemplate() {
     }
     if (nodeDefs.notes === undefined) throw "Missing `nodeDefs.notes` notes=" + nodeDefs.notes;
     if (nodeDefs.info === undefined) throw "Missing `nodeDefs.info` info=" + nodeDefs.info;
+    // Version 2.x Fields
+    if (nodeDefs.provenance === undefined) throw "Missing `nodeDefs.provenance` provenance=" + nodeDefs.provenance;
+    if (nodeDefs.comments === undefined) throw "Missing `nodeDefs.comments` comments=" + nodeDefs.comments;
 
     // edgeDefs
     let edgeDefs = TEMPLATE.edgeDefs;
@@ -903,6 +907,10 @@ function m_ValidateTemplate() {
     if (edgeDefs.target === undefined) throw "Missing `edgeDefs.target` label=" + edgeDefs.target;
     if (edgeDefs.notes === undefined) throw "Missing `edgeDefs.notes` notes=" + edgeDefs.notes;
     if (edgeDefs.info === undefined) throw "Missing `edgeDefs.info` info=" + edgeDefs.info;
+    // Version 2.x Fields
+    if (edgeDefs.provenance === undefined) throw "Missing `edgeDefs.provenance` provenance=" + edgeDefs.provenance;
+    if (edgeDefs.comments === undefined) throw "Missing `edgeDefs.comments` comments=" + edgeDefs.comments;
+    // -- End 2.x
     if (edgeDefs.citation === undefined) throw "Missing `edgeDefs.citation` info=" + edgeDefs.citation;
     if (edgeDefs.category === undefined) throw "Missing `edgeDefs.category` info=" + edgeDefs.category;
   } catch (error) {
@@ -1212,6 +1220,16 @@ function m_MarkSelectedEdges(edges, node) {
 
 /// COMMAND LINE UTILITIES ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Command: REGENERATE DEFAULT TEMPLATE
+    This will regenerate the `_default.template.toml` file from
+    the current `template-schema.js` spec.  This is only necessary to do
+    if you've edited the `template.schema.js`` file.
+/*/ JSCLI.AddFunction(
+  function ncRegenerateDefaultTemplate() {
+    UDATA.Call("SRV_TEMPLATE_REGENERATE_DEFAULT");
+    console.log('_default.template.toml regenerated from `template-schema.js`');
+  });
 /*/ Command: RESET THE DATABASE from default data
 /*/
 JSCLI.AddFunction(function ncPushDatabase(jsonFile) {

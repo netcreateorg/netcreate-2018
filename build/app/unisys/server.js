@@ -111,6 +111,11 @@ var UNISYS = {};
 
       /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       /// TEMPLATE EDITING
+      UNET.HandleMessage('SRV_TEMPLATE_REGENERATE_DEFAULT', pkt => { // server-database
+        if (DBG) console.log(PR, sprint_message(pkt));
+        return UDB.RegenerateDefaultTemplate();
+      });
+
       UNET.HandleMessage('SRV_TEMPLATESAVE', pkt => { // server-database
         if (DBG) console.log(PR, sprint_message(pkt));
         UNET.NetCall('NET_TEMPLATE_UPDATE', pkt.data.template); // Broadcast template to other computers on the net

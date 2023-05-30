@@ -8,16 +8,22 @@
   the json-editor needs to support and provides meta data about how to
   display and handle the edits.
 
-  `template-logic.js` handles initialization.
+  `template-logic.js` handles initialization client-side.
 
   NOTE: This schema is NOT the same as the `toml` template file schema.  This
   schema is used by `json-editor` to know how to display a UI for editing the
   template itself.
 
-  FUTURE WORK: We should be able to generate a new
-  `default.template.toml` file from the schema.  That would ensure that
-  default template is up to date.  There isn't a single-button UI for this
-  currently, but you CAN basically do this by:
+  IMPORTANT: If you modify the schema, generate a new template by
+
+    1. Start NetCreate
+    2. In web browser developer console, run:
+
+        `ncRegenerateDefaultTemplate()`
+    3. This will create a new `_default.template.toml` file.
+
+  Alternatively the default template's JSON can be generated from this schema spec by
+  by calling MOD.ParseTemplateSchema() directly. This is the rough equivalent of doing this:
   1. Start NetCreate with a new db, e.g. `./nc.js --dataset=newdefault`
   2. Clicking "New Template" on the "More... > Edit Template" tab.
   3. Clicking "Save Changes"
@@ -27,6 +33,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const DBG = false;
+const PR = "template-schema";
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -50,6 +57,10 @@ const MOD = {};
  * When editing node types, this is loaded by MOD.GetTypeEditorSchema to
  * provide additional UI elements to manage deleting and renaming
  * existing field types
+ *
+ * Default "No Type Selected" has a label of ""
+ * Templates should always have one default.
+ *
  */
 MOD.NODETYPEOPTIONS = {
   type: 'array',
@@ -69,11 +80,13 @@ MOD.NODETYPEOPTIONS = {
       'color': {
         type: 'string',
         title: 'Color',
-        format: 'color'
+        format: 'color',
+        default: '#eeeeee' // for "No Type Selected", must be in form '#nnnnnn' -- alpha or short '#nnn' do not work
       },
       'label': {
         type: 'string',
-        title: 'Label'
+        title: 'Label',
+        default: '' // leave '' for "No Type Selected"
       }
     }
   }
@@ -111,11 +124,13 @@ MOD.EDGETYPEOPTIONS = {
       'color': { // currently unused
         type: 'string',
         title: 'Color',
-        format: 'color'
+        format: 'color',
+        default: '#eeeeee' // for "No Type Selected", must be in form '#nnnnnn' -- alpha or short '#nnn' do not work
       },
       'label': {
         type: 'string',
-        title: 'Label'
+        title: 'Label',
+        default: '' // leave '' for "No Type Selected"
       },
     }
   }
@@ -148,6 +163,7 @@ MOD.TEMPLATE = {
         "text": {
           type: 'string',
           description: 'Bibliographic reference',
+          default: 'No citation set',
           options: {
             inputAttributes: { placeholder: 'Untitled Network' }
           }
@@ -431,6 +447,82 @@ MOD.TEMPLATE = {
               type: 'boolean',
               format: 'checkbox',
               description: 'Hides "info" from Node Editor, Nodes Table, and exports',
+              default: false
+            }
+          }
+        },
+        "provenance": { // Provenance/Source
+          type: 'object',
+          description: 'Display name of the node',
+          properties: {
+            "type": {
+              type: 'string',
+              description: '"provenance" data type',
+              default: 'string'
+            },
+            "displayLabel": {
+              type: 'string',
+              description: 'Label to use for system display',
+              default: 'Provenance'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Provenance'
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Node Editor form',
+              default: 'Who created this?  (aka Provenance)'
+            },
+            "includeInGraphTooltip": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Show "provenance" value in tooltip on graph',
+              default: true
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Hides "provenance" from Node Editor, Nodes Table, and exports',
+              default: false
+            }
+          }
+        },
+        "comments": { // Comments
+          type: 'object',
+          description: 'Display name of the node',
+          properties: {
+            "type": {
+              type: 'string',
+              description: '"comments" data type',
+              default: 'string'
+            },
+            "displayLabel": {
+              type: 'string',
+              description: 'Label to use for system display',
+              default: 'Comments'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Comments'
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Node Editor form',
+              default: 'Enter "<comment> -- <name> <date>"'
+            },
+            "includeInGraphTooltip": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Show "comments" value in tooltip on graph',
+              default: true
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Hides "comments" from Node Editor, Nodes Table, and exports',
               default: false
             }
           }
@@ -782,6 +874,76 @@ MOD.TEMPLATE = {
             }
           }
         },
+        "provenance": { // Provenance/Source
+          type: 'object',
+          description: 'Display name of the edge',
+          properties: {
+            "type": {
+              type: 'string',
+              description: '"provenance" data type',
+              default: 'string'
+            },
+            "displayLabel": {
+              type: 'string',
+              description: 'Label to use for system display',
+              default: 'Provenance'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Provenance'
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Node Editor form',
+              default: 'Who created this?  (aka Provenance)'
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Hides "provenance" from Node Editor, Nodes Table, and exports',
+              default: false
+            }
+          }
+        },
+        "comments": { // Comments
+          type: 'object',
+          description: 'Display name of the edge',
+          properties: {
+            "type": {
+              type: 'string',
+              description: '"comments" data type',
+              default: 'string'
+            },
+            "displayLabel": {
+              type: 'string',
+              description: 'Label to use for system display',
+              default: 'Comments'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Comments'
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Edge Editor form',
+              default: 'Enter "<comment> -- <name> <date>"'
+            },
+            "includeInGraphTooltip": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Show "comments" value in tooltip on graph',
+              default: true
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Hides "comments" from Edge Editor, Edges Table, and exports',
+              default: false
+            }
+          }
+        },
         "citation": {
           type: 'object',
           description: 'Display name of the node',
@@ -1007,6 +1169,64 @@ MOD.GetTypeEditorSchema = schemaTypeOptions => {
     }
   }
 }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ ParseTemplateSchema generates and resturns the default template json
+    Use this to create a pristine defaul template json
+/*/
+MOD.ParseTemplateSchema = () => {
+  let currNodeOrEdge;
+
+  // optionsDefinition is eithert MOD.NODETYPEOPTIONS or MOD.EDGETYPEOPTIONS
+  function ParseOptions(optionsDefinition) {
+    const json = {};
+    const options = optionsDefinition.items.properties;
+    Object.keys(options).forEach(key => {
+      json[key] = options[key].default;
+    })
+    return [json];
+  }
+
+  function ParseProperty(prop) {
+    if (prop.type === 'string') return prop.default || ''; // fall back to '' if default is not defined
+    if (prop.type === 'number') return prop.default || 0; // fall back to 0 if no default
+    if (prop.type === 'boolean') return prop.default || false; // fall back to false if no default
+    return '';
+  }
+
+  function ParseProperties(properties, currJson) {
+    Object.keys(properties).forEach(templatePropertyKey => {
+      if (templatePropertyKey === 'nodeDefs') currNodeOrEdge = 'nodes';
+      if (templatePropertyKey === 'edgeDefs') currNodeOrEdge = 'edges';
+      // REVIEW logic assumes that `edgeDefs` is the last category that has `options`
+      // if we add a new category, we may need to clear `currNodeOrEdge`
+
+      const prop = properties[templatePropertyKey];
+      if (prop.properties) {
+        currJson[templatePropertyKey] = ParseProperties(prop.properties, {});
+      } else if (templatePropertyKey === "options") {
+        // Special handling for nodeDef and edgeDef `type` options as these are not defined in the main
+        // schema, but are instead separated
+        if (currNodeOrEdge === 'nodes') {
+          currJson.options = ParseOptions(MOD.NODETYPEOPTIONS);
+        } else if (currNodeOrEdge === 'edges') {
+          currJson.options = ParseOptions(MOD.EDGETYPEOPTIONS);
+        } else {
+          throw `${PR}.ParseTemplateSchema encountered unknown 'options' in ${JSON.stringify(properties)} at ${templatePropertyKey}`;
+        }
+      } else {
+        currJson[templatePropertyKey] = ParseProperty(prop);
+      }
+    });
+    return currJson;
+  }
+
+  let json = {};
+  ParseProperties(MOD.TEMPLATE.properties, json);
+  return json;
+}
+
+MOD.ParseTemplateSchema();
 
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////

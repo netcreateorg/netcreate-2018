@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
     ## OVERVIEW
@@ -160,6 +161,8 @@ class NodeSelector extends UNISYS.Component {
             label:     '',
             type:      '',
             info:      '',
+            provenance: '',
+            comments: '',
             notes:     '',
             degrees: -1,
             id:        '',   // Always convert this to a Number
@@ -195,6 +198,8 @@ class NodeSelector extends UNISYS.Component {
       this.onTypeChange                          = this.onTypeChange.bind(this);
       this.onNotesChange                         = this.onNotesChange.bind(this);
       this.onInfoChange                          = this.onInfoChange.bind(this);
+      this.onProvenanceChange = this.onProvenanceChange.bind(this);
+      this.onCommentsChange = this.onCommentsChange.bind(this);
       this.onReplacementNodeIDChange             = this.onReplacementNodeIDChange.bind(this);
       this.onNewNodeButtonClick                  = this.onNewNodeButtonClick.bind(this);
       this.onDeleteButtonClick                   = this.onDeleteButtonClick.bind(this);
@@ -385,6 +390,8 @@ class NodeSelector extends UNISYS.Component {
             label,
             type:      '',
             info:      '',
+            provenance: '',
+            comments: '',
             notes:     '',
             degrees: -1,
             id:         '',   // Always convert this to a Number
@@ -608,6 +615,8 @@ class NodeSelector extends UNISYS.Component {
       node.id                       = newNode.id || '';
       node.type = newNode.type;
       node.info = newNode.info;
+      node.provenance = newNode.provenance;
+      node.comments = newNode.comments;
       node.notes = newNode.notes;
       node.degrees = newNode.degrees;
 
@@ -618,6 +627,8 @@ class NodeSelector extends UNISYS.Component {
           label: node.label,
           type:      node.type,
           info:      node.info,
+          provenance: node.provenance,
+          comments: node.comments,
           notes:     node.notes,
           degrees: node.degrees,
           id:        node.id,
@@ -682,6 +693,20 @@ class NodeSelector extends UNISYS.Component {
     } // onInfoChange
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
+/*/ onProvenanceChange (event) {
+      let node = this.state.formData;
+      node.provenance = event.target.value;
+      this.setState({ formData: node });
+    } // onProvenanceChange
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ onCommentsChange (event) {
+      let node = this.state.formData;
+      node.comments = event.target.value;
+      this.setState({ formData: node });
+    } // onCommentsChange
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
 /*/
   onReplacementNodeIDChange(event) {
     let replacementNodeID = parseInt( event.target.value );
@@ -710,6 +735,12 @@ class NodeSelector extends UNISYS.Component {
       .then(()=>{
         this.AppCall('SOURCE_SEARCH', { searchString: label });
       });
+
+      // provenance
+      const session = this.AppState("SESSION");
+      const timestamp = new Date().toLocaleDateString('en-US');
+      const provenance_str = `Added by ${session.token} on ${timestamp}`;
+
       // HACK: call server to retrieve an unused node ID
       // FIXME: this kind of data manipulation should not be in a GUI component
       DATASTORE.PromiseNewNodeID()
@@ -719,7 +750,9 @@ class NodeSelector extends UNISYS.Component {
                 label:     label,
                 type:      '',
                 info:      '',
-                notes:     '',
+                provenance: provenance_str,
+                comments: '',
+                notes: '',
                 degrees: -1,
                 id:        newNodeID,
                 isNewNode: true
@@ -950,6 +983,8 @@ class NodeSelector extends UNISYS.Component {
         id: formData.id,
         type: formData.type,
         info: formData.info,
+        provenance: formData.provenance,
+        comments: formData.comments,
         notes: formData.notes,
         degrees: formData.degrees
       };
@@ -1018,7 +1053,6 @@ class NodeSelector extends UNISYS.Component {
             <FormGroup row>
               <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="nodeLabel" className="tooltipAnchor small text-muted">
-                    <div className="badge">?</div>
                     {nodeDefs.label.displayLabel}
                     <span className="tooltiptext">{this.helpText(nodeDefs.label)}</span>
                   </Label>
@@ -1044,7 +1078,6 @@ class NodeSelector extends UNISYS.Component {
             <FormGroup row hidden={nodeDefs.type.hidden}>
               <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="type" className="tooltipAnchor small text-muted">
-                    <div className="badge">?</div>
                     {nodeDefs.type.displayLabel}
                     <span className="tooltiptext">{this.helpText(nodeDefs.type)}</span>
                   </Label>
@@ -1064,7 +1097,6 @@ class NodeSelector extends UNISYS.Component {
             <FormGroup row hidden={nodeDefs.notes.hidden}>
               <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="notes" className="tooltipAnchor small text-muted">
-                    <div className="badge">?</div>
                     {nodeDefs.notes.displayLabel}
                     <span className="tooltiptext">{this.helpText(nodeDefs.notes)}</span>
                   </Label>
@@ -1082,7 +1114,6 @@ class NodeSelector extends UNISYS.Component {
             <FormGroup row hidden={nodeDefs.info.hidden}>
               <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="info" className="tooltipAnchor small text-muted">
-                    <div className="badge">?</div>
                     {nodeDefs.info.displayLabel}
                     <span className="tooltiptext">{this.helpText(nodeDefs.info)}</span>
                   </Label>
@@ -1093,6 +1124,37 @@ class NodeSelector extends UNISYS.Component {
                   onChange={this.onInfoChange}
                   readOnly={!isBeingEdited}
                   />
+              </Col>
+            </FormGroup>
+            <FormGroup row hidden={nodeDefs.provenance.hidden}>
+              <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
+                  <Label for="provenance" className="tooltipAnchor small text-muted">
+                    {nodeDefs.provenance.displayLabel}
+                    <span className="tooltiptext">{this.helpText(nodeDefs.provenance)}</span>
+                  </Label>
+              </Col>
+              <Col sm={9}>
+                <Input type="textarea" name="provenance" id="provenance"
+                  value={formData.provenance||''}
+                  onChange={this.onProvenanceChange}
+                  readOnly={!isBeingEdited}
+                  />
+              </Col>
+            </FormGroup>
+            <FormGroup row hidden={nodeDefs.comments.hidden}>
+              <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
+                  <Label for="comments" className="tooltipAnchor small text-muted">
+                    {nodeDefs.comments.displayLabel}
+                    <span className="tooltiptext">{this.helpText(nodeDefs.comments)}</span>
+                  </Label>
+              </Col>
+              <Col sm={9}>
+                <Input type="textarea" name="comments" id="comments" className="comments"
+                  value={formData.comments || ''}
+                  onChange={this.onCommentsChange}
+                  readOnly={!isBeingEdited}
+                  disabled={!isBeingEdited}
+                />
               </Col>
             </FormGroup>
 
@@ -1189,6 +1251,7 @@ class NodeSelector extends UNISYS.Component {
 
 helpText(obj)
 {
+  if (!obj) return;
   var text = "";
 
   if(obj.help == undefined || obj.help == "")

@@ -2,6 +2,8 @@
 
   Template Logic
 
+  Client-side
+
   This handles the UI logic for the "Edit Template" subpanel on the "More..."
   tab.
 
@@ -101,10 +103,25 @@ MOD.UpdateTemplate = (templateSnippet, editScope) => {
 
   // b) Replace NODE type options?
   if (editScope === 'nodeTypeOptions') {
-    // 1. Clean/validate -- Remove any empty labels
+    // 1. Clean/validate -- Remove any extra empty labels
     //    Added Rows will have a blank 'label' but a non-blank 'replacement'
+    let numOfEmptyLabels = 0;
     TEMPLATE.nodeDefs.type.options = templateSnippet.options.filter(o => {
-      return (o.label !== '') || (o.label === '' && o.replacement !== '');
+      // if there's a replacement, always add it
+      if (o.replacement !== '') return true;
+      // if the label is blank...
+      if (o.label === '') {
+        if (numOfEmptyLabels < 1) {
+          // ... and there has only been one, add it
+          numOfEmptyLabels++;
+          return true;
+        } else {
+          // ... otherwise, remove extras
+          return false;
+        }
+      }
+      // keep all other adjustments
+      return true;
     });
     // 2. Update NCDATA with new types
     UDATA.LocalCall("NODE_TYPES_UPDATE", { nodeTypesChanges: templateSnippet.options });
@@ -118,20 +135,29 @@ MOD.UpdateTemplate = (templateSnippet, editScope) => {
       }
       return o;
     });
-    // 4. Validate: Make sure there are no other empty labels?
-    // 5. Re-add default selected (blank) option
-    TEMPLATE.nodeDefs.type.options.unshift({
-      label: '', color: '#eeee'
-    });
   }
 
   // c) Replace EDGE type options?
   if (editScope === 'edgeTypeOptions') {
-    console.log('edgeTypeOptions: template snippet', templateSnippet)
-    // 1. Clean/validate -- Remove any empty labels
+    // 1. Clean/validate -- Remove any extra empty labels
     //    Added Rows will have a blank 'label' but a non-blank 'replacement'
+    let numOfEmptyLabels = 0;
     TEMPLATE.edgeDefs.type.options = templateSnippet.options.filter(o => {
-      return (o.label !== '') || (o.label === '' && o.replacement !== '');
+      // if there's a replacement, always add it
+      if (o.replacement !== '') return true;
+      // if the label is blank...
+      if (o.label === '') {
+        if (numOfEmptyLabels < 1) {
+          // ... and there has only been one, add it
+          numOfEmptyLabels++;
+          return true;
+        } else {
+          // ... otherwise, remove extras
+          return false;
+        }
+      }
+      // keep all other adjustments
+      return true;
     });
     // 2. Update NCDATA with new types
     UDATA.LocalCall("EDGE_TYPES_UPDATE", { edgeTypesChanges: templateSnippet.options });
@@ -144,11 +170,6 @@ MOD.UpdateTemplate = (templateSnippet, editScope) => {
         o.replacement = "";
       }
       return o;
-    });
-    // 4. Validate: Make sure there are no other empty labels?
-    // 5. Re-add default selected (blank) option
-    TEMPLATE.edgeDefs.type.options.unshift({
-      label: '', color: '#eeee'
     });
   }
   // This call is redundant.  SaveTemplateToFile will trigger a state update.

@@ -78,6 +78,22 @@ help = "Some number comparison"
 includeInGraphTooltip = true
 hidden = false
 
+[nodeDefs.provenance]
+type = "string"
+displayLabel = "Provenance"
+exportLabel = "Provenance"
+help = "Who created this?  (aka Provenance)"
+includeInGraphTooltip = true
+hidden = false
+
+[nodeDefs.comments]
+type = "string"
+displayLabel = "Comments"
+exportLabel = "Comments"
+help = 'Enter "<comment> -- <name> <date>"'
+includeInGraphTooltip = true
+hidden = false
+
 [nodeDefs.degrees]
 type = "number"
 displayLabel = "Degrees"
@@ -161,6 +177,20 @@ type = "number"
 displayLabel = "Date"
 exportLabel = "Date"
 help = "'YYYY-MM-DD' format"
+hidden = false
+
+[edgeDefs.provenance]
+type = "string"
+displayLabel = "Provenance"
+exportLabel = "Provenance"
+help = "Who created this?  (aka Provenance)"
+hidden = false
+
+[edgeDefs.comments]
+type = "string"
+displayLabel = "Comments"
+exportLabel = "Comments"
+help = 'Enter "<comment> -- <name> <date>"'
 hidden = false
 
 [edgeDefs.citation]
