@@ -438,11 +438,11 @@ render() {
                 <Button size="sm"
                   onClick={()=>this.setSortKey("info", nodeDefs.info.type)}
                 >{nodeDefs.info.displayLabel} {this.sortSymbol("info")}</Button></th>
-            <th width="4%"hidden={nodeDefs.provenance.hidden}>
+            <th width="9%"hidden={nodeDefs.provenance.hidden}>
                 <Button size="sm"
                   onClick={()=>this.setSortKey("provenance", nodeDefs.provenance.type)}
                 >{nodeDefs.provenance.displayLabel} {this.sortSymbol("provenance")}</Button></th>
-            <th width="30%" hidden={nodeDefs.notes.hidden}>
+            <th width="25%" hidden={nodeDefs.notes.hidden}>
                 <Button size="sm"
                   onClick={()=>this.setSortKey("notes", nodeDefs.notes.type)}
                 >{nodeDefs.notes.displayLabel} {this.sortSymbol("notes")}</Button></th>
