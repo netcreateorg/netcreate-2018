@@ -557,7 +557,7 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3D
   if (source === undefined || target === undefined ) return false;
 
   // 2. If source or target have been removed via collapse, remove the edge
-  if (removedNodes.includes(source.id) || removedNodes.includes(edge.id)) return false;
+  if (removedNodes.includes(source.id) || removedNodes.includes(target.id)) return false;
   // 3. if source or target is transparent, then we are transparent too
   if ( source.filteredTransparency < 1.0 ||
        target.filteredTransparency < 1.0) {
