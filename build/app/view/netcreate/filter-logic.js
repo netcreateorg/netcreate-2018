@@ -81,6 +81,7 @@
 import FILTER from './components/filter/FilterEnums';
 const UNISYS = require("unisys/client");
 const clone = require("rfdc")();
+const UTILS = require("./nc-utils");
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -97,6 +98,7 @@ var FDATA_RESTORE; // pristine FDATA for clearing
 let NODE_DEFAULT_TRANSPARENCY;
 let EDGE_DEFAULT_TRANSPARENCY;
 
+let removedNodes = []; // nodes removed via COLLAPSE filter action
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -313,6 +315,13 @@ function m_FiltersApply() {
 
   m_FiltersApplyToNodes(FDATA, FILTEREDD3DATA);
   m_FiltersApplyToEdges(FDATA, FILTEREDD3DATA);
+
+  // Recalculate sizes
+  if ( FDATA.filterAction === FILTER.ACTION.COLLAPSE) {
+    UTILS.RecalculateAllEdgeSizes(FILTEREDD3DATA);
+    UTILS.RecalculateAllNodeDegrees(FILTEREDD3DATA);
+  }
+
   // Update FILTEREDD3DATA
   UDATA.SetAppState("FILTEREDD3DATA", FILTEREDD3DATA);
 
@@ -427,6 +436,7 @@ function m_MatchNumber(operator, filterVal, objVal) {
  * @param {Array} filters
  */
 function m_FiltersApplyToNodes(FDATA, FILTEREDD3DATA) {
+  removedNodes = [];
   const { filterAction } = FDATA;
   const { filters, transparency } = FDATA.nodes;
   FILTEREDD3DATA.nodes = FILTEREDD3DATA.nodes.filter(node => {
@@ -454,14 +464,21 @@ function m_NodeIsFiltered(node, filters, transparency, filterAction) {
     node.filteredTransparency = NODE_DEFAULT_TRANSPARENCY; // opaque, not transparent
     if (keepNode) return true;
     return false; // remove from array
-  } else {
-    // FILTER.ACTION.HIGHLIGHT
+  } else if (filterAction === FILTER.ACTION.HIGHLIGHT) {
     if (!keepNode) {
       node.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
     } else {
       node.filteredTransparency = NODE_DEFAULT_TRANSPARENCY; // opaque
     }
     return true; // don't filter out
+  } else if (filterAction === FILTER.ACTION.COLLAPSE) {
+    if (keepNode) return true; // matched, so keep
+    // filter out (remove) and add to `renovedNodes` for later removal of linked edge
+    removedNodes.push(node.id);
+    return false;
+  } else {
+    // collapse?!?!?!
+    return true;
   }
 
   // all_no_op
@@ -535,10 +552,15 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3D
     const targetId = (typeof edge.target === 'number') ? edge.target : edge.target.id;
     return e.id === targetId;
   });
-  // 1. if source or target is filtered, then we are filtered too
-  if (source === undefined || target === undefined ||
-    source.filteredTransparency < 1.0 ||
-    target.filteredTransparency < 1.0) {
+
+  // 1. If source or target are missing, then remove the edge
+  if (source === undefined || target === undefined ) return false;
+
+  // 2. If source or target have been removed via collapse, remove the edge
+  if (removedNodes.includes(source.id) || removedNodes.includes(edge.id)) return false;
+  // 3. if source or target is transparent, then we are transparent too
+  if ( source.filteredTransparency < 1.0 ||
+       target.filteredTransparency < 1.0) {
     // regardless of filter definition...
     // ...if filterAction is FILTER
     // always hide edge if it's attached to a filtered node
@@ -549,7 +571,7 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3D
     return true;
   }
 
-  // 2. otherwise, look for matches
+  // 4. otherwise, look for matches
   // implicit AND.  ALL filters must return true.
   // edge is filtered out if it fails ANY filter tests
   filters.forEach(filter => {
@@ -568,14 +590,20 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3D
     edge.filteredTransparency = EDGE_DEFAULT_TRANSPARENCY; // opaque
     if (keepEdge) return true; // keep in array
     return false; // remove from array
-  } else {
-    // FILTER.ACTION.HIGHLIGHT, so don't filter
+  } else if (filterAction === FILTER.ACTION.HIGHLIGHT) {
     if (!keepEdge) {
       edge.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
     } else {
       edge.filteredTransparency = EDGE_DEFAULT_TRANSPARENCY; // opaque
     }
     return true; // always keep in array
+  } else if (filterAction === FILTER.ACTION.COLLAPSE) {
+    if (keepEdge) return true; // matched, so keep
+    // else filter out (remove)
+    return false;
+  } else {
+    // keep by default if no filter
+    return true;
   }
 
   // all_no_op
