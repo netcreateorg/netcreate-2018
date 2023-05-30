@@ -546,7 +546,7 @@ class EdgeTable extends UNISYS.Component {
                       onClick={()=>this.setSortKey("Updated", FILTER.TYPES.STRING)}
                     >Updated {this.sortSymbol("Updated")}</Button></th>
                 <th  width="10%"hidden={edgeDefs.comments.hidden}><Button size="sm"
-                      onClick={()=>this.setSortKey("comments", edgeDefs.comment.type)}
+                      onClick={()=>this.setSortKey("comments", edgeDefs.comments.type)}
                     >{edgeDefs.comments.displayLabel} {this.sortSymbol("comments")}</Button></th>
               </tr>
             </thead>
