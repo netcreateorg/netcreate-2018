@@ -580,10 +580,12 @@ class EdgeTable extends UNISYS.Component {
                 <td hidden={edgeDefs.provenance.hidden}
                   style={{ fontSize: '9px' }}
                 >{edge.provenance}</td>
-                <td hidden={edgeDefs.comments.hidden}>{edge.comments}</td>
                 <td hidden={!isLocalHost}
                     style={{ fontSize: '9px' }}
                 >{this.displayUpdated(edge)}</td>
+                <td hidden={edgeDefs.comments.hidden}
+                  style={{ backgroundColor: '#ffff6633' }}
+                >{edge.comments}</td>
               </tr>
             ))}
             </tbody>
