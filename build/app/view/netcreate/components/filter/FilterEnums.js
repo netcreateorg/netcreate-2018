@@ -4,6 +4,7 @@ const FILTER = {};
 FILTER.ACTION = {};
 FILTER.ACTION.HIGHLIGHT = 'HIGHLIGHTING';
 FILTER.ACTION.FILTER = 'FILTERING';
+FILTER.ACTION.COLLAPSE = 'COLLAPSING';
 FILTER.ACTION.HELP = {};
 FILTER.ACTION.HELP.HIGHLIGHT = 'Show (Highlight) matches, Fade others';
 FILTER.ACTION.HELP.FILTER = 'Shows matches, Hide (Filter) others (keep physics and degrees)';

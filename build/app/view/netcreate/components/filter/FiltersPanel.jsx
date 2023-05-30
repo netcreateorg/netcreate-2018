@@ -75,6 +75,7 @@ class FiltersPanel extends UNISYS.Component {
     let filterActionHelp;
     if (filterAction === FILTER.ACTION.HIGHLIGHT) filterActionHelp = FILTER.ACTION.HELP.HIGHLIGHT;
     if (filterAction === FILTER.ACTION.FILTER) filterActionHelp = FILTER.ACTION.HELP.FILTER;
+    if (filterAction === FILTER.ACTION.COLLAPSE) filterActionHelp = FILTER.ACTION.HELP.COLLAPSE;
     this.setState({ filterAction, filterActionHelp });
     UDATA.LocalCall('FILTERS_UPDATE', { filterAction });
   }
@@ -112,6 +113,16 @@ class FiltersPanel extends UNISYS.Component {
               backgroundColor: filterAction === FILTER.ACTION.FILTER ? 'transparent' : '#6c757d88'
             }}
           >Filter</Button>
+          <Button
+            onClick={() => this.SelectFilterAction(FILTER.ACTION.COLLAPSE)}
+            active={filterAction === FILTER.ACTION.COLLAPSE}
+            outline={filterAction === FILTER.ACTION.COLLAPSE}
+            disabled={filterAction === FILTER.ACTION.COLLAPSE}
+            style={{
+              color: filterAction === FILTER.ACTION.COLLAPSE ? '#333' : '#fff',
+              backgroundColor: filterAction === FILTER.ACTION.COLLAPSE ? 'transparent' : '#6c757d88'
+            }}
+          >Collapse</Button>
         </ButtonGroup>
         <Label className="small text-muted" style={{ padding: '0.5em 0 0 0.5em', marginBottom: '0' }}>
           {filterActionHelp}
