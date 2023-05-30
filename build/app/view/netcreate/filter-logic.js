@@ -333,8 +333,7 @@ function m_UpdateFilterSummary() {
   const nodeFilters = FDATA.nodes.filters;
   const edgeFilters = FDATA.edges.filters;
 
-  const typeSummary = FDATA.filterAction === FILTER.ACTION.HIGHLIGHT
-    ? 'HIGHLIGHTING ' : 'FILTERING ';
+  const typeSummary = FDATA.filterAction; // text for filter action is the label, e.g. 'HIGHLIGHT'
   const nodeSummary = m_FiltersToString(FDATA.nodes.filters);
   const edgeSummary = m_FiltersToString(FDATA.edges.filters);
   let summary = '';
