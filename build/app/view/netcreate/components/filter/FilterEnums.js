@@ -1,5 +1,8 @@
 const FILTER = {};
 
+// Filter Panel Label
+FILTER.PANEL_LABEL = 'VIEWS';
+
 // Determines whether filter action is to highlight/fade or remove (filter) nodes and edges
 FILTER.ACTION = {};
 FILTER.ACTION.HIGHLIGHT = 'HIGHLIGHTING';
