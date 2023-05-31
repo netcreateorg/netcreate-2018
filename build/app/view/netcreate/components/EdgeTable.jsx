@@ -193,7 +193,7 @@ class EdgeTable extends UNISYS.Component {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Handle FILTEREDD3DATA updates sent by filters-logic.m_FiltersApply
-      Note that edge.soourceLabel and edge.targetLabe should already be set
+      Note that edge.soourceLabel and edge.targetLabel should already be set
       by filter-logic.
   /*/
   handleFilterDataUpdate(data) {
