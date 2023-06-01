@@ -1,49 +1,49 @@
 {
-	// enable whitespace rendering by default
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {
-	// configure glob patterns for excluding files and folders.
-		"files.exclude": {
-			"**/.git": true,
-			"**/.svn": true,
-			"**/.hg": true,
-			"**/CVS": true,
-			"**/.DS_Store": true,
-			"**/public": true,
-			"**/node_modules": true,
-			"**/bower_components": true,
-			"*.sublime-*": true
-		},
-	// make errors more obvious, de-emphasize warnings
-		"workbench.colorCustomizations": {
-			"editorError.border": "#ff0000"
-		},
-	// other theme overrides
-		"editor.tokenColorCustomizations": {
-		},
-	// langauge specific overrides
-		"[javascript]" : {
-			"editor.renderWhitespace": "all",
-			"editor.detectIndentation": false,
-			"editor.insertSpaces": true,
-			"editor.tabSize": 2
-		},
-		"[javascriptreact]" :{
-			"editor.renderWhitespace": "all",
-			"editor.detectIndentation": false,
-			"editor.insertSpaces": true,
-			"editor.tabSize": 2
-		},
-		"terminal.integrated.profiles.osx": {
-			"x86 zsh": {
-				"path": "/usr/bin/arch",
-				"args": ["-arch", "x86_64"]
-			}
-		},
-		"terminal.integrated.defaultProfile.osx": "x86 zsh"	
-	}
+  // enable whitespace rendering by default
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+  // configure glob patterns for excluding files and folders.
+    "files.exclude": {
+      "**/.git": true,
+      "**/.svn": true,
+      "**/.hg": true,
+      "**/CVS": true,
+      "**/.DS_Store": true,
+      "**/public": true,
+      "**/node_modules": true,
+      "**/bower_components": true,
+      "*.sublime-*": true
+    },
+  // make errors more obvious, de-emphasize warnings
+    "workbench.colorCustomizations": {
+      "editorError.border": "#ff0000"
+    },
+  // other theme overrides
+    "editor.tokenColorCustomizations": {
+    },
+  // langauge specific overrides
+    "[javascript]" : {
+      "editor.renderWhitespace": "all",
+      "editor.detectIndentation": false,
+      "editor.insertSpaces": true,
+      "editor.tabSize": 2
+    },
+    "[javascriptreact]" :{
+      "editor.renderWhitespace": "all",
+      "editor.detectIndentation": false,
+      "editor.insertSpaces": true,
+      "editor.tabSize": 2
+    },
+    "terminal.integrated.profiles.osx": {
+      "x86 zsh": {
+        "path": "/usr/bin/arch",
+        "args": ["-arch", "x86_64", "/bin/zsh"]
+      }
+    },
+    "terminal.integrated.defaultProfile.osx": "x86 zsh"	
+  }
 }
