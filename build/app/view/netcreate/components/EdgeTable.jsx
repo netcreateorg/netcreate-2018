@@ -199,7 +199,19 @@ class EdgeTable extends UNISYS.Component {
   handleFilterDataUpdate(data) {
     if (data.edges) {
       const filteredEdges = data.edges;
-      this.setState({ filteredEdges }, () => {
+
+      // OLD METHOD: Keep a pure edges object, and apply filtering to them
+      // this.setState({ filteredEdges }, () => {
+      //   const edges = this.sortTable(this.state.sortkey, this.state.edges);
+      //   this.updateEdgeFilterState(edges, filteredEdges);
+      // });
+
+      // NEW METHOD: Just replace pure edges with filtered edges
+      //             This way edges that have been filtered out are also removed from the table
+      this.setState({
+        edges: filteredEdges,
+        filteredEdges
+      }, () => {
         const edges = this.sortTable(this.state.sortkey, this.state.edges);
         this.updateEdgeFilterState(edges, filteredEdges);
       });
