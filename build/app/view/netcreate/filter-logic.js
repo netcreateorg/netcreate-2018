@@ -316,11 +316,16 @@ function m_FiltersApply() {
   m_FiltersApplyToNodes(FDATA, FILTEREDD3DATA);
   m_FiltersApplyToEdges(FDATA, FILTEREDD3DATA);
 
+
+
+  // REVIEW 2023-0530
+  // -- If "Filter/Hide" functionality is going to be kept, this needs to be reworked!
+  //    We SHOULD NOT recalculate sizes in "Filter/Hide" mode, otherwise, the size will change.
+  //
   // Recalculate sizes
-  if ( FDATA.filterAction === FILTER.ACTION.COLLAPSE) {
-    UTILS.RecalculateAllEdgeSizes(FILTEREDD3DATA);
-    UTILS.RecalculateAllNodeDegrees(FILTEREDD3DATA);
-  }
+  // ALWAYS recalculate, e.g. if switching from Collapse to Highlight or clearing data
+  UTILS.RecalculateAllEdgeSizes(FILTEREDD3DATA);
+  UTILS.RecalculateAllNodeDegrees(FILTEREDD3DATA);
 
   // Update FILTEREDD3DATA
   UDATA.SetAppState("FILTEREDD3DATA", FILTEREDD3DATA);
