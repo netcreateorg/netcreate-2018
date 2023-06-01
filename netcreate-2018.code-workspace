@@ -38,5 +38,12 @@
 			"editor.insertSpaces": true,
 			"editor.tabSize": 2
 		},
+		"terminal.integrated.profiles.osx": {
+			"x86 zsh": {
+				"path": "/usr/bin/arch",
+				"args": ["-arch", "x86_64"]
+			}
+		},
+		"terminal.integrated.defaultProfile.osx": "x86 zsh"	
 	}
 }
