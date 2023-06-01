@@ -103,6 +103,7 @@ class FiltersPanel extends UNISYS.Component {
               backgroundColor: filterAction === FILTER.ACTION.HIGHLIGHT ? 'transparent' : '#6c757d88'
             }}
           >Highlight</Button>
+          {/* Hide "Filter" panel.  We will probably remove this functionality.
           <Button
             onClick={() => this.SelectFilterAction(FILTER.ACTION.FILTER)}
             active={filterAction === FILTER.ACTION.FILTER}
@@ -112,7 +113,7 @@ class FiltersPanel extends UNISYS.Component {
               color: filterAction === FILTER.ACTION.FILTER ? '#333' : '#fff',
               backgroundColor: filterAction === FILTER.ACTION.FILTER ? 'transparent' : '#6c757d88'
             }}
-          >Filter</Button>
+          >Filter</Button> */}
           <Button
             onClick={() => this.SelectFilterAction(FILTER.ACTION.COLLAPSE)}
             active={filterAction === FILTER.ACTION.COLLAPSE}
