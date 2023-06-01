@@ -175,7 +175,19 @@ class NodeTable extends UNISYS.Component {
   handleFilterDataUpdate(data) {
     if (data.nodes) {
       const filteredNodes = data.nodes;
-      this.setState({ filteredNodes }, () => {
+
+      // OLD METHOD: Keep a pure nodes object, and apply filtering to them
+      // this.setState({ filteredNodes }, () => {
+      //   const nodes = this.sortTable(this.state.sortkey, this.state.nodes);
+      //   this.updateNodeFilterState(nodes, filteredNodes);
+      // });
+
+      // NEW METHOD: Just replace pure nodes with filtered nodes
+      //             This way nodes that have been filtered out are also removed from the table
+      this.setState({
+        nodes: filteredNodes,
+        filteredNodes
+      }, () => {
         const nodes = this.sortTable(this.state.sortkey, this.state.nodes);
         this.updateNodeFilterState(nodes, filteredNodes);
       });
