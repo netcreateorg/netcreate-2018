@@ -8,10 +8,12 @@ FILTER.ACTION = {};
 FILTER.ACTION.HIGHLIGHT = 'HIGHLIGHTING';
 FILTER.ACTION.FILTER = 'FILTERING';
 FILTER.ACTION.COLLAPSE = 'COLLAPSING';
+FILTER.ACTION.FOCUS = 'FOCUSING';
 FILTER.ACTION.HELP = {};
 FILTER.ACTION.HELP.HIGHLIGHT = 'Show (Highlight) matches, Fade others';
 FILTER.ACTION.HELP.FILTER = 'Shows matches, Hide (Filter) others (keep physics and degrees)';
 FILTER.ACTION.HELP.COLLAPSE = 'Show matches, Remove (collapse) others & recalculate sizes';
+FILTER.ACTION.HELP.FOCUS = 'Show only nodes connected to the selected node within range';
 
 // Types of filters definable in template files.
 FILTER.TYPES = {};
