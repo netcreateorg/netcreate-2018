@@ -450,14 +450,14 @@ render() {
                 <Button size="sm"
                   onClick={()=>this.setSortKey("info", nodeDefs.info.type)}
                 >{nodeDefs.info.displayLabel} {this.sortSymbol("info")}</Button></th>
-            <th width="9%"hidden={nodeDefs.provenance.hidden}>
-                <Button size="sm"
-                  onClick={()=>this.setSortKey("provenance", nodeDefs.provenance.type)}
-                >{nodeDefs.provenance.displayLabel} {this.sortSymbol("provenance")}</Button></th>
             <th width="25%" hidden={nodeDefs.notes.hidden}>
                 <Button size="sm"
                   onClick={()=>this.setSortKey("notes", nodeDefs.notes.type)}
                 >{nodeDefs.notes.displayLabel} {this.sortSymbol("notes")}</Button></th>
+            <th width="9%"hidden={nodeDefs.provenance.hidden}>
+                <Button size="sm"
+                  onClick={()=>this.setSortKey("provenance", nodeDefs.provenance.type)}
+                >{nodeDefs.provenance.displayLabel} {this.sortSymbol("provenance")}</Button></th>
             <th  width="10%"hidden={!isLocalHost}><Button size="sm"
                   onClick={()=>this.setSortKey("updated", FILTER.TYPES.STRING)}
                 >Updated {this.sortSymbol("updated")}</Button></th>
@@ -485,12 +485,12 @@ render() {
                 >{node.label}</a></td>
             <td hidden={nodeDefs.type.hidden}>{node.type}</td>
             <td hidden={nodeDefs.info.hidden}>{node.info}</td>
-            <td hidden={nodeDefs.provenance.hidden}
-              style={{ fontSize: '9px' }}
-            >{node.provenance}</td>
             <td hidden={nodeDefs.notes.hidden}>
               {node.notes ? <MarkdownNote text={node.notes} /> : "" }
             </td>
+            <td hidden={nodeDefs.provenance.hidden}
+              style={{ fontSize: '9px' }}
+            >{node.provenance}</td>
             <td hidden={!isLocalHost}
               style={{ fontSize: '9px' }}
             >{this.displayUpdated(node)}</td>
