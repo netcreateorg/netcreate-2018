@@ -299,11 +299,9 @@ function m_FilterDefine(data) {
   FDATA.filterAction = data.filterAction || FDATA.filterAction; // if 'transparency' then filterAction is not passed, so default to existing
   if (data.group === "nodes") {
 
-    if (data.type === "transparency")
-    {
+    if (data.type === "transparency") {
       FDATA.nodes.transparency = data.transparency;
-    }
-    else{
+    } else {
       let nodeFilters = FDATA.nodes.filters;
       const index = nodeFilters.findIndex(f => f.id === data.filter.id);
       nodeFilters.splice(index, 1, data.filter);
@@ -311,11 +309,9 @@ function m_FilterDefine(data) {
     }
   } else if (data.group === "edges") {
 
-    if (data.type === "transparency")
-    {
+    if (data.type === "transparency") {
       FDATA.edges.transparency = data.transparency;
-    }
-    else{
+    } else {
       let edgeFilters = FDATA.edges.filters;
       const index = edgeFilters.findIndex(f => f.id === data.filter.id);
       edgeFilters.splice(index, 1, data.filter);
@@ -323,8 +319,7 @@ function m_FilterDefine(data) {
     }
   } else if (data.group === "focus") {
     FDATA.focus.range = data.filter.value;
-  }
-  else {
+  } else {
     throw `FILTER_DEFINE called with unknown group: ${data.group}`;
   }
   UDATA.SetAppState("FDATA", FDATA);

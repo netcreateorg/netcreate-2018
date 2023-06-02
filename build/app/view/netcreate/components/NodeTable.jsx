@@ -129,7 +129,7 @@ class NodeTable extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   displayUpdated(nodeEdge) {
       // Prevent error if `meta` info is not defined yet, or not properly imported
-      if (!nodeEdge.meta) return;
+      if (!nodeEdge.meta) return '';
 
       var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
 
@@ -142,7 +142,6 @@ class NodeTable extends UNISYS.Component {
       var tag = <span title={titleString}> {dateTime} </span>;
 
       return tag;
-
     }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
