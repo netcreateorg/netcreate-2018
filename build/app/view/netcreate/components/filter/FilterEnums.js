@@ -5,14 +5,14 @@ FILTER.PANEL_LABEL = 'VIEWS';
 
 // Determines whether filter action is to highlight/fade or remove (filter) nodes and edges
 FILTER.ACTION = {};
-FILTER.ACTION.HIGHLIGHT = 'HIGHLIGHTING';
+FILTER.ACTION.HIGHLIGHT = 'FADE';
 FILTER.ACTION.FILTER = 'FILTERING';
-FILTER.ACTION.COLLAPSE = 'COLLAPSING';
-FILTER.ACTION.FOCUS = 'FOCUSING';
+FILTER.ACTION.COLLAPSE = 'REMOVE';
+FILTER.ACTION.FOCUS = 'FOCUS';
 FILTER.ACTION.HELP = {};
-FILTER.ACTION.HELP.HIGHLIGHT = 'Show (Highlight) matches, Fade others';
+FILTER.ACTION.HELP.HIGHLIGHT = 'Show matches, Fade others';
 FILTER.ACTION.HELP.FILTER = 'Shows matches, Hide (Filter) others (keep physics and degrees)';
-FILTER.ACTION.HELP.COLLAPSE = 'Show matches, Remove (collapse) others & recalculate sizes';
+FILTER.ACTION.HELP.COLLAPSE = 'Show matches, Remove others & recalculate sizes';
 FILTER.ACTION.HELP.FOCUS = 'Show only nodes connected to the selected node within range';
 
 // Types of filters definable in template files.

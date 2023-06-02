@@ -127,7 +127,7 @@ class FiltersPanel extends UNISYS.Component {
               color: filterAction === FILTER.ACTION.HIGHLIGHT ? '#333' : '#fff',
               backgroundColor: filterAction === FILTER.ACTION.HIGHLIGHT ? 'transparent' : '#6c757d88'
             }}
-          >Highlight</Button>
+          >{FILTER.ACTION.HIGHLIGHT}</Button>
           {/* Hide "Filter" panel.  We will probably remove this functionality.
           <Button
             onClick={() => this.SelectFilterAction(FILTER.ACTION.FILTER)}
@@ -148,7 +148,7 @@ class FiltersPanel extends UNISYS.Component {
               color: filterAction === FILTER.ACTION.COLLAPSE ? '#333' : '#fff',
               backgroundColor: filterAction === FILTER.ACTION.COLLAPSE ? 'transparent' : '#6c757d88'
             }}
-          >Collapse</Button>
+          >{FILTER.ACTION.COLLAPSE}</Button>
           <Button
             onClick={() => this.SelectFilterAction(FILTER.ACTION.FOCUS)}
             active={filterAction === FILTER.ACTION.FOCUS}
@@ -158,7 +158,7 @@ class FiltersPanel extends UNISYS.Component {
               color: filterAction === FILTER.ACTION.FOCUS ? '#333' : '#fff',
               backgroundColor: filterAction === FILTER.ACTION.FOCUS ? 'transparent' : '#6c757d88'
             }}
-          >Focus</Button>
+          >{FILTER.ACTION.FOCUS}</Button>
         </ButtonGroup>
         <Label className="small text-muted" style={{ padding: '0.5em 0 0 0.5em', marginBottom: '0' }}>
           {filterActionHelp}
