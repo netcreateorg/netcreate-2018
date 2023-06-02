@@ -131,17 +131,28 @@ module.exports = (config, callback) => {
       EXEC('git symbolic-ref --short -q HEAD',(error,stdout,stderr) => {
         if (error) {
           // console.error(BP,'git symbolic-ref query error',error);
-          console.log(PR);
           console.log(PR,'GIT STATUS:');
-          console.log(PR,'You are running a <detached> branch');
-          console.log(PR);
+          console.log(PR,'.. You are running a <detached> branch');
         }
         if (stdout) {
           stdout = stdout.trim();
-          console.log(PR);
           console.log(PR,'GIT STATUS:');
-          console.log(PR,'You are running the "'+stdout+'" branch');
-          console.log(PR);
+          console.log(PR,'.. You are running the "'+stdout+'" branch');
+        }
+      });
+      // check architecture
+      EXEC('arch',(error, stdout,stderr)=>{
+        if (stdout) {
+          stdout=stdout.trim();
+          if (stdout!=='i386') {
+            console.log(PR,`ARCHITECTURE: ${stdout}`);
+            console.log(PR,'.. Expected i386, operation may be unstable');
+            console.log(PR,'.. For arm64 on mac, consider using Rosetta-compatible shell by running');
+            console.log(PR,`.. 'arch x86_64 /bin/zsh'`);
+
+          } else {
+            console.log(PR,`ARCHITECTURE: ${stdout}`);
+          }
         }
       });
       // check nvm version
@@ -149,14 +160,12 @@ module.exports = (config, callback) => {
         if (stdout) {
           stdout=stdout.trim();
           if (stdout!==NODE_VER) {
-            console.log(PR);
             console.log(PR,'*** NODE VERSION MISMATCH ***');
-            console.log(PR,'expected',NODE_VER, 'got', stdout);
-            console.log(PR,'did you remember to run nvm use?');
+            console.log(PR,'.. expected',NODE_VER, 'got', stdout);
+            console.log(PR,'.. did you remember to run nvm use?');
             // eslint-disable-next-line no-process-exit
             process.exit(100);
           }
-          console.log(PR);
           console.log(PR,'NODE VERSION:',stdout,'OK');
         }
       });
