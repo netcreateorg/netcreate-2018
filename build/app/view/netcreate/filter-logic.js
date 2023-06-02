@@ -501,16 +501,15 @@ function m_NodeIsFiltered(node, FDATA) {
   });
 
   // 2. Decide based on filterAction
+  node.isFiltered = false; // always reset if not HIGHLIGHT
+  node.filteredTransparency = NODE_DEFAULT_TRANSPARENCY; // always reset if not HIGHLIGHT
   if (filterAction === FILTER.ACTION.FILTER) {
     // not using highlight, so restore transparency
-    node.filteredTransparency = NODE_DEFAULT_TRANSPARENCY; // opaque, not transparent
     if (keepNode) return true;
     return false; // remove from array
   } else if (filterAction === FILTER.ACTION.HIGHLIGHT) {
     if (!keepNode) {
       node.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
-    } else {
-      node.filteredTransparency = NODE_DEFAULT_TRANSPARENCY; // opaque
     }
     return true; // don't filter out
   } else if (filterAction === FILTER.ACTION.COLLAPSE) {
