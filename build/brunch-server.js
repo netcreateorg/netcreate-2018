@@ -10,6 +10,7 @@
 const COMPRESS   = require('compression');
 const EXPRESS    = require('express');
 const COOKIEP    = require('cookie-parser');
+const FS         = require('fs');
 const APP        = EXPRESS();
 const UNISYS     = require('./app/unisys/server');
 const PATH       = require('path');
@@ -25,6 +26,14 @@ const GIT        = PROMPTS.Pad('GIT');
 var   UKEY_IDX   = 0;
 const USRV_START = new Date(Date.now()).toISOString();
 const NC_CONFIG  = require("./app/assets/netcreate-config");
+
+let NODE_VER;
+try {
+  NODE_VER = FS.readFileSync('./.nvmrc', 'utf8').trim();
+} catch (err) {
+  console.error('could not read .nvmrc',err);
+  throw Error(`Could not read .nvmrc ${err}`);
+}
 
 /// BRUNCH CUSTOM SERVER START FUNCTION ///////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -133,6 +142,22 @@ module.exports = (config, callback) => {
           console.log(PR,'GIT STATUS:');
           console.log(PR,'You are running the "'+stdout+'" branch');
           console.log(PR);
+        }
+      });
+      // check nvm version
+      EXEC('node --version',(error, stdout,stderr)=>{
+        if (stdout) {
+          stdout=stdout.trim();
+          if (stdout!==NODE_VER) {
+            console.log(PR);
+            console.log(PR,'*** NODE VERSION MISMATCH ***');
+            console.log(PR,'expected',NODE_VER, 'got', stdout);
+            console.log(PR,'did you remember to run nvm use?');
+            // eslint-disable-next-line no-process-exit
+            process.exit(100);
+          }
+          console.log(PR);
+          console.log(PR,'NODE VERSION:',stdout,'OK');
         }
       });
       // now start the UNISYS network
