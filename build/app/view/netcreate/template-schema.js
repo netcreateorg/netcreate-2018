@@ -201,6 +201,36 @@ MOD.TEMPLATE = {
       description: 'Allow any logged in user to import data.  Admins can always import data.',
       default: false
     },
+    "filterFade": {
+      type: 'string',
+      description: 'Display name of the filter that shows matching items and fades others.',
+      default: 'Fade'
+    },
+    "filterFadeHelp": {
+      type: 'string',
+      description: 'Help text for the Fade filter, displayed on the VIEWS panel.',
+      default: 'Show matches, Fade others'
+    },
+    "filterReduce": {
+      type: 'string',
+      description: 'Display name of the filter that shows matching items and reduces (removes) others.',
+      default: 'Reduce'
+    },
+    "filterReduceHelp": {
+      type: 'string',
+      description: 'Help text for the Reduce filter, displayed on the VIEWS panel.',
+      default: 'Show matches, Reduce (remove) others & recalculate sizes'
+    },
+    "filterFocus": {
+      type: 'string',
+      description: 'Display name of the filter that shows nodes connected to a selected node within a specified range.',
+      default: 'Focus'
+    },
+    "filterFocusHelp": {
+      type: 'string',
+      description: 'Help text for the Focus filter, displayed on the VIEWS panel.',
+      default: 'Show only nodes connected to the selected node within range'
+    },
     "duplicateWarning": {
       type: 'string',
       description: 'Warning message to display if user is trying to create a node that already exists.',

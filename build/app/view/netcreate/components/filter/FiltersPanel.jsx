@@ -77,10 +77,11 @@ class FiltersPanel extends UNISYS.Component {
 
   SelectFilterAction(filterAction) {
     let filterActionHelp;
-    if (filterAction === FILTER.ACTION.HIGHLIGHT) filterActionHelp = FILTER.ACTION.HELP.HIGHLIGHT;
+    const TEMPLATE = UDATA.AppState("TEMPLATE");
+    if (filterAction === FILTER.ACTION.HIGHLIGHT) filterActionHelp = TEMPLATE.filterFadeHelp ? TEMPLATE.filterFadeHelp : FILTER.ACTION.HELP.FADE;
     if (filterAction === FILTER.ACTION.FILTER) filterActionHelp = FILTER.ACTION.HELP.FILTER;
-    if (filterAction === FILTER.ACTION.COLLAPSE) filterActionHelp = FILTER.ACTION.HELP.COLLAPSE;
-    if (filterAction === FILTER.ACTION.FOCUS) filterActionHelp = FILTER.ACTION.HELP.FOCUS;
+    if (filterAction === FILTER.ACTION.COLLAPSE) filterActionHelp = TEMPLATE.filterReduceHelp ? TEMPLATE.filterReduceHelp : FILTER.ACTION.HELP.REDUCE;
+    if (filterAction === FILTER.ACTION.FOCUS) filterActionHelp = TEMPLATE.filterFocusHelp ? TEMPLATE.filterFocusHelp : FILTER.ACTION.HELP.FOCUS;
     this.setState({ filterAction, filterActionHelp });
     UDATA.LocalCall('FILTERS_UPDATE', { filterAction });
   }
@@ -88,6 +89,13 @@ class FiltersPanel extends UNISYS.Component {
   render() {
     const { filterAction, filterActionHelp, focusRange, focusSourceLabel } = this.state;
     const defs = [this.state.nodes, this.state.edges];
+
+    // Can we assume TEMPLATE is already loaded by the time we render?
+    const TEMPLATE = UDATA.AppState("TEMPLATE");
+
+    const labelFade = TEMPLATE.filterFade ? TEMPLATE.filterFade.default : FILTER.ACTION.FADE;
+    const labelReduce = TEMPLATE.filterReduce ? TEMPLATE.filterReduce.default : FILTER.ACTION.REDUCE;
+    const labelFocus = TEMPLATE.filterFocus ? TEMPLATE.filterFocus.default : FILTER.ACTION.FOCUS;
 
     let FilterControlPanel;
     if (filterAction === FILTER.ACTION.FOCUS) {
@@ -127,7 +135,7 @@ class FiltersPanel extends UNISYS.Component {
               color: filterAction === FILTER.ACTION.HIGHLIGHT ? '#333' : '#fff',
               backgroundColor: filterAction === FILTER.ACTION.HIGHLIGHT ? 'transparent' : '#6c757d88'
             }}
-          >{FILTER.ACTION.HIGHLIGHT}</Button>
+          >{labelFade}</Button>
           {/* Hide "Filter" panel.  We will probably remove this functionality.
           <Button
             onClick={() => this.SelectFilterAction(FILTER.ACTION.FILTER)}
@@ -148,7 +156,7 @@ class FiltersPanel extends UNISYS.Component {
               color: filterAction === FILTER.ACTION.COLLAPSE ? '#333' : '#fff',
               backgroundColor: filterAction === FILTER.ACTION.COLLAPSE ? 'transparent' : '#6c757d88'
             }}
-          >{FILTER.ACTION.COLLAPSE}</Button>
+          >{labelReduce}</Button>
           <Button
             onClick={() => this.SelectFilterAction(FILTER.ACTION.FOCUS)}
             active={filterAction === FILTER.ACTION.FOCUS}
@@ -158,7 +166,7 @@ class FiltersPanel extends UNISYS.Component {
               color: filterAction === FILTER.ACTION.FOCUS ? '#333' : '#fff',
               backgroundColor: filterAction === FILTER.ACTION.FOCUS ? 'transparent' : '#6c757d88'
             }}
-          >{FILTER.ACTION.FOCUS}</Button>
+          >{labelFocus}</Button>
         </ButtonGroup>
         <Label className="small text-muted" style={{ padding: '0.5em 0 0 0.5em', marginBottom: '0' }}>
           {filterActionHelp}
