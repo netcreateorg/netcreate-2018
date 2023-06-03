@@ -93,7 +93,7 @@ DB.InitializeDatabase = function (options = {}) {
   m_options.db_file = db_file;        // store for use by DB.WriteJSON
 
   // callback on load
-  function f_DatabaseInitialize() {
+  async function f_DatabaseInitialize() {
     // on the first load of (non-existent database), we will have no
     // collections so we can detect the absence of our collections and
     // add (and configure) them now.
@@ -155,8 +155,7 @@ DB.InitializeDatabase = function (options = {}) {
     console.log(PR,`DATABASE LOADED! m_max_nodeID '${m_max_nodeID}', m_max_edgeID '${m_max_edgeID}'`);
     m_db.saveDatabase();
 
-    m_LoadTemplate();
-
+    await m_LoadTemplate();
   } // end f_DatabaseInitialize
 
   // UTILITY FUNCTION
@@ -298,32 +297,36 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
     and converts it to a TOML template
 /*/
 function m_LoadJSONTemplate(templatePath) {
-  // 1. Load JSON
-  console.log(PR, `LOADING JSON TEMPLATE ${templatePath}`);
-  const JSONTEMPLATE = FS.readJsonSync(templatePath);
-  // 2. Convert to TOML
-  TEMPLATE = m_MigrateJSONtoTOML(JSONTEMPLATE);
-  // 3. Save it (and load)
-  DB.WriteTemplateTOML({ data: { template: TEMPLATE } })
-    .then(() => {
-      console.log(PR, '...converted JSON template saved!');
-    });
+  return new Promise((resolve, reject) => {
+    // 1. Load JSON
+    console.log(PR, `LOADING JSON TEMPLATE ${templatePath}`);
+    const JSONTEMPLATE = FS.readJsonSync(templatePath);
+    // 2. Convert to TOML
+    TEMPLATE = m_MigrateJSONtoTOML(JSONTEMPLATE);
+    // 3. Save it (and load)
+    DB.WriteTemplateTOML({ data: { template: TEMPLATE } })
+      .then(() => {
+        console.log(PR, '...converted JSON template saved!');
+        resolve({ Loaded: true });
+      });
+  });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Loads a *.template.toml file from the server.
 /*/
 function m_LoadTOMLTemplate(templateFilePath) {
-  const templateFile = FS.readFile(templateFilePath, 'utf8', (err, data) => {
-    if (err) throw err;
-    // Read TOML
-    const json = TOML.parse(data);
-    // Ensure key fields are present, else default to schema
-    const SCHEMA = TEMPLATE_SCHEMA.TEMPLATE.properties;
-    json.duplicateWarning = json.duplicateWarning || SCHEMA.duplicateWarning.default;
-    json.nodeIsLockedMessage = json.nodeIsLockedMessage || SCHEMA.nodeIsLockedMessage.default;
-    json.edgeIsLockedMessage = json.edgeIsLockedMessage || SCHEMA.edgeIsLockedMessage.default;
-    json.templateIsLockedMessage = json.templateIsLockedMessage || SCHEMA.templateIsLockedMessage.default;
-    json.importIsLockedMessage = json.importIsLockedMessage || SCHEMA.importIsLockedMessage.default;
+  return new Promise((resolve, reject) => {
+    const templateFile = FS.readFile(templateFilePath, 'utf8', (err, data) => {
+      if (err) throw err;
+      // Read TOML
+      const json = TOML.parse(data);
+      // Ensure key fields are present, else default to schema
+      const SCHEMA = TEMPLATE_SCHEMA.TEMPLATE.properties;
+      json.duplicateWarning = json.duplicateWarning || SCHEMA.duplicateWarning.default;
+      json.nodeIsLockedMessage = json.nodeIsLockedMessage || SCHEMA.nodeIsLockedMessage.default;
+      json.edgeIsLockedMessage = json.edgeIsLockedMessage || SCHEMA.edgeIsLockedMessage.default;
+      json.templateIsLockedMessage = json.templateIsLockedMessage || SCHEMA.templateIsLockedMessage.default;
+      json.importIsLockedMessage = json.importIsLockedMessage || SCHEMA.importIsLockedMessage.default;
 
     // Migrate v1.4 to v2.0
     // v2.0 added `provenance` and `comments` -- so we add the template definitions if the toml template does not already have them
@@ -351,6 +354,8 @@ function m_LoadTOMLTemplate(templateFilePath) {
 
     TEMPLATE = json;
     console.log(PR, 'Template loaded', templateFilePath);
+      resolve({ Loaded: true });
+    });
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -362,25 +367,25 @@ function m_LoadTOMLTemplate(templateFilePath) {
     * DB.InitializeDatabase
     * DB.WriteTemplateTOML
 /*/
-function m_LoadTemplate() {
+async function m_LoadTemplate() {
   const TOMLtemplateFilePath = m_GetTemplateTOMLFilePath();
   FS.ensureDirSync(PATH.dirname(TOMLtemplateFilePath));
   // Does the TOML template exist?
   if (FS.existsSync(TOMLtemplateFilePath)) {
     // 1. If TOML exists, load it
-    m_LoadTOMLTemplate(TOMLtemplateFilePath);
+    await m_LoadTOMLTemplate(TOMLtemplateFilePath);
   } else {
     // 2/ Try falling back to JSON template
     const JSONTemplatePath = RUNTIMEPATH + NC_CONFIG.dataset + ".template";
     // Does the JSON template exist?
     if (FS.existsSync(JSONTemplatePath)) {
-      m_LoadJSONTemplate(JSONTemplatePath);
+      await m_LoadJSONTemplate(JSONTemplatePath);
     } else {
       // 3. Else, no existing template, clone _default.template.toml
       console.log(PR, `NO EXISTING TEMPLATE ${TOMLtemplateFilePath}, so cloning default template...`);
       FS.copySync(m_DefaultTemplatePath(), TOMLtemplateFilePath);
       // then load it
-      m_LoadTOMLTemplate(TOMLtemplateFilePath);
+      await m_LoadTOMLTemplate(TOMLtemplateFilePath);
     }
   }
 }
