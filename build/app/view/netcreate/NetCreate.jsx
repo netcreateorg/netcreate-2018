@@ -53,6 +53,7 @@ const InfoPanel    = require('./components/InfoPanel');
 const FiltersPanel = require('./components/filter/FiltersPanel');
 const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
 const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
+const FILTER = require('./components/filter/FilterEnums');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -195,7 +196,7 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
                       <Button onClick={this.onFilterBtnClick}
                         style={{ width: '90px' }}
                       >
-                        FILTER &gt;
+                        {FILTER.PANEL_LABEL} &gt;
                       </Button>
                       <FiltersPanel />
                     </div>
@@ -208,7 +209,7 @@ const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
                     <Button
                       onClick={this.onFilterBtnClick}
                       style={{ width: '90px', float: 'right' }}
-                    >&lt; FILTER</Button>
+                    >&lt; {FILTER.PANEL_LABEL}</Button>
                   </div>
               }
             </div>

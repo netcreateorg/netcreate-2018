@@ -193,13 +193,25 @@ class EdgeTable extends UNISYS.Component {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Handle FILTEREDD3DATA updates sent by filters-logic.m_FiltersApply
-      Note that edge.soourceLabel and edge.targetLabe should already be set
+      Note that edge.soourceLabel and edge.targetLabel should already be set
       by filter-logic.
   /*/
   handleFilterDataUpdate(data) {
     if (data.edges) {
       const filteredEdges = data.edges;
-      this.setState({ filteredEdges }, () => {
+
+      // OLD METHOD: Keep a pure edges object, and apply filtering to them
+      // this.setState({ filteredEdges }, () => {
+      //   const edges = this.sortTable(this.state.sortkey, this.state.edges);
+      //   this.updateEdgeFilterState(edges, filteredEdges);
+      // });
+
+      // NEW METHOD: Just replace pure edges with filtered edges
+      //             This way edges that have been filtered out are also removed from the table
+      this.setState({
+        edges: filteredEdges,
+        filteredEdges
+      }, () => {
         const edges = this.sortTable(this.state.sortkey, this.state.edges);
         this.updateEdgeFilterState(edges, filteredEdges);
       });
@@ -546,7 +558,7 @@ class EdgeTable extends UNISYS.Component {
                       onClick={()=>this.setSortKey("Updated", FILTER.TYPES.STRING)}
                     >Updated {this.sortSymbol("Updated")}</Button></th>
                 <th  width="10%"hidden={edgeDefs.comments.hidden}><Button size="sm"
-                      onClick={()=>this.setSortKey("comments", edgeDefs.comment.type)}
+                      onClick={()=>this.setSortKey("comments", edgeDefs.comments.type)}
                     >{edgeDefs.comments.displayLabel} {this.sortSymbol("comments")}</Button></th>
               </tr>
             </thead>

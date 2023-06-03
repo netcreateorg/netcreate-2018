@@ -1,9 +1,17 @@
 const FILTER = {};
 
+// Filter Panel Label
+FILTER.PANEL_LABEL = 'VIEWS';
+
 // Determines whether filter action is to highlight/fade or remove (filter) nodes and edges
 FILTER.ACTION = {};
-FILTER.ACTION.HIGHLIGHT = 'highlight';
-FILTER.ACTION.FILTER = 'filter';
+FILTER.ACTION.HIGHLIGHT = 'HIGHLIGHTING';
+FILTER.ACTION.FILTER = 'FILTERING';
+FILTER.ACTION.COLLAPSE = 'COLLAPSING';
+FILTER.ACTION.HELP = {};
+FILTER.ACTION.HELP.HIGHLIGHT = 'Show (Highlight) matches, Fade others';
+FILTER.ACTION.HELP.FILTER = 'Shows matches, Hide (Filter) others (keep physics and degrees)';
+FILTER.ACTION.HELP.COLLAPSE = 'Show matches, Remove (collapse) others & recalculate sizes';
 
 // Types of filters definable in template files.
 FILTER.TYPES = {};

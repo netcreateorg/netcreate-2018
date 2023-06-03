@@ -45,7 +45,8 @@ class FiltersPanel extends UNISYS.Component {
     this.state = {
       nodes: FDATA.nodes,
       edges: FDATA.edges,
-      filterAction: FILTER.ACTION.HIGHLIGHT
+      filterAction: FILTER.ACTION.HIGHLIGHT,
+      filterActionHelp: FILTER.ACTION.HELP.HIGHLIGHT
     };
     UDATA.OnAppStateChange("FDATA", this.UpdateFilterDefs);
   } // constructor
@@ -60,7 +61,8 @@ class FiltersPanel extends UNISYS.Component {
       return {
         nodes: data.nodes,
         edges: data.edges,
-        filterAction: data.filterAction || state.filterAction
+        filterAction: data.filterAction || state.filterAction,
+        filterActionHelp: data.filterActionHelp || state.filterActionHelp
       }
     });
   }
@@ -70,12 +72,16 @@ class FiltersPanel extends UNISYS.Component {
   }
 
   SelectFilterAction(filterAction) {
-    this.setState({ filterAction });
+    let filterActionHelp;
+    if (filterAction === FILTER.ACTION.HIGHLIGHT) filterActionHelp = FILTER.ACTION.HELP.HIGHLIGHT;
+    if (filterAction === FILTER.ACTION.FILTER) filterActionHelp = FILTER.ACTION.HELP.FILTER;
+    if (filterAction === FILTER.ACTION.COLLAPSE) filterActionHelp = FILTER.ACTION.HELP.COLLAPSE;
+    this.setState({ filterAction, filterActionHelp });
     UDATA.LocalCall('FILTERS_UPDATE', { filterAction });
   }
 
   render() {
-    const { filterAction } = this.state;
+    const { filterAction, filterActionHelp } = this.state;
     const defs = [this.state.nodes, this.state.edges];
     return (
       <div className="filterPanel"
@@ -97,6 +103,7 @@ class FiltersPanel extends UNISYS.Component {
               backgroundColor: filterAction === FILTER.ACTION.HIGHLIGHT ? 'transparent' : '#6c757d88'
             }}
           >Highlight</Button>
+          {/* Hide "Filter" panel.  We will probably remove this functionality.
           <Button
             onClick={() => this.SelectFilterAction(FILTER.ACTION.FILTER)}
             active={filterAction === FILTER.ACTION.FILTER}
@@ -106,13 +113,20 @@ class FiltersPanel extends UNISYS.Component {
               color: filterAction === FILTER.ACTION.FILTER ? '#333' : '#fff',
               backgroundColor: filterAction === FILTER.ACTION.FILTER ? 'transparent' : '#6c757d88'
             }}
-          >Filter</Button>
+          >Filter</Button> */}
+          <Button
+            onClick={() => this.SelectFilterAction(FILTER.ACTION.COLLAPSE)}
+            active={filterAction === FILTER.ACTION.COLLAPSE}
+            outline={filterAction === FILTER.ACTION.COLLAPSE}
+            disabled={filterAction === FILTER.ACTION.COLLAPSE}
+            style={{
+              color: filterAction === FILTER.ACTION.COLLAPSE ? '#333' : '#fff',
+              backgroundColor: filterAction === FILTER.ACTION.COLLAPSE ? 'transparent' : '#6c757d88'
+            }}
+          >Collapse</Button>
         </ButtonGroup>
         <Label className="small text-muted" style={{ padding: '0.5em 0 0 0.5em', marginBottom: '0' }}>
-          {filterAction === FILTER.ACTION.HIGHLIGHT
-            ? 'Highlight nodes/edges that match criteria. (Fade others)'
-            : 'Filter shows only nodes/edges that match criteria.  (Removes others)'
-          }
+          {filterActionHelp}
         </Label>
         <hr/>
         <div style={{ display: 'flex', flexDirection: 'column', flexGrow: `1`, justifyContent: 'space-evenly' }}>

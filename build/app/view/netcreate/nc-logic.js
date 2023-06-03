@@ -1,5 +1,9 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+  nc-logic
+
+  Net.Create application logic
+
   * EVENTS: D3 Graph Updates
 
     Mark Node/Edge          Nodes in the graph are marked via a stroke around
@@ -1158,7 +1162,7 @@ function m_MarkNodeById(id, color) {
   // to override the properties
   m_SetMatchingNodesByProp({ id }, marked, normal);
 
-    UDATA.SetAppState("NCDATA", NCDATA);
+  UDATA.SetAppState("NCDATA", NCDATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Sets the `node.selected` property to `color` so it is hilited on graph

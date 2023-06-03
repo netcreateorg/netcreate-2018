@@ -3,7 +3,9 @@
   nc-utils
 
   General purpose utilities for manipulating NCDATA.
-  Used by both nc-logic and importexport-logic.
+  Used by:
+  * nc-logic
+  * filter-logic
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
