@@ -4,15 +4,16 @@ const FILTER = {};
 FILTER.PANEL_LABEL = 'VIEWS';
 
 // Determines whether filter action is to highlight/fade or remove (filter) nodes and edges
+// These labels are used as default values if an older version template has not defined them
 FILTER.ACTION = {};
 FILTER.ACTION.FADE = 'FADE';
-FILTER.ACTION.FILTER = 'FILTERING';
+FILTER.ACTION.FILTER = 'FILTERING'; // FIX: Remove this after we decide to remove FILTER/HIDE
 FILTER.ACTION.REDUCE= 'REMOVE';
 FILTER.ACTION.FOCUS = 'FOCUS';
 FILTER.ACTION.HELP = {};
-FILTER.ACTION.HELP.HIGHLIGHT = 'Show matches, Fade others';
-FILTER.ACTION.HELP.FILTER = 'Shows matches, Hide (Filter) others (keep physics and degrees)';
-FILTER.ACTION.HELP.COLLAPSE = 'Show matches, Remove others & recalculate sizes';
+FILTER.ACTION.HELP.FADE = 'Show matches, Fade others';
+FILTER.ACTION.HELP.FILTER = 'Shows matches, Hide (Filter) others (keep physics and degrees)'; // FIX: Remove this after we decide to remove FILTER/HIDE
+FILTER.ACTION.HELP.REDUCE = 'Show matches, Remove others & recalculate sizes';
 FILTER.ACTION.HELP.FOCUS = 'Show only nodes connected to the selected node within range';
 
 // Types of filters definable in template files.

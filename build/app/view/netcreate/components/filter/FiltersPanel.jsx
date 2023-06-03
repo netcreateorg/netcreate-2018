@@ -148,10 +148,10 @@ class FiltersPanel extends UNISYS.Component {
             }}
           >Filter</Button> */}
           <Button
-            onClick={() => this.SelectFilterAction(FILTER.ACTION.COLLAPSE)}
-            active={filterAction === FILTER.ACTION.COLLAPSE}
-            outline={filterAction === FILTER.ACTION.COLLAPSE}
-            disabled={filterAction === FILTER.ACTION.COLLAPSE}
+            onClick={() => this.SelectFilterAction(FILTER.ACTION.REDUCE)}
+            active={filterAction === FILTER.ACTION.REDUCE}
+            outline={filterAction === FILTER.ACTION.REDUCE}
+            disabled={filterAction === FILTER.ACTION.REDUCE}
             style={{
               color: filterAction === FILTER.ACTION.REDUCE? '#333' : '#fff',
               backgroundColor: filterAction === FILTER.ACTION.REDUCE? 'transparent' : '#6c757d88'
