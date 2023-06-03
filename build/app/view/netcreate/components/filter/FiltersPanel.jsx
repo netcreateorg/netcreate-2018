@@ -31,6 +31,7 @@ class FiltersPanel extends UNISYS.Component {
     super();
 
     this.UpdateFilterDefs = this.UpdateFilterDefs.bind(this);
+    this.LookupFilterHelp = this.LookupFilterHelp.bind(this);
     this.OnClearBtnClick = this.OnClearBtnClick.bind(this);
     this.SelectFilterAction = this.SelectFilterAction.bind(this);
 
@@ -46,7 +47,6 @@ class FiltersPanel extends UNISYS.Component {
       nodes: FDATA.nodes,
       edges: FDATA.edges,
       filterAction: FILTER.ACTION.FADE,
-      filterActionHelp: FILTER.ACTION.HELP.HIGHLIGHT,
       focusSourceLabel: undefined,
       focusRange: undefined
     };
@@ -71,23 +71,27 @@ class FiltersPanel extends UNISYS.Component {
     });
   }
 
+  LookupFilterHelp(filterAction) {
+    const TEMPLATE = UDATA.AppState("TEMPLATE");
+    if (filterAction === FILTER.ACTION.FADE) return TEMPLATE.filterFadeHelp;
+    if (filterAction === FILTER.ACTION.FILTER) return FILTER.ACTION.HELP.FILTER; // FIX: Remove this once we decide we don't want to support Filter/hide
+    if (filterAction === FILTER.ACTION.REDUCE) return TEMPLATE.filterReduceHelp;
+    if (filterAction === FILTER.ACTION.FOCUS) return TEMPLATE.filterFocusHelp;
+    return "Help not found";
+  }
+
   OnClearBtnClick() {
     UDATA.LocalCall('FILTER_CLEAR');
   }
 
   SelectFilterAction(filterAction) {
-    let filterActionHelp;
     const TEMPLATE = UDATA.AppState("TEMPLATE");
-    if (filterAction === FILTER.ACTION.FADE) filterActionHelp = TEMPLATE.filterFadeHelp ? TEMPLATE.filterFadeHelp : FILTER.ACTION.HELP.FADE;
-    if (filterAction === FILTER.ACTION.FILTER) filterActionHelp = FILTER.ACTION.HELP.FILTER;
-    if (filterAction === FILTER.ACTION.COLLAPSE) filterActionHelp = TEMPLATE.filterReduceHelp ? TEMPLATE.filterReduceHelp : FILTER.ACTION.HELP.REDUCE;
-    if (filterAction === FILTER.ACTION.FOCUS) filterActionHelp = TEMPLATE.filterFocusHelp ? TEMPLATE.filterFocusHelp : FILTER.ACTION.HELP.FOCUS;
-    this.setState({ filterAction, filterActionHelp });
+    this.setState({ filterAction });
     UDATA.LocalCall('FILTERS_UPDATE', { filterAction });
   }
 
   render() {
-    const { filterAction, filterActionHelp, focusRange, focusSourceLabel } = this.state;
+    const { filterAction, focusRange, focusSourceLabel } = this.state;
     const defs = [this.state.nodes, this.state.edges];
 
     // Can we assume TEMPLATE is already loaded by the time we render?
@@ -96,6 +100,7 @@ class FiltersPanel extends UNISYS.Component {
     const labelFade = TEMPLATE.filterFade ? TEMPLATE.filterFade.default : FILTER.ACTION.FADE;
     const labelReduce = TEMPLATE.filterReduce ? TEMPLATE.filterReduce.default : FILTER.ACTION.REDUCE;
     const labelFocus = TEMPLATE.filterFocus ? TEMPLATE.filterFocus.default : FILTER.ACTION.FOCUS;
+    const filterActionHelp = this.LookupFilterHelp(filterAction);
 
     let FilterControlPanel;
     if (filterAction === FILTER.ACTION.FOCUS) {
