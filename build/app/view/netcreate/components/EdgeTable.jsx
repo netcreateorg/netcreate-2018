@@ -137,7 +137,7 @@ class EdgeTable extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   displayUpdated(nodeEdge) {
       // Prevent error if `meta` info is not defined yet, or not properly imported
-      if (!nodeEdge.meta) return;
+    if (!nodeEdge.meta) return '';
 
       var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
 
@@ -158,11 +158,21 @@ class EdgeTable extends UNISYS.Component {
   updateEdgeFilterState(edges, filteredEdges) {
     // add highlight/filter status
     if (filteredEdges.length > 0) {
-      edges = edges.map(edge => {
-        const filteredEdge = filteredEdges.find(n => n.id === edge.id);
-        edge.isFiltered = !filteredEdge;
-        return edge;
-      });
+      // If we're transitioning from "HILIGHT/FADE" to "COLLAPSE" or "FOCUS", then we
+      // also need to remove edges that are not in filteredEdges
+      const FDATA = UDATA.AppState("FDATA");
+      if (FDATA.filterAction === FILTER.ACTION.COLLAPSE || FDATA.filterAction === FILTER.ACTION.FOCUS) {
+        edges = edges.filter(edge => {
+          const filteredEdge = filteredEdges.find(n => n.id === edge.id);
+          return edge;
+        });
+      } else {
+        edges = edges.map(edge => {
+          const filteredEdge = filteredEdges.find(n => n.id === edge.id);
+          edge.isFiltered = !filteredEdge;
+          return edge;
+        });
+      }
     }
     this.setState({edges});
   }
@@ -199,22 +209,28 @@ class EdgeTable extends UNISYS.Component {
   handleFilterDataUpdate(data) {
     if (data.edges) {
       const filteredEdges = data.edges;
-
-      // OLD METHOD: Keep a pure edges object, and apply filtering to them
-      // this.setState({ filteredEdges }, () => {
-      //   const edges = this.sortTable(this.state.sortkey, this.state.edges);
-      //   this.updateEdgeFilterState(edges, filteredEdges);
-      // });
-
-      // NEW METHOD: Just replace pure edges with filtered edges
-      //             This way edges that have been filtered out are also removed from the table
-      this.setState({
-        edges: filteredEdges,
-        filteredEdges
-      }, () => {
-        const edges = this.sortTable(this.state.sortkey, this.state.edges);
-        this.updateEdgeFilterState(edges, filteredEdges);
-      });
+      // If we're transitioning from "COLLAPSE" or "FOCUS" to "HILIGHT/FADE", then we
+      // also need to add back in edges that are not in filteredEdges
+      // (because "COLLAPSE" and "FOCUS" removes edges that are not matched)
+      const FDATA = UDATA.AppState("FDATA");
+      if (FDATA.filterAction === FILTER.ACTION.HIGHLIGHT) {
+        const NCDATA = UDATA.AppState("NCDATA");
+        this.setState({
+          edges: NCDATA.edges,
+          filteredEdges
+        }, () => {
+          const edges = this.sortTable(this.state.sortkey, NCDATA.edges);
+          this.updateEdgeFilterState(edges, filteredEdges);
+        });
+      } else {
+        this.setState({
+          edges: filteredEdges,
+          filteredEdges
+        }, () => {
+          const edges = this.sortTable(this.state.sortkey, filteredEdges);
+          this.updateEdgeFilterState(edges, filteredEdges);
+        });
+      }
     }
   }
 

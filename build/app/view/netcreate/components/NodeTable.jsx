@@ -129,7 +129,7 @@ class NodeTable extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   displayUpdated(nodeEdge) {
       // Prevent error if `meta` info is not defined yet, or not properly imported
-      if (!nodeEdge.meta) return;
+      if (!nodeEdge.meta) return '';
 
       var d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
 
@@ -142,7 +142,6 @@ class NodeTable extends UNISYS.Component {
       var tag = <span title={titleString}> {dateTime} </span>;
 
       return tag;
-
     }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -150,13 +149,26 @@ class NodeTable extends UNISYS.Component {
   updateNodeFilterState(nodes, filteredNodes) {
     // set filter status
     if (filteredNodes.length > 0) {
-      nodes = nodes.map(node => {
-        const filteredNode = filteredNodes.find(n => n.id === node.id);
-        node.isFiltered = !filteredNode; // not in filteredNode, so it's been removed
-        return node
-      });
+
+      // If we're transitioning from "HILIGHT/FADE" to "COLLAPSE" or "FOCUS", then we
+      // also need to remove nodes that are not in filteredNodes
+      const FDATA = UDATA.AppState("FDATA");
+      if (FDATA.filterAction === FILTER.ACTION.COLLAPSE || FDATA.filterAction === FILTER.ACTION.FOCUS) {
+        nodes = nodes.filter(node => {
+          const filteredNode = filteredNodes.find(n => n.id === node.id);
+          return filteredNode; // keep if it's in the list of filtered nodes
+        });
+      } else {
+        nodes = nodes.map(node => {
+          const filteredNode = filteredNodes.find(n => n.id === node.id);
+          node.isFiltered = !filteredNode; // not in filteredNode, so it's been removed
+          return node
+        });
+      }
+
+
     }
-    this.setState({ nodes });
+    this.setState({ nodes, filteredNodes });
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -175,22 +187,29 @@ class NodeTable extends UNISYS.Component {
   handleFilterDataUpdate(data) {
     if (data.nodes) {
       const filteredNodes = data.nodes;
+      // If we're transitioning from "COLLAPSE" or "FOCUS" to "HILIGHT/FADE", then we
+      // also need to add back in nodes that are not in filteredNodes
+      // (because "COLLAPSE" and "FOCUS" removes nodes that are not matched)
+      const FDATA = UDATA.AppState("FDATA");
+      if (FDATA.filterAction === FILTER.ACTION.HIGHLIGHT) {
+        const NCDATA = UDATA.AppState("NCDATA");
+        this.setState({
+          nodes: NCDATA.nodes,
+          filteredNodes
+        }, () => {
+          const nodes = this.sortTable(this.state.sortkey, NCDATA.nodes);
+          this.updateNodeFilterState(nodes, filteredNodes);
+        });
 
-      // OLD METHOD: Keep a pure nodes object, and apply filtering to them
-      // this.setState({ filteredNodes }, () => {
-      //   const nodes = this.sortTable(this.state.sortkey, this.state.nodes);
-      //   this.updateNodeFilterState(nodes, filteredNodes);
-      // });
-
-      // NEW METHOD: Just replace pure nodes with filtered nodes
-      //             This way nodes that have been filtered out are also removed from the table
-      this.setState({
-        nodes: filteredNodes,
-        filteredNodes
-      }, () => {
-        const nodes = this.sortTable(this.state.sortkey, this.state.nodes);
-        this.updateNodeFilterState(nodes, filteredNodes);
-      });
+      } else {
+        this.setState({
+          nodes: filteredNodes,
+          filteredNodes
+        }, () => {
+          const nodes = this.sortTable(this.state.sortkey, filteredNodes);
+          this.updateNodeFilterState(nodes, filteredNodes);
+        });
+      }
     }
   }
 
@@ -450,14 +469,14 @@ render() {
                 <Button size="sm"
                   onClick={()=>this.setSortKey("info", nodeDefs.info.type)}
                 >{nodeDefs.info.displayLabel} {this.sortSymbol("info")}</Button></th>
-            <th width="9%"hidden={nodeDefs.provenance.hidden}>
-                <Button size="sm"
-                  onClick={()=>this.setSortKey("provenance", nodeDefs.provenance.type)}
-                >{nodeDefs.provenance.displayLabel} {this.sortSymbol("provenance")}</Button></th>
             <th width="25%" hidden={nodeDefs.notes.hidden}>
                 <Button size="sm"
                   onClick={()=>this.setSortKey("notes", nodeDefs.notes.type)}
                 >{nodeDefs.notes.displayLabel} {this.sortSymbol("notes")}</Button></th>
+            <th width="9%"hidden={nodeDefs.provenance.hidden}>
+                <Button size="sm"
+                  onClick={()=>this.setSortKey("provenance", nodeDefs.provenance.type)}
+                >{nodeDefs.provenance.displayLabel} {this.sortSymbol("provenance")}</Button></th>
             <th  width="10%"hidden={!isLocalHost}><Button size="sm"
                   onClick={()=>this.setSortKey("updated", FILTER.TYPES.STRING)}
                 >Updated {this.sortSymbol("updated")}</Button></th>
@@ -485,12 +504,12 @@ render() {
                 >{node.label}</a></td>
             <td hidden={nodeDefs.type.hidden}>{node.type}</td>
             <td hidden={nodeDefs.info.hidden}>{node.info}</td>
-            <td hidden={nodeDefs.provenance.hidden}
-              style={{ fontSize: '9px' }}
-            >{node.provenance}</td>
             <td hidden={nodeDefs.notes.hidden}>
               {node.notes ? <MarkdownNote text={node.notes} /> : "" }
             </td>
+            <td hidden={nodeDefs.provenance.hidden}
+              style={{ fontSize: '9px' }}
+            >{node.provenance}</td>
             <td hidden={!isLocalHost}
               style={{ fontSize: '9px' }}
             >{this.displayUpdated(node)}</td>

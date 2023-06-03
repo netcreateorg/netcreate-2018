@@ -35,6 +35,11 @@
             label: "Edge Filters",
             filters: [...]
         }
+        focus: {
+          source: undefined,
+          sourceLabel: '',
+          range: 1
+        }
     }
 
 
@@ -98,7 +103,7 @@ var FDATA_RESTORE; // pristine FDATA for clearing
 let NODE_DEFAULT_TRANSPARENCY;
 let EDGE_DEFAULT_TRANSPARENCY;
 
-let removedNodes = []; // nodes removed via COLLAPSE filter action
+let RemovedNodes = []; // nodes removed via COLLAPSE filter action
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -140,6 +145,20 @@ MOD.Hook("INITIALIZE", () => {
   UDATA.HandleMessage("FILTERS_UPDATE", data => {
     const FDATA = UDATA.AppState("FDATA");
     FDATA.filterAction = data.filterAction;
+    // if the Focus panel is being selected, grab update the selection so that
+    // the selected node is immediately focused on (otherwise the system ignores
+    // the currently selecte dnode and you have to click on it again)
+    if (data.filterAction === FILTER.ACTION.FOCUS) {
+      const SELECT = UDATA.AppState("SELECTION");
+      const selectedNode = SELECT.nodes ? SELECT.nodes[0] : undefined;
+      if (selectedNode) {
+        FDATA.focus = {
+          source: selectedNode.id,
+          sourceLabel: selectedNode.label,
+          range: FDATA.focus.range
+        };
+      }
+    }
     UDATA.SetAppState("FDATA", FDATA);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -155,6 +174,18 @@ MOD.Hook("INITIALIZE", () => {
     // this is critical -- graph will not draw if this is
     // not called from nc-logic.LOADASSETS
     m_ImportFilters();
+  });
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ 2023-06 Interim Approach -- eventually should convert to new selection mgr
+      Listen for SELECTION changes for setting Focus
+  /*/
+  UDATA.OnAppStateChange("SELECTION", data => {
+    // Only if Focus is active
+    const FDATA = UDATA.AppState("FDATA");
+    if (FDATA.filterAction === FILTER.ACTION.FOCUS) {
+      m_SetFocus(data);
+    }
   });
 
 }); // end UNISYS_INIT
@@ -185,6 +216,11 @@ function m_ImportFilters() {
       label: "Edge Filters",
       filters: m_ImportPrompts(edgeDefs),
       transparency: 0.03 // Default transparency form for Highlight should be 0.03, not template default which is usu 0.3
+    },
+    focus: {
+      source: undefined, // nothing focused by default
+      sourceLabel: '',
+      range: 1
     }
   };
 
@@ -263,11 +299,9 @@ function m_FilterDefine(data) {
   FDATA.filterAction = data.filterAction || FDATA.filterAction; // if 'transparency' then filterAction is not passed, so default to existing
   if (data.group === "nodes") {
 
-    if (data.type === "transparency")
-    {
+    if (data.type === "transparency") {
       FDATA.nodes.transparency = data.transparency;
-    }
-    else{
+    } else {
       let nodeFilters = FDATA.nodes.filters;
       const index = nodeFilters.findIndex(f => f.id === data.filter.id);
       nodeFilters.splice(index, 1, data.filter);
@@ -275,18 +309,17 @@ function m_FilterDefine(data) {
     }
   } else if (data.group === "edges") {
 
-    if (data.type === "transparency")
-    {
+    if (data.type === "transparency") {
       FDATA.edges.transparency = data.transparency;
-    }
-    else{
+    } else {
       let edgeFilters = FDATA.edges.filters;
       const index = edgeFilters.findIndex(f => f.id === data.filter.id);
       edgeFilters.splice(index, 1, data.filter);
       FDATA.edges.filters = edgeFilters;
     }
-  }
-  else {
+  } else if (data.group === "focus") {
+    FDATA.focus.range = data.filter.value;
+  } else {
     throw `FILTER_DEFINE called with unknown group: ${data.group}`;
   }
   UDATA.SetAppState("FDATA", FDATA);
@@ -315,8 +348,6 @@ function m_FiltersApply() {
 
   m_FiltersApplyToNodes(FDATA, FILTEREDD3DATA);
   m_FiltersApplyToEdges(FDATA, FILTEREDD3DATA);
-
-
 
   // REVIEW 2023-0530
   // -- If "Filter/Hide" functionality is going to be kept, this needs to be reworked!
@@ -441,15 +472,21 @@ function m_MatchNumber(operator, filterVal, objVal) {
  * @param {Array} filters
  */
 function m_FiltersApplyToNodes(FDATA, FILTEREDD3DATA) {
-  removedNodes = [];
-  const { filterAction } = FDATA;
-  const { filters, transparency } = FDATA.nodes;
+  RemovedNodes = [];
+
+  // if current filter is focus, calculate bacon_values
+  if (FDATA.filterAction === FILTER.ACTION.FOCUS) m_FocusPrep(FDATA, FILTEREDD3DATA);
+
   FILTEREDD3DATA.nodes = FILTEREDD3DATA.nodes.filter(node => {
-    return m_NodeIsFiltered(node, filters, transparency, filterAction);
+    return m_NodeIsFiltered(node, FDATA);
   });
 }
 
-function m_NodeIsFiltered(node, filters, transparency, filterAction) {
+function m_NodeIsFiltered(node, FDATA) {
+  const { filterAction } = FDATA;
+  const { filters, transparency } = FDATA.nodes;
+  const { source, range } = FDATA.focus;
+
   // let all_no_op = true;
   let keepNode = true;
 
@@ -464,25 +501,31 @@ function m_NodeIsFiltered(node, filters, transparency, filterAction) {
   });
 
   // 2. Decide based on filterAction
+  node.isFiltered = false; // always reset if not HIGHLIGHT
+  node.filteredTransparency = NODE_DEFAULT_TRANSPARENCY; // always reset if not HIGHLIGHT
   if (filterAction === FILTER.ACTION.FILTER) {
     // not using highlight, so restore transparency
-    node.filteredTransparency = NODE_DEFAULT_TRANSPARENCY; // opaque, not transparent
     if (keepNode) return true;
     return false; // remove from array
   } else if (filterAction === FILTER.ACTION.HIGHLIGHT) {
     if (!keepNode) {
       node.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
-    } else {
-      node.filteredTransparency = NODE_DEFAULT_TRANSPARENCY; // opaque
     }
     return true; // don't filter out
   } else if (filterAction === FILTER.ACTION.COLLAPSE) {
     if (keepNode) return true; // matched, so keep
-    // filter out (remove) and add to `renovedNodes` for later removal of linked edge
-    removedNodes.push(node.id);
+    // filter out (remove) and add to `RemovedNodes` for later removal of linked edge
+    RemovedNodes.push(node.id);
     return false;
+  } else if (filterAction === FILTER.ACTION.FOCUS) {
+    // Remove nodes outside of range
+    if (source !== undefined && (node.bacon_value === undefined || node.bacon_value > range)) {
+      RemovedNodes.push(node.id);
+      return false;
+    }
+    return true;
   } else {
-    // collapse?!?!?!
+    // no filter, keep the node!
     return true;
   }
 
@@ -561,8 +604,8 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3D
   // 1. If source or target are missing, then remove the edge
   if (source === undefined || target === undefined ) return false;
 
-  // 2. If source or target have been removed via collapse, remove the edge
-  if (removedNodes.includes(source.id) || removedNodes.includes(target.id)) return false;
+  // 2. If source or target have been removed via collapse or focus, remove the edge
+  if (RemovedNodes.includes(source.id) || RemovedNodes.includes(target.id)) return false;
   // 3. if source or target is transparent, then we are transparent too
   if ( source.filteredTransparency < 1.0 ||
        target.filteredTransparency < 1.0) {
@@ -660,6 +703,106 @@ function m_IsEdgeMatchedByFilter(edge, filter) {
   }
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ FOCUS FILTERS
+/*/
+
+/**
+ * Returns an Map of node ids that are directly connected to the passed `nodeId`
+ * Uses a Map so there are no redundancies.
+ * A more efficient search targeted on looking up nodes
+ * @param {object} puredata Raw/pure data from NCData
+ * @param {array} puredata.nodes
+ * @param {array} puredata.edges where edge.source and edge.target are numeric ids
+ * @param {string} nodeId The source nodeId to start the search from
+ * @returns {map} Map of matching nodeIds {number}
+ */
+function m_FindConnectedNodeIds(puredata, nodeId) {
+  let returnMatches = new Map();
+  puredata.edges.forEach(edge => {
+    if (edge.source === nodeId) returnMatches.set(edge.target, nodeId); // nodeId in returnMatches is not necessary
+    if (edge.target === nodeId) returnMatches.set(edge.source, nodeId);
+  })
+  return returnMatches;
+}
+
+
+/**
+ * Recursively walks down the network starting from the sourceNodes
+ * There can be more than one sourceNodes, e.g. this can set values starting with any number of nodes
+ * Modifies puredata by reference
+ * @param {object} puredata {nodes, edges}
+ * @param {array} sourceNodes {string}
+ * @param {number} range
+ */
+function m_SetBaconValue(bacon_value, max_bacon_value, puredata, sourceNodes) {
+  if (bacon_value > max_bacon_value) return;
+  sourceNodes.forEach(source => {
+    const newNodes = []; // collect new nodes that we need to walk down
+    const connectedNodeIds = m_FindConnectedNodeIds(puredata, source); // map
+    puredata.nodes = puredata.nodes.map(node => {
+      if (node.bacon_value !== undefined) return node; // skip bacon_value if ready set
+
+      if (node.id === source) {
+        node.bacon_value = 0; // the focused node has a value of 0
+      } else if (connectedNodeIds.has(node.id)) {
+        node.bacon_value = bacon_value;
+        newNodes.push(node.id);
+      }
+      return node; // returns node with updated bacon_value
+    });
+
+    // recursive call
+    if (newNodes.length > 0 && bacon_value + 1 <= max_bacon_value) m_SetBaconValue(bacon_value + 1, max_bacon_value, puredata, newNodes);
+  });
+}
+
+/**
+ * Prepares `puredata` (aka FILTEREDD3DATA) for filtering by
+ * seeding node data with "degrees of separation" (aka "bacon_value") from the selected node
+ * Uses FDATA specifications for the focus selection and range
+ * Modifies puredata by reference
+ * This should generally be called right before filtering is applied
+ * @param {*} FDATA
+ * @param {*} puredata
+ */
+function m_FocusPrep(FDATA, puredata) {
+  const { source, range } = FDATA.focus;
+  // first clear bacon_value
+  puredata.nodes = puredata.nodes.map(node => {
+    node.bacon_value = undefined;
+    return node;
+  })
+  if (range < 1) {
+    return; // show all if range=0
+  }
+  // Then set bacon_value
+  // Initiate the crawl starting at 1 with the source node
+  m_SetBaconValue(1, range, puredata, [source]);
+}
+
+/**
+ * Called when SELECTION appState changes, e.g. user has clicked on a node
+ * while in FOCUS View.
+ * @param {object} data
+ * @param {array} data.nodes array of node objects
+ */
+function m_SetFocus(data) {
+  const selectedNode = data.nodes[0];
+  const selectedNodeId = selectedNode ? selectedNode.id : undefined;
+  const selectedNodeLabel = selectedNode ? selectedNode.label : '';
+
+  // Set FDATA
+  const FDATA = UDATA.AppState("FDATA");
+  FDATA.focus = {
+    source: selectedNodeId,
+    sourceLabel: selectedNodeLabel,
+    range: FDATA.focus.range
+  };
+  UDATA.SetAppState("FDATA", FDATA);
+
+  // Actual filtering is done by m_FiltersApply call after FDATA change
+}
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
