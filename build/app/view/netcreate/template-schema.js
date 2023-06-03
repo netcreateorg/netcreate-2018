@@ -8,7 +8,7 @@
   the json-editor needs to support and provides meta data about how to
   display and handle the edits.
 
-  `template-logic.js` handles initialization client-side.
+  `templateEditor-logic.js` handles initialization client-side.
 
   NOTE: This schema is NOT the same as the `toml` template file schema.  This
   schema is used by `json-editor` to know how to display a UI for editing the

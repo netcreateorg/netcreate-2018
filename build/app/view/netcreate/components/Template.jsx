@@ -39,7 +39,7 @@ const { Button } = ReactStrap;
 import { JSONEditor } from '@json-editor/json-editor';
 const UNISYS = require('unisys/client');
 const { EDITORTYPE } = require("system/util/enum");
-const TEMPLATE_LOGIC = require("../template-logic");
+const TEMPLATE_LOGIC = require("../templateEditor-logic");
 const SCHEMA = require("../template-schema");
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////

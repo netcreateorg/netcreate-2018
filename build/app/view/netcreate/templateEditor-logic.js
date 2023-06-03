@@ -72,9 +72,66 @@ MOD.ValidateTOMLFile = async data => {
     const json = TOML.parse(tomlText);
     const isValid = true;
     return {isValid, templateJSON: json};
-  }
-  catch (err) {
+  } catch (err) {
     return { isValid: false, error: err };
+  }
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Validate Template File
+/*/
+// eslint-disable-next-line complexity
+MOD.ValidateTemplate = template => {
+  try {
+    // nodeDefs
+    let nodeDefs = template.nodeDefs;
+    if (nodeDefs === undefined) {
+      throw "Missing `nodeDefs` nodeDefs=" + nodeDefs;
+    }
+    if (nodeDefs.label === undefined) throw "Missing `nodeDefs.label` label=" + nodeDefs.label;
+    if (nodeDefs.type === undefined) throw "Missing `nodeDefs.type` type= " + nodeDefs.type;
+    if (
+      nodeDefs.type.options === undefined ||
+      !Array.isArray(nodeDefs.type.options)
+    ) {
+      throw "Missing or bad `nodeDefs.type.options` options=" +
+        nodeDefs.type.options;
+    }
+    if (nodeDefs.notes === undefined) throw "Missing `nodeDefs.notes` notes=" + nodeDefs.notes;
+    if (nodeDefs.info === undefined) throw "Missing `nodeDefs.info` info=" + nodeDefs.info;
+    // Version 2.x Fields
+    if (nodeDefs.provenance === undefined) throw "Missing `nodeDefs.provenance` provenance=" + nodeDefs.provenance;
+    if (nodeDefs.comments === undefined) throw "Missing `nodeDefs.comments` comments=" + nodeDefs.comments;
+
+    // edgeDefs
+    let edgeDefs = template.edgeDefs;
+    if (edgeDefs === undefined) throw "Missing `edgeDefs` edgeDefs=" + edgeDefs;
+    if (edgeDefs.source === undefined) throw "Missing `edgeDefs.source` source=" + edgeDefs.source;
+    if (edgeDefs.type === undefined) throw "Missing `edgeDefs.type` type= " + edgeDefs.type;
+    if (
+      edgeDefs.type.options === undefined ||
+      !Array.isArray(edgeDefs.type.options)
+    ) {
+      throw "Missing or bad `edgeDefs.type.options` options=" +
+        edgeDefs.type.options;
+    }
+    if (edgeDefs.target === undefined) throw "Missing `edgeDefs.target` label=" + edgeDefs.target;
+    if (edgeDefs.notes === undefined) throw "Missing `edgeDefs.notes` notes=" + edgeDefs.notes;
+    if (edgeDefs.info === undefined) throw "Missing `edgeDefs.info` info=" + edgeDefs.info;
+    // Version 2.x Fields
+    if (edgeDefs.provenance === undefined) throw "Missing `edgeDefs.provenance` provenance=" + edgeDefs.provenance;
+    if (edgeDefs.comments === undefined) throw "Missing `edgeDefs.comments` comments=" + edgeDefs.comments;
+    // -- End 2.x
+    if (edgeDefs.citation === undefined) throw "Missing `edgeDefs.citation` info=" + edgeDefs.citation;
+    if (edgeDefs.category === undefined) throw "Missing `edgeDefs.category` info=" + edgeDefs.category;
+  } catch (error) {
+    const templateFileName = DATASTORE.GetTemplateTOMLFileName();
+    console.error(
+      "Error loading template `",
+      templateFileName,
+      "`::::",
+      error
+    );
   }
 }
 
