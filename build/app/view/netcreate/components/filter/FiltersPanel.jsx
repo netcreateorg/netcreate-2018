@@ -97,9 +97,10 @@ class FiltersPanel extends UNISYS.Component {
     // Can we assume TEMPLATE is already loaded by the time we render?
     const TEMPLATE = UDATA.AppState("TEMPLATE");
 
-    const labelFade = TEMPLATE.filterFade ? TEMPLATE.filterFade.default : FILTER.ACTION.FADE;
-    const labelReduce = TEMPLATE.filterReduce ? TEMPLATE.filterReduce.default : FILTER.ACTION.REDUCE;
-    const labelFocus = TEMPLATE.filterFocus ? TEMPLATE.filterFocus.default : FILTER.ACTION.FOCUS;
+    const labelFade = TEMPLATE.filterFade;
+    const labelReduce = TEMPLATE.filterReduce;
+    const labelFocus = TEMPLATE.filterFocus;
+
     const filterActionHelp = this.LookupFilterHelp(filterAction);
 
     let FilterControlPanel;
