@@ -19,6 +19,7 @@ const SESSION = require("../unisys/common-session");
 const LOGGER = require("../unisys/server-logger");
 const PROMPTS = require("../system/util/prompts");
 const TEMPLATE_SCHEMA = require("../view/netcreate/template-schema");
+const FILTER = require('../view/netcreate/components/filter/FilterEnums');
 const { EDITORTYPE } = require("../system/util/enum");
 
 const PR = PROMPTS.Pad("ServerDB");
@@ -156,6 +157,7 @@ DB.InitializeDatabase = function (options = {}) {
     m_db.saveDatabase();
 
     await m_LoadTemplate();
+    m_ValidateTemplate();
   } // end f_DatabaseInitialize
 
   // UTILITY FUNCTION
@@ -328,32 +330,33 @@ function m_LoadTOMLTemplate(templateFilePath) {
       json.templateIsLockedMessage = json.templateIsLockedMessage || SCHEMA.templateIsLockedMessage.default;
       json.importIsLockedMessage = json.importIsLockedMessage || SCHEMA.importIsLockedMessage.default;
 
-    // Migrate v1.4 to v2.0
-    // v2.0 added `provenance` and `comments` -- so we add the template definitions if the toml template does not already have them
-    // hides them by default if they were not previously added
-    const DEFAULT_TEMPLATE = TEMPLATE_SCHEMA.ParseTemplateSchema();
-    const NODEDEFS = DEFAULT_TEMPLATE.nodeDefs;
-    if (json.nodeDefs.provenance === undefined) {
-      json.nodeDefs.provenance = NODEDEFS.provenance;
-      json.nodeDefs.provenance.hidden = true;
-    }
-    if (json.nodeDefs.comments === undefined) {
-      json.nodeDefs.comments = NODEDEFS.comments;
-      json.nodeDefs.comments.hidden = true
-    }
-    const EDGEDEFS = DEFAULT_TEMPLATE.edgeDefs;
-    if (json.edgeDefs.provenance === undefined) {
-      json.edgeDefs.provenance = EDGEDEFS.provenance;
-      json.edgeDefs.provenance.hidden = true;
-    }
-    if (json.edgeDefs.comments === undefined) {
-      json.edgeDefs.comments = EDGEDEFS.comments;
-      json.edgeDefs.comments.hidden = true;
-    }
-    // NOTE: We are not modifying the template permanently, only temporarily inserting definitions so the system can validate
+      // Migrate v1.4 to v2.0
+      // v2.0 added `provenance` and `comments` -- so we add the template definitions if the toml template does not already have them
+      // hides them by default if they were not previously added
+      const DEFAULT_TEMPLATE = TEMPLATE_SCHEMA.ParseTemplateSchema();
+      const NODEDEFS = DEFAULT_TEMPLATE.nodeDefs;
+      if (json.nodeDefs.provenance === undefined) {
+        json.nodeDefs.provenance = NODEDEFS.provenance;
+        json.nodeDefs.provenance.hidden = true;
+      }
+      if (json.nodeDefs.comments === undefined) {
+        json.nodeDefs.comments = NODEDEFS.comments;
+        json.nodeDefs.comments.hidden = true
+      }
+      const EDGEDEFS = DEFAULT_TEMPLATE.edgeDefs;
+      if (json.edgeDefs.provenance === undefined) {
+        json.edgeDefs.provenance = EDGEDEFS.provenance;
+        json.edgeDefs.provenance.hidden = true;
+      }
+      if (json.edgeDefs.comments === undefined) {
+        json.edgeDefs.comments = EDGEDEFS.comments;
+        json.edgeDefs.comments.hidden = true;
+      }
+      // NOTE: We are not modifying the template permanently, only temporarily inserting definitions so the system can validate
 
-    TEMPLATE = json;
-    console.log(PR, 'Template loaded', templateFilePath);
+      TEMPLATE = json;
+      console.log(PR, 'TEMPLATE LOADED', templateFilePath);
+
       resolve({ Loaded: true });
     });
   });
@@ -389,6 +392,64 @@ async function m_LoadTemplate() {
     }
   }
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Validate Template File
+/*/
+// eslint-disable-next-line complexity
+function m_ValidateTemplate() {
+  try {
+    // nodeDefs
+    let nodeDefs = TEMPLATE.nodeDefs;
+    if (nodeDefs === undefined) {
+      throw "Missing `nodeDefs` nodeDefs=" + nodeDefs;
+    }
+    if (nodeDefs.label === undefined) throw "Missing `nodeDefs.label` label=" + nodeDefs.label;
+    if (nodeDefs.type === undefined) throw "Missing `nodeDefs.type` type= " + nodeDefs.type;
+    if (
+      nodeDefs.type.options === undefined ||
+      !Array.isArray(nodeDefs.type.options)
+    ) {
+      throw "Missing or bad `nodeDefs.type.options` options=" +
+        nodeDefs.type.options;
+    }
+    if (nodeDefs.notes === undefined) throw "Missing `nodeDefs.notes` notes=" + nodeDefs.notes;
+    if (nodeDefs.info === undefined) throw "Missing `nodeDefs.info` info=" + nodeDefs.info;
+    // Version 2.x Fields
+    if (nodeDefs.provenance === undefined) throw "Missing `nodeDefs.provenance` provenance=" + nodeDefs.provenance;
+    if (nodeDefs.comments === undefined) throw "Missing `nodeDefs.comments` comments=" + nodeDefs.comments;
+
+    // edgeDefs
+    let edgeDefs = TEMPLATE.edgeDefs;
+    if (edgeDefs === undefined) throw "Missing `edgeDefs` edgeDefs=" + edgeDefs;
+    if (edgeDefs.source === undefined) throw "Missing `edgeDefs.source` source=" + edgeDefs.source;
+    if (edgeDefs.type === undefined) throw "Missing `edgeDefs.type` type= " + edgeDefs.type;
+    if (
+      edgeDefs.type.options === undefined ||
+      !Array.isArray(edgeDefs.type.options)
+    ) {
+      throw "Missing or bad `edgeDefs.type.options` options=" +
+        edgeDefs.type.options;
+    }
+    if (edgeDefs.target === undefined) throw "Missing `edgeDefs.target` label=" + edgeDefs.target;
+    if (edgeDefs.notes === undefined) throw "Missing `edgeDefs.notes` notes=" + edgeDefs.notes;
+    if (edgeDefs.info === undefined) throw "Missing `edgeDefs.info` info=" + edgeDefs.info;
+    // Version 2.x Fields
+    if (edgeDefs.provenance === undefined) throw "Missing `edgeDefs.provenance` provenance=" + edgeDefs.provenance;
+    if (edgeDefs.comments === undefined) throw "Missing `edgeDefs.comments` comments=" + edgeDefs.comments;
+    // -- End 2.x
+    if (edgeDefs.citation === undefined) throw "Missing `edgeDefs.citation` info=" + edgeDefs.citation;
+    if (edgeDefs.category === undefined) throw "Missing `edgeDefs.category` info=" + edgeDefs.category;
+  } catch (error) {
+    const templateFileName =  m_GetTemplateTOMLFilePath();
+    console.error(
+      "Error loading template `",
+      templateFileName,
+      "`::::",
+      error
+    );
+  }
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: load database
     note: InitializeDatabase() was already called on system initialization
