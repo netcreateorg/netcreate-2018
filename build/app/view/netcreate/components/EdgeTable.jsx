@@ -161,7 +161,7 @@ class EdgeTable extends UNISYS.Component {
       // If we're transitioning from "HILIGHT/FADE" to "COLLAPSE" or "FOCUS", then we
       // also need to remove edges that are not in filteredEdges
       const FDATA = UDATA.AppState("FDATA");
-      if (FDATA.filterAction === FILTER.ACTION.COLLAPSE || FDATA.filterAction === FILTER.ACTION.FOCUS) {
+      if (FDATA.filterAction === FILTER.ACTION.REDUCE|| FDATA.filterAction === FILTER.ACTION.FOCUS) {
         edges = edges.filter(edge => {
           const filteredEdge = filteredEdges.find(n => n.id === edge.id);
           return edge;
@@ -213,7 +213,7 @@ class EdgeTable extends UNISYS.Component {
       // also need to add back in edges that are not in filteredEdges
       // (because "COLLAPSE" and "FOCUS" removes edges that are not matched)
       const FDATA = UDATA.AppState("FDATA");
-      if (FDATA.filterAction === FILTER.ACTION.HIGHLIGHT) {
+      if (FDATA.filterAction === FILTER.ACTION.FADE) {
         const NCDATA = UDATA.AppState("NCDATA");
         this.setState({
           edges: NCDATA.edges,

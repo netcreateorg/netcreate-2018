@@ -5,9 +5,9 @@ FILTER.PANEL_LABEL = 'VIEWS';
 
 // Determines whether filter action is to highlight/fade or remove (filter) nodes and edges
 FILTER.ACTION = {};
-FILTER.ACTION.HIGHLIGHT = 'FADE';
+FILTER.ACTION.FADE = 'FADE';
 FILTER.ACTION.FILTER = 'FILTERING';
-FILTER.ACTION.COLLAPSE = 'REMOVE';
+FILTER.ACTION.REDUCE= 'REMOVE';
 FILTER.ACTION.FOCUS = 'FOCUS';
 FILTER.ACTION.HELP = {};
 FILTER.ACTION.HELP.HIGHLIGHT = 'Show matches, Fade others';

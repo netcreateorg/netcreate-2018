@@ -45,7 +45,7 @@ class FiltersPanel extends UNISYS.Component {
     this.state = {
       nodes: FDATA.nodes,
       edges: FDATA.edges,
-      filterAction: FILTER.ACTION.HIGHLIGHT,
+      filterAction: FILTER.ACTION.FADE,
       filterActionHelp: FILTER.ACTION.HELP.HIGHLIGHT,
       focusSourceLabel: undefined,
       focusRange: undefined
@@ -78,7 +78,7 @@ class FiltersPanel extends UNISYS.Component {
   SelectFilterAction(filterAction) {
     let filterActionHelp;
     const TEMPLATE = UDATA.AppState("TEMPLATE");
-    if (filterAction === FILTER.ACTION.HIGHLIGHT) filterActionHelp = TEMPLATE.filterFadeHelp ? TEMPLATE.filterFadeHelp : FILTER.ACTION.HELP.FADE;
+    if (filterAction === FILTER.ACTION.FADE) filterActionHelp = TEMPLATE.filterFadeHelp ? TEMPLATE.filterFadeHelp : FILTER.ACTION.HELP.FADE;
     if (filterAction === FILTER.ACTION.FILTER) filterActionHelp = FILTER.ACTION.HELP.FILTER;
     if (filterAction === FILTER.ACTION.COLLAPSE) filterActionHelp = TEMPLATE.filterReduceHelp ? TEMPLATE.filterReduceHelp : FILTER.ACTION.HELP.REDUCE;
     if (filterAction === FILTER.ACTION.FOCUS) filterActionHelp = TEMPLATE.filterFocusHelp ? TEMPLATE.filterFocusHelp : FILTER.ACTION.HELP.FOCUS;
@@ -127,13 +127,13 @@ class FiltersPanel extends UNISYS.Component {
         }}>
         <ButtonGroup>
           <Button
-            onClick={() => this.SelectFilterAction(FILTER.ACTION.HIGHLIGHT)}
-            active={filterAction === FILTER.ACTION.HIGHLIGHT}
-            outline={filterAction === FILTER.ACTION.HIGHLIGHT}
-            disabled={filterAction === FILTER.ACTION.HIGHLIGHT}
+            onClick={() => this.SelectFilterAction(FILTER.ACTION.FADE)}
+            active={filterAction === FILTER.ACTION.FADE}
+            outline={filterAction === FILTER.ACTION.FADE}
+            disabled={filterAction === FILTER.ACTION.FADE}
             style={{
-              color: filterAction === FILTER.ACTION.HIGHLIGHT ? '#333' : '#fff',
-              backgroundColor: filterAction === FILTER.ACTION.HIGHLIGHT ? 'transparent' : '#6c757d88'
+              color: filterAction === FILTER.ACTION.FADE ? '#333' : '#fff',
+              backgroundColor: filterAction === FILTER.ACTION.FADE ? 'transparent' : '#6c757d88'
             }}
           >{labelFade}</Button>
           {/* Hide "Filter" panel.  We will probably remove this functionality.
@@ -153,8 +153,8 @@ class FiltersPanel extends UNISYS.Component {
             outline={filterAction === FILTER.ACTION.COLLAPSE}
             disabled={filterAction === FILTER.ACTION.COLLAPSE}
             style={{
-              color: filterAction === FILTER.ACTION.COLLAPSE ? '#333' : '#fff',
-              backgroundColor: filterAction === FILTER.ACTION.COLLAPSE ? 'transparent' : '#6c757d88'
+              color: filterAction === FILTER.ACTION.REDUCE? '#333' : '#fff',
+              backgroundColor: filterAction === FILTER.ACTION.REDUCE? 'transparent' : '#6c757d88'
             }}
           >{labelReduce}</Button>
           <Button
