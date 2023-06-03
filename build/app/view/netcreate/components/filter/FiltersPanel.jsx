@@ -111,8 +111,8 @@ class FiltersPanel extends UNISYS.Component {
     return (
       <div className="filterPanel"
         style={{
-          overflow: 'auto',
-          marginTop: '6px', padding: '5px',
+          overflow: 'hidden',
+          margin: '6px 0', padding: '5px',
           display: 'flex', flexDirection: 'column',
           backgroundColor: '#EEE',
           zIndex: '2000'
@@ -163,11 +163,15 @@ class FiltersPanel extends UNISYS.Component {
         <Label className="small text-muted" style={{ padding: '0.5em 0 0 0.5em', marginBottom: '0' }}>
           {filterActionHelp}
         </Label>
-        <hr/>
-        <div style={{ display: 'flex', flexDirection: 'column', flexGrow: `1`, justifyContent: 'space-evenly' }}>
-          {FilterControlPanel}
+        <div style={{
+          display: 'flex', flexDirection: 'column', flexGrow: `1`,
+          overflowY: 'scroll'
+        }}>
+          <div>
+            {FilterControlPanel}
+          </div>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-evenly', padding: '10px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-evenly', padding: '5px' }}>
           <Button size="sm" onClick={this.OnClearBtnClick} >Clear Filters</Button>
         </div>
       </div>

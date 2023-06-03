@@ -190,9 +190,13 @@ const FILTER = require('./components/filter/FilterEnums');
                 // OPEN
                 ? <div id="right" style={{
                     marginTop: '38px', padding: '0 5px', backgroundColor: '#6c757d',
-                    borderTopLeftRadius: '10px', width: 'auto'
+                    borderTopLeftRadius: '10px',
+                    paddingBottom: '25px', // avoid footer
                   }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'end' }}>
+                    <div style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'end',
+                      height: '100%', overflow: 'hidden'
+                    }}>
                       <Button onClick={this.onFilterBtnClick}
                         style={{ width: '90px' }}
                       >
