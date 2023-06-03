@@ -157,6 +157,7 @@ DB.InitializeDatabase = function (options = {}) {
     m_db.saveDatabase();
 
     await m_LoadTemplate();
+    m_MigrateTemplate();
     m_ValidateTemplate();
   } // end f_DatabaseInitialize
 
@@ -392,6 +393,24 @@ async function m_LoadTemplate() {
     }
   }
 }
+
+/// REVIEW: Should this be moved to a separate server-template module?
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Migrate Template File
+    Updates older templates to the current template-schema specification.
+    Any changes to template-schema should be reflected here.
+/*/
+function m_MigrateTemplate() {
+  // 2023-0602 Filter Labels
+  // See branch `template-filter-labels`, and fb28fa68ee42deffc778c1be013acea7dae85258
+  if (TEMPLATE.filterFade === undefined) TEMPLATE.filterFade = FILTER.ACTION.FADE;
+  if (TEMPLATE.filterReduce === undefined) TEMPLATE.filterReduce = FILTER.ACTION.REDUCE;
+  if (TEMPLATE.filterFocus === undefined) TEMPLATE.filterFocus = FILTER.ACTION.FOCUS;
+  if (TEMPLATE.filterFadeHelp === undefined) TEMPLATE.filterFadeHelp = FILTER.ACTION.HELP.FADE;
+  if (TEMPLATE.filterReduceHelp === undefined) TEMPLATE.filterReduceHelp = FILTER.ACTION.HELP.REDUCE;
+  if (TEMPLATE.filterFocusHelp === undefined) TEMPLATE.filterFocusHelp = FILTER.ACTION.HELP.FOCUS;
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Validate Template File
 /*/
