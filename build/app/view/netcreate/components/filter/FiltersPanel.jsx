@@ -16,8 +16,8 @@
 
 import FILTER from './FilterEnums';
 import FilterGroup from './FilterGroup';
-import React from 'react';
 import FocusFilter from './FocusFilter';
+import React from 'react';
 const ReactStrap = require('reactstrap');
 
 const { Button, ButtonGroup, Input, Label, FormGroup } = ReactStrap;
