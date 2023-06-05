@@ -141,6 +141,8 @@ MOD.EDGETYPEOPTIONS = {
 /*/ Main NetCreate Schema Template
     This references the NODETYPEOPTIONS and EGETYPEOPTIONS above to define
     options.
+    Be sure to update `server-database.m_MigrateTemplate()` with any additions to
+    the schema to maintain backward compatibility.
 /*/
 MOD.TEMPLATE = {
   title: 'NetCreate Template',
@@ -200,6 +202,26 @@ MOD.TEMPLATE = {
       format: 'checkbox',
       description: 'Allow any logged in user to import data.  Admins can always import data.',
       default: false
+    },
+    "nodeSizeDefault": {
+      type: 'number',
+      description: 'Default size (radius) of nodes.',
+      default: 5
+    },
+    "nodeSizeMax": {
+      type: 'number',
+      description: 'Maximum size (radius) of nodes.',
+      default: 50
+    },
+    "edgeSizeDefault": {
+      type: 'number',
+      description: 'Default size (width) of edges (barely visible).',
+      default: 0.175
+    },
+    "edgeSizeMax": {
+      type: 'number',
+      description: 'Maximum size (width) of edges.',
+      default: 10
     },
     "filterFade": {
       type: 'string',

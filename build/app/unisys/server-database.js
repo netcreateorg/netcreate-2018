@@ -409,6 +409,12 @@ function m_MigrateTemplate() {
   if (TEMPLATE.filterFadeHelp === undefined) TEMPLATE.filterFadeHelp = FILTER.ACTION.HELP.FADE;
   if (TEMPLATE.filterReduceHelp === undefined) TEMPLATE.filterReduceHelp = FILTER.ACTION.HELP.REDUCE;
   if (TEMPLATE.filterFocusHelp === undefined) TEMPLATE.filterFocusHelp = FILTER.ACTION.HELP.FOCUS;
+  // 2023-0605 Max Sizes
+  // See branch `dev-bl/max-size
+  if (TEMPLATE.nodeSizeDefault === undefined) TEMPLATE.nodeSizeDefault = TEMPLATE_SCHEMA.TEMPLATE.properties.nodeSizeDefault.default;
+  if (TEMPLATE.nodeSizeMax === undefined) TEMPLATE.nodeSizeMax = TEMPLATE_SCHEMA.TEMPLATE.properties.nodeSizeMax.default;
+  if (TEMPLATE.edgeSizeDefault === undefined) TEMPLATE.edgeSizeDefault = TEMPLATE_SCHEMA.TEMPLATE.properties.edgeSizeDefault.default;
+  if (TEMPLATE.edgeSizeMax === undefined) TEMPLATE.edgeSizeMax = TEMPLATE_SCHEMA.TEMPLATE.properties.edgeSizeMax.default;
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
