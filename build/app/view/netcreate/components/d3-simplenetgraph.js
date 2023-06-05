@@ -187,10 +187,13 @@ class D3NetGraph {
       // contents of this class+module instance
       this._HandleFilteredD3DataUpdate = this._HandleFilteredD3DataUpdate.bind(this);
       this._HandleTemplateUpdate = this._HandleTemplateUpdate.bind(this);
+      this._ClearSVG = this._ClearSVG.bind(this);
       this._SetDefaultValues = this._SetDefaultValues.bind(this);
       this._SetData           = this._SetData.bind(this);
       this._Initialize        = this._Initialize.bind(this);
       this._UpdateGraph       = this._UpdateGraph.bind(this);
+      this.tooltipForNode = this.tooltipForNode.bind(this);
+      this.displayUpdated = this.displayUpdated.bind(this);
       this._UpdateForces      = this._UpdateForces.bind(this);
       this._Tick              = this._Tick.bind(this);
       this._UpdateLinkStrokeWidth = this._UpdateLinkStrokeWidth.bind(this);
@@ -201,6 +204,7 @@ class D3NetGraph {
       this._ZoomOut = this._ZoomOut.bind(this);
       this._ZoomPanReset = this._ZoomPanReset.bind(this);
       this._HandleZoom        = this._HandleZoom.bind(this);
+      this._Transition = this._Transition.bind(this);
       this._Dragstarted       = this._Dragstarted.bind(this);
       this._Dragged           = this._Dragged.bind(this);
       this._Dragended         = this._Dragended.bind(this);
