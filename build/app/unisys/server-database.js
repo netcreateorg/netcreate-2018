@@ -402,17 +402,25 @@ async function m_LoadTemplate() {
 /*/
 function m_MigrateTemplate() {
   // 2023-0602 Filter Labels
-  // See branch `template-filter-labels`, and fb28fa68ee42deffc778c1be013acea7dae85258
-  if (TEMPLATE.filterFade === undefined) TEMPLATE.filterFade = FILTER.ACTION.FADE;
-  if (TEMPLATE.filterReduce === undefined) TEMPLATE.filterReduce = FILTER.ACTION.REDUCE;
-  if (TEMPLATE.filterFocus === undefined) TEMPLATE.filterFocus = FILTER.ACTION.FOCUS;
-  if (TEMPLATE.filterFadeHelp === undefined) TEMPLATE.filterFadeHelp = FILTER.ACTION.HELP.FADE;
-  if (TEMPLATE.filterReduceHelp === undefined) TEMPLATE.filterReduceHelp = FILTER.ACTION.HELP.REDUCE;
-  if (TEMPLATE.filterFocusHelp === undefined) TEMPLATE.filterFocusHelp = FILTER.ACTION.HELP.FOCUS;
+  // See branch `dev-bl/template-filter-labels`, and fb28fa68ee42deffc778c1be013acea7dae85258
+  if (TEMPLATE.filterFade === undefined) TEMPLATE.filterFade = TEMPLATE_SCHEMA.TEMPLATE.properties.filterFade.default;
+  if (TEMPLATE.filterReduce === undefined) TEMPLATE.filterReduce = TEMPLATE_SCHEMA.TEMPLATE.properties.filterReduce.default;
+  if (TEMPLATE.filterFocus === undefined) TEMPLATE.filterFocus = TEMPLATE_SCHEMA.TEMPLATE.properties.filterFocus.default;
+  if (TEMPLATE.filterFadeHelp === undefined) TEMPLATE.filterFadeHelp = TEMPLATE_SCHEMA.TEMPLATE.properties.filterFadeHelp.default;
+  if (TEMPLATE.filterReduceHelp === undefined) TEMPLATE.filterReduceHelp = TEMPLATE_SCHEMA.TEMPLATE.properties.filterReduceHelp.default;
+  if (TEMPLATE.filterFocusHelp === undefined) TEMPLATE.filterFocusHelp = TEMPLATE_SCHEMA.TEMPLATE.properties.filterFocusHelp.default;
+  // 2023-0605 Max Sizes
+  // See branch `dev-bl/max-size
+  if (TEMPLATE.nodeSizeDefault === undefined) TEMPLATE.nodeSizeDefault = TEMPLATE_SCHEMA.TEMPLATE.properties.nodeSizeDefault.default;
+  if (TEMPLATE.nodeSizeMax === undefined) TEMPLATE.nodeSizeMax = TEMPLATE_SCHEMA.TEMPLATE.properties.nodeSizeMax.default;
+  if (TEMPLATE.edgeSizeDefault === undefined) TEMPLATE.edgeSizeDefault = TEMPLATE_SCHEMA.TEMPLATE.properties.edgeSizeDefault.default;
+  if (TEMPLATE.edgeSizeMax === undefined) TEMPLATE.edgeSizeMax = TEMPLATE_SCHEMA.TEMPLATE.properties.edgeSizeMax.default;
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Validate Template File
+    This mostly makes sure that nodes and edges have the properties that the UI expects.
+    If a property is missing, we merely throw an error.  We don't do any error recovery.
 /*/
 // eslint-disable-next-line complexity
 function m_ValidateTemplate() {
