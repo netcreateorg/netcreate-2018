@@ -221,7 +221,7 @@ MOD.TEMPLATE = {
     "edgeSizeMax": {
       type: 'number',
       description: 'Maximum size (width) of edges.',
-      default: 10
+      default: 25
     },
     "filterFade": {
       type: 'string',

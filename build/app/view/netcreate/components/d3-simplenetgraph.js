@@ -127,10 +127,10 @@ class D3NetGraph {
 
       this.clickFn      = {};
 
-      this.nodeSizeDefault = 5;
-      this.nodeSizeMax = 50;
-      this.edgeSizeDefault = 0.175;
-      this.edgeSizeMax = 50;
+      this.nodeSizeDefault = 5; // overriden by template
+      this.nodeSizeMax = 50; // overriden by template
+      this.edgeSizeDefault = 0.175; // overriden by template
+      this.edgeSizeMax = 50; // overriden by template
 
       // To handled tooltips
       this.nodeDefs = nodeDefs;
@@ -142,6 +142,8 @@ class D3NetGraph {
   /// D3 CODE ///////////////////////////////////////////////////////////////////
   /// note: this is all inside the class constructor function!
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+      this._SetDefaultValues();
 
       // Set up Zoom
       this.zoom = d3.zoom().on("zoom", this._HandleZoom);
@@ -184,6 +186,8 @@ class D3NetGraph {
       // bind 'this' to function objects so event handlers can access
       // contents of this class+module instance
       this._HandleFilteredD3DataUpdate = this._HandleFilteredD3DataUpdate.bind(this);
+      this._HandleTemplateUpdate = this._HandleTemplateUpdate.bind(this);
+      this._SetDefaultValues = this._SetDefaultValues.bind(this);
       this._SetData           = this._SetData.bind(this);
       this._Initialize        = this._Initialize.bind(this);
       this._UpdateGraph       = this._UpdateGraph.bind(this);
@@ -212,6 +216,7 @@ class D3NetGraph {
       // });
 
       UDATA.OnAppStateChange('FILTEREDD3DATA', this._HandleFilteredD3DataUpdate);
+      UDATA.OnAppStateChange('TEMPLATE', this._HandleTemplateUpdate);
       UDATA.OnAppStateChange('COLORMAP', this._ColorMap);
       UDATA.HandleMessage('ZOOM_RESET', this._ZoomReset);
       UDATA.HandleMessage('ZOOM_IN', this._ZoomIn);
@@ -251,6 +256,13 @@ class D3NetGraph {
     this._SetData(data);
   }
 
+  /*/ Update default values when template has changed
+  /*/
+  _HandleTemplateUpdate(data) {
+    if (DBG) console.log(PR, 'got state TEMPLATE', data);
+    this._SetDefaultValues();
+  }
+
 /*/ Clear the SVG data
     Currently not used because we just deconstruct d3-simplenetgraph insead.
     Was thought to be needed during imports otherwise _UpdateGraph reads data from existing
@@ -261,6 +273,16 @@ class D3NetGraph {
     this.zoomWrapper.selectAll(".node").remove();
   }
 
+
+  /*/ Set default node and edge size values from TEMPLATE
+  /*/
+  _SetDefaultValues() {
+    const TEMPLATE = UDATA.AppState("TEMPLATE");
+    this.nodeSizeDefault = TEMPLATE.nodeSizeDefault;
+    this.nodeSizeMax = TEMPLATE.nodeSizeMax;
+    this.edgeSizeDefault = TEMPLATE.edgeSizeDefault;
+    this.edgeSizeMax = TEMPLATE.edgeSizeMax;
+  }
 
 /*/ The parent container passes data to the d3 graph via this SetData call
     which then triggers all the internal updates
