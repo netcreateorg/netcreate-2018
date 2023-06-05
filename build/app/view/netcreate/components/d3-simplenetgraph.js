@@ -127,7 +127,10 @@ class D3NetGraph {
 
       this.clickFn      = {};
 
-      this.defaultSize  = 5;
+      this.nodeSizeDefault = 5;
+      this.nodeSizeMax = 50;
+      this.edgeSizeDefault = 0.175;
+      this.edgeSizeMax = 50;
 
       // To handled tooltips
       this.nodeDefs = nodeDefs;
@@ -186,6 +189,8 @@ class D3NetGraph {
       this._UpdateGraph       = this._UpdateGraph.bind(this);
       this._UpdateForces      = this._UpdateForces.bind(this);
       this._Tick              = this._Tick.bind(this);
+      this._UpdateLinkStrokeWidth = this._UpdateLinkStrokeWidth.bind(this);
+      this._UpdateLinkStrokeColor = this._UpdateLinkStrokeColor.bind(this);
       this._ColorMap = this._ColorMap.bind(this);
       this._ZoomReset = this._ZoomReset.bind(this);
       this._ZoomIn = this._ZoomIn.bind(this);
@@ -366,7 +371,7 @@ class D3NetGraph {
         .append("circle")
         // "r" has to be set here or circles don't draw.
         .attr("r", (d) => {
-          return this.defaultSize + d.degrees;
+          return Math.min(this.nodeSizeDefault + d.degrees, this.nodeSizeMax);
         })
         //        .attr("r", (d) => { return this.defaultSize }) // d.size ?  d.size/10 : this.defaultSize; })
         .attr("fill", (d) => {
@@ -388,7 +393,7 @@ class D3NetGraph {
         .append("text")
           .classed('noselect', true)
           .attr("font-size", 10)
-          .attr("dx", (d=>{return this.defaultSize + 5})) // 8)
+          .attr("dx", (d=>{return this.nodeSizeDefault + 5})) // 8)
           .attr("dy", "0.35em") // ".15em")
           .text((d) => { return d.label })
           .style("opacity", d => {
@@ -457,7 +462,7 @@ class D3NetGraph {
           })
           .attr("r", (d) => {
             // this "r" is necessary to resize after a link is added
-            return this.defaultSize + d.degrees;
+            return Math.min(this.nodeSizeDefault + d.degrees, this.nodeSizeMax);
           })
           .transition()
           .duration(500)
@@ -593,14 +598,14 @@ displayUpdated(nodeEdge) {
             .iterations(M_FORCEPROPERTIES.link.iterations))
         .force("charge", d3.forceManyBody()
             // the larger the node, the harder it pushes
-            .strength(d => (this.defaultSize+d.degrees) * M_FORCEPROPERTIES.charge.strength * M_FORCEPROPERTIES.charge.enabled )
+            .strength(d => (this.nodeSizeDefault+d.degrees) * M_FORCEPROPERTIES.charge.strength * M_FORCEPROPERTIES.charge.enabled )
             .distanceMin(M_FORCEPROPERTIES.charge.distanceMin)
             .distanceMax(M_FORCEPROPERTIES.charge.distanceMax))
         .force("collide", d3.forceCollide()
             .strength(M_FORCEPROPERTIES.collide.strength * M_FORCEPROPERTIES.collide.enabled)
             // node radius (defaultSize+degrees) + preset radius keeps nodes separated
             // from each other like bouncing balls
-            .radius(d => this.defaultSize+d.degrees+M_FORCEPROPERTIES.collide.radius)
+            .radius(d => this.nodeSizeDefault+d.degrees+M_FORCEPROPERTIES.collide.radius)
             .iterations(M_FORCEPROPERTIES.collide.iterations))
         .force("center", d3.forceCenter()
             .x(m_width * M_FORCEPROPERTIES.center.x)
@@ -650,9 +655,9 @@ _UpdateLinkStrokeWidth(edge) {
     (sourceId === mouseoverNodeId) ||
     (targetId === mouseoverNodeId)
   ) {
-    return edge.size ** 2;  // Use **2 to make size differences more noticeable
+    return Math.min(edge.size ** 2, this.edgeSizeMax);  // Use **2 to make size differences more noticeable
   } else {
-    return 0.175;             // Barely visible if not selected
+    return this.edgeSizeDefault;             // Barely visible if not selected
   }
 }
 
