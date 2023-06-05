@@ -309,7 +309,7 @@ class D3NetGraph {
 
       // updates ignored until this is run restarts the simulation
       // (important if simulation has already slowed down)
-      this.simulation.alpha(.3).restart()  // was 1 - JD
+      this.simulation.alpha(0.3).restart()  // was 1 - JD
     }
   }
 
@@ -568,38 +568,26 @@ class D3NetGraph {
     }
 
 // added by Joshua to generate the text, based on the template, for the tooltip on the node
-tooltipForNode(d)
-{
-    let titleText =  "";
-    if(this.nodeDefs.label.includeInGraphTooltip != undefined)
-    {
-        // Add Label
-          if(this.nodeDefs.label.includeInGraphTooltip)
-            titleText += this.nodeDefs.label.displayLabel + ": " + d.label + "\n";
-        // Add type
-          if (this.nodeDefs.type.includeInGraphTooltip)
-            titleText += this.nodeDefs.type.displayLabel + ": " + d.type + "\n";
-        // Add degrees
-          if(this.nodeDefs.degrees.includeInGraphTooltip)
-            titleText += this.nodeDefs.degrees.displayLabel + ": " + d.degrees + "\n";
-        // Add notes
-          if(this.nodeDefs.notes.includeInGraphTooltip)
-            titleText += this.nodeDefs.notes.displayLabel + ": " + d.notes + "\n";
-        // Add info
-          if(this.nodeDefs.info.includeInGraphTooltip)
-            titleText += this.nodeDefs.info.displayLabel + ": " + d.info + "\n";
-        // Add updated info
-          if(this.nodeDefs.updated.includeInGraphTooltip)
-            titleText += this.nodeDefs.updated.displayLabel + ": " + this.displayUpdated(d);
-    }
-    else
-    {
-
-       // For backwards compatability
-       titleText += this.nodeDefs.displayLabel.label + ": " + d.label + "\n";
-
-    }
-    return titleText;
+tooltipForNode(d) {
+  let titleText =  "";
+  if (this.nodeDefs.label.includeInGraphTooltip !== undefined) {
+    // Add Label
+    if (this.nodeDefs.label.includeInGraphTooltip) titleText += this.nodeDefs.label.displayLabel + ": " + d.label + "\n";
+    // Add type
+    if (this.nodeDefs.type.includeInGraphTooltip) titleText += this.nodeDefs.type.displayLabel + ": " + d.type + "\n";
+    // Add degrees
+    if (this.nodeDefs.degrees.includeInGraphTooltip) titleText += this.nodeDefs.degrees.displayLabel + ": " + d.degrees + "\n";
+    // Add notes
+    if (this.nodeDefs.notes.includeInGraphTooltip) titleText += this.nodeDefs.notes.displayLabel + ": " + d.notes + "\n";
+    // Add info
+    if (this.nodeDefs.info.includeInGraphTooltip) titleText += this.nodeDefs.info.displayLabel + ": " + d.info + "\n";
+    // Add updated info
+    if (this.nodeDefs.updated.includeInGraphTooltip)  titleText += this.nodeDefs.updated.displayLabel + ": " + this.displayUpdated(d);
+  } else {
+    // For backwards compatability
+    titleText += this.nodeDefs.displayLabel.label + ": " + d.label + "\n";
+  }
+  return titleText;
 }
 
 displayUpdated(nodeEdge) {
