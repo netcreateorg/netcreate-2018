@@ -72,8 +72,7 @@ MOD.ValidateTOMLFile = async data => {
     const json = TOML.parse(tomlText);
     const isValid = true;
     return {isValid, templateJSON: json};
-  }
-  catch (err) {
+  } catch (err) {
     return { isValid: false, error: err };
   }
 }

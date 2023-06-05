@@ -19,6 +19,7 @@ const SESSION = require("../unisys/common-session");
 const LOGGER = require("../unisys/server-logger");
 const PROMPTS = require("../system/util/prompts");
 const TEMPLATE_SCHEMA = require("../view/netcreate/template-schema");
+const FILTER = require('../view/netcreate/components/filter/FilterEnums');
 const { EDITORTYPE } = require("../system/util/enum");
 
 const PR = PROMPTS.Pad("ServerDB");
@@ -93,7 +94,7 @@ DB.InitializeDatabase = function (options = {}) {
   m_options.db_file = db_file;        // store for use by DB.WriteJSON
 
   // callback on load
-  function f_DatabaseInitialize() {
+  async function f_DatabaseInitialize() {
     // on the first load of (non-existent database), we will have no
     // collections so we can detect the absence of our collections and
     // add (and configure) them now.
@@ -155,8 +156,9 @@ DB.InitializeDatabase = function (options = {}) {
     console.log(PR,`DATABASE LOADED! m_max_nodeID '${m_max_nodeID}', m_max_edgeID '${m_max_edgeID}'`);
     m_db.saveDatabase();
 
-    m_LoadTemplate();
-
+    await m_LoadTemplate();
+    m_MigrateTemplate();
+    m_ValidateTemplate();
   } // end f_DatabaseInitialize
 
   // UTILITY FUNCTION
@@ -298,59 +300,66 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
     and converts it to a TOML template
 /*/
 function m_LoadJSONTemplate(templatePath) {
-  // 1. Load JSON
-  console.log(PR, `LOADING JSON TEMPLATE ${templatePath}`);
-  const JSONTEMPLATE = FS.readJsonSync(templatePath);
-  // 2. Convert to TOML
-  TEMPLATE = m_MigrateJSONtoTOML(JSONTEMPLATE);
-  // 3. Save it (and load)
-  DB.WriteTemplateTOML({ data: { template: TEMPLATE } })
-    .then(() => {
-      console.log(PR, '...converted JSON template saved!');
-    });
+  return new Promise((resolve, reject) => {
+    // 1. Load JSON
+    console.log(PR, `LOADING JSON TEMPLATE ${templatePath}`);
+    const JSONTEMPLATE = FS.readJsonSync(templatePath);
+    // 2. Convert to TOML
+    TEMPLATE = m_MigrateJSONtoTOML(JSONTEMPLATE);
+    // 3. Save it (and load)
+    DB.WriteTemplateTOML({ data: { template: TEMPLATE } })
+      .then(() => {
+        console.log(PR, '...converted JSON template saved!');
+        resolve({ Loaded: true });
+      });
+  });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Loads a *.template.toml file from the server.
 /*/
 function m_LoadTOMLTemplate(templateFilePath) {
-  const templateFile = FS.readFile(templateFilePath, 'utf8', (err, data) => {
-    if (err) throw err;
-    // Read TOML
-    const json = TOML.parse(data);
-    // Ensure key fields are present, else default to schema
-    const SCHEMA = TEMPLATE_SCHEMA.TEMPLATE.properties;
-    json.duplicateWarning = json.duplicateWarning || SCHEMA.duplicateWarning.default;
-    json.nodeIsLockedMessage = json.nodeIsLockedMessage || SCHEMA.nodeIsLockedMessage.default;
-    json.edgeIsLockedMessage = json.edgeIsLockedMessage || SCHEMA.edgeIsLockedMessage.default;
-    json.templateIsLockedMessage = json.templateIsLockedMessage || SCHEMA.templateIsLockedMessage.default;
-    json.importIsLockedMessage = json.importIsLockedMessage || SCHEMA.importIsLockedMessage.default;
+  return new Promise((resolve, reject) => {
+    const templateFile = FS.readFile(templateFilePath, 'utf8', (err, data) => {
+      if (err) throw err;
+      // Read TOML
+      const json = TOML.parse(data);
+      // Ensure key fields are present, else default to schema
+      const SCHEMA = TEMPLATE_SCHEMA.TEMPLATE.properties;
+      json.duplicateWarning = json.duplicateWarning || SCHEMA.duplicateWarning.default;
+      json.nodeIsLockedMessage = json.nodeIsLockedMessage || SCHEMA.nodeIsLockedMessage.default;
+      json.edgeIsLockedMessage = json.edgeIsLockedMessage || SCHEMA.edgeIsLockedMessage.default;
+      json.templateIsLockedMessage = json.templateIsLockedMessage || SCHEMA.templateIsLockedMessage.default;
+      json.importIsLockedMessage = json.importIsLockedMessage || SCHEMA.importIsLockedMessage.default;
 
-    // Migrate v1.4 to v2.0
-    // v2.0 added `provenance` and `comments` -- so we add the template definitions if the toml template does not already have them
-    // hides them by default if they were not previously added
-    const DEFAULT_TEMPLATE = TEMPLATE_SCHEMA.ParseTemplateSchema();
-    const NODEDEFS = DEFAULT_TEMPLATE.nodeDefs;
-    if (json.nodeDefs.provenance === undefined) {
-      json.nodeDefs.provenance = NODEDEFS.provenance;
-      json.nodeDefs.provenance.hidden = true;
-    }
-    if (json.nodeDefs.comments === undefined) {
-      json.nodeDefs.comments = NODEDEFS.comments;
-      json.nodeDefs.comments.hidden = true
-    }
-    const EDGEDEFS = DEFAULT_TEMPLATE.edgeDefs;
-    if (json.edgeDefs.provenance === undefined) {
-      json.edgeDefs.provenance = EDGEDEFS.provenance;
-      json.edgeDefs.provenance.hidden = true;
-    }
-    if (json.edgeDefs.comments === undefined) {
-      json.edgeDefs.comments = EDGEDEFS.comments;
-      json.edgeDefs.comments.hidden = true;
-    }
-    // NOTE: We are not modifying the template permanently, only temporarily inserting definitions so the system can validate
+      // Migrate v1.4 to v2.0
+      // v2.0 added `provenance` and `comments` -- so we add the template definitions if the toml template does not already have them
+      // hides them by default if they were not previously added
+      const DEFAULT_TEMPLATE = TEMPLATE_SCHEMA.ParseTemplateSchema();
+      const NODEDEFS = DEFAULT_TEMPLATE.nodeDefs;
+      if (json.nodeDefs.provenance === undefined) {
+        json.nodeDefs.provenance = NODEDEFS.provenance;
+        json.nodeDefs.provenance.hidden = true;
+      }
+      if (json.nodeDefs.comments === undefined) {
+        json.nodeDefs.comments = NODEDEFS.comments;
+        json.nodeDefs.comments.hidden = true
+      }
+      const EDGEDEFS = DEFAULT_TEMPLATE.edgeDefs;
+      if (json.edgeDefs.provenance === undefined) {
+        json.edgeDefs.provenance = EDGEDEFS.provenance;
+        json.edgeDefs.provenance.hidden = true;
+      }
+      if (json.edgeDefs.comments === undefined) {
+        json.edgeDefs.comments = EDGEDEFS.comments;
+        json.edgeDefs.comments.hidden = true;
+      }
+      // NOTE: We are not modifying the template permanently, only temporarily inserting definitions so the system can validate
 
-    TEMPLATE = json;
-    console.log(PR, 'Template loaded', templateFilePath);
+      TEMPLATE = json;
+      console.log(PR, 'TEMPLATE LOADED', templateFilePath);
+
+      resolve({ Loaded: true });
+    });
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -362,28 +371,104 @@ function m_LoadTOMLTemplate(templateFilePath) {
     * DB.InitializeDatabase
     * DB.WriteTemplateTOML
 /*/
-function m_LoadTemplate() {
+async function m_LoadTemplate() {
   const TOMLtemplateFilePath = m_GetTemplateTOMLFilePath();
   FS.ensureDirSync(PATH.dirname(TOMLtemplateFilePath));
   // Does the TOML template exist?
   if (FS.existsSync(TOMLtemplateFilePath)) {
     // 1. If TOML exists, load it
-    m_LoadTOMLTemplate(TOMLtemplateFilePath);
+    await m_LoadTOMLTemplate(TOMLtemplateFilePath);
   } else {
     // 2/ Try falling back to JSON template
     const JSONTemplatePath = RUNTIMEPATH + NC_CONFIG.dataset + ".template";
     // Does the JSON template exist?
     if (FS.existsSync(JSONTemplatePath)) {
-      m_LoadJSONTemplate(JSONTemplatePath);
+      await m_LoadJSONTemplate(JSONTemplatePath);
     } else {
       // 3. Else, no existing template, clone _default.template.toml
       console.log(PR, `NO EXISTING TEMPLATE ${TOMLtemplateFilePath}, so cloning default template...`);
       FS.copySync(m_DefaultTemplatePath(), TOMLtemplateFilePath);
       // then load it
-      m_LoadTOMLTemplate(TOMLtemplateFilePath);
+      await m_LoadTOMLTemplate(TOMLtemplateFilePath);
     }
   }
 }
+
+/// REVIEW: Should this be moved to a separate server-template module?
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Migrate Template File
+    Updates older templates to the current template-schema specification.
+    Any changes to template-schema should be reflected here.
+/*/
+function m_MigrateTemplate() {
+  // 2023-0602 Filter Labels
+  // See branch `template-filter-labels`, and fb28fa68ee42deffc778c1be013acea7dae85258
+  if (TEMPLATE.filterFade === undefined) TEMPLATE.filterFade = FILTER.ACTION.FADE;
+  if (TEMPLATE.filterReduce === undefined) TEMPLATE.filterReduce = FILTER.ACTION.REDUCE;
+  if (TEMPLATE.filterFocus === undefined) TEMPLATE.filterFocus = FILTER.ACTION.FOCUS;
+  if (TEMPLATE.filterFadeHelp === undefined) TEMPLATE.filterFadeHelp = FILTER.ACTION.HELP.FADE;
+  if (TEMPLATE.filterReduceHelp === undefined) TEMPLATE.filterReduceHelp = FILTER.ACTION.HELP.REDUCE;
+  if (TEMPLATE.filterFocusHelp === undefined) TEMPLATE.filterFocusHelp = FILTER.ACTION.HELP.FOCUS;
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Validate Template File
+/*/
+// eslint-disable-next-line complexity
+function m_ValidateTemplate() {
+  try {
+    // nodeDefs
+    let nodeDefs = TEMPLATE.nodeDefs;
+    if (nodeDefs === undefined) {
+      throw "Missing `nodeDefs` nodeDefs=" + nodeDefs;
+    }
+    if (nodeDefs.label === undefined) throw "Missing `nodeDefs.label` label=" + nodeDefs.label;
+    if (nodeDefs.type === undefined) throw "Missing `nodeDefs.type` type= " + nodeDefs.type;
+    if (
+      nodeDefs.type.options === undefined ||
+      !Array.isArray(nodeDefs.type.options)
+    ) {
+      throw "Missing or bad `nodeDefs.type.options` options=" +
+        nodeDefs.type.options;
+    }
+    if (nodeDefs.notes === undefined) throw "Missing `nodeDefs.notes` notes=" + nodeDefs.notes;
+    if (nodeDefs.info === undefined) throw "Missing `nodeDefs.info` info=" + nodeDefs.info;
+    // Version 2.x Fields
+    if (nodeDefs.provenance === undefined) throw "Missing `nodeDefs.provenance` provenance=" + nodeDefs.provenance;
+    if (nodeDefs.comments === undefined) throw "Missing `nodeDefs.comments` comments=" + nodeDefs.comments;
+
+    // edgeDefs
+    let edgeDefs = TEMPLATE.edgeDefs;
+    if (edgeDefs === undefined) throw "Missing `edgeDefs` edgeDefs=" + edgeDefs;
+    if (edgeDefs.source === undefined) throw "Missing `edgeDefs.source` source=" + edgeDefs.source;
+    if (edgeDefs.type === undefined) throw "Missing `edgeDefs.type` type= " + edgeDefs.type;
+    if (
+      edgeDefs.type.options === undefined ||
+      !Array.isArray(edgeDefs.type.options)
+    ) {
+      throw "Missing or bad `edgeDefs.type.options` options=" +
+        edgeDefs.type.options;
+    }
+    if (edgeDefs.target === undefined) throw "Missing `edgeDefs.target` label=" + edgeDefs.target;
+    if (edgeDefs.notes === undefined) throw "Missing `edgeDefs.notes` notes=" + edgeDefs.notes;
+    if (edgeDefs.info === undefined) throw "Missing `edgeDefs.info` info=" + edgeDefs.info;
+    // Version 2.x Fields
+    if (edgeDefs.provenance === undefined) throw "Missing `edgeDefs.provenance` provenance=" + edgeDefs.provenance;
+    if (edgeDefs.comments === undefined) throw "Missing `edgeDefs.comments` comments=" + edgeDefs.comments;
+    // -- End 2.x
+    if (edgeDefs.citation === undefined) throw "Missing `edgeDefs.citation` info=" + edgeDefs.citation;
+    if (edgeDefs.category === undefined) throw "Missing `edgeDefs.category` info=" + edgeDefs.category;
+  } catch (error) {
+    const templateFileName =  m_GetTemplateTOMLFilePath();
+    console.error(
+      "Error loading template `",
+      templateFileName,
+      "`::::",
+      error
+    );
+  }
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: load database
     note: InitializeDatabase() was already called on system initialization

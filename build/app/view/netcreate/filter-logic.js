@@ -507,12 +507,12 @@ function m_NodeIsFiltered(node, FDATA) {
     // not using highlight, so restore transparency
     if (keepNode) return true;
     return false; // remove from array
-  } else if (filterAction === FILTER.ACTION.HIGHLIGHT) {
+  } else if (filterAction === FILTER.ACTION.FADE) {
     if (!keepNode) {
       node.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
     }
     return true; // don't filter out
-  } else if (filterAction === FILTER.ACTION.COLLAPSE) {
+  } else if (filterAction === FILTER.ACTION.REDUCE) {
     if (keepNode) return true; // matched, so keep
     // filter out (remove) and add to `RemovedNodes` for later removal of linked edge
     RemovedNodes.push(node.id);
@@ -638,14 +638,14 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3D
     edge.filteredTransparency = EDGE_DEFAULT_TRANSPARENCY; // opaque
     if (keepEdge) return true; // keep in array
     return false; // remove from array
-  } else if (filterAction === FILTER.ACTION.HIGHLIGHT) {
+  } else if (filterAction === FILTER.ACTION.FADE) {
     if (!keepEdge) {
       edge.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
     } else {
       edge.filteredTransparency = EDGE_DEFAULT_TRANSPARENCY; // opaque
     }
     return true; // always keep in array
-  } else if (filterAction === FILTER.ACTION.COLLAPSE) {
+  } else if (filterAction === FILTER.ACTION.REDUCE) {
     if (keepEdge) return true; // matched, so keep
     // else filter out (remove)
     return false;

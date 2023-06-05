@@ -8,7 +8,7 @@
   the json-editor needs to support and provides meta data about how to
   display and handle the edits.
 
-  `template-logic.js` handles initialization client-side.
+  `templateEditor-logic.js` handles initialization client-side.
 
   NOTE: This schema is NOT the same as the `toml` template file schema.  This
   schema is used by `json-editor` to know how to display a UI for editing the
@@ -200,6 +200,36 @@ MOD.TEMPLATE = {
       format: 'checkbox',
       description: 'Allow any logged in user to import data.  Admins can always import data.',
       default: false
+    },
+    "filterFade": {
+      type: 'string',
+      description: 'Display name of the filter that shows matching items and fades others.',
+      default: 'Fade'
+    },
+    "filterFadeHelp": {
+      type: 'string',
+      description: 'Help text for the Fade filter, displayed on the VIEWS panel.',
+      default: 'Show matches, Fade others'
+    },
+    "filterReduce": {
+      type: 'string',
+      description: 'Display name of the filter that shows matching items and reduces (removes) others.',
+      default: 'Reduce'
+    },
+    "filterReduceHelp": {
+      type: 'string',
+      description: 'Help text for the Reduce filter, displayed on the VIEWS panel.',
+      default: 'Show matches, Reduce (remove) others & recalculate sizes'
+    },
+    "filterFocus": {
+      type: 'string',
+      description: 'Display name of the filter that shows nodes connected to a selected node within a specified range.',
+      default: 'Focus'
+    },
+    "filterFocusHelp": {
+      type: 'string',
+      description: 'Help text for the Focus filter, displayed on the VIEWS panel.',
+      default: 'Show only nodes connected to the selected node within range'
     },
     "duplicateWarning": {
       type: 'string',

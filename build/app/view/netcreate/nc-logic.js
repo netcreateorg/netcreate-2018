@@ -265,7 +265,6 @@ MOD.Hook("LOADASSETS", () => {
 // eslint-disable-next-line complexity
 MOD.Hook("CONFIGURE", () => {
   // Process Node, NodeColorMap and Edge options
-  m_ValidateTemplate();
   m_UpdateColorMap();
 }); // end CONFIGURE HOOK
 
@@ -572,7 +571,7 @@ MOD.Hook("INITIALIZE", () => {
     // FIXME: Need to also trigger resize!
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ NODE_TYPES_UPDATE is called by template-logic after user has changed the
+  /*/ NODE_TYPES_UPDATE is called by templateEditor-logic after user has changed the
       node type options.  This maps changed options to a new name,
       and deleted type options to existing options.
       This updates:
@@ -614,7 +613,7 @@ MOD.Hook("INITIALIZE", () => {
     UDATA.SetAppState("NCDATA", NCDATA);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ EDGE_TYPES_UPDATE is called by template-logic after user has changed the
+  /*/ EDGE_TYPES_UPDATE is called by templateEditor-logic after user has changed the
       edge type options.  This maps changed options to a new name,
       and deleted type options to existing options.
       This updates:
@@ -871,61 +870,6 @@ MOD.SetAllObjs = m_SetAllObjs; // Expose for filter-logic.js
 /// NODE HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-/*/ Validate Template File
-/*/
-// eslint-disable-next-line complexity
-function m_ValidateTemplate() {
-  try {
-    // nodeDefs
-    let nodeDefs = TEMPLATE.nodeDefs;
-    if (nodeDefs === undefined) {
-      throw "Missing `nodeDefs` nodeDefs=" + nodeDefs;
-    }
-    if (nodeDefs.label === undefined) throw "Missing `nodeDefs.label` label=" + nodeDefs.label;
-    if (nodeDefs.type === undefined) throw "Missing `nodeDefs.type` type= " + nodeDefs.type;
-    if (
-      nodeDefs.type.options === undefined ||
-      !Array.isArray(nodeDefs.type.options)
-    ) {
-      throw "Missing or bad `nodeDefs.type.options` options=" +
-        nodeDefs.type.options;
-    }
-    if (nodeDefs.notes === undefined) throw "Missing `nodeDefs.notes` notes=" + nodeDefs.notes;
-    if (nodeDefs.info === undefined) throw "Missing `nodeDefs.info` info=" + nodeDefs.info;
-    // Version 2.x Fields
-    if (nodeDefs.provenance === undefined) throw "Missing `nodeDefs.provenance` provenance=" + nodeDefs.provenance;
-    if (nodeDefs.comments === undefined) throw "Missing `nodeDefs.comments` comments=" + nodeDefs.comments;
-
-    // edgeDefs
-    let edgeDefs = TEMPLATE.edgeDefs;
-    if (edgeDefs === undefined) throw "Missing `edgeDefs` edgeDefs=" + edgeDefs;
-    if (edgeDefs.source === undefined) throw "Missing `edgeDefs.source` source=" + edgeDefs.source;
-    if (edgeDefs.type === undefined) throw "Missing `edgeDefs.type` type= " + edgeDefs.type;
-    if (
-      edgeDefs.type.options === undefined ||
-      !Array.isArray(edgeDefs.type.options)
-    ) {
-      throw "Missing or bad `edgeDefs.type.options` options=" +
-        edgeDefs.type.options;
-    }
-    if (edgeDefs.target === undefined) throw "Missing `edgeDefs.target` label=" + edgeDefs.target;
-    if (edgeDefs.notes === undefined) throw "Missing `edgeDefs.notes` notes=" + edgeDefs.notes;
-    if (edgeDefs.info === undefined) throw "Missing `edgeDefs.info` info=" + edgeDefs.info;
-    // Version 2.x Fields
-    if (edgeDefs.provenance === undefined) throw "Missing `edgeDefs.provenance` provenance=" + edgeDefs.provenance;
-    if (edgeDefs.comments === undefined) throw "Missing `edgeDefs.comments` comments=" + edgeDefs.comments;
-    // -- End 2.x
-    if (edgeDefs.citation === undefined) throw "Missing `edgeDefs.citation` info=" + edgeDefs.citation;
-    if (edgeDefs.category === undefined) throw "Missing `edgeDefs.category` info=" + edgeDefs.category;
-  } catch (error) {
-    console.error(
-      PR + "Error loading template `",
-      TEMPLATE_URL,
-      "`::::",
-      error
-    );
-  }
-}
 
 /*/ Update ColorMap
 /*/
