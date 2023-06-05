@@ -74,7 +74,7 @@ class FiltersPanel extends UNISYS.Component {
   LookupFilterHelp(filterAction) {
     const TEMPLATE = UDATA.AppState("TEMPLATE");
     if (filterAction === FILTER.ACTION.FADE) return TEMPLATE.filterFadeHelp;
-    if (filterAction === FILTER.ACTION.FILTER) return FILTER.ACTION.HELP.FILTER; // FIX: Remove this once we decide we don't want to support Filter/hide
+    //if (filterAction === FILTER.ACTION.FILTER) return FILTER.ACTION.HELP.FILTER; // FIX: Remove this once we decide we don't want to support Filter/hide
     if (filterAction === FILTER.ACTION.REDUCE) return TEMPLATE.filterReduceHelp;
     if (filterAction === FILTER.ACTION.FOCUS) return TEMPLATE.filterFocusHelp;
     return "Help not found";
