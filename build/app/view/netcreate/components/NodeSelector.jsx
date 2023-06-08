@@ -164,7 +164,7 @@ class NodeSelector extends UNISYS.Component {
             provenance: '',
             comments: '',
             notes:     '',
-            degrees: -1,
+            degrees: 0,
             id:        '',   // Always convert this to a Number
             isNewNode: true
         },
@@ -393,7 +393,7 @@ class NodeSelector extends UNISYS.Component {
             provenance: '',
             comments: '',
             notes:     '',
-            degrees: -1,
+            degrees: 0,
             id:         '',   // Always convert this to a Number
             isNewNode: true
         },
@@ -753,7 +753,7 @@ class NodeSelector extends UNISYS.Component {
                 provenance: provenance_str,
                 comments: '',
                 notes: '',
-                degrees: -1,
+                degrees: 0,
                 id:        newNodeID,
                 isNewNode: true
             },

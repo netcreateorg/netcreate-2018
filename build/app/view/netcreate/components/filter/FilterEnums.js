@@ -10,11 +10,6 @@ FILTER.ACTION.FADE = 'FADE';
 FILTER.ACTION.FILTER = 'FILTERING'; // FIX: Remove this after we decide to remove FILTER/HIDE
 FILTER.ACTION.REDUCE= 'REMOVE';
 FILTER.ACTION.FOCUS = 'FOCUS';
-FILTER.ACTION.HELP = {};
-FILTER.ACTION.HELP.FADE = 'Show matches, Fade others';
-FILTER.ACTION.HELP.FILTER = 'Shows matches, Hide (Filter) others (keep physics and degrees)'; // FIX: Remove this after we decide to remove FILTER/HIDE
-FILTER.ACTION.HELP.REDUCE = 'Show matches, Remove others & recalculate sizes';
-FILTER.ACTION.HELP.FOCUS = 'Show only nodes connected to the selected node within range';
 
 // Types of filters definable in template files.
 FILTER.TYPES = {};
