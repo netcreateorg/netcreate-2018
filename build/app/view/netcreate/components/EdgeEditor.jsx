@@ -228,6 +228,7 @@ class EdgeEditor extends UNISYS.Component {
           targetId:     '',
           type: '',
           info:         '',
+          weight: '',
           provenance: '',
           comments: '',
           notes:        '',
@@ -292,6 +293,7 @@ class EdgeEditor extends UNISYS.Component {
       this.onRelationshipChange   = this.onRelationshipChange.bind(this);
       this.onNotesChange          = this.onNotesChange.bind(this);
       this.onInfoChange           = this.onInfoChange.bind(this);
+      this.onWeightChange         = this.onWeightChange.bind(this);
       this.onProvenanceChange = this.onProvenanceChange.bind(this);
       this.onCommentsChange = this.onCommentsChange.bind(this);
       this.onCitationChange       = this.onCitationChange.bind(this);
@@ -342,6 +344,7 @@ class EdgeEditor extends UNISYS.Component {
           targetId:     '',
           type: '',
           info:         '',
+          weight: '',
           provenance: '',
           comments: '',
           notes:        '',
@@ -450,6 +453,7 @@ class EdgeEditor extends UNISYS.Component {
           type: '',
           notes: '',
           info: '',
+          weight: '',
           provenance: provenance_str,
           comments: '',
           citation: '',
@@ -501,6 +505,7 @@ class EdgeEditor extends UNISYS.Component {
           targetId:     edge.target,
           type: edge.type || '',   // Make sure there's valid data
           info: edge.info || '',
+          weight: edge.weight || '',
           provenance: edge.provenance || '',
           comments: edge.comments || '',
           citation: edge.citation || '',
@@ -855,10 +860,17 @@ class EdgeEditor extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onInfoChange (event) {
-      let formData = this.state.formData;
-      formData.info = event.target.value;
-      this.setState({formData: formData});
-    }
+  let formData = this.state.formData;
+  formData.info = event.target.value;
+  this.setState({formData: formData});
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ onWeightChange (event) {
+  let formData = this.state.formData;
+  formData.weight = event.target.value;
+  this.setState({formData: formData});
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onProvenanceChange (event) {
@@ -909,6 +921,7 @@ class EdgeEditor extends UNISYS.Component {
         target:         this.state.targetNode.id,   // REVIEW: d3data 'target' is id, rename this to 'targetId'?
         type: formData.type,
         info: formData.info,
+        weight: formData.weight,
         provenance: formData.provenance,
         comments: formData.comments,
         citation: formData.citation,
@@ -1167,7 +1180,7 @@ class EdgeEditor extends UNISYS.Component {
                 </Col>
               </FormGroup>
               {/** weight **/}
-              <FormGroup row hidden={false /* edgeDefs.weight.hidden */}>
+              <FormGroup row hidden={edgeDefs.weight.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="weight" className="tooltipAnchor small text-muted">
                     {"Weight" /*edgeDefs.weight.displayLabel*/}
