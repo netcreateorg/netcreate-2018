@@ -314,9 +314,9 @@ class EdgeTable extends UNISYS.Component {
                                  // was changed but the full db wasn't updated
             bkey = b[key] || '';
           } else if (type === FILTER.TYPES.NUMBER) {
-            akey = Number(a[key]); // force number for sorting
-            bkey = Number(b[key]);
-          } else {
+            akey = Number(a[key]||''); // force number for sorting
+            bkey = Number(b[key]||'');
+          } else /* if some other type */ {
             akey = a[key];
             bkey = b[key];
           }
@@ -351,6 +351,7 @@ class EdgeTable extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ If no `sortkey` is passed, the sort will use the existing state.sortkey
 /*/ sortTable ( sortkey=this.state.sortkey, edges, type) {
+
       switch (sortkey) {
         case 'id':
           return this.sortByID(edges);
@@ -363,6 +364,9 @@ class EdgeTable extends UNISYS.Component {
           break;
         case 'Info':
           return this.sortByKey(edges, 'info', type);
+          break;
+        case 'Weight':
+          return this.sortByKey(edges, 'weight', type);
           break;
         case 'provenance':
           return this.sortByKey(edges, 'provenance', type);
