@@ -173,6 +173,7 @@ module.exports = (config, callback) => {
       UNISYS.RegisterHandlers();
       UNISYS.StartNetwork();
       // invoke brunch callback
+      console.log(PR,'brunch-server.js returning control to brunch');
       callback();
     }).
     on('error', function(err) {
