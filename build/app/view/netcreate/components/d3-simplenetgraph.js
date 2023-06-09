@@ -185,7 +185,7 @@ class D3NetGraph {
 
       // bind 'this' to function objects so event handlers can access
       // contents of this class+module instance
-      this._HandleFilteredD3DataUpdate = this._HandleFilteredD3DataUpdate.bind(this);
+      this._HandleD3DataUpdate = this._HandleD3DataUpdate.bind(this);
       this._HandleTemplateUpdate = this._HandleTemplateUpdate.bind(this);
       this._ClearSVG = this._ClearSVG.bind(this);
       this._SetDefaultValues = this._SetDefaultValues.bind(this);
@@ -219,7 +219,12 @@ class D3NetGraph {
       //   this._SetData(data);
       // });
 
-      UDATA.OnAppStateChange('FILTEREDD3DATA', this._HandleFilteredD3DataUpdate);
+      // V2.0 CHANGE
+      // Ignore FILTEREDD3DATA updates!  Only listen for SYNTHESIZEDD3DATA
+      // which represents simplified edge data (duplicate edges removed) for rendering
+      // UDATA.OnAppStateChange('FILTEREDD3DATA', this._HandleFilteredD3DataUpdate);
+
+      UDATA.OnAppStateChange('SYNTHESIZEDD3DATA', this._HandleD3DataUpdate);
       UDATA.OnAppStateChange('TEMPLATE', this._HandleTemplateUpdate);
       UDATA.OnAppStateChange('COLORMAP', this._ColorMap);
       UDATA.HandleMessage('ZOOM_RESET', this._ZoomReset);
@@ -239,7 +244,7 @@ class D3NetGraph {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Deregister() {
     if (DBG) console.log(PR, 'd3-simplenetgraph.DESTRUCT!!!')
-    UDATA.AppStateChangeOff('FILTEREDD3DATA', this._HandleFilteredD3DataUpdate);
+    UDATA.AppStateChangeOff('SYNTHESIZEDD3DATA', this._HandleD3DataUpdate);
     UDATA.AppStateChangeOff('COLORMAP', this._ColorMap);
     UDATA.UnhandleMessage('ZOOM_RESET', this._ZoomReset);
     UDATA.UnhandleMessage('ZOOM_IN', this._ZoomIn);
@@ -255,8 +260,8 @@ class D3NetGraph {
    * @param {array} data.nodes
    * @param {array} data.edges
    */
-  _HandleFilteredD3DataUpdate(data) {
-    if (DBG) console.log(PR, 'got state FILTEREDD3DATA', data);
+  _HandleD3DataUpdate(data) {
+    if (DBG) console.log(PR, 'got state D3DATA', data);
     this._SetData(data);
   }
 
@@ -669,7 +674,10 @@ _UpdateLinkStrokeWidth(edge) {
     (sourceId === mouseoverNodeId) ||
     (targetId === mouseoverNodeId)
   ) {
-    return Math.min(edge.size ** 2, this.edgeSizeMax);  // Use **2 to make size differences more noticeable
+    // max size checking is in edge-logic
+    return edge.size;
+    // return edge.size ** 2;  // Use **2 to make size differences more noticeable
+    // return Math.min(edge.size ** 2, this.edgeSizeMax);  // Use **2 to make size differences more noticeable
   } else {
     return this.edgeSizeDefault;             // Barely visible if not selected
   }

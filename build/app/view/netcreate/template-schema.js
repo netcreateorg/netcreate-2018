@@ -220,7 +220,7 @@ MOD.TEMPLATE = {
     },
     "edgeSizeMax": {
       type: 'number',
-      description: 'Maximum size (width) of edges.',
+      description: 'Maximum size (width) of edges.  Set to 0 to turn off maximum size limit.',
       default: 25
     },
     "filterFade": {
@@ -937,7 +937,7 @@ MOD.TEMPLATE = {
             },
             "displayLabel": {
               type: 'string',
-              description: 'Weight of Edgey',
+              description: 'Weight of Edge',
               default: 'Number'
             },
             "exportLabel": {
