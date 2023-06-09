@@ -1082,6 +1082,7 @@ class EdgeEditor extends UNISYS.Component {
                   <AutoComplete
                     identifier={'edge'+edgeID+'target'}
                     disabledValue={targetNode.label}
+                    // eslint-disable-next-line no-nested-ternary
                     inactiveMode={ ( parentNodeLabel===targetNode.label && !sameSourceAndTarget ) ? 'static' : this.state.isBeingEdited ? 'disabled' : 'link'}
                     linkID={targetNode.id}
                     shouldIgnoreSelection={!this.state.targetIsEditable}
@@ -1165,6 +1166,23 @@ class EdgeEditor extends UNISYS.Component {
                   />
                 </Col>
               </FormGroup>
+              {/** weight **/}
+              <FormGroup row hidden={false /* edgeDefs.weight.hidden */}>
+                <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
+                  <Label for="weight" className="tooltipAnchor small text-muted">
+                    {"Weight" /*edgeDefs.weight.displayLabel*/}
+                    <span className="tooltiptext">{this.helpText(edgeDefs.weight)}</span>
+                  </Label>
+                </Col>
+                <Col sm={9}>
+                  <Input type="text" name="weight"
+                    value={formData.weight}
+                    onChange={this.onWeightChange}
+                    readOnly={!this.state.isBeingEdited}
+                  />
+                </Col>
+              </FormGroup>
+              {/** provenance **/}
               <FormGroup row hidden={edgeDefs.provenance.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="provenance" className="tooltipAnchor small text-muted">

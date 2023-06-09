@@ -567,6 +567,9 @@ class EdgeTable extends UNISYS.Component {
                 <th  width="10%"hidden={edgeDefs.info.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Info", edgeDefs.info.type)}
                     >{edgeDefs.info.displayLabel} {this.sortSymbol("Info")}</Button></th>
+                <th  width="10%"hidden={edgeDefs.weight.hidden}><Button size="sm"
+                      onClick={()=>this.setSortKey("Weight", edgeDefs.weight.type)}
+                    >{edgeDefs.weight.displayLabel} {this.sortSymbol("Weight")}</Button></th>
                 <th  width="7%"hidden={edgeDefs.provenance.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("provenance", edgeDefs.provenance.type)}
                     >{edgeDefs.provenance.displayLabel} {this.sortSymbol("provenance")}</Button></th>
@@ -605,6 +608,7 @@ class EdgeTable extends UNISYS.Component {
                   {edge.notes ? <MarkdownNote text={edge.notes} /> : "" }
                 </td>
                 <td hidden={edgeDefs.info.hidden}>{edge.info}</td>
+                <td hidden={edgeDefs.weight.hidden}>{edge.weight}</td>
                 <td hidden={edgeDefs.provenance.hidden}
                   style={{ fontSize: '9px' }}
                 >{edge.provenance}</td>

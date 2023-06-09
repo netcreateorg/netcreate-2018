@@ -926,6 +926,44 @@ MOD.TEMPLATE = {
             }
           }
         },
+        "weight": { // Weight/Number
+          type: 'object',
+          description: 'Weight of this edge',
+          properties: {
+            "type": {
+              type: 'number',
+              description: '"weight" data type',
+              default: 'number'
+            },
+            "displayLabel": {
+              type: 'string',
+              description: 'Weight of Edgey',
+              default: 'Number'
+            },
+            "exportLabel": {
+              type: 'string',
+              description: 'Label to use for exported csv file field name',
+              default: 'Info'
+            },
+            "help": {
+              type: 'string',
+              description: 'Help text to display on the Edge Editor form',
+              default: 'Some number comparison'
+            },
+            "includeInGraphTooltip": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Show "info" value in tooltip on graph',
+              default: true
+            },
+            "hidden": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Hides "info" from Edge Editor, Edes Table, and exports',
+              default: false
+            }
+          }
+        },
         "provenance": { // Provenance/Source
           type: 'object',
           description: 'Display name of the edge',
