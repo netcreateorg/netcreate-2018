@@ -935,6 +935,11 @@ MOD.TEMPLATE = {
               description: '"weight" data type',
               default: 'number'
             },
+            "defaultValue": {
+              type: 'number',
+              description: 'The default "weight" of new edges',
+              default: 1
+            },
             "displayLabel": {
               type: 'string',
               description: 'Label to use for system display',
@@ -956,6 +961,10 @@ MOD.TEMPLATE = {
               description: 'Show "weight" value in tooltip on graph',
               default: true
             },
+            "isRequired": {
+              type: 'boolean',
+              format: 'checkbox',
+              description: 'Make "weight" a required value.  When "true", the default "weight" value will be added to all edges if "weight" was not previously defined.',
               default: true
             },
             "hidden": {

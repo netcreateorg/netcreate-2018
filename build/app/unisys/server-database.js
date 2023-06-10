@@ -497,6 +497,8 @@ DB.PKT_GetDatabase = function(pkt) {
   let nodes = NODES.chain().data({ removeMeta: false });
   let edges = EDGES.chain().data({ removeMeta: false });
   if (DBG) console.log(PR,`PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${edges.length} edges)`);
+  m_MigrateNodes(nodes);
+  m_MigrateEdges(edges);
   LOGGER.Write(pkt.Info(), `getdatabase`);
   return { d3data: { nodes, edges }, template: TEMPLATE };
 };
@@ -1174,6 +1176,47 @@ DB.ReleaseEditLock = pkt => {
   const i = m_open_editors.findIndex(e => e === pkt.Data().editor);
   if (i > -1) m_open_editors.splice(i, 1);
   return DB.GetEditStatus();
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// utility functions for loading data
+/*/ Migrates old network data to new formats based on the template defintion.
+    This will automatically migrate any field/property that is marked `isRequired`
+    and has a `defaultValue` defined.
+
+    The basic check is this:
+    1. If the TEMPLATE property `isRequired`
+    2. ...and the TEMPLATE propert has `defaultValue` defined
+    2. ...and the node/edge property is currently undefined or ``
+    3. ...then we set the property to the defaultValue
+
+    The key parameters:
+      property.isRequired
+      property.defaultValue
+
+    If `isRequired` or `defaultValue` is not defined on the property, we skip migration.
+
+    REVIEW: We might consider also adding type coercion.
+/*/
+function m_MigrateNodes(nodes) { // modifies `nodes` by reference
+  // Migrate v1.4 to v2.0
+  for (const [propertyName, property] of Object.entries(TEMPLATE.nodeDefs)) {
+    if (property.isRequired && property.defaultValue !== undefined) {
+      nodes.forEach(n => {
+        if (n[propertyName] === undefined || n[propertyName] === '') n[propertyName] = property.defaultValue;
+      });
+    }
+  }
+}
+function m_MigrateEdges(edges) { // modifies `edges` by reference
+  // Migrate v1.4 to v2.0
+  for (const [propertyName, property] of Object.entries(TEMPLATE.edgeDefs)) {
+    if (property.isRequired && property.defaultValue !== undefined) {
+      edges.forEach(e => {
+        if (e[propertyName] === undefined || e[propertyName] === '') e[propertyName] = property.defaultValue;
+      });
+    }
+  }
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
