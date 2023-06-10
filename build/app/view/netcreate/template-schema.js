@@ -937,29 +937,31 @@ MOD.TEMPLATE = {
             },
             "displayLabel": {
               type: 'string',
-              description: 'Weight of Edge',
-              default: 'Number'
+              description: 'Label to use for system display',
+              default: 'Weight'
             },
             "exportLabel": {
               type: 'string',
               description: 'Label to use for exported csv file field name',
-              default: 'Info'
+              default: 'Weight'
             },
             "help": {
               type: 'string',
               description: 'Help text to display on the Edge Editor form',
-              default: 'Some number comparison'
+              default: 'Weight of edge'
             },
             "includeInGraphTooltip": {
               type: 'boolean',
               format: 'checkbox',
-              description: 'Show "info" value in tooltip on graph',
+              description: 'Show "weight" value in tooltip on graph',
+              default: true
+            },
               default: true
             },
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
-              description: 'Hides "info" from Edge Editor, Edes Table, and exports',
+              description: 'Hides "weight" from Edge Editor, Edges Table, and exports',
               default: false
             }
           }
