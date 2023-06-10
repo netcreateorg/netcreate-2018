@@ -1183,7 +1183,7 @@ class EdgeEditor extends UNISYS.Component {
               <FormGroup row hidden={edgeDefs.weight.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="weight" className="tooltipAnchor small text-muted">
-                    {"Weight" /*edgeDefs.weight.displayLabel*/}
+                    {edgeDefs.weight.displayLabel}
                     <span className="tooltiptext">{this.helpText(edgeDefs.weight)}</span>
                   </Label>
                 </Col>
