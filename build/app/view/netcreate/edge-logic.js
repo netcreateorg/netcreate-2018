@@ -79,9 +79,9 @@ function m_SynthesizeEdges(data) {
     if (edgeMap.has(edgeKey)) {
       const currEdge = edgeMap.get(edgeKey);
       const currSize = currEdge.size;
-      e.size = currSize + (e.weight || DEFAULT_SIZE); // weight defaults to 1
+      e.size = currSize + (Number(e.weight) || DEFAULT_SIZE); // weight defaults to 1, force Number
     } else {
-      e.size = e.weight || DEFAULT_SIZE; // weight defaults to 1
+      e.size = Number(e.weight) || DEFAULT_SIZE; // weight defaults to 1, force Number
     }
     // set max
     if (edgeSizeMax > 0) e.size = Math.min(edgeSizeMax, e.size);

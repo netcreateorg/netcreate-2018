@@ -228,7 +228,7 @@ class EdgeEditor extends UNISYS.Component {
           targetId:     '',
           type: '',
           info:         '',
-          weight: '',
+          weight: 1,
           provenance: '',
           comments: '',
           notes:        '',
@@ -344,7 +344,7 @@ class EdgeEditor extends UNISYS.Component {
           targetId:     '',
           type: '',
           info:         '',
-          weight: '',
+          weight: 1,
           provenance: '',
           comments: '',
           notes:        '',
@@ -453,7 +453,7 @@ class EdgeEditor extends UNISYS.Component {
           type: '',
           notes: '',
           info: '',
-          weight: '',
+          weight: 1,
           provenance: provenance_str,
           comments: '',
           citation: '',
@@ -505,7 +505,7 @@ class EdgeEditor extends UNISYS.Component {
           targetId:     edge.target,
           type: edge.type || '',   // Make sure there's valid data
           info: edge.info || '',
-          weight: edge.weight || '',
+          weight: edge.weight || 1,
           provenance: edge.provenance || '',
           comments: edge.comments || '',
           citation: edge.citation || '',
@@ -868,7 +868,7 @@ class EdgeEditor extends UNISYS.Component {
 /*/
 /*/ onWeightChange (event) {
   let formData = this.state.formData;
-  formData.weight = event.target.value;
+  formData.weight = Number(event.target.value); // force Number type
   this.setState({formData: formData});
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
