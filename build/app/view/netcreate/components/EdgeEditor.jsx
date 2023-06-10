@@ -1188,7 +1188,7 @@ class EdgeEditor extends UNISYS.Component {
                   </Label>
                 </Col>
                 <Col sm={9}>
-                  <Input type="text" name="weight"
+                  <Input type="number" name="weight" min="1"
                     value={formData.weight}
                     onChange={this.onWeightChange}
                     readOnly={!this.state.isBeingEdited}

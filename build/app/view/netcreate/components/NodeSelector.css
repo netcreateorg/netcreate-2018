@@ -19,3 +19,9 @@
   width: 100%;
   background-color: #ffff66;
 }
+
+/* Applies to NodeSelector and EdgeEditor, overrides bootstrap */
+.form-control:focus:invalid, .formcontrol:focus:out-of-range, input:invalid, input:out-of-range {
+  border-color: red;
+  box-shadow: 0 0 0 0.2rem rgba(255, 0, 0, .25);
+}
