@@ -571,13 +571,13 @@ class EdgeTable extends UNISYS.Component {
                 <th  width="10%"hidden={edgeDefs.info.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Info", edgeDefs.info.type)}
                     >{edgeDefs.info.displayLabel} {this.sortSymbol("Info")}</Button></th>
-                <th  width="10%"hidden={edgeDefs.weight.hidden}><Button size="sm"
+                <th  width="4%"hidden={edgeDefs.weight.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Weight", edgeDefs.weight.type)}
                     >{edgeDefs.weight.displayLabel} {this.sortSymbol("Weight")}</Button></th>
                 <th  width="7%"hidden={edgeDefs.provenance.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("provenance", edgeDefs.provenance.type)}
                     >{edgeDefs.provenance.displayLabel} {this.sortSymbol("provenance")}</Button></th>
-                <th  width="10%"hidden={!isLocalHost}><Button size="sm"
+                <th  width="7%"hidden={!isLocalHost}><Button size="sm"
                       onClick={()=>this.setSortKey("Updated", FILTER.TYPES.STRING)}
                     >Updated {this.sortSymbol("Updated")}</Button></th>
                 <th  width="10%"hidden={edgeDefs.comments.hidden}><Button size="sm"
