@@ -683,11 +683,9 @@ _UpdateLinkStrokeWidth(edge) {
   }
 }
 
+/// Edge color is pre-set by edge-logic based on weights
 _UpdateLinkStrokeColor(edge) {
-  if (DBG) console.log(PR, '_UpdateLinkStrokeColor', edge)
-  let COLORMAP = UDATA.AppState('COLORMAP');
-  let color = COLORMAP.edgeColorMap[edge.type]
-  return color;
+  return edge.color;
 }
 
 
