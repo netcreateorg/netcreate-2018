@@ -228,6 +228,7 @@ class EdgeEditor extends UNISYS.Component {
           targetId:     '',
           type: '',
           info:         '',
+          weight: 1,
           provenance: '',
           comments: '',
           notes:        '',
@@ -292,6 +293,7 @@ class EdgeEditor extends UNISYS.Component {
       this.onRelationshipChange   = this.onRelationshipChange.bind(this);
       this.onNotesChange          = this.onNotesChange.bind(this);
       this.onInfoChange           = this.onInfoChange.bind(this);
+      this.onWeightChange         = this.onWeightChange.bind(this);
       this.onProvenanceChange = this.onProvenanceChange.bind(this);
       this.onCommentsChange = this.onCommentsChange.bind(this);
       this.onCitationChange       = this.onCitationChange.bind(this);
@@ -342,6 +344,7 @@ class EdgeEditor extends UNISYS.Component {
           targetId:     '',
           type: '',
           info:         '',
+          weight: 1,
           provenance: '',
           comments: '',
           notes:        '',
@@ -450,6 +453,7 @@ class EdgeEditor extends UNISYS.Component {
           type: '',
           notes: '',
           info: '',
+          weight: 1,
           provenance: provenance_str,
           comments: '',
           citation: '',
@@ -501,6 +505,7 @@ class EdgeEditor extends UNISYS.Component {
           targetId:     edge.target,
           type: edge.type || '',   // Make sure there's valid data
           info: edge.info || '',
+          weight: edge.weight || 1,
           provenance: edge.provenance || '',
           comments: edge.comments || '',
           citation: edge.citation || '',
@@ -855,10 +860,21 @@ class EdgeEditor extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onInfoChange (event) {
-      let formData = this.state.formData;
-      formData.info = event.target.value;
-      this.setState({formData: formData});
-    }
+  let formData = this.state.formData;
+  formData.info = event.target.value;
+  this.setState({formData: formData});
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+/*/ onWeightChange (event) {
+  // The built in <input min="0"> will keep the step buttons from going below 0,
+  // but the user can still input "0". When editing, you need to be able to
+  // delete the whole field, so we allow blanks, otherwise the UI will always
+  // force a "0" in the field.
+  let formData = this.state.formData;
+  formData.weight = event.target.value < 1 ? "" : Number(event.target.value); // force Number type
+  this.setState({formData: formData});
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onProvenanceChange (event) {
@@ -909,6 +925,7 @@ class EdgeEditor extends UNISYS.Component {
         target:         this.state.targetNode.id,   // REVIEW: d3data 'target' is id, rename this to 'targetId'?
         type: formData.type,
         info: formData.info,
+        weight: formData.weight,
         provenance: formData.provenance,
         comments: formData.comments,
         citation: formData.citation,
@@ -1082,6 +1099,7 @@ class EdgeEditor extends UNISYS.Component {
                   <AutoComplete
                     identifier={'edge'+edgeID+'target'}
                     disabledValue={targetNode.label}
+                    // eslint-disable-next-line no-nested-ternary
                     inactiveMode={ ( parentNodeLabel===targetNode.label && !sameSourceAndTarget ) ? 'static' : this.state.isBeingEdited ? 'disabled' : 'link'}
                     linkID={targetNode.id}
                     shouldIgnoreSelection={!this.state.targetIsEditable}
@@ -1165,6 +1183,23 @@ class EdgeEditor extends UNISYS.Component {
                   />
                 </Col>
               </FormGroup>
+              {/** weight **/}
+              <FormGroup row hidden={edgeDefs.weight.hidden}>
+                <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
+                  <Label for="weight" className="tooltipAnchor small text-muted">
+                    {edgeDefs.weight.displayLabel}
+                    <span className="tooltiptext">{this.helpText(edgeDefs.weight)}</span>
+                  </Label>
+                </Col>
+                <Col sm={9}>
+                  <Input type="number" name="weight" min="1"
+                    value={formData.weight}
+                    onChange={this.onWeightChange}
+                    readOnly={!this.state.isBeingEdited}
+                  />
+                </Col>
+              </FormGroup>
+              {/** provenance **/}
               <FormGroup row hidden={edgeDefs.provenance.hidden}>
                 <Col sm={3} style={{hyphens: 'auto'}} className="pr-0">
                   <Label for="provenance" className="tooltipAnchor small text-muted">

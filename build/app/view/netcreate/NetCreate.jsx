@@ -53,6 +53,7 @@ const InfoPanel    = require('./components/InfoPanel');
 const FiltersPanel = require('./components/filter/FiltersPanel');
 const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
 const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
+const EDGELOGIC = require('./edge-logic'); // handles edge synthesis
 const FILTER = require('./components/filter/FilterEnums');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////

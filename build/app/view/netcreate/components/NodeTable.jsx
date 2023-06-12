@@ -285,9 +285,9 @@ class NodeTable extends UNISYS.Component {
                                  // was changed but the full db wasn't updated
             bkey = b[key] || '';
           } else if (type === FILTER.TYPES.NUMBER) {
-            akey = Number(a[key]); // force number for sorting
-            bkey = Number(b[key]);
-          } else {
+            akey = Number(a[key]||''); // force number for sorting
+            bkey = Number(b[key]||'');
+          } else /* some other type */ {
             akey = a[key];
             bkey = b[key];
           }

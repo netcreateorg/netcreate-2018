@@ -334,6 +334,8 @@ function m_LoadTOMLTemplate(templateFilePath) {
       // Migrate v1.4 to v2.0
       // v2.0 added `provenance` and `comments` -- so we add the template definitions if the toml template does not already have them
       // hides them by default if they were not previously added
+      // FIXME: There is related migration code in m_MigrateTemplate() that needs to be merged...if possible
+
       const DEFAULT_TEMPLATE = TEMPLATE_SCHEMA.ParseTemplateSchema();
       const NODEDEFS = DEFAULT_TEMPLATE.nodeDefs;
       if (json.nodeDefs.provenance === undefined) {
@@ -352,6 +354,10 @@ function m_LoadTOMLTemplate(templateFilePath) {
       if (json.edgeDefs.comments === undefined) {
         json.edgeDefs.comments = EDGEDEFS.comments;
         json.edgeDefs.comments.hidden = true;
+      }
+      if (json.edgeDefs.weight === undefined) {
+        json.edgeDefs.weight = EDGEDEFS.weight;
+        json.edgeDefs.weight.hidden = true;
       }
       // NOTE: We are not modifying the template permanently, only temporarily inserting definitions so the system can validate
 
@@ -397,8 +403,12 @@ async function m_LoadTemplate() {
 /// REVIEW: Should this be moved to a separate server-template module?
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Migrate Template File
-    Updates older templates to the current template-schema specification.
+    Updates older templates to the current template-schema specification by
+    inserting missing properties needed by the UI.
     Any changes to template-schema should be reflected here.
+
+    FIXME: There is code in m_LoadTOMLTemplate() that also does migration that
+    needs to be moved here!
 /*/
 function m_MigrateTemplate() {
   // 2023-0602 Filter Labels
@@ -419,8 +429,9 @@ function m_MigrateTemplate() {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Validate Template File
-    This mostly makes sure that nodes and edges have the properties that the UI expects.
-    If a property is missing, we merely throw an error.  We don't do any error recovery.
+    Lazy check of template object definitions to make sure they are of
+    expected types and values so the UI doesn't choke and die. Throws an error
+    if property is missing.
 /*/
 // eslint-disable-next-line complexity
 function m_ValidateTemplate() {
@@ -486,6 +497,8 @@ DB.PKT_GetDatabase = function(pkt) {
   let nodes = NODES.chain().data({ removeMeta: false });
   let edges = EDGES.chain().data({ removeMeta: false });
   if (DBG) console.log(PR,`PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${edges.length} edges)`);
+  m_MigrateNodes(nodes);
+  m_MigrateEdges(edges);
   LOGGER.Write(pkt.Info(), `getdatabase`);
   return { d3data: { nodes, edges }, template: TEMPLATE };
 };
@@ -1163,6 +1176,47 @@ DB.ReleaseEditLock = pkt => {
   const i = m_open_editors.findIndex(e => e === pkt.Data().editor);
   if (i > -1) m_open_editors.splice(i, 1);
   return DB.GetEditStatus();
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// utility functions for loading data
+/*/ Migrates old network data to new formats based on the template defintion.
+    This will automatically migrate any field/property that is marked `isRequired`
+    and has a `defaultValue` defined.
+
+    The basic check is this:
+    1. If the TEMPLATE property `isRequired`
+    2. ...and the TEMPLATE propert has `defaultValue` defined
+    2. ...and the node/edge property is currently undefined or ``
+    3. ...then we set the property to the defaultValue
+
+    The key parameters:
+      property.isRequired
+      property.defaultValue
+
+    If `isRequired` or `defaultValue` is not defined on the property, we skip migration.
+
+    REVIEW: We might consider also adding type coercion.
+/*/
+function m_MigrateNodes(nodes) { // modifies `nodes` by reference
+  // Migrate v1.4 to v2.0
+  for (const [propertyName, property] of Object.entries(TEMPLATE.nodeDefs)) {
+    if (property.isRequired && property.defaultValue !== undefined) {
+      nodes.forEach(n => {
+        if (n[propertyName] === undefined || n[propertyName] === '') n[propertyName] = property.defaultValue;
+      });
+    }
+  }
+}
+function m_MigrateEdges(edges) { // modifies `edges` by reference
+  // Migrate v1.4 to v2.0
+  for (const [propertyName, property] of Object.entries(TEMPLATE.edgeDefs)) {
+    if (property.isRequired && property.defaultValue !== undefined) {
+      edges.forEach(e => {
+        if (e[propertyName] === undefined || e[propertyName] === '') e[propertyName] = property.defaultValue;
+      });
+    }
+  }
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

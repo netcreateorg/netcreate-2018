@@ -360,6 +360,7 @@ function m_FiltersApply() {
 
   // Update FILTEREDD3DATA
   UDATA.SetAppState("FILTEREDD3DATA", FILTEREDD3DATA);
+  // edge-logic handles this call and updates SYNTHESIZEDD3DATA, which is rendered by d3-simplenetgraph
 
 }
 

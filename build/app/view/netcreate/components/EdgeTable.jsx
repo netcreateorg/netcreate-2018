@@ -314,9 +314,9 @@ class EdgeTable extends UNISYS.Component {
                                  // was changed but the full db wasn't updated
             bkey = b[key] || '';
           } else if (type === FILTER.TYPES.NUMBER) {
-            akey = Number(a[key]); // force number for sorting
-            bkey = Number(b[key]);
-          } else {
+            akey = Number(a[key]||''); // force number for sorting
+            bkey = Number(b[key]||'');
+          } else /* if some other type */ {
             akey = a[key];
             bkey = b[key];
           }
@@ -351,6 +351,7 @@ class EdgeTable extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ If no `sortkey` is passed, the sort will use the existing state.sortkey
 /*/ sortTable ( sortkey=this.state.sortkey, edges, type) {
+
       switch (sortkey) {
         case 'id':
           return this.sortByID(edges);
@@ -363,6 +364,9 @@ class EdgeTable extends UNISYS.Component {
           break;
         case 'Info':
           return this.sortByKey(edges, 'info', type);
+          break;
+        case 'Weight':
+          return this.sortByKey(edges, 'weight', type);
           break;
         case 'provenance':
           return this.sortByKey(edges, 'provenance', type);
@@ -567,10 +571,13 @@ class EdgeTable extends UNISYS.Component {
                 <th  width="10%"hidden={edgeDefs.info.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("Info", edgeDefs.info.type)}
                     >{edgeDefs.info.displayLabel} {this.sortSymbol("Info")}</Button></th>
+                <th  width="4%"hidden={edgeDefs.weight.hidden}><Button size="sm"
+                      onClick={()=>this.setSortKey("Weight", edgeDefs.weight.type)}
+                    >{edgeDefs.weight.displayLabel} {this.sortSymbol("Weight")}</Button></th>
                 <th  width="7%"hidden={edgeDefs.provenance.hidden}><Button size="sm"
                       onClick={()=>this.setSortKey("provenance", edgeDefs.provenance.type)}
                     >{edgeDefs.provenance.displayLabel} {this.sortSymbol("provenance")}</Button></th>
-                <th  width="10%"hidden={!isLocalHost}><Button size="sm"
+                <th  width="7%"hidden={!isLocalHost}><Button size="sm"
                       onClick={()=>this.setSortKey("Updated", FILTER.TYPES.STRING)}
                     >Updated {this.sortSymbol("Updated")}</Button></th>
                 <th  width="10%"hidden={edgeDefs.comments.hidden}><Button size="sm"
@@ -605,6 +612,7 @@ class EdgeTable extends UNISYS.Component {
                   {edge.notes ? <MarkdownNote text={edge.notes} /> : "" }
                 </td>
                 <td hidden={edgeDefs.info.hidden}>{edge.info}</td>
+                <td hidden={edgeDefs.weight.hidden}>{edge.weight}</td>
                 <td hidden={edgeDefs.provenance.hidden}
                   style={{ fontSize: '9px' }}
                 >{edge.provenance}</td>
