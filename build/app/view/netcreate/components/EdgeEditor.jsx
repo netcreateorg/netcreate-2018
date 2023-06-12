@@ -867,8 +867,12 @@ class EdgeEditor extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ onWeightChange (event) {
+  // The built in <input min="0"> will keep the step buttons from going below 0,
+  // but the user can still input "0". When editing, you need to be able to
+  // delete the whole field, so we allow blanks, otherwise the UI will always
+  // force a "0" in the field.
   let formData = this.state.formData;
-  formData.weight = Number(event.target.value); // force Number type
+  formData.weight = event.target.value < 1 ? "" : Number(event.target.value); // force Number type
   this.setState({formData: formData});
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
