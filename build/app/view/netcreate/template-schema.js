@@ -151,7 +151,7 @@ MOD.TEMPLATE = {
     "name": {
       type: 'string',
       description: 'A short descriptive title for the project.  This is displayed on the graph view.  It can contain spaces.  e.g. "Alexander the Great"',
-      default: 'Untitled Template'
+      default: 'Untitled Project'
     },
     "description": {
       type: 'string',
@@ -181,6 +181,7 @@ MOD.TEMPLATE = {
     "requireLogin": {
       type: 'boolean',
       format: 'checkbox',
+      description: 'Users are required to log in to view the graph.',
       default: false
     },
     "hideDeleteNodeButton": {
@@ -215,8 +216,8 @@ MOD.TEMPLATE = {
     },
     "edgeSizeDefault": {
       type: 'number',
-      description: 'Default size (width) of edges (barely visible).',
-      default: 0.175
+      description: 'Default size (width) of edges.',
+      default: 1 // Was 0.175 to be barely visible, but edge weights now override this default to 1
     },
     "edgeSizeMax": {
       type: 'number',
@@ -225,7 +226,7 @@ MOD.TEMPLATE = {
     },
     "filterFade": {
       type: 'string',
-      description: 'Display name of the filter that shows matching items and fades others.',
+      description: 'Display name of the filter function that shows matching items and fades others.',
       default: 'Fade'
     },
     "filterFadeHelp": {
@@ -235,7 +236,7 @@ MOD.TEMPLATE = {
     },
     "filterReduce": {
       type: 'string',
-      description: 'Display name of the filter that shows matching items and reduces (removes) others.',
+      description: 'Display name of the filter function that shows matching items and reduces (removes) others.',
       default: 'Reduce'
     },
     "filterReduceHelp": {
@@ -245,7 +246,7 @@ MOD.TEMPLATE = {
     },
     "filterFocus": {
       type: 'string',
-      description: 'Display name of the filter that shows nodes connected to a selected node within a specified range.',
+      description: 'Display name of the filter fucntion that shows nodes connected to a selected node within a specified range.',
       default: 'Focus'
     },
     "filterFocusHelp": {
@@ -280,23 +281,23 @@ MOD.TEMPLATE = {
     },
     "nodeDefaultTransparency": {
       type: 'number',
-      description: 'Default transparency for nodes.',
+      description: 'Default transparency for nodes (0 - 1).',
       default: 1.0
     },
     "edgeDefaultTransparency": {
       type: 'number',
-      description: 'Default transparency for edges.',
+      description: 'Default transparency for edges (0 - 1.',
       default: 0.7
     },
     "searchColor": {
       type: 'string',
-      description: 'Outline color of nodes selected via search.',
+      description: 'Outline color of nodes selected via search (hex).',
       default: '#008800',
       format: 'color'
     },
     "sourceColor": {
       type: 'string',
-      description: 'Outline color of node highlighted during auto complete.',
+      description: 'Outline color of node highlighted during auto complete (hex).',
       default: '#FFa500',
       format: 'color'
     },
@@ -308,8 +309,7 @@ MOD.TEMPLATE = {
           properties: {
             "type": {
               type: 'number',
-              // not editable
-              options: { hidden: true },
+              options: { hidden: true }, // not editable
               description: '"id" data type',
               default: 'number'
             },
@@ -325,8 +325,7 @@ MOD.TEMPLATE = {
             },
             "help": {
               type: 'string',
-              // not editable
-              options: { hidden: true },
+              options: { hidden: true }, // not editable
               description: 'Help text to display on the Node Editor form',
               default: 'System-generated unique id number'
             },
@@ -351,8 +350,7 @@ MOD.TEMPLATE = {
           properties: {
             "type": {
               type: 'string',
-              // not editable
-              options: { hidden: true },
+              options: { hidden: true }, // not editable
               description: '"label" data type',
               default: 'string'
             },
@@ -392,8 +390,7 @@ MOD.TEMPLATE = {
           properties: {
             "type": {
               type: 'string',
-              // not editable
-              options: { hidden: true },
+              options: { hidden: true }, // not editable
               description: 'node "type" data type',
               default: 'select'
             },
@@ -410,7 +407,7 @@ MOD.TEMPLATE = {
             "help": {
               type: 'string',
               description: 'Help text to display on the Node Editor form',
-              default: 'Multiple people are a "Group"'
+              default: 'Select a category'
             },
             "includeInGraphTooltip": {
               type: 'boolean',
@@ -429,7 +426,7 @@ MOD.TEMPLATE = {
         },
         "notes": { // Significance
           type: 'object',
-          description: 'Display name of the node',
+          description: 'General purpose notes text field',
           properties: {
             "type": {
               type: 'string',
@@ -449,7 +446,7 @@ MOD.TEMPLATE = {
             "help": {
               type: 'string',
               description: 'Help text to display on the Node Editor form',
-              default: 'Display name of the node'
+              default: 'General purpose notes text field'
             },
             "includeInGraphTooltip": {
               type: 'boolean',
@@ -467,7 +464,7 @@ MOD.TEMPLATE = {
         },
         "info": { // Info/Number
           type: 'object',
-          description: 'Display name of the node',
+          description: 'General purpose numeric text field',
           properties: {
             "type": {
               type: 'string',
@@ -505,7 +502,7 @@ MOD.TEMPLATE = {
         },
         "provenance": { // Provenance/Source
           type: 'object',
-          description: 'Display name of the node',
+          description: 'Who created the node',
           properties: {
             "type": {
               type: 'string',
@@ -543,7 +540,7 @@ MOD.TEMPLATE = {
         },
         "comments": { // Comments
           type: 'object',
-          description: 'Display name of the node',
+          description: 'User comments on the node',
           properties: {
             "type": {
               type: 'string',
@@ -581,7 +578,7 @@ MOD.TEMPLATE = {
         },
         "degrees": {
           type: 'object',
-          description: 'Display name of the node',
+          description: 'Number of edges connected to this node (auto-calculated)',
           properties: {
             "type": {
               type: 'string',
@@ -726,8 +723,7 @@ MOD.TEMPLATE = {
           properties: {
             "type": {
               type: 'number',
-              // not editable
-              options: { hidden: true },
+              options: { hidden: true }, // not editable
               description: '"id" data type',
               default: 'number'
             },
@@ -743,9 +739,8 @@ MOD.TEMPLATE = {
             },
             "help": {
               type: 'string',
-              // not editable
-              options: { hidden: true },
-              description: 'Help text to display on the Node Editor form',
+              options: { hidden: true }, // not editable
+              description: 'Help text to display on the Edge Editor form',
               default: 'System-generated unique id number'
             },
             "hidden": {
@@ -759,12 +754,11 @@ MOD.TEMPLATE = {
         },
         "source": {
           type: 'object',
-          description: 'Display name of the node',
+          description: 'Node the edge is connected to',
           properties: {
             "type": {
               type: 'string',
-              // not editable
-              options: { hidden: true },
+              options: { hidden: true }, // not editable
               description: '"source" data type',
               default: 'number'
             },
@@ -794,12 +788,11 @@ MOD.TEMPLATE = {
         },
         "target": {
           type: 'object',
-          description: 'Display name of the node',
+          description: 'Node the edge is connected to',
           properties: {
             "type": {
               type: 'string',
-              // not editable
-              options: { hidden: true },
+              options: { hidden: true }, // not editable
               description: '"target" data type',
               default: 'number'
             },
@@ -833,8 +826,7 @@ MOD.TEMPLATE = {
           properties: {
             "type": {
               type: 'string',
-              // not editable
-              options: { hidden: true },
+              options: { hidden: true }, // not editable
               description: 'edge "type" data type',
               default: 'select'
             },
@@ -864,7 +856,7 @@ MOD.TEMPLATE = {
         },
         "notes": { // Signficance
           type: 'object',
-          description: 'Display name of the node',
+          description: 'General purpose notes text field',
           properties: {
             "type": {
               type: 'string',
@@ -896,7 +888,7 @@ MOD.TEMPLATE = {
         },
         "info": { // Info/Number/Date
           type: 'object',
-          description: 'Display name of the node',
+          description: 'General purpose numeric text field',
           properties: {
             "type": {
               type: 'string',
@@ -964,7 +956,7 @@ MOD.TEMPLATE = {
             "isRequired": {
               type: 'boolean',
               format: 'checkbox',
-              description: 'Make "weight" a required value.  When "true", the default "weight" value will be added to all edges if "weight" was not previously defined.',
+              description: 'Make "weight" a required value.  When "true", "weight" will be set to `defaultValue` for all edges if "weight" was not previously defined.  Be sure to define `defaultValue`',
               default: true
             },
             "hidden": {
@@ -977,7 +969,7 @@ MOD.TEMPLATE = {
         },
         "provenance": { // Provenance/Source
           type: 'object',
-          description: 'Display name of the edge',
+          description: 'Provenance of the edge',
           properties: {
             "type": {
               type: 'string',
@@ -996,20 +988,20 @@ MOD.TEMPLATE = {
             },
             "help": {
               type: 'string',
-              description: 'Help text to display on the Node Editor form',
+              description: 'Help text to display on the Edge Editor form',
               default: 'Who created this?  (aka Provenance)'
             },
             "hidden": {
               type: 'boolean',
               format: 'checkbox',
-              description: 'Hides "provenance" from Node Editor, Nodes Table, and exports',
+              description: 'Hides "provenance" from Edge Editor, Edges Table, and exports',
               default: false
             }
           }
         },
         "comments": { // Comments
           type: 'object',
-          description: 'Display name of the edge',
+          description: 'Comments on the edge',
           properties: {
             "type": {
               type: 'string',
@@ -1047,7 +1039,7 @@ MOD.TEMPLATE = {
         },
         "citation": {
           type: 'object',
-          description: 'Display name of the node',
+          description: 'Source of the edge',
           properties: {
             "type": {
               type: 'string',
@@ -1079,7 +1071,7 @@ MOD.TEMPLATE = {
         },
         "category": {
           type: 'object',
-          description: 'Display name of the node',
+          description: 'General purpose string text field (deprecated)',
           properties: {
             "type": {
               type: 'string',
