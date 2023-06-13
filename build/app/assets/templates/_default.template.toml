@@ -57,7 +57,7 @@ hidden = false
 
 [nodeDefs.notes]
 type = "string"
-displayLabel = "Significance"
+displayLabel = "Notes"
 exportLabel = "Notes"
 help = "General purpose notes text field"
 includeInGraphTooltip = true
@@ -150,7 +150,7 @@ hidden = false
 
 [edgeDefs.notes]
 type = "string"
-displayLabel = "Significance"
+displayLabel = "Notes"
 exportLabel = "Notes"
 help = "Significance of the connection"
 hidden = false
