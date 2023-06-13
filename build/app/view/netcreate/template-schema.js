@@ -424,7 +424,7 @@ MOD.TEMPLATE = {
             "options": Object.assign({}, MOD.NODETYPEOPTIONS, { description: 'NOTE: We recommend using the "Edit Node Types" feature to edit Node Types.  It provides additional dataset migration tools.' })
           }
         },
-        "notes": { // Significance
+        "notes": { // was "Significance"
           type: 'object',
           description: 'General purpose notes text field',
           properties: {
@@ -436,7 +436,7 @@ MOD.TEMPLATE = {
             "displayLabel": {
               type: 'string',
               description: 'Label to use for system display',
-              default: 'Significance'
+              default: 'Notes'
             },
             "exportLabel": {
               type: 'string',
@@ -854,7 +854,7 @@ MOD.TEMPLATE = {
             "options": Object.assign({}, MOD.EDGETYPEOPTIONS, { description: 'NOTE: We recommend using the "Edit Edge Types" feature to edit Edge Types.  It provides additional dataset migration tools.' })
           }
         },
-        "notes": { // Signficance
+        "notes": { // was "Signficance"
           type: 'object',
           description: 'General purpose notes text field',
           properties: {
@@ -866,7 +866,7 @@ MOD.TEMPLATE = {
             "displayLabel": {
               type: 'string',
               description: 'Label to use for system display',
-              default: 'Significance'
+              default: 'Notes'
             },
             "exportLabel": {
               type: 'string',

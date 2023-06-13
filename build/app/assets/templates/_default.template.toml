@@ -1,16 +1,26 @@
-name = "Untitled"
-description = "Default empty template"
+name = "Untitled Project"
+description = "No Description"
 requireLogin = false
 hideDeleteNodeButton = false
 allowLoggedInUserToImport = false
+nodeSizeDefault = 5
+nodeSizeMax = 50
+edgeSizeDefault = 1
+edgeSizeMax = 25
+filterFade = "Fade"
+filterFadeHelp = "Show matches, Fade others"
+filterReduce = "Reduce"
+filterReduceHelp = "Show matches, Reduce (remove) others & recalculate sizes"
+filterFocus = "Focus"
+filterFocusHelp = "Show only nodes connected to the selected node within range"
 duplicateWarning = "You’re entering a duplicate node.  Do you want to View the Existing node, or Continue creating?"
 nodeIsLockedMessage = "This node is currently being edited by someone else, please try again later."
 edgeIsLockedMessage = "This edge is currently being edited by someone else, please try again later."
 templateIsLockedMessage = "The template is currently being edited, please try again later."
 importIsLockedMessage = "Data is currently being imported, please try again later."
-nodeDefaultTransparency = 1.0
+nodeDefaultTransparency = 1
 edgeDefaultTransparency = 0.7
-searchColor = "#FFFF00"
+searchColor = "#008800"
 sourceColor = "#FFa500"
 
 [citation]
@@ -22,51 +32,34 @@ type = "number"
 displayLabel = "Id"
 exportLabel = "ID"
 help = "System-generated unique id number"
+includeInGraphTooltip = true
+hidden = false
 
 [nodeDefs.label]
 type = "string"
-displayLabel = "Label"
+displayLabel = "label"
 exportLabel = "Label"
 help = "Display name of the node"
 includeInGraphTooltip = true
+hidden = false
 
 [nodeDefs.type]
 type = "select"
 displayLabel = "Type"
-exportLabel = "Type"
-help = "Multiple people are a 'Group'"
+exportLabel = "NodeType"
+help = "Select a category"
 includeInGraphTooltip = true
 hidden = false
 
-[[nodeDefs.type.options]]
-label = ""
-color = "#eeeeee"
-
-[[nodeDefs.type.options]]
-label = "Person"
-color = "#00fbff"
-
-[[nodeDefs.type.options]]
-label = "Group"
-color = "#3399ff"
-
-[[nodeDefs.type.options]]
-label = "Place"
-color = "#00ff00"
-
-[[nodeDefs.type.options]]
-label = "Thing"
-color = "#009999"
-
-[[nodeDefs.type.options]]
-label = "Event"
-color = "#ff0000"
+  [[nodeDefs.type.options]]
+  color = "#eeeeee"
+  label = ""
 
 [nodeDefs.notes]
 type = "string"
-displayLabel = "Significance"
+displayLabel = "Notes"
 exportLabel = "Notes"
-help = "Add some details"
+help = "General purpose notes text field"
 includeInGraphTooltip = true
 hidden = false
 
@@ -98,32 +91,29 @@ hidden = false
 type = "number"
 displayLabel = "Degrees"
 exportLabel = "Degrees"
-help = "Number of edges"
+help = "Number of edges connected to this node"
 includeInGraphTooltip = true
 hidden = false
 
 [nodeDefs.created]
-type = "string"
 displayLabel = "Created"
 exportLabel = "Created"
-help = "Date and time node was created"
 includeInGraphTooltip = true
+help = "Date and time node was created"
 hidden = false
 
 [nodeDefs.updated]
-type = "string"
-displayLabel = "Last Updated"
-exportLabel = "Last Updated"
-help = "Date and time node was last modified"
+displayLabel = "Updated"
+exportLabel = "Updated"
 includeInGraphTooltip = true
+help = "Date and time node was last modified"
 hidden = false
 
 [nodeDefs.revision]
-type = "string"
-displayLabel = "Revisions"
-exportLabel = "Revisions"
-help = "Number of times node has been revised"
+displayLabel = "Revision"
+exportLabel = "Revision"
 includeInGraphTooltip = true
+help = "Number of times this node has been revised"
 hidden = true
 
 [edgeDefs.id]
@@ -131,52 +121,55 @@ type = "number"
 displayLabel = "Id"
 exportLabel = "ID"
 help = "System-generated unique id number"
+hidden = false
 
 [edgeDefs.source]
-type = "node"
+type = "number"
 displayLabel = "Source"
 exportLabel = "Source"
-help = ""
+help = "Edge source node"
 hidden = false
 
 [edgeDefs.target]
-type = "node"
+type = "number"
 displayLabel = "Target"
 exportLabel = "Target"
-help = ""
+help = "Edge target node"
 hidden = false
 
 [edgeDefs.type]
 type = "select"
 displayLabel = "Type"
-exportLabel = "Type"
-help = ""
+exportLabel = "EdgeType"
+help = "Type of edge connection"
 hidden = false
 
-[[edgeDefs.type.options]]
-label = ""
-color = "#c2c2c2"
-
-[[edgeDefs.type.options]]
-label = "is interested in"
-color = "#0dbd00"
-
-[[edgeDefs.type.options]]
-label = "is not interested in"
-color = "#ff0000"
+  [[edgeDefs.type.options]]
+  color = "#eeeeee"
+  label = ""
 
 [edgeDefs.notes]
 type = "string"
-displayLabel = "Significance"
-exportLabel = "Significance"
-help = ""
+displayLabel = "Notes"
+exportLabel = "Notes"
+help = "Significance of the connection"
 hidden = false
 
 [edgeDefs.info]
 type = "number"
 displayLabel = "Date"
 exportLabel = "Date"
-help = "'YYYY-MM-DD' format"
+help = '"YYYY-MM-DD" format"'
+hidden = false
+
+[edgeDefs.weight]
+type = "number"
+defaultValue = 1
+displayLabel = "Weight"
+exportLabel = "Weight"
+help = "Weight of edge"
+includeInGraphTooltip = true
+isRequired = true
 hidden = false
 
 [edgeDefs.provenance]
@@ -191,42 +184,40 @@ type = "string"
 displayLabel = "Comments"
 exportLabel = "Comments"
 help = 'Enter "<comment> -- <name> <date>"'
+includeInGraphTooltip = true
 hidden = false
 
 [edgeDefs.citation]
 type = "string"
 displayLabel = "Citation"
 exportLabel = "Citation"
-help = "Source Book.Chapter (Part 2 06.03)"
+help = 'Source Book.Chapter (e.g. "Part 2 06.03")'
 hidden = false
 
 [edgeDefs.category]
 type = "string"
 displayLabel = "Category"
 exportLabel = "Category"
-help = "Category?"
-hidden = false
+help = "Category (deprecated)"
+hidden = true
 
 [edgeDefs.created]
-type = "string"
 displayLabel = "Created"
 exportLabel = "Created"
-help = "Date and time edge was created"
 includeInGraphTooltip = true
+help = "Date and time edge was created"
 hidden = false
 
 [edgeDefs.updated]
-type = "string"
-displayLabel = "Last Updated"
-exportLabel = "Last Updated"
-help = "Date and time edge was last modified"
+displayLabel = "Updated"
+exportLabel = "Updated"
 includeInGraphTooltip = true
+help = "Date and time edge was last modified"
 hidden = false
 
 [edgeDefs.revision]
-type = "string"
-displayLabel = "Revisions"
-exportLabel = "Revisions"
-help = "Number of times edge has been revised"
+displayLabel = "Revision"
+exportLabel = "Revision"
 includeInGraphTooltip = true
+help = "Number of times this edge has been revised"
 hidden = true
