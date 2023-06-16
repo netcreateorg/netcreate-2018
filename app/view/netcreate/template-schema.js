@@ -28,6 +28,7 @@
   2. Clicking "New Template" on the "More... > Edit Template" tab.
   3. Clicking "Save Changes"
   4. Copy the file to `netcreate-2018/build/app/assets/templates/`
+  FIXME: rename filepath
   5. Renaming the saved template to `_default.template.toml`
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/

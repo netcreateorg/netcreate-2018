@@ -15,8 +15,8 @@ const TOML = require("@iarna/toml");
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-const SESSION = require("../unisys/common-session");
-const LOGGER = require("../unisys/server-logger");
+const SESSION = require("./common-session");
+const LOGGER = require("./server-logger");
 const PROMPTS = require("../system/util/prompts");
 const TEMPLATE_SCHEMA = require("../view/netcreate/template-schema");
 const FILTER = require('../view/netcreate/components/filter/FilterEnums');
