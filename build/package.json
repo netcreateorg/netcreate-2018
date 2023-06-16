@@ -1,6 +1,6 @@
 {
-  "name": "netcreate2018",
-  "version": "1.0.0",
+  "name": "netcreate-itest",
+  "version": "2.0.0-alpha",
   "description": "research project for network graph analysis",
   "scripts": {
     "dev": "brunch watch -s",
@@ -16,14 +16,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/daveseah/netcreate-2018.git"
+    "url": "git+https://github.com/daveseah/netcreate-itest.git"
   },
   "author": "Inquirium LLC",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/daveseah/netcreate-2018/issues"
+    "url": "https://github.com/daveseah/netcreate-itest/issues"
   },
-  "homepage": "https://github.com/daveseah/netcreate-2018#readme",
+  "homepage": "https://github.com/daveseah/netcreate-itest#readme",
   "devDependencies": {
     "@babel/core": "^7.11.1",
     "@storybook/addon-actions": "^6.0.6",
