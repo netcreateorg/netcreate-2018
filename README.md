@@ -27,7 +27,7 @@ Run NetCreate server and browse to the web app. Enter the console and type `ncMa
 To access the Import/Export and Template Editor, you will need to enable admin mode in one of two ways:
 
 * use `localhost:3000` instead of the ip address.
-* if on a remote, login with a login token and append `?admin=true` to the end of the URL (e.g. http://192.168.1.100:3000/#/edit/TEST-TEST-GXK**?admin=true**)
+* if on a remote, login with a login token and append `?admin=true` to the end of the URL (e.g. `192.168.1.100:3000/#/edit/TEST-TEST-GXK?admin=true`)
 
 
 ## NETCREATE-ITEST (2.0) FEATURE SUMMARY
