@@ -27,7 +27,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = false;
+const DBG = true;
 const PR = 'NCGraph';
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
@@ -56,6 +56,9 @@ class NCGraph extends UNISYS.Component {
       this.updateNCData = this.updateNCData.bind(this);
       this.updateTemplate = this.updateTemplate.bind(this);
       this.updateColorMap = this.updateColorMap.bind(this);
+      this.processNCData = this.processNCData.bind(this);
+      this.getHelp = this.getHelp.bind(this);
+      this.getUpdatedDateText = this.getUpdatedDateText.bind(this);
       this.onZoomReset = this.onZoomReset.bind(this);
       this.onZoomIn    = this.onZoomIn.bind(this);
       this.onZoomOut   = this.onZoomOut.bind(this);
@@ -85,6 +88,7 @@ class NCGraph extends UNISYS.Component {
    */
   updateNCData(data) {
     if (DBG) console.log(PR, 'got state D3DATA', data);
+    const d3data = this.processNCData(data);
     this.state.d3NetGraph.SetData(data);
   }
   /**
@@ -104,9 +108,90 @@ class NCGraph extends UNISYS.Component {
       this.forceUpdate(); // just once, needed to overcome shouldComponentUpdate override
     });
   }
-  updateColorMap() {
-    this.satate.d3NetGraph.UpdateGraph();
+  /**
+   * Node/Edge Colors in Template have been changed.
+   * The template may be loaded or changed after NCDATA is loaded.
+   * So we need to explicitly update the colors if the color
+   * definitions have changed.
+   */
+  updateColorMap(data) {
+    if (DBG) console.log(PR, 'got state COLORMAP', data);
+    this.state.d3NetGraph.UpdateGraph();
   }
+  /**
+   * Interprets SYNTEHSIZEDD3DATA into a simplified form for the renderer
+   * @param {*} data NCDATA { nodes, edges }
+   * @returns {Object} {
+   *                     nodes: [ ...{id, label, size, color, opacity, strokeColor, strokeWidth, help}],
+   *                     edges: [ ...{id, sourceId, targetId, size, color, opacity}]
+   *                   }
+   */
+  processNCData(data) {
+    const d3data = {};
+    const TEMPLATE = this.AppState('TEMPLATE');
+    const COLORMAP = UDATA.AppState('COLORMAP');
+    const nodes = data.nodes.map(n => {
+        // Look up colors
+        // REVIEW: Using label match.  Should we use id instead?
+        // The advantage of using the label is backward compatibility with
+        // Google Fusion table data as well as exportability.
+        // If we save the type as an id, the data format will be
+        // less human-readable.
+        // The problem with this approach though is that any changes
+        // to the label text will result in a failed color lookup!
+      n.color = COLORMAP.nodeColorMap[n.type];
+      n.opacity = n.filteredTransparency;
+      n.size = Math.min(TEMPLATE.nodeSizeDefault + n.degrees, TEMPLATE.nodeSizeMax);
+      n.strokeColor = n.selected || n.strokeColor || undefined;
+      n.strokeWidth = n.selected || n.strokeColor ? '5px' : undefined;
+      n.help = this.getHelp(n);
+      return n;
+    })
+    d3data.nodes = nodes;
+    d3data.edges = data.edges;
+    return d3data;
+  }
+  /**
+   * Returns the tooltip help text for the node, using labels defined in the template
+   * @param {*} node
+   * @returns {string}
+   */
+  getHelp(node) {
+    const TEMPLATE = this.AppState('TEMPLATE');
+    const nodeDefs = TEMPLATE.nodeDefs;
+    let titleText = "";
+    if (nodeDefs.label.includeInGraphTooltip !== undefined) {
+      // Add Label
+      if (nodeDefs.label.includeInGraphTooltip) titleText += nodeDefs.label.displayLabel + ": " + node.label + "\n";
+      // Add type
+      if (nodeDefs.type.includeInGraphTooltip) titleText += nodeDefs.type.displayLabel + ": " + node.type + "\n";
+      // Add degrees
+      if (nodeDefs.degrees.includeInGraphTooltip) titleText += nodeDefs.degrees.displayLabel + ": " + node.degrees + "\n";
+      // Add notes
+      if (nodeDefs.notes.includeInGraphTooltip) titleText += nodeDefs.notes.displayLabel + ": " + node.notes + "\n";
+      // Add info
+      if (nodeDefs.info.includeInGraphTooltip) titleText += nodeDefs.info.displayLabel + ": " + node.info + "\n";
+      // Add updated info
+      if (nodeDefs.updated.includeInGraphTooltip) titleText += nodeDefs.updated.displayLabel + ": " + this.getUpdatedDateText(node);
+    } else {
+      // For backwards compatability
+      titleText += nodeDefs.displayLabel.label + ": " + node.label + "\n";
+    }
+    return titleText;
+  }
+  getUpdatedDateText(nodeEdge) {
+    const d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
+    const year = String(d.getFullYear());
+    const date = (d.getMonth() + 1) + "/" + d.getDate() + "/" + year.substr(2, 4);
+    const time = d.toTimeString().substr(0, 5);
+    const author = nodeEdge._nlog ? nodeEdge._nlog[nodeEdge._nlog.length - 1] : 'unknown';
+    const dateTime = date + ' at ' + time + " by " + author;
+    return dateTime;
+  }
+
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// UI METHODS
 
 /*/
 /*/ onZoomReset() {

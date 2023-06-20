@@ -1,15 +1,22 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    D3 Simple NetGraph
+    NCGraphRenderer
+
+    This is a pure data renderer based on d3-simplenetgraph.
+    It does not rely on any outside data sources or UNISYS calls.
+
+      data = { nodes, edges }
+      nodes = [ ...{id, label, size, color, opacity}]
+      edges = [ ...{id, sourceId, targetId, size, color, opacity}]
 
     This uses D3 Version 4.0.
 
-    This is designed to work with the NetGraph React component.
+    This is designed to work with the NCGraph React component.
 
-    NetGraph calls SetData whenever it receives an updated data object.
-    This triggers D3NetGraph to redraw itself.
+    NCGraph calls SetData whenever it receives an updated data object.
+    This triggers NCGraphRenderer to redraw itself.
 
-    This simplified version derived from D3NetGraph.js was created to address
+    This simplified version derived from d3-simplenetgraph.js was created to address
     a problem with links not updating properly.
 
     The first implementation of this removed the fancy force property settings
@@ -185,13 +192,10 @@ class NCGraphRenderer {
     this.SetData = this.SetData.bind(this);
     this.Initialize = this.Initialize.bind(this);
     this.UpdateGraph = this.UpdateGraph.bind(this);
-    this.tooltipForNode = this.tooltipForNode.bind(this);
-    this.displayUpdated = this.displayUpdated.bind(this);
     this._UpdateForces = this._UpdateForces.bind(this);
     this._Tick = this._Tick.bind(this);
     this._UpdateLinkStrokeWidth = this._UpdateLinkStrokeWidth.bind(this);
     this._UpdateLinkStrokeColor = this._UpdateLinkStrokeColor.bind(this);
-    this._ColorMap = this._ColorMap.bind(this);
     this._ZoomReset = this._ZoomReset.bind(this);
     this._ZoomIn = this._ZoomIn.bind(this);
     this._ZoomOut = this._ZoomOut.bind(this);
@@ -356,44 +360,25 @@ class NCGraphRenderer {
     // enter node: also append 'circle' element of a calculated size
     elementG
       .append("circle")
-      // "r" has to be set here or circles don't draw.
-      .attr("r", (d) => {
-        return Math.min(this.nodeSizeDefault + d.degrees, this.nodeSizeMax);
-      })
-      //        .attr("r", (d) => { return this.defaultSize }) // d.size ?  d.size/10 : this.defaultSize; })
-      .attr("fill", (d) => {
-        // REVIEW: Using label match.  Should we use id instead?
-        // The advantage of using the label is backward compatibility with
-        // Google Fusion table data as well as exportability.
-        // If we save the type as an id, the data format will be
-        // less human-readable.
-        // The problem with this approach though is that any changes
-        // to the label text will result in a failed color lookup!
-        return COLORMAP.nodeColorMap[d.type];
-      })
-      .style("opacity", d => {
-        return d.filteredTransparency
-      });
+      .attr("r", d => d.size) // "r" has to be set here or circles don't draw.
+      .attr("fill", d => d.color)
+      .style("opacity", d => d.opacity);
 
     // enter node: also append 'text' element
     elementG
       .append("text")
       .classed('noselect', true)
       .attr("font-size", 10)
-      .attr("dx", (d => { return this.nodeSizeDefault + 5 })) // 8)
+      .attr("dx", d => d.size + 5)
       .attr("dy", "0.35em") // ".15em")
       .text((d) => { return d.label })
-      .style("opacity", d => {
-        return d.filteredTransparency
-      });
+      .style("opacity", d => d.opacity);
 
     // enter node: also append a 'title' tag
     // we should move this to our tooltip functions, but it works for now
     elementG
       .append("title") // node tooltip
-      .text((d) => {
-        return this.tooltipForNode(d);
-      });
+      .text(d => d.help);
 
     /*/ TRICKY D3 CODE CONCEPTS AHEAD
 
@@ -435,28 +420,13 @@ class NCGraphRenderer {
     // UPDATE circles in each node for all nodes
     nodeElements.merge(nodeElements)
       .selectAll("circle")
-      .attr("stroke", (d) => {
-        if (d.selected) return d.selected;
-        if (d.strokeColor) return d.strokeColor;
-        return undefined; // don't set stroke color
-      })
-      .attr("stroke-width", (d) => {
-        if (d.selected || d.strokeColor) return '5px';
-        return undefined // don't set stroke width
-      })
-      .attr("fill", (d) => {
-        return COLORMAP.nodeColorMap[d.type];
-      })
-      .attr("r", (d) => {
-        // this "r" is necessary to resize after a link is added
-        return Math.min(this.nodeSizeDefault + d.degrees, this.nodeSizeMax);
-      })
+      .attr("stroke", d => d.strokeColor)
+      .attr("stroke-width", d => d.strokeWidth)
+      .attr("fill", d => d.color)
+      .attr("r", d => d.size)
       .transition()
       .duration(500)
-      .style("opacity", d => {
-        // console.log(d);
-        return d.filteredTransparency
-      });
+      .style("opacity", d => d.opacity);
 
     // UPDATE text in each node for all nodes
     // (technically this could have proceeded from the previous operation,
@@ -475,15 +445,11 @@ class NCGraphRenderer {
       .text((d) => { return d.label }) // in case text is updated
       .transition()
       .duration(500)
-      .style("opacity", d => {
-        return d.filteredTransparency
-      });
+      .style("opacity", d => d.opacity);
 
     nodeElements.merge(nodeElements)
       .selectAll("title") // node tooltip
-      .text((d) => {
-        return this.tooltipForNode(d);
-      });
+      .text(d => d.help);
     // TELL D3 what to do when a data node goes away
     nodeElements.exit().remove()
 
@@ -526,40 +492,6 @@ class NCGraphRenderer {
     if (this.data.edges) {
       this.simulation.force("link").links(this.data.edges)
     }
-  }
-
-  // added by Joshua to generate the text, based on the template, for the tooltip on the node
-  tooltipForNode(d) {
-    const nodeDefs = UDATA.AppState("TEMPLATE").nodeDefs;
-    let titleText = "";
-    if (nodeDefs.label.includeInGraphTooltip !== undefined) {
-      // Add Label
-      if (nodeDefs.label.includeInGraphTooltip) titleText += nodeDefs.label.displayLabel + ": " + d.label + "\n";
-      // Add type
-      if (nodeDefs.type.includeInGraphTooltip) titleText += nodeDefs.type.displayLabel + ": " + d.type + "\n";
-      // Add degrees
-      if (nodeDefs.degrees.includeInGraphTooltip) titleText += nodeDefs.degrees.displayLabel + ": " + d.degrees + "\n";
-      // Add notes
-      if (nodeDefs.notes.includeInGraphTooltip) titleText += nodeDefs.notes.displayLabel + ": " + d.notes + "\n";
-      // Add info
-      if (nodeDefs.info.includeInGraphTooltip) titleText += nodeDefs.info.displayLabel + ": " + d.info + "\n";
-      // Add updated info
-      if (nodeDefs.updated.includeInGraphTooltip) titleText += nodeDefs.updated.displayLabel + ": " + this.displayUpdated(d);
-    } else {
-      // For backwards compatability
-      titleText += nodeDefs.displayLabel.label + ": " + d.label + "\n";
-    }
-    return titleText;
-  }
-
-  displayUpdated(nodeEdge) {
-    const d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
-    const year = String(d.getFullYear());
-    const date = (d.getMonth() + 1) + "/" + d.getDate() + "/" + year.substr(2, 4);
-    const time = d.toTimeString().substr(0, 5);
-    const author = nodeEdge._nlog ? nodeEdge._nlog[nodeEdge._nlog.length - 1] : 'unknown';
-    const dateTime = date + ' at ' + time + " by " + author;
-    return dateTime;
   }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -648,13 +580,6 @@ class NCGraphRenderer {
 
   /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // The template may be loaded or changed after NCDATA is loaded.
-  // So we need to explicitly update the colors if the color
-  // definitions have changed.
-  _ColorMap(data) {
-    if (DBG) console.log(PR, 'got state COLORMAP', data);
-    this.UpdateGraph();
-  }
 
   _ZoomReset(data) {
     if (DBG) console.log(PR, 'ZOOM_RESET got state NCDATA', data);
@@ -727,7 +652,7 @@ class NCGraphRenderer {
   //     height = +svg.node().getBoundingClientRect().height;
   //     updateForces();
   // });
-} // class D3NetGraph
+} // class NCGraphRenderer
 
 /// EXPORT MODULE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
