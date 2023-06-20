@@ -42,8 +42,15 @@
       "x86 zsh": {
         "path": "/usr/bin/arch",
         "args": ["-arch", "x86_64", "/bin/zsh"]
+      },
+      "arm64 zsh": {
+        "path": "/usr/bin/arch",
+        "args": ["-arch", "arm64", "/bin/zsh"]
       }
     },
-    "terminal.integrated.defaultProfile.osx": "x86 zsh"	
+    // this line will force use of the selected profile
+    // it's only needed when running pre-v14 versions of NodeJS
+    // to force Intel386 on Apple Silicon processors
+    // "terminal.integrated.defaultProfile.osx": "x86 zsh"	
   }
 }

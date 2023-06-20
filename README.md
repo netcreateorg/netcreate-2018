@@ -1,6 +1,6 @@
 ## PROJECT SUMMARY
 
-This is the developer's "NetCreate 2.0" branch, forked from [NetCreate 2018](https://github.com/netcreateorg/netcreate-2018)'s `dev` branch. We will be doing the experimental development stuff here independent from the main repo to avoid changing how it works by accident, as there is quite a lot of architectural refactoring we need to do. If you are not a developer for NetCreate 2.0, this repo will likely only have curiosity value to you.
+This is the developer's "NetCreate 2.0" branch, forked from [NetCreate 2018](https://github.com/netcreateorg/netcreate-2018)'s `dev` branch. We will be doing the experimental development stuff here independent from the main repo to avoid changing how it works by accident, as there is quite a lot of architectural refactoring we need to do. If you are not a developer for NetCreate 2.0, this repo will likely only have curiosity value to you!
 
 The default branch is **dev**. When creating pull requests, make sure that it's referring to _this repository_ and the the parent repository.
 

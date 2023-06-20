@@ -18,9 +18,9 @@ const DBG = true;
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var   WSS               = require('ws').Server;
 var   FSE               = require('fs-extra');
-var   NetMessage        = require('../unisys/common-netmessage-class');
-const LOGGER            = require('../unisys/server-logger');
-var   DB                = require('../unisys/server-database');
+var   NetMessage        = require('./common-netmessage-class');
+const LOGGER            = require('./server-logger');
+var   DB                = require('./server-database');
 var   DEFS              = require('./common-defs');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
