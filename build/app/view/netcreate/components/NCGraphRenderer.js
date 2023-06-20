@@ -140,7 +140,7 @@ class NCGraphRenderer {
     /// note: this is all inside the class constructor function!
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    this._SetDefaultValues();
+    // this.UpdateDefaultValues(); // needs TEMPLATE
 
     // Set up Zoom
     this.zoom = d3.zoom().on("zoom", this._HandleZoom);
@@ -180,15 +180,11 @@ class NCGraphRenderer {
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     /// END D3 CODE ///////////////////////////////////////////////////////////////
 
-    // bind 'this' to function objects so event handlers can access
-    // contents of this class+module instance
-    this._HandleD3DataUpdate = this._HandleD3DataUpdate.bind(this);
-    this._HandleTemplateUpdate = this._HandleTemplateUpdate.bind(this);
-    this._ClearSVG = this._ClearSVG.bind(this);
-    this._SetDefaultValues = this._SetDefaultValues.bind(this);
-    this._SetData = this._SetData.bind(this);
-    this._Initialize = this._Initialize.bind(this);
-    this._UpdateGraph = this._UpdateGraph.bind(this);
+    this.ClearSVG = this.ClearSVG.bind(this);
+    this.UpdateDefaultValues = this.UpdateDefaultValues.bind(this);
+    this.SetData = this.SetData.bind(this);
+    this.Initialize = this.Initialize.bind(this);
+    this.UpdateGraph = this.UpdateGraph.bind(this);
     this.tooltipForNode = this.tooltipForNode.bind(this);
     this.displayUpdated = this.displayUpdated.bind(this);
     this._UpdateForces = this._UpdateForces.bind(this);
@@ -206,24 +202,6 @@ class NCGraphRenderer {
     this._Dragged = this._Dragged.bind(this);
     this._Dragended = this._Dragended.bind(this);
 
-    // V1.4 CHANGE
-    // Ignore D3DATA Updates!!!  Only listen to FILTEREDD3DATA Updates
-    //
-    // watch for updates to the D3DATA data object
-    // UDATA.OnAppStateChange('D3DATA',(data)=>{
-    //   // expect { nodes, edges } for this namespace
-    //   if (DBG) console.error(PR,'got state D3DATA',data);
-    //   this._SetData(data);
-    // });
-
-    // V2.0 CHANGE
-    // Ignore FILTEREDD3DATA updates!  Only listen for SYNTHESIZEDD3DATA
-    // which represents simplified edge data (duplicate edges removed) for rendering
-    // UDATA.OnAppStateChange('FILTEREDD3DATA', this._HandleFilteredD3DataUpdate);
-
-    UDATA.OnAppStateChange('SYNTHESIZEDD3DATA', this._HandleD3DataUpdate);
-    UDATA.OnAppStateChange('TEMPLATE', this._HandleTemplateUpdate);
-    UDATA.OnAppStateChange('COLORMAP', this._ColorMap);
     UDATA.HandleMessage('ZOOM_RESET', this._ZoomReset);
     UDATA.HandleMessage('ZOOM_IN', this._ZoomIn);
     UDATA.HandleMessage('ZOOM_OUT', this._ZoomOut);
@@ -241,8 +219,6 @@ class NCGraphRenderer {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Deregister() {
     if (DBG) console.log(PR, 'd3-simplenetgraph.DESTRUCT!!!')
-    UDATA.AppStateChangeOff('SYNTHESIZEDD3DATA', this._HandleD3DataUpdate);
-    UDATA.AppStateChangeOff('COLORMAP', this._ColorMap);
     UDATA.UnhandleMessage('ZOOM_RESET', this._ZoomReset);
     UDATA.UnhandleMessage('ZOOM_IN', this._ZoomIn);
     UDATA.UnhandleMessage('ZOOM_OUT', this._ZoomOut);
@@ -251,30 +227,13 @@ class NCGraphRenderer {
 
   /// CLASS PRIVATE METHODS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /**
-   *
-   * @param {object} data
-   * @param {array} data.nodes
-   * @param {array} data.edges
-   */
-  _HandleD3DataUpdate(data) {
-    if (DBG) console.log(PR, 'got state D3DATA', data);
-    this._SetData(data);
-  }
-
-  /*/ Update default values when template has changed
-  /*/
-  _HandleTemplateUpdate(data) {
-    if (DBG) console.log(PR, 'got state TEMPLATE', data);
-    this._SetDefaultValues();
-  }
 
   /*/ Clear the SVG data
       Currently not used because we just deconstruct d3-simplenetgraph insead.
       Was thought to be needed during imports otherwise _UpdateGraph reads data from existing
       SVG elements rather than the new data.
   /*/
-  _ClearSVG() {
+  ClearSVG() {
     this.zoomWrapper.selectAll(".edge").remove();
     this.zoomWrapper.selectAll(".node").remove();
   }
@@ -282,8 +241,8 @@ class NCGraphRenderer {
 
   /*/ Set default node and edge size values from TEMPLATE
   /*/
-  _SetDefaultValues() {
-    const TEMPLATE = UDATA.AppState("TEMPLATE");
+  UpdateDefaultValues(TEMPLATE) {
+    console.warn('updatedefault values TEMPLATE is', TEMPLATE)
     this.nodeSizeDefault = TEMPLATE.nodeSizeDefault;
     this.nodeSizeMax = TEMPLATE.nodeSizeMax;
     this.edgeSizeDefault = TEMPLATE.edgeSizeDefault;
@@ -293,7 +252,7 @@ class NCGraphRenderer {
   /*/ The parent container passes data to the d3 graph via this SetData call
       which then triggers all the internal updates
   /*/
-  _SetData(newData) {
+  SetData(newData) {
     if (newData) {
       // Make a shallow copy to protect against mutation, while
       // recycling old nodes to preserve position and velocity.
@@ -305,9 +264,9 @@ class NCGraphRenderer {
       this.data.nodes = newData.nodes.map(d => Object.assign(oldNodes.get(d.id) || {}, d));
       this.data.edges = newData.edges.map(d => Object.assign({}, d));
 
-      this._Initialize()
+      this.Initialize()
       this._UpdateForces()
-      this._UpdateGraph()
+      this.UpdateGraph()
 
       // updates ignored until this is run restarts the simulation
       // (important if simulation has already slowed down)
@@ -316,7 +275,7 @@ class NCGraphRenderer {
   }
 
 /*/ This sets up the force properties for the simulation and tick handler.
-/*/ _Initialize() {
+/*/ Initialize() {
     // Create the force layout.  After a call to force.start(), the tick
     // method will be called repeatedly until the layout "gels" in a stable
     // configuration.
@@ -331,7 +290,7 @@ class NCGraphRenderer {
       .on("tick", this._Tick)
   }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Call _UpdateGraph() after new data has been loaded. This creates link and node
+/*/ Call UpdateGraph() after new data has been loaded. This creates link and node
     svg objects and sets their forceProperties.
     The component `node` structure:
         <g class="node">  // node group object
@@ -350,7 +309,7 @@ class NCGraphRenderer {
     This method actually does more than just "update" an existing graph; in D3
     you can write code that initializes AND updates data.
 
-/*/ _UpdateGraph() {
+/*/ UpdateGraph() {
     const COLORMAP = UDATA.AppState('COLORMAP');
 
     // DATA JOIN
@@ -694,7 +653,7 @@ class NCGraphRenderer {
   // definitions have changed.
   _ColorMap(data) {
     if (DBG) console.log(PR, 'got state COLORMAP', data);
-    this._UpdateGraph();
+    this.UpdateGraph();
   }
 
   _ZoomReset(data) {

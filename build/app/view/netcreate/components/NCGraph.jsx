@@ -27,7 +27,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-var DBG = false;
+const DBG = false;
+const PR = 'NCGraph';
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -52,23 +53,61 @@ class NCGraph extends UNISYS.Component {
         edgeTypes: []
       }
 
+      this.updateNCData = this.updateNCData.bind(this);
+      this.updateTemplate = this.updateTemplate.bind(this);
+      this.updateColorMap = this.updateColorMap.bind(this);
       this.onZoomReset = this.onZoomReset.bind(this);
       this.onZoomIn    = this.onZoomIn.bind(this);
       this.onZoomOut   = this.onZoomOut.bind(this);
-      this.updateLegend = this.updateLegend.bind(this);
       this.constructGraph = this.constructGraph.bind(this);
 
       /// Initialize UNISYS DATA LINK for REACT
       UDATA = UNISYS.NewDataLink(this);
 
-      this.OnAppStateChange('TEMPLATE', this.updateLegend);
+      UDATA.OnAppStateChange('SYNTHESIZEDD3DATA', this.updateNCData);
+      UDATA.OnAppStateChange('TEMPLATE', this.updateTemplate);
+      UDATA.OnAppStateChange('COLORMAP', this.updateColorMap);
       UDATA.HandleMessage('CONSTRUCT_GRAPH', this.constructGraph);
 
     } // constructor
 
 
-/// CLASS PRIVATE METHODS /////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// CLASS PRIVATE METHODS /////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// DATA METHODS
+  /**
+   *
+   * @param {object} data
+   * @param {array} data.nodes
+   * @param {array} data.edges
+   */
+  updateNCData(data) {
+    if (DBG) console.log(PR, 'got state D3DATA', data);
+    this.state.d3NetGraph.SetData(data);
+  }
+  /**
+   * Update default values when template has changed
+   * @param {object} data TEMPLATE
+   */
+  updateTemplate(data) {
+    if (DBG) console.log(PR, 'got state TEMPLATE', data);
+    const TEMPLATE = this.AppState('TEMPLATE');
+    // Update D3
+    this.state.d3NetGraph.UpdateDefaultValues(TEMPLATE);
+    // Update Legends
+    const nodeTypes = TEMPLATE.nodeDefs.type.options;
+    const edgeTypes = TEMPLATE.edgeDefs.type.options;
+    // Update
+    this.setState({ nodeTypes, edgeTypes }, () => {
+      this.forceUpdate(); // just once, needed to overcome shouldComponentUpdate override
+    });
+  }
+  updateColorMap() {
+    this.satate.d3NetGraph.UpdateGraph();
+  }
+
 /*/
 /*/ onZoomReset() {
       this.AppCall('ZOOM_RESET', {});
@@ -82,15 +121,6 @@ class NCGraph extends UNISYS.Component {
       this.AppCall('ZOOM_OUT', {});
     }
 
-    updateLegend() {
-      // Update Legends
-      const TEMPLATE = this.AppState('TEMPLATE');
-      const nodeTypes = TEMPLATE.nodeDefs.type.options;
-      const edgeTypes = TEMPLATE.edgeDefs.type.options;
-      this.setState({ nodeTypes, edgeTypes }, () => {
-        this.forceUpdate(); // just once, needed to overcome shouldComponentUpdate override
-      });
-    }
 
 
     /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
@@ -124,7 +154,9 @@ class NCGraph extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
 /*/ componentWillUnMount() {
-      this.AppStateChangeOff('TEMPLATE', this.updateLegend);
+      UDATA.AppStateChangeOff('SYNTHESIZEDD3DATA', this.updateNCData);
+      UDATA.AppStateChangeOff('TEMPLATE', this.updateTemplate);
+      UDATA.AppStateChangeOff('COLORMAP', this.updateColorMap);
       UDATA.UnhandleMessage('CONSTRUCT_GRAPH', this.constructGraph);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
