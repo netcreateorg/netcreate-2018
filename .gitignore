@@ -7,8 +7,7 @@
 
 # NetCreate ignored directories
 /runtime
-# /runtime/netcreate.loki
-# /runtime/logs
+netcreate-config.js
 
 # ignore assets/data?
 # not sure why this data is in the repo
