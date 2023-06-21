@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 const shell = require('shelljs');
-
 let argv = require('minimist')(process.argv.slice(2));
 let dataset = argv['dataset'];
 let googlea = argv['googlea'];
 let port = argv['port'];
 let netport = argv['netport'];
 let ip = argv['ip'];
+let fs = require('fs');
 
 let netportDef;
 let ipDef;
@@ -104,7 +104,10 @@ const NC_CONFIG = {
 if (typeof process === "object") module.exports = NC_CONFIG;
 if (typeof window === "object") window.NC_CONFIG = NC_CONFIG;
 `;
-let js = shell.ShellString(script).to('app-config/netcreate-config.js');
+
+const nccPath = 'app-config';
+if (!fs.existsSync(nccPath)) fs.mkdirSync(nccPath, { recursive: true });
+shell.ShellString(script).to(`${nccPath}/netcreate-config.js`);
 
 shell.echo(`
     6. Starting dev server...
