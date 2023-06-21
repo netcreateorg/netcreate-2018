@@ -6,33 +6,31 @@
     }
   ],
   "settings": {
-  // configure glob patterns for excluding files and folders.
+    // configure glob patterns for excluding files and folders.
     "files.exclude": {
       "**/.git": true,
       "**/.svn": true,
       "**/.hg": true,
       "**/CVS": true,
       "**/.DS_Store": true,
-      "**/public": true,
       "**/node_modules": true,
       "**/bower_components": true,
       "*.sublime-*": true
     },
-  // make errors more obvious, de-emphasize warnings
+    // make errors more obvious, de-emphasize warnings
     "workbench.colorCustomizations": {
       "editorError.border": "#ff0000"
     },
-  // other theme overrides
-    "editor.tokenColorCustomizations": {
-    },
-  // langauge specific overrides
-    "[javascript]" : {
+    // other theme overrides
+    "editor.tokenColorCustomizations": {},
+    // langauge specific overrides
+    "[javascript]": {
       "editor.renderWhitespace": "all",
       "editor.detectIndentation": false,
       "editor.insertSpaces": true,
       "editor.tabSize": 2
     },
-    "[javascriptreact]" :{
+    "[javascriptreact]": {
       "editor.renderWhitespace": "all",
       "editor.detectIndentation": false,
       "editor.insertSpaces": true,
@@ -47,10 +45,10 @@
         "path": "/usr/bin/arch",
         "args": ["-arch", "arm64", "/bin/zsh"]
       }
-    },
+    }
     // this line will force use of the selected profile
     // it's only needed when running pre-v14 versions of NodeJS
     // to force Intel386 on Apple Silicon processors
-    // "terminal.integrated.defaultProfile.osx": "x86 zsh"	
+    // "terminal.integrated.defaultProfile.osx": "x86 zsh"
   }
 }

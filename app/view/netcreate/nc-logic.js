@@ -43,11 +43,11 @@ const DBG = false;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const SETTINGS = require("settings");
-const UNISYS = require("unisys/client");
-const JSCLI = require("system/util/jscli");
-const D3 = require("d3");
-const UTILS = require("./nc-utils");
+const SETTINGS = require('settings');
+const UNISYS = require('unisys/client');
+const JSCLI = require('system/util/jscli');
+const D3 = require('d3');
+const UTILS = require('./nc-utils');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -161,23 +161,23 @@ var UDATA = UNISYS.NewDataLink(MOD);
 \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -/*/
 var NCDATA = null; // see above for description
 var TEMPLATE = null; // template definition for prompts
-const NETWORK = require("unisys/client-network");
-const DATASTORE = require("system/datastore");
-const SESSION = require("unisys/common-session");
-const PROMPTS = require("system/util/prompts");
-const PR = PROMPTS.Pad("NCLOGIC");
+const NETWORK = require('unisys/client-network');
+const DATASTORE = require('system/datastore');
+const SESSION = require('unisys/common-session');
+const PROMPTS = require('system/util/prompts');
+const PR = PROMPTS.Pad('NCLOGIC');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DESELECTED_COLOR = "";
+const DESELECTED_COLOR = '';
 // For backwards compatability, if the template is not setting these
 // Ideally we want to centralize the backwards compatability at some point into one spot
 // OR just remove it, but this was easier to test and shouldn't impact performance substantively
-const DEFAULT_SEARCH_COLOR = "#008800";
-const DEFAULT_SOURCE_COLOR = "#FFa500";
-const TARGET_COLOR = "#FF0000";
+const DEFAULT_SEARCH_COLOR = '#008800';
+const DEFAULT_SOURCE_COLOR = '#FFa500';
+const TARGET_COLOR = '#FF0000';
 
-const DATASET = window.NC_CONFIG.dataset || "netcreate";
+const DATASET = window.NC_CONFIG.dataset || 'netcreate';
 const TEMPLATE_URL = `templates/${DATASET}.toml`;
 
 /// DB LOADER HELPERS /////////////////////////////////////////////////////////
@@ -185,71 +185,71 @@ const TEMPLATE_URL = `templates/${DATASET}.toml`;
 /*/ Used by LOADASSETS and RELOAD_DB to reload NCDATA from the database.
 /*/
 function m_PromiseLoadDB() {
-  return DATASTORE.PromiseD3Data()
-  .then(data => {
-    if (DBG) console.log(PR, "DATASTORE returned data", data);
+  return DATASTORE.PromiseD3Data().then(data => {
+    if (DBG) console.log(PR, 'DATASTORE returned data', data);
     m_MigrateData(data.d3data);
     UTILS.RecalculateAllEdgeSizes(data.d3data);
     UTILS.RecalculateAllNodeDegrees(data.d3data);
-    UDATA.SetAppState("NCDATA", data.d3data);
-    UDATA.SetAppState("TEMPLATE", data.template);
+    UDATA.SetAppState('NCDATA', data.d3data);
+    UDATA.SetAppState('TEMPLATE', data.template);
     // Save off local reference because we don't have NCDATA AppStateChange handler
     NCDATA = data.d3data;
     TEMPLATE = data.template;
   });
 }
 
-
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ LOADASSETS fires before react components are loaded
     see client-lifecycle.js for description
 /*/
-MOD.Hook("LOADASSETS", () => {
+MOD.Hook('LOADASSETS', () => {
   if (UNISYS.IsStandaloneMode()) {
     // STANDALONE MODE
     // Load read-only database from exported db file.
 
     const USE_CACHE = false;
     if (USE_CACHE) {
-      console.warn(PR,"STANDALONE MODE: 'LOADASSETS' using browser cache");
+      console.warn(PR, "STANDALONE MODE: 'LOADASSETS' using browser cache");
       return new Promise((resolve, reject) => {
         const lstore = window.localStorage;
-        let ld3 = lstore.getItem("NCDATA");
+        let ld3 = lstore.getItem('NCDATA');
         NCDATA = JSON.parse(ld3);
         if (!NCDATA) reject(Error("couldn't get NCDATA from Local Store"));
-        UDATA.SetAppState("NCDATA", NCDATA);
-        let tem = lstore.getItem("TEMPLATE");
+        UDATA.SetAppState('NCDATA', NCDATA);
+        let tem = lstore.getItem('TEMPLATE');
         TEMPLATE = JSON.parse(tem);
         console.log(NCDATA, TEMPLATE);
         if (!TEMPLATE) reject(Error("couldn't get TEMPLATE from Local Store"));
-        UDATA.SetAppState("TEMPLATE", TEMPLATE);
+        UDATA.SetAppState('TEMPLATE', TEMPLATE);
         resolve();
       });
     }
     // don't use cache, but instead try loading standalone files
-    console.warn(PR,"STANDALONE MODE: 'LOADASSETS' is using files (USE_CACHE=false)");
+    console.warn(PR, "STANDALONE MODE: 'LOADASSETS' is using files (USE_CACHE=false)");
     // added by Joshua to check for alternative datasets in the folder
     let urlParams = new URLSearchParams(window.location.search);
     let dataset = urlParams.get('dataset');
-    if(dataset == null) dataset = "standalone";
-    return new Promise((resolve) => {
+    if (dataset === null) dataset = 'standalone';
+    return new Promise(resolve => {
       (async () => {
-        let p1 = await DATASTORE.PromiseJSONFile("data/" + dataset + "-db.json")
-          .then(d3data => {
+        let p1 = await DATASTORE.PromiseJSONFile('data/' + dataset + '-db.json').then(
+          d3data => {
             m_MigrateData(d3data);
             UTILS.RecalculateAllEdgeSizes(d3data);
             UTILS.RecalculateAllNodeDegrees(d3data);
-            UDATA.SetAppState("NCDATA", d3data);
+            UDATA.SetAppState('NCDATA', d3data);
             // Save off local reference because we don't have NCDATA AppStateChange handler
             NCDATA = d3data;
-          });
+          }
+        );
         // load template
-        let p2 = await DATASTORE.PromiseTOMLFile("data/" + dataset + ".template.toml")
-          .then(data => {
-            TEMPLATE = data;
-            UDATA.SetAppState("TEMPLATE", TEMPLATE);
-          });
+        let p2 = await DATASTORE.PromiseTOMLFile(
+          'data/' + dataset + '.template.toml'
+        ).then(data => {
+          TEMPLATE = data;
+          UDATA.SetAppState('TEMPLATE', TEMPLATE);
+        });
         resolve();
       })();
     });
@@ -263,7 +263,7 @@ MOD.Hook("LOADASSETS", () => {
     validation.
 /*/
 // eslint-disable-next-line complexity
-MOD.Hook("CONFIGURE", () => {
+MOD.Hook('CONFIGURE', () => {
   // Process Node, NodeColorMap and Edge options
   m_UpdateColorMap();
 }); // end CONFIGURE HOOK
@@ -272,20 +272,19 @@ MOD.Hook("CONFIGURE", () => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ DISCONNECT fires when NetMessage.GlobalOfflineMode()
 /*/
-MOD.Hook("DISCONNECT", () => {
-  console.log("DISCONNECT HOOK");
+MOD.Hook('DISCONNECT', () => {
+  console.log('DISCONNECT HOOK');
   const lstore = window.localStorage;
-  lstore.setItem("NCDATA", JSON.stringify(NCDATA));
-  lstore.setItem("TEMPLATE", JSON.stringify(TEMPLATE));
-  console.log("saving d3data, template to localstore");
+  lstore.setItem('NCDATA', JSON.stringify(NCDATA));
+  lstore.setItem('TEMPLATE', JSON.stringify(TEMPLATE));
+  console.log('saving d3data, template to localstore');
 });
 
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ lifecycle INITIALIZE handler
 /*/
-MOD.Hook("INITIALIZE", () => {
-
+MOD.Hook('INITIALIZE', () => {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ RELOAD_DB
       Called by importexport-logic.js.MOD.Import:818
@@ -294,33 +293,33 @@ MOD.Hook("INITIALIZE", () => {
       NCDATA from the database.  This is necessary because new ids will
       have been generated during the merge.
   /*/
-  UDATA.HandleMessage("RELOAD_DB", () => {
-     return Promise.all([m_PromiseLoadDB()]);
+  UDATA.HandleMessage('RELOAD_DB', () => {
+    return Promise.all([m_PromiseLoadDB()]);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ NCDATA
   /*/
-  UDATA.OnAppStateChange("NCDATA", stateChange => {
-    if (DBG) console.log("nc-logic: Got NCDATA", stateChange);
+  UDATA.OnAppStateChange('NCDATA', stateChange => {
+    if (DBG) console.log('nc-logic: Got NCDATA', stateChange);
     NCDATA = stateChange;
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ Handle D3-related updates based on state changes. Subcomponents are
       responsible for updating themselves.
   /*/
-  UDATA.OnAppStateChange("SELECTION", stateChange => {
-    if (DBG) console.log("nc-logic: Got SELECTION", stateChange);
+  UDATA.OnAppStateChange('SELECTION', stateChange => {
+    if (DBG) console.log('nc-logic: Got SELECTION', stateChange);
     let { nodes, edges } = stateChange;
     // NODE LIST UPDATE
     if (nodes !== undefined) {
       if (nodes.length > 0) {
-        let color = "#0000DD";
+        let color = '#0000DD';
         nodes.forEach(node => {
           m_MarkNodeById(node.id, color);
-          UNISYS.Log("select node", node.id, node.label);
+          UNISYS.Log('select node', node.id, node.label);
           let googlea = NC_CONFIG.googlea;
 
-          if(googlea != "0"){
+          if (googlea != '0') {
             ga('send', {
               hitType: 'event',
               eventCategory: 'Node',
@@ -337,8 +336,8 @@ MOD.Hook("INITIALIZE", () => {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ Search field has been updated
   /*/
-  UDATA.OnAppStateChange("SEARCH", stateChange => {
-    if (DBG) console.log("nc-logic: Got SEARCH", stateChange);
+  UDATA.OnAppStateChange('SEARCH', stateChange => {
+    if (DBG) console.log('nc-logic: Got SEARCH', stateChange);
     let { nodes, edges } = stateChange;
     let { searchLabel } = stateChange;
     let { activeAutoCompleteId } = stateChange;
@@ -352,15 +351,18 @@ MOD.Hook("INITIALIZE", () => {
       }
     }
     // SEARCH LABEL UPDATE
-    if (NCDATA.nodes.length < 150) { // JD to speedup processing for large sets
-      if (searchLabel === "") {
+    if (NCDATA.nodes.length < 150) {
+      // JD to speedup processing for large sets
+      if (searchLabel === '') {
         m_UnStrokeAllNodes();
       } else if (searchLabel !== undefined) {
-         m_SetStrokeColorThatMatch(searchLabel, TEMPLATE.searchColor || DEFAULT_SEARCH_COLOR);
+        m_SetStrokeColorThatMatch(
+          searchLabel,
+          TEMPLATE.searchColor || DEFAULT_SEARCH_COLOR
+        );
       }
     }
   }); // StateChange SELECTION
-
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ User has clicked on a suggestion from the AutoCopmlete suggestion list.
@@ -373,9 +375,9 @@ MOD.Hook("INITIALIZE", () => {
       SEE ALSO: AutoComplete.onSuggestionSelected() and
                 D3SimpleNetGraph._UpdateGraph click handler
   /*/
-  UDATA.HandleMessage("SOURCE_SELECT", m_sourceSelect);
-  function m_sourceSelect (data) {
-    if (DBG) console.log(PR, "SOURCE_SELECT got data", data);
+  UDATA.HandleMessage('SOURCE_SELECT', m_sourceSelect);
+  function m_sourceSelect(data) {
+    if (DBG) console.log(PR, 'SOURCE_SELECT got data', data);
 
     let { nodeLabels = [], nodeIDs = [] } = data;
     let nodeLabel = nodeLabels.shift();
@@ -384,16 +386,17 @@ MOD.Hook("INITIALIZE", () => {
 
     if (nodeID) {
       node = m_FindNodeById(nodeID); // Node IDs should be integers, not strings
-      if (DBG) console.log(PR, "SOURCE_SELECT found by nodeID", nodeID, 'node:', node);
+      if (DBG) console.log(PR, 'SOURCE_SELECT found by nodeID', nodeID, 'node:', node);
     } else if (nodeLabel) {
       node = m_FindMatchingNodesByLabel(nodeLabel).shift();
-      if (DBG) console.log(PR, "SOURCE_SELECT found by nodeLabel", nodeLabel, "node:", node);
+      if (DBG)
+        console.log(PR, 'SOURCE_SELECT found by nodeLabel', nodeLabel, 'node:', node);
     } else {
       // No node selected, so deselect
-      if (DBG) console.log(PR, "SOURCE_SELECT found no node", node);
+      if (DBG) console.log(PR, 'SOURCE_SELECT found no node', node);
     }
 
-    if (DBG) console.log(PR, "SOURCE_SELECT found", node);
+    if (DBG) console.log(PR, 'SOURCE_SELECT found', node);
 
     if (node === undefined) {
       // Node not found, create a new node
@@ -404,15 +407,17 @@ MOD.Hook("INITIALIZE", () => {
     } else {
       // Load existing node and edges
       let edges = [];
-      if (NCDATA.edges) { // if no edges are defined, skip, otherwise chokes on NCDATA.edges.filter
+      if (NCDATA.edges) {
+        // if no edges are defined, skip, otherwise chokes on NCDATA.edges.filter
         if (nodeID) {
           edges = edges.concat(
-            NCDATA.edges.filter(
-              edge => edge.source === nodeID || edge.target === nodeID
-            )
+            NCDATA.edges.filter(edge => edge.source === nodeID || edge.target === nodeID)
           );
         } else {
-          console.error(PR, `SOURCE_SELECT trying to match edge using "label" ${nodeLabel}.  This is deprecated!`);
+          console.error(
+            PR,
+            `SOURCE_SELECT trying to match edge using "label" ${nodeLabel}.  This is deprecated!`
+          );
           // REVIEW: are we actually matching label anymore?
           // This should fail because source/target is no longer an object, just an id
           // edges = edges.concat(
@@ -430,14 +435,14 @@ MOD.Hook("INITIALIZE", () => {
     }
 
     // Set the SELECTION state so that listeners such as NodeSelectors update themselves
-    UDATA.SetAppState("SELECTION", newState);
+    UDATA.SetAppState('SELECTION', newState);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ SOURCE_SEARCH sets the current matching term as entered in an
       AutoComplete field.
   /*/
-  UDATA.HandleMessage("SOURCE_SEARCH", function(data) {
+  UDATA.HandleMessage('SOURCE_SEARCH', function (data) {
     let { searchString } = data;
     let matches = m_FindMatchingNodesByLabel(searchString);
     let newState = {
@@ -447,7 +452,7 @@ MOD.Hook("INITIALIZE", () => {
       searchLabel: searchString
     };
     // let SELECTION state listeners handle display updates
-    UDATA.SetAppState("SEARCH", newState);
+    UDATA.SetAppState('SEARCH', newState);
   });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
@@ -456,11 +461,15 @@ MOD.Hook("INITIALIZE", () => {
       This is called by AutoComplete onBlur in case we need to make an
       implicit selection.
   /*/
-  UDATA.HandleMessage("SOURCE_SEARCH_AND_SELECT", function (data) {
+  UDATA.HandleMessage('SOURCE_SEARCH_AND_SELECT', function (data) {
     let { searchString } = data;
     let node = m_FindMatchingNodesByLabel(searchString).shift();
-    if (node && (node.label === searchString)) {
-      console.log(PR,'SOURCE_SEARCH_AND_SELECT about to trigger SOURCE_SELECT data was',data);
+    if (node && node.label === searchString) {
+      console.log(
+        PR,
+        'SOURCE_SEARCH_AND_SELECT about to trigger SOURCE_SELECT data was',
+        data
+      );
       m_sourceSelect({ nodeIDs: [node.id] });
     }
   });
@@ -470,7 +479,7 @@ MOD.Hook("INITIALIZE", () => {
       node name selections when using AutoComplete.
       The hilite can be selected via either the label or the node id.
   /*/
- /* ORIGINAL INQUIRIUM CODE
+  /* ORIGINAL INQUIRIUM CODE
   UDATA.HandleMessage("SOURCE_HILITE", function(data) {
     let { nodeLabel, nodeID, color } = data;
     if (nodeLabel) {
@@ -485,18 +494,20 @@ MOD.Hook("INITIALIZE", () => {
     }
     */
 
-    UDATA.HandleMessage("SOURCE_HILITE", function(data) {
+  UDATA.HandleMessage('SOURCE_HILITE', function (data) {
     let { nodeLabel, nodeID, color } = data;
     if (nodeLabel) {
       // Only mark nodes if something is selected
-      if (NCDATA.nodes.length < 250) { // JD to speedup processing for large
+      if (NCDATA.nodes.length < 250) {
+        // JD to speedup processing for large
         m_UnMarkAllNodes();
         m_MarkNodeByLabel(nodeLabel, TEMPLATE.sourceColor || DEFAULT_SOURCE_COLOR);
       }
     }
     if (nodeID) {
       // Only mark nodes if something is selected
-      if (NCDATA.nodes.length < 250) { // JD to speedup processing for large
+      if (NCDATA.nodes.length < 250) {
+        // JD to speedup processing for large
         m_UnMarkAllNodes();
         m_MarkNodeById(nodeID, TEMPLATE.sourceColor || DEFAULT_SOURCE_COLOR);
       }
@@ -510,7 +521,7 @@ MOD.Hook("INITIALIZE", () => {
       NOTE: SOURCE_UPDATE can be invoked remotely by the server on a DATABASE
       update.
   /*/
-  UDATA.HandleMessage("SOURCE_UPDATE", function(data) {
+  UDATA.HandleMessage('SOURCE_UPDATE', function (data) {
     let { node } = data;
     // REVIEW: NodeSelector should probably not be submitting data
     //         directly to the database.  Instead, it should be notifying
@@ -519,20 +530,20 @@ MOD.Hook("INITIALIZE", () => {
     node.degrees = node.degrees || 0;
     // try updating existing nodes with this id?
     let updatedNodes = m_SetMatchingNodesByProp({ id: node.id }, node);
-    if (DBG) console.log("SOURCE_UPDATE: updated", updatedNodes);
+    if (DBG) console.log('SOURCE_UPDATE: updated', updatedNodes);
     // if no nodes had matched, then add a new node!
     if (updatedNodes.length > 1) {
-      console.error("SOURCE_UPDATE: duplicate ids in", updatedNodes);
-      throw Error("SOURCE_UPDATE: found duplicate IDs");
+      console.error('SOURCE_UPDATE: duplicate ids in', updatedNodes);
+      throw Error('SOURCE_UPDATE: found duplicate IDs');
     }
     if (updatedNodes.length === 0) NCDATA.nodes.push(node);
-    UDATA.SetAppState("NCDATA", NCDATA);
+    UDATA.SetAppState('NCDATA', NCDATA);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ NODE_DELETE is called by NodeSelector via datastore.js and
       Server.js when an node should be removed
   /*/
-  UDATA.HandleMessage("NODE_DELETE", function(data) {
+  UDATA.HandleMessage('NODE_DELETE', function (data) {
     let { nodeID, replacementNodeID } = data;
 
     // Remove or replace edges
@@ -560,10 +571,10 @@ MOD.Hook("INITIALIZE", () => {
     // // Remove node
     let updatedNodes = m_DeleteMatchingNodesByProp({ id: nodeID });
     NCDATA.nodes = updatedNodes;
-    UDATA.SetAppState("NCDATA", NCDATA);
+    UDATA.SetAppState('NCDATA', NCDATA);
 
     // Also update selection so nodes in EdgeEditor will update
-    UDATA.SetAppState("SELECTION", {
+    UDATA.SetAppState('SELECTION', {
       nodes: undefined,
       edges: undefined
     });
@@ -585,7 +596,7 @@ MOD.Hook("INITIALIZE", () => {
       @param {string} data.nodeTypesChanges.replacement - text to replace label
       @param {boolean} data.nodeTypesChanges.delete - option should be removed after mapping
   /*/
-  UDATA.HandleMessage("NODE_TYPES_UPDATE", data => {
+  UDATA.HandleMessage('NODE_TYPES_UPDATE', data => {
     const { nodeTypesChanges } = data;
     const changeMap = new Map();
     nodeTypesChanges.forEach(c => {
@@ -609,8 +620,8 @@ MOD.Hook("INITIALIZE", () => {
     // IMPORTANT: We have to update the db BEFORE calling SetAppState
     // because SetAppState will cause d3 to convert edge source/targets
     // from ids back to node objects.
-    UDATA.LocalCall("DBUPDATE_ALL", NCDATA);
-    UDATA.SetAppState("NCDATA", NCDATA);
+    UDATA.LocalCall('DBUPDATE_ALL', NCDATA);
+    UDATA.SetAppState('NCDATA', NCDATA);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ EDGE_TYPES_UPDATE is called by templateEditor-logic after user has changed the
@@ -627,7 +638,7 @@ MOD.Hook("INITIALIZE", () => {
       @param {string} data.nodeTypesChanges.replacement - text to replace label
       @param {boolean} data.nodeTypesChanges.delete - option should be removed after mapping
   /*/
-  UDATA.HandleMessage("EDGE_TYPES_UPDATE", data => {
+  UDATA.HandleMessage('EDGE_TYPES_UPDATE', data => {
     const { edgeTypesChanges } = data;
     const changeMap = new Map();
     edgeTypesChanges.forEach(c => {
@@ -637,7 +648,7 @@ MOD.Hook("INITIALIZE", () => {
       const type = e.type;
       const change = changeMap.get(e.type);
       if (change && change.replacement) {
-        console.log('replacing',e.type,'with',change.replacement)
+        console.log('replacing', e.type, 'with', change.replacement);
         e.type = change.replacement;
       }
       return e;
@@ -646,72 +657,70 @@ MOD.Hook("INITIALIZE", () => {
     // IMPORTANT: We have to update the db BEFORE calling SetAppState
     // because SetAppState will cause d3 to convert edge source/targets
     // from ids back to node objects.
-    UDATA.LocalCall("DBUPDATE_ALL", NCDATA);
-    UDATA.SetAppState("NCDATA", NCDATA);
+    UDATA.LocalCall('DBUPDATE_ALL', NCDATA);
+    UDATA.SetAppState('NCDATA', NCDATA);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ EDGE_UPDATE is called when the properties of an edge has changed
       NOTE: SOURCE_UPDATE can be invoked remotely by the server on a DATABASE
       update.
   /*/
-  UDATA.HandleMessage("EDGE_UPDATE", function(data) {
+  UDATA.HandleMessage('EDGE_UPDATE', function (data) {
     let { edge } = data;
-    if (DBG) console.log("nc-logic.EDGE_UPDATE: received edge", edge);
+    if (DBG) console.log('nc-logic.EDGE_UPDATE: received edge', edge);
     // set matching edges
     let updatedEdges = m_SetMatchingEdgesByProp({ id: edge.id }, edge);
-    if (DBG) console.log("nc-logic.EDGE_UPDATE: updated", updatedEdges);
+    if (DBG) console.log('nc-logic.EDGE_UPDATE: updated', updatedEdges);
 
     // if no edges had matched, then add a new edge!
     if (updatedEdges.length === 0) {
-      if (DBG) console.log("nc-logic.EDGE_UPDATE: adding new edge", edge);
+      if (DBG) console.log('nc-logic.EDGE_UPDATE: adding new edge', edge);
       // created edges should have a default size
       edge.size = 1;
       NCDATA.edges.push(edge);
     }
     // if there was one edge
     if (updatedEdges.length === 1) {
-      console.log('nc-logic.EDGE_UPDATE: updating existing edge', updatedEdges)
+      console.log('nc-logic.EDGE_UPDATE: updating existing edge', updatedEdges);
     }
     // if there were more edges than expected
     if (updatedEdges.length > 1) {
-      throw Error("EdgeUpdate found duplicate IDs");
+      throw Error('EdgeUpdate found duplicate IDs');
     }
 
     UTILS.RecalculateAllEdgeSizes(NCDATA);
     UTILS.RecalculateAllNodeDegrees(NCDATA);
-    UDATA.SetAppState("NCDATA", NCDATA);
+    UDATA.SetAppState('NCDATA', NCDATA);
   });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ EDGE_DELETE is called when an edge should be removed from...something?
   /*/
-  UDATA.HandleMessage("EDGE_DELETE", function(data) {
+  UDATA.HandleMessage('EDGE_DELETE', function (data) {
     let { edgeID } = data;
     let edges = [];
     // remove specified edge from edge list
     NCDATA.edges = m_DeleteMatchingEdgeByProp({ id: edgeID });
     UTILS.RecalculateAllEdgeSizes(NCDATA);
     UTILS.RecalculateAllNodeDegrees(NCDATA);
-    UDATA.SetAppState("NCDATA", NCDATA);
+    UDATA.SetAppState('NCDATA', NCDATA);
     // Also update selection so edges in EdgeEditor will update
-    let selection = UDATA.AppState("SELECTION");
+    let selection = UDATA.AppState('SELECTION');
     if (
       selection.nodes === undefined ||
       selection.nodes.length < 1 ||
       selection.nodes[0].id === undefined
     ) {
-      if (DBG) console.log(PR, "no selection:", selection);
+      if (DBG) console.log(PR, 'no selection:', selection);
     } else {
-      if (DBG) console.log(PR, "updating selection:", selection);
+      if (DBG) console.log(PR, 'updating selection:', selection);
       let nodeID = selection.nodes[0].id;
       // Remove the deleted edge from the selection
       if (selection.edges !== undefined && selection.edges.length > 0) {
-        edges = edges.concat(
-          selection.edges.filter(edge => edge.id !== edgeID)
-        );
+        edges = edges.concat(selection.edges.filter(edge => edge.id !== edgeID));
       }
     }
-    UDATA.SetAppState("SELECTION", {
+    UDATA.SetAppState('SELECTION', {
       nodes: selection.nodes,
       edges: edges
     });
@@ -721,7 +730,7 @@ MOD.Hook("INITIALIZE", () => {
   /*/ AUTOCOMPLETE_SELECT is called by <AutoComplete> components to tell the
       module which one has the current focus.
   /*/
-  UDATA.HandleMessage("AUTOCOMPLETE_SELECT", function(data) {
+  UDATA.HandleMessage('AUTOCOMPLETE_SELECT', function (data) {
     m_HandleAutoCompleteSelect(data);
   });
 
@@ -730,29 +739,26 @@ MOD.Hook("INITIALIZE", () => {
       This message is sent from server.js over the net.
       This is the main handler for the local app.  It updates the appState.
   /*/
-  UDATA.HandleMessage("NET_TEMPLATE_UPDATE", stateChange => {
-    if (DBG) console.log(PR, 'NET_TEMPLATE_UPDATE state change', stateChange)
+  UDATA.HandleMessage('NET_TEMPLATE_UPDATE', stateChange => {
+    if (DBG) console.log(PR, 'NET_TEMPLATE_UPDATE state change', stateChange);
     TEMPLATE = stateChange;
-    UDATA.SetAppState("TEMPLATE", TEMPLATE);
+    UDATA.SetAppState('TEMPLATE', TEMPLATE);
     m_UpdateColorMap();
   });
 
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  UDATA.HandleMessage("EDIT_CURRENT_TEMPLATE", () => {
-    return { template: TEMPLATE }
-  })
-
+  UDATA.HandleMessage('EDIT_CURRENT_TEMPLATE', () => {
+    return { template: TEMPLATE };
+  });
 }); // end UNISYS_INIT
-
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ INIT HANDLERS
 /*/
 
 function m_HandleAutoCompleteSelect(data) {
-  if (DBG) console.log("ACL: Setting activeAutoCompleteId to", data.id);
-  UDATA.SetAppState("ACTIVEAUTOCOMPLETE", {
+  if (DBG) console.log('ACL: Setting activeAutoCompleteId to', data.id);
+  UDATA.SetAppState('ACTIVEAUTOCOMPLETE', {
     activeAutoCompleteId: data.id
   });
 }
@@ -760,11 +766,11 @@ function m_HandleAutoCompleteSelect(data) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ lifecycle RESET handler
 /*/
-MOD.Hook("RESET", () => {
+MOD.Hook('RESET', () => {
   // Force an AppState update here so that the react components will load
   // the data after they've been initialized.  The SetAppState call in
   // LOADASSETS is broadcast before react components have been loaded.
-  UDATA.SetAppState("NCDATA", NCDATA);
+  UDATA.SetAppState('NCDATA', NCDATA);
 }); // end UNISYS_RESET
 
 /// APP_READY MESSAGE REGISTRATION ////////////////////////////////////////////
@@ -772,25 +778,24 @@ MOD.Hook("RESET", () => {
 /*/ The APP_READY hook is fired after all initialization phases have finished
     and may also fire at other times with a valid info packet
 /*/
-MOD.Hook("APP_READY", function(info) {
+MOD.Hook('APP_READY', function (info) {
   /// RETURN PROMISE to prevent phase from continuing until after registration
   /// of messages is successful
   return new Promise((resolve, reject) => {
-    if (DBG)
-      console.log(`${PR}HOOK 'UNISYS_INIT' Registering Message Handlers...`);
+    if (DBG) console.log(`${PR}HOOK 'UNISYS_INIT' Registering Message Handlers...`);
     // timeout for broken network registration
     let timeout = setTimeout(() => {
-      reject(new Error("UNISYS REGISTER TIMEOUT"));
+      reject(new Error('UNISYS REGISTER TIMEOUT'));
     }, 5000);
 
     // register ONLY messages we want to make public
     UNISYS.RegisterMessagesPromise([
-      "SOURCE_UPDATE",
+      'SOURCE_UPDATE',
       `NODE_DELETE`,
-      "EDGE_UPDATE",
-      "EDGE_DELETE",
-      "EDIT_PERMISSIONS_UPDATE",
-      "NET_TEMPLATE_UPDATE"
+      'EDGE_UPDATE',
+      'EDGE_DELETE',
+      'EDIT_PERMISSIONS_UPDATE',
+      'NET_TEMPLATE_UPDATE'
     ]).then(d => {
       clearTimeout(timeout);
       if (DBG)
@@ -802,7 +807,7 @@ MOD.Hook("APP_READY", function(info) {
       if (DBG)
         console.log(
           `INFO: %cMy socket address is ${UNISYS.SocketUADDR()}`,
-          "color:blue;font-weight:bold"
+          'color:blue;font-weight:bold'
         );
       resolve();
     });
@@ -818,7 +823,7 @@ MOD.Hook("APP_READY", function(info) {
 function m_FindMatchingObjsByProp(obj_list, match_me = {}) {
   // operate on arrays only
   if (!Array.isArray(obj_list))
-    throw Error("FindMatchingObjectsByProp arg1 must be array");
+    throw Error('FindMatchingObjectsByProp arg1 must be array');
   let matches = obj_list.filter(obj => {
     let pass = true;
     for (let key in match_me) {
@@ -836,8 +841,7 @@ function m_FindMatchingObjsByProp(obj_list, match_me = {}) {
 /*/
 function m_SetMatchingObjsByProp(obj_list, match_me = {}, yes = {}, no = {}) {
   // operate on arrays only
-  if (!Array.isArray(obj_list))
-    throw Error("SetMatchingObjsByPropp arg1 must be array");
+  if (!Array.isArray(obj_list)) throw Error('SetMatchingObjsByPropp arg1 must be array');
 
   let returnMatches = [];
   obj_list.forEach(node => {
@@ -860,7 +864,7 @@ function m_SetMatchingObjsByProp(obj_list, match_me = {}, yes = {}, no = {}) {
 /*/
 function m_SetAllObjs(obj_list, all = {}) {
   // operate on arrays only
-  if (!Array.isArray(obj_list)) throw Error("SetAllNodes arg1 must be array");
+  if (!Array.isArray(obj_list)) throw Error('SetAllNodes arg1 must be array');
   obj_list.forEach(obj => {
     for (let key in all) obj[key] = all[key];
   });
@@ -869,7 +873,6 @@ MOD.SetAllObjs = m_SetAllObjs; // Expose for filter-logic.js
 
 /// NODE HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 
 /*/ Update ColorMap
 /*/
@@ -885,18 +888,18 @@ function m_UpdateColorMap() {
     });
 
     const edgeColorMap = {};
-    let defaultEdgeColor = TEMPLATE.edgeDefs.color || "#999"; //for backwards compatability
+    let defaultEdgeColor = TEMPLATE.edgeDefs.color || '#999'; //for backwards compatability
     TEMPLATE.edgeDefs.type.options.forEach(o => {
       edgeColorMap[o.label] = o.color || defaultEdgeColor;
     });
 
-    UDATA.SetAppState("COLORMAP", {nodeColorMap, edgeColorMap});
+    UDATA.SetAppState('COLORMAP', { nodeColorMap, edgeColorMap });
   } catch (error) {
     console.error(
       PR,
-      "received bad TEMPLATE node options.  ERROR:",
+      'received bad TEMPLATE node options.  ERROR:',
       error,
-      ". DATA:",
+      '. DATA:',
       TEMPLATE
     );
   }
@@ -932,11 +935,11 @@ function m_FindMatchingNodeByProp(match_me = {}) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return array of nodes with labels that partially match str
 /*/
-function m_FindMatchingNodesByLabel(str = "") {
+function m_FindMatchingNodesByLabel(str = '') {
   if (!str) return [];
   str = u_EscapeRegexChars(str.trim());
-  if (str === "") return [];
-  const regex = new RegExp(/*'^'+*/ str, "i");
+  if (str === '') return [];
+  const regex = new RegExp(/*'^'+*/ str, 'i');
   return NCDATA.nodes.filter(node => regex.test(node.label));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -944,11 +947,11 @@ function m_FindMatchingNodesByLabel(str = "") {
     All others nodes are set to 'no' props. Return matches
     Optionally resets all the NON matching nodes as well
 /*/
-function m_SetMatchingNodesByLabel(str = "", yes = {}, no = {}) {
+function m_SetMatchingNodesByLabel(str = '', yes = {}, no = {}) {
   let returnMatches = [];
   str = u_EscapeRegexChars(str.trim());
-  if (str === "") return undefined;
-  const regex = new RegExp(/*'^'+*/ str, "i");
+  if (str === '') return undefined;
+  const regex = new RegExp(/*'^'+*/ str, 'i');
   NCDATA.nodes.forEach(node => {
     if (regex.test(node.label)) {
       for (let key in yes) node[key] = yes[key];
@@ -959,8 +962,6 @@ function m_SetMatchingNodesByLabel(str = "", yes = {}, no = {}) {
   });
   return returnMatches;
 }
-
-
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Update props of exact matching nodes, returns matches
@@ -1006,7 +1007,7 @@ const REGEX_REGEXCHARS = /[.*+?^${}()|[\]\\]/g;
     From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expression
 /*/
 function u_EscapeRegexChars(string) {
-  return string.replace(REGEX_REGEXCHARS, "\\$&"); // $& means the whole matched string
+  return string.replace(REGEX_REGEXCHARS, '\\$&'); // $& means the whole matched string
 }
 MOD.EscapeRegexChars = u_EscapeRegexChars; // Expose for filter-logic.js
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1036,9 +1037,10 @@ MOD.EscapeRegexChars = u_EscapeRegexChars; // Expose for filter-logic.js
 function m_MigrateData(data) {
   data.nodes.forEach(node => {
     node.id = parseInt(node.id);
-    if (node.attributes) { // don't clobber if value is already set
+    if (node.attributes) {
+      // don't clobber if value is already set
       node.type = node.type || node.attributes.Node_Type;
-      node.info = node.info || node.attributes["Extra Info"];
+      node.info = node.info || node.attributes['Extra Info'];
       node.notes = node.notes || node.attributes.Notes;
       // clear it
       Reflect.deleteProperty(node, 'attributes');
@@ -1049,7 +1051,8 @@ function m_MigrateData(data) {
     // before D3 processing, edge.source and edge.target are ids
     edge.source = parseInt(edge.source);
     edge.target = parseInt(edge.target);
-    if (edge.attributes) { // don't clobber if value is already set
+    if (edge.attributes) {
+      // don't clobber if value is already set
       edge.type = edge.type || edge.attributes.Relationship;
       edge.info = edge.info || edge.attributes.Info;
       edge.citation = edge.citation || edge.attributes.Citations;
@@ -1085,7 +1088,7 @@ function m_MigrateData(data) {
 function m_UnMarkAllNodes() {
   let props = { selected: DESELECTED_COLOR };
   m_SetAllObjs(NCDATA.nodes, props);
-  UDATA.SetAppState("NCDATA", NCDATA);
+  UDATA.SetAppState('NCDATA', NCDATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Remove the stroke color.  Used to unmark search matches.
@@ -1093,20 +1096,23 @@ function m_UnMarkAllNodes() {
 function m_UnStrokeAllNodes() {
   let props = { strokeColor: undefined };
   m_SetAllObjs(NCDATA.nodes, props);
-  UDATA.SetAppState("NCDATA", NCDATA);
+  UDATA.SetAppState('NCDATA', NCDATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Sets the `node.selected` property to `color` so it is hilited on graph
 /*/
 function m_MarkNodeById(id, color) {
-  let marked = { selected: TEMPLATE.sourceColor != undefined? TEMPLATE.sourceColor : DEFAULT_SOURCE_COLOR };
+  let marked = {
+    selected:
+      TEMPLATE.sourceColor != undefined ? TEMPLATE.sourceColor : DEFAULT_SOURCE_COLOR
+  };
   let normal = { selected: DESELECTED_COLOR };
   // NOTE: this.getSelectedNodeColor(node,color) and
   // this.getDeselectedNodeColor(node,color) are not yet implemented
   // to override the properties
   m_SetMatchingNodesByProp({ id }, marked, normal);
 
-  UDATA.SetAppState("NCDATA", NCDATA);
+  UDATA.SetAppState('NCDATA', NCDATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Sets the `node.selected` property to `color` so it is hilited on graph
@@ -1119,20 +1125,20 @@ function m_MarkNodeByLabel(label, color) {
   // to override the properties
   m_SetMatchingNodesByLabel(label, marked, normal);
 
-  UDATA.SetAppState("NCDATA", NCDATA);
+  UDATA.SetAppState('NCDATA', NCDATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Sets matching node labels to the passed selection color
 /*/
 function m_MarkNodesThatMatch(searchString, color) {
-  if (searchString === "") {
+  if (searchString === '') {
     m_UnMarkAllNodes();
     return;
   }
   let select = { selected: color };
   let deselect = { selected: DESELECTED_COLOR };
   m_SetMatchingNodesByLabel(searchString, select, deselect);
-  UDATA.SetAppState("NCDATA", NCDATA);
+  UDATA.SetAppState('NCDATA', NCDATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Sets matching node labels to the passed selection color
@@ -1144,7 +1150,7 @@ function m_SetStrokeColorThatMatch(searchString, color) {
   let matched = { strokeColor: color };
   let notmatched = { strokeColor: undefined };
   m_SetMatchingNodesByLabel(searchString, matched, notmatched);
-  UDATA.SetAppState("NCDATA", NCDATA);
+  UDATA.SetAppState('NCDATA', NCDATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Sets the 'selected' state of edges that are attached to the node
@@ -1163,7 +1169,7 @@ function m_MarkSelectedEdges(edges, node) {
       edge.selected = false;
     }
   });
-  UDATA.SetAppState("NCDATA", NCDATA);
+  UDATA.SetAppState('NCDATA', NCDATA);
 }
 
 /// COMMAND LINE UTILITIES ////////////////////////////////////////////////////
@@ -1175,20 +1181,21 @@ function m_MarkSelectedEdges(edges, node) {
     if you've edited the `template.schema.js`` file.
 /*/ JSCLI.AddFunction(
   function ncRegenerateDefaultTemplate() {
-    UDATA.Call("SRV_TEMPLATE_REGENERATE_DEFAULT");
+    UDATA.Call('SRV_TEMPLATE_REGENERATE_DEFAULT');
     console.log('_default.template.toml regenerated from `template-schema.js`');
-  });
+  }
+);
 /*/ Command: RESET THE DATABASE from default data
 /*/
 JSCLI.AddFunction(function ncPushDatabase(jsonFile) {
-  jsonFile = jsonFile || "data.reducedlinks.json";
+  jsonFile = jsonFile || 'data.reducedlinks.json';
   DATASTORE.PromiseJSONFile(jsonFile)
     .then(data => {
       // data is { nodes, edges }
       console.log(PR, `Sending data from ${jsonFile} to Server`, data);
       // UDATA.Call() returns a promise, so return it to
       // continue the asynchronous chain
-      return UDATA.Call("SRV_DBSET", data);
+      return UDATA.Call('SRV_DBSET', data);
     })
     .then(d => {
       if (d.OK) {
@@ -1197,86 +1204,76 @@ JSCLI.AddFunction(function ncPushDatabase(jsonFile) {
         );
         console.log(
           `${PR} %cServer Database has been overwritten with ${jsonFile}`,
-          "color:blue"
+          'color:blue'
         );
         console.log(`${PR} Reload apps to see new data`);
         setTimeout(UNISYS.ForceReloadOnNavigation, 1000);
       } else {
-        console.error(PR, "Server Error", d);
+        console.error(PR, 'Server Error', d);
         window.alert(`Error ${JSON.stringify(d)}`);
       }
     });
   // return syntax help
-  return "FYI: ncPushDatabase(jsonFile) can load file in assets/data";
+  return 'FYI: ncPushDatabase(jsonFile) can load file in assets/data';
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Command: EMPTY THE DATABASE from default data
 /*/ JSCLI.AddFunction(
   function ncEmptyDatabase() {
-    window.ncPushDatabase("nada.json");
-    return "FYI: pushing empty database from assets/data/nada.json...reloading";
+    window.ncPushDatabase('nada.json');
+    return 'FYI: pushing empty database from assets/data/nada.json...reloading';
   }
 );
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Command: Unlock the database.  Used to recover from error conditions where
     a node or edge is inadvertently left locked.
 /*/
-JSCLI.AddFunction(
-  function ncUnlockAll() {
-    UDATA.NetCall('SRV_DBUNLOCKALL', {});
-    return "Unlocking all nodes and edges in the database, and enabling template edits.";
-  }
-);
-JSCLI.AddFunction(
-  function ncUnlockAllNodes() {
-    UDATA.NetCall('SRV_DBUNLOCKALLNODES', {});
-    return "Unlocking all nodes in the database.";
-  }
-);
-JSCLI.AddFunction(
-  function ncUnlockAllEdges() {
-    UDATA.NetCall('SRV_DBUNLOCKALLEDGES', {});
-    return "Unlocking all edges in the database.";
-  }
-);
-JSCLI.AddFunction(
-  function ncNodeColorMap() {
-    console.log(UDATA.AppState('COLORMAP'));
-    return "ncNodeColorMap.";
-  }
-);
-JSCLI.AddFunction(
-  function ncDumpData() {
-    console.log('NCDATA', NCDATA);
-    return `ncDumpData: ${JSON.stringify(NCDATA)}`;
-  }
-);
+JSCLI.AddFunction(function ncUnlockAll() {
+  UDATA.NetCall('SRV_DBUNLOCKALL', {});
+  return 'Unlocking all nodes and edges in the database, and enabling template edits.';
+});
+JSCLI.AddFunction(function ncUnlockAllNodes() {
+  UDATA.NetCall('SRV_DBUNLOCKALLNODES', {});
+  return 'Unlocking all nodes in the database.';
+});
+JSCLI.AddFunction(function ncUnlockAllEdges() {
+  UDATA.NetCall('SRV_DBUNLOCKALLEDGES', {});
+  return 'Unlocking all edges in the database.';
+});
+JSCLI.AddFunction(function ncNodeColorMap() {
+  console.log(UDATA.AppState('COLORMAP'));
+  return 'ncNodeColorMap.';
+});
+JSCLI.AddFunction(function ncDumpData() {
+  console.log('NCDATA', NCDATA);
+  return `ncDumpData: ${JSON.stringify(NCDATA)}`;
+});
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Command: Token Generator
 /*/
 JSCLI.AddFunction(function ncMakeTokens(clsId, projId, dataset, numGroups) {
   // type checking
-  if (typeof clsId !== "string")
-    return "args: str classId, str projId, str dataset, int numGroups";
-  if (typeof projId !== "string")
-    return "args: str classId, str projId, str dataset, int numGroups";
-  if (typeof dataset !== "string")
-    return "args: str classId, str projId, str dataset, int numGroups";
-  if (clsId.length > 12) return "classId arg1 should be 12 chars or less";
-  if (projId.length > 12) return "classId arg1 should be 12 chars or less";
-  if (!Number.isInteger(numGroups)) return "numGroups arg3 must be integer";
-  if (numGroups < 1) return "numGroups arg3 must be positive integer";
+  if (typeof clsId !== 'string')
+    return 'args: str classId, str projId, str dataset, int numGroups';
+  if (typeof projId !== 'string')
+    return 'args: str classId, str projId, str dataset, int numGroups';
+  if (typeof dataset !== 'string')
+    return 'args: str classId, str projId, str dataset, int numGroups';
+  if (clsId.length > 12) return 'classId arg1 should be 12 chars or less';
+  if (projId.length > 12) return 'classId arg1 should be 12 chars or less';
+  if (!Number.isInteger(numGroups)) return 'numGroups arg3 must be integer';
+  if (numGroups < 1) return 'numGroups arg3 must be positive integer';
   // let's do this!
   let out = `\nTOKEN LIST for class '${clsId}' project '${projId}'\n\n`;
   let pad = String(numGroups).length;
   for (let i = 1; i <= numGroups; i++) {
     let id = String(i);
-    id = id.padStart(pad, "0");
+    id = id.padStart(pad, '0');
     out += `group ${id}\t${SESSION.MakeToken(clsId, projId, i, dataset)}\n`;
   }
   if (window && window.location) {
     let ubits = new URL(window.location);
-    let hash = ubits.hash.split("/")[0];
+    let hash = ubits.hash.split('/')[0];
     let url = `${ubits.protocol}//${ubits.host}/${hash}`;
     out += `\nexample url: ${SETTINGS.ServerAppURL()}/edit/${SESSION.MakeToken(
       clsId,

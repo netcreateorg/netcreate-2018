@@ -37,6 +37,7 @@
     "babel-preset-react": "^6.24.1",
     "brunch": "^2.10.17",
     "clean-css-brunch": "^2.10.0",
+    "copycat-brunch": "^1.1.1",
     "core-js": "^3.6.5",
     "ejs": "^2.6.1",
     "eslint": "^5.0.1",
