@@ -3,27 +3,22 @@
     NCGraphRenderer
 
     This is a pure data renderer based on d3-simplenetgraph.
-    It does not rely on any outside data sources or UNISYS calls.
+    It does not rely on any outside data sources/dependencies or UNISYS calls.
 
+    The one exception is that `mouseover` and `node click` events are
+    broadcast through UNISYS calls.
+
+    This is designed to work with the NCGraph React component.
+
+    NCGraph calls NCGraphRenderer.SetData whenever it receives an updated data object.
+    This triggers NCGraphRenderer to redraw itself.
+
+    The data is:
       data = { nodes, edges }
       nodes = [ ...{id, label, size, color, opacity}]
       edges = [ ...{id, sourceId, targetId, size, color, opacity}]
 
     This uses D3 Version 4.0.
-
-    This is designed to work with the NCGraph React component.
-
-    NCGraph calls SetData whenever it receives an updated data object.
-    This triggers NCGraphRenderer to redraw itself.
-
-    This simplified version derived from d3-simplenetgraph.js was created to address
-    a problem with links not updating properly.
-
-    The first implementation of this removed the fancy force property settings
-    that were needed to handle the realtime UI widgets in 'D3 Force Demo' app.
-    Eventually these were brough back in once the link merging was debugged.
-    However, this hasn't been reconciled with the `D3 Force Demo` widgets.
-    It *might* work, but it *might* not.
 
     Zooming/panning is handled via D3's zoom() function.  Basically it
     involves creating a `g` element that wraps the node and link elements
@@ -59,7 +54,6 @@ var UDATA = null;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let m_width = 800;
 let m_height = 800;
-let mouseoverNodeId = -1;   // id of the node the mouse is currently over
 const M_FORCEPROPERTIES = {   // values for all forces
   center: {
     x: 0.5,
@@ -134,11 +128,6 @@ class NCGraphRenderer {
 
     this.clickFn = {};
 
-    this.nodeSizeDefault = 5; // overriden by template
-    this.nodeSizeMax = 50; // overriden by template
-    this.edgeSizeDefault = 0.175; // overriden by template
-    this.edgeSizeMax = 50; // overriden by template
-
     /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
 
@@ -150,7 +139,7 @@ class NCGraphRenderer {
     // this.UpdateDefaultValues(); // needs TEMPLATE
 
     // Set up Zoom
-    this.zoom = d3.zoom().on("zoom", this._HandleZoom);
+    this.zoom = d3.zoom().on("zoom", this.HandleZoom);
 
   /*/ Create svg element which will contain our D3 DOM elements.
       Add default click handler so when clicking empty space, deselect all.
@@ -165,12 +154,12 @@ class NCGraphRenderer {
       }
       )
       .on("mouseover", (d) => {
+        UDATA.LocalCall('MOUSE_OVER_NODE', { nodeId: undefined })
         // Deselect edges
-        mouseoverNodeId = -1;
         d3.selectAll('.edge')
           .transition()
           .duration(1500)
-          .style('stroke-width', this._UpdateLinkStrokeWidth)
+          .style('stroke-width', e => e.width)
         d3.event.stopPropagation();
       })
       .call(this.zoom);
@@ -188,33 +177,20 @@ class NCGraphRenderer {
     /// END D3 CODE ///////////////////////////////////////////////////////////////
 
     this.ClearSVG = this.ClearSVG.bind(this);
-    this.UpdateDefaultValues = this.UpdateDefaultValues.bind(this);
     this.SetData = this.SetData.bind(this);
     this.Initialize = this.Initialize.bind(this);
     this.UpdateGraph = this.UpdateGraph.bind(this);
-    this._UpdateForces = this._UpdateForces.bind(this);
-    this._Tick = this._Tick.bind(this);
-    this._UpdateLinkStrokeWidth = this._UpdateLinkStrokeWidth.bind(this);
-    this._UpdateLinkStrokeColor = this._UpdateLinkStrokeColor.bind(this);
-    this._ZoomReset = this._ZoomReset.bind(this);
-    this._ZoomIn = this._ZoomIn.bind(this);
-    this._ZoomOut = this._ZoomOut.bind(this);
-    this._ZoomPanReset = this._ZoomPanReset.bind(this);
-    this._HandleZoom = this._HandleZoom.bind(this);
-    this._Transition = this._Transition.bind(this);
-    this._Dragstarted = this._Dragstarted.bind(this);
-    this._Dragged = this._Dragged.bind(this);
-    this._Dragended = this._Dragended.bind(this);
-
-    UDATA.HandleMessage('ZOOM_RESET', this._ZoomReset);
-    UDATA.HandleMessage('ZOOM_IN', this._ZoomIn);
-    UDATA.HandleMessage('ZOOM_OUT', this._ZoomOut);
-    UDATA.HandleMessage('ZOOM_PAN_RESET', this._ZoomPanReset);
-    // UDATA.HandleMessage('GROUP_PROPS', (data) => {
-    //   console.log('GROUP_PROPS got ... ');
-    // });
-
-
+    this.UpdateForces = this.UpdateForces.bind(this);
+    this.Tick = this.Tick.bind(this);
+    this.ZoomReset = this.ZoomReset.bind(this);
+    this.ZoomIn = this.ZoomIn.bind(this);
+    this.ZoomOut = this.ZoomOut.bind(this);
+    this.ZoomPanReset = this.ZoomPanReset.bind(this);
+    this.HandleZoom = this.HandleZoom.bind(this);
+    this.Transition = this.Transition.bind(this);
+    this.Dragstarted = this.Dragstarted.bind(this);
+    this.Dragged = this.Dragged.bind(this);
+    this.Dragended = this.Dragended.bind(this);
 
   }
 
@@ -222,11 +198,7 @@ class NCGraphRenderer {
   /// CLASS PUBLIC METHODS //////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Deregister() {
-    if (DBG) console.log(PR, 'd3-simplenetgraph.DESTRUCT!!!')
-    UDATA.UnhandleMessage('ZOOM_RESET', this._ZoomReset);
-    UDATA.UnhandleMessage('ZOOM_IN', this._ZoomIn);
-    UDATA.UnhandleMessage('ZOOM_OUT', this._ZoomOut);
-    UDATA.UnhandleMessage('ZOOM_PAN_RESET', this._ZoomPanReset);
+    if (DBG) console.log(PR, 'NCGraphRenderer.DESTRUCT!!!');
   }
 
   /// CLASS PRIVATE METHODS /////////////////////////////////////////////////////
@@ -240,17 +212,6 @@ class NCGraphRenderer {
   ClearSVG() {
     this.zoomWrapper.selectAll(".edge").remove();
     this.zoomWrapper.selectAll(".node").remove();
-  }
-
-
-  /*/ Set default node and edge size values from TEMPLATE
-  /*/
-  UpdateDefaultValues(TEMPLATE) {
-    console.warn('updatedefault values TEMPLATE is', TEMPLATE)
-    this.nodeSizeDefault = TEMPLATE.nodeSizeDefault;
-    this.nodeSizeMax = TEMPLATE.nodeSizeMax;
-    this.edgeSizeDefault = TEMPLATE.edgeSizeDefault;
-    this.edgeSizeMax = TEMPLATE.edgeSizeMax;
   }
 
   /*/ The parent container passes data to the d3 graph via this SetData call
@@ -269,7 +230,7 @@ class NCGraphRenderer {
       this.data.edges = newData.edges.map(d => Object.assign({}, d));
 
       this.Initialize()
-      this._UpdateForces()
+      this.UpdateForces()
       this.UpdateGraph()
 
       // updates ignored until this is run restarts the simulation
@@ -291,7 +252,7 @@ class NCGraphRenderer {
       .force("forceX", d3.forceX())
       .force("forceY", d3.forceY())
 
-      .on("tick", this._Tick)
+      .on("tick", this.Tick)
   }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Call UpdateGraph() after new data has been loaded. This creates link and node
@@ -314,8 +275,6 @@ class NCGraphRenderer {
     you can write code that initializes AND updates data.
 
 /*/ UpdateGraph() {
-    const COLORMAP = UDATA.AppState('COLORMAP');
-
     // DATA JOIN
     // select all elemnts with class .node in d3svg
     // bind selected elements with elements in this.data.nodes,
@@ -340,20 +299,20 @@ class NCGraphRenderer {
     // enter node: append 'g' (group) element and click behavior
     elementG
       .call(d3.drag()
-        .on("start", (d) => { this._Dragstarted(d, this) })
-        .on("drag", this._Dragged)
-        .on("end", (d) => { this._Dragended(d, this) }))
+        .on("start", (d) => { this.Dragstarted(d, this) })
+        .on("drag", this.Dragged)
+        .on("end", (d) => { this.Dragended(d, this) }))
       .on("click", (d) => {
         if (DBG) console.log('clicked on', d.label, d.id)
         UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [d.id] });
         d3.event.stopPropagation();
       })
       .on("mouseover", (d) => {
-        mouseoverNodeId = d.id;
+        UDATA.LocalCall('MOUSE_OVER_NODE', { nodeId: d.id })
         d3.selectAll('.edge')
           .transition()
           .duration(500)
-          .style('stroke-width', this._UpdateLinkStrokeWidth)
+          .style('stroke-width', e => e.width)
         d3.event.stopPropagation();
       })
 
@@ -371,7 +330,7 @@ class NCGraphRenderer {
       .attr("font-size", 10)
       .attr("dx", d => d.size + 5)
       .attr("dy", "0.35em") // ".15em")
-      .text((d) => { return d.label })
+      .text(d => d.label)
       .style("opacity", d => d.opacity);
 
     // enter node: also append a 'title' tag
@@ -434,15 +393,9 @@ class NCGraphRenderer {
     // a block
     nodeElements.merge(nodeElements)
       .selectAll("text")
-      .attr("color", (d) => {
-        if (d.selected) return d.selected;
-        return undefined; // don't set color
-      })
-      .attr("font-weight", (d) => {
-        if (d.selected) return 'bold';
-        return undefined; // don't set font weight
-      })
-      .text((d) => { return d.label }) // in case text is updated
+      .attr("color", d => d.strokeColor)
+      .attr("font-weight", d => { return d.strokeColor ? 'bold' : undefined })
+      .text(d => d.label) // in case text is updated
       .transition()
       .duration(500)
       .style("opacity", d => d.opacity);
@@ -459,30 +412,23 @@ class NCGraphRenderer {
     linkElements.enter()
       .insert("line", ".node")
       .classed('edge', true)
-      .style('stroke', this._UpdateLinkStrokeColor)
-      // .style('stroke', 'rgba(0,0,0,0.1)')  // don't use alpha unless we're prepared to handle layering -- reveals unmatching links
-      .style('stroke-width', this._UpdateLinkStrokeWidth)
-      // old stroke setting
-      // .style('stroke-width', (d) => { return d.size**2 } )    // Use **2 to make size differences more noticeable
+      .style('stroke', e => e.color)
+      .style('stroke-width', e => e.width)
       // Edge selection disabled.
       // .on("click",   (d) => {
       //   if (DBG) console.log('clicked on',d.label,d.id)
       //   this.edgeClickFn( d )
       // })
-      .style("opacity", d => {
-        return d.filteredTransparency
-      });
+      .style("opacity", e => e.opacity);
 
     // .merge() updates the visuals whenever the data is updated.
     linkElements.merge(linkElements)
-      .classed("selected", (d) => { return d.selected })
-      .style('stroke', this._UpdateLinkStrokeColor)
-      .style('stroke-width', this._UpdateLinkStrokeWidth)
+      // .classed("selected", e => e.selected) // is this used?
+      .style('stroke', e => e.color)
+      .style('stroke-width', e => e.width)
       .transition()
       .duration(500)
-      .style("opacity", d => {
-        return d.filteredTransparency
-      });
+      .style("opacity", e => e.opacity);
 
     linkElements.exit().remove()
 
@@ -497,7 +443,7 @@ class NCGraphRenderer {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Apply new force properties
     Call this on construct and if forceProperties have changed.
-/*/ _UpdateForces() {
+/*/ UpdateForces() {
     this.simulation
       .force("link", d3.forceLink()
         .id(d => d.id) // note `d` is an edge, not a node
@@ -506,14 +452,14 @@ class NCGraphRenderer {
         .iterations(M_FORCEPROPERTIES.link.iterations))
       .force("charge", d3.forceManyBody()
         // the larger the node, the harder it pushes
-        .strength(d => (this.nodeSizeDefault + d.degrees) * M_FORCEPROPERTIES.charge.strength * M_FORCEPROPERTIES.charge.enabled)
+        .strength(d => d.size * M_FORCEPROPERTIES.charge.strength * M_FORCEPROPERTIES.charge.enabled)
         .distanceMin(M_FORCEPROPERTIES.charge.distanceMin)
         .distanceMax(M_FORCEPROPERTIES.charge.distanceMax))
       .force("collide", d3.forceCollide()
         .strength(M_FORCEPROPERTIES.collide.strength * M_FORCEPROPERTIES.collide.enabled)
         // node radius (defaultSize+degrees) + preset radius keeps nodes separated
         // from each other like bouncing balls
-        .radius(d => this.nodeSizeDefault + d.degrees + M_FORCEPROPERTIES.collide.radius)
+        .radius(d => d.size + M_FORCEPROPERTIES.collide.radius)
         .iterations(M_FORCEPROPERTIES.collide.iterations))
       .force("center", d3.forceCenter()
         .x(m_width * M_FORCEPROPERTIES.center.x)
@@ -534,7 +480,7 @@ class NCGraphRenderer {
     gets drawn first -- the drawing order is determined by the ordering in the
     DOM.  See the notes under link_update.enter() above for one technique for
     setting the ordering in the DOM.
-/*/ _Tick() {
+/*/ Tick() {
     // Drawing the nodes: Update the location of each node group element
     // from the x, y fields of the corresponding node object.
     this.zoomWrapper.selectAll(".node")
@@ -549,39 +495,11 @@ class NCGraphRenderer {
       .attr("y2", (d) => { return d.target.y; })
   }
 
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Sets the width of the links during update cycles
-      Used by linElements.enter() and linkElements.merge()
-      and mouseover events.
-  /*/
-  _UpdateLinkStrokeWidth(edge) {
-    if (DBG) console.log(PR, '_UpdateLinkStrokeWidth', edge);
-    const sourceId = typeof edge.source === 'number' ? edge.source : edge.source.id;
-    const targetId = typeof edge.target === 'number' ? edge.target : edge.target.id;
-    if (edge.selected ||
-      (mouseoverNodeId === -1) ||
-      (sourceId === mouseoverNodeId) ||
-      (targetId === mouseoverNodeId)
-    ) {
-      // max size checking is in edge-logic
-      return edge.size;
-      // return edge.size ** 2;  // Use **2 to make size differences more noticeable
-      // return Math.min(edge.size ** 2, this.edgeSizeMax);  // Use **2 to make size differences more noticeable
-    } else {
-      return this.edgeSizeDefault;             // Barely visible if not selected
-    }
-  }
-
-  /// Edge color is pre-set by edge-logic based on weights
-  _UpdateLinkStrokeColor(edge) {
-    return edge.color;
-  }
-
 
   /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  _ZoomReset(data) {
+  ZoomReset(data) {
     if (DBG) console.log(PR, 'ZOOM_RESET got state NCDATA', data);
     // NOTE: The transition/duration call means _HandleZoom will be called multiple times
     this.d3svg.transition()
@@ -589,19 +507,19 @@ class NCGraphRenderer {
       .call(this.zoom.scaleTo, 1);
   }
 
-  _ZoomIn(data) {
+  ZoomIn(data) {
     if (DBG) console.log(PR, 'ZOOM_IN got state NCDATA', data);
-    this._Transition(1.2);
+    this.Transition(1.2);
   }
 
-  _ZoomOut(data) {
+  ZoomOut(data) {
     if (DBG) console.log(PR, 'ZOOM_OUT got state NCDATA', data);
-    this._Transition(0.8);
+    this.Transition(0.8);
   }
 
   // Pan to 0,0 and zoom scale to 1
   // (Currently not used)
-  _ZoomPanReset(data) {
+  ZoomPanReset(data) {
     if (DBG) console.log(PR, 'ZOOM_PAN_RESET got state NCDATA', data);
     const transform = d3.zoomIdentity.translate(0, 0).scale(1);
     this.d3svg.call(this.zoom.transform, transform);
@@ -609,39 +527,42 @@ class NCGraphRenderer {
 
   /*/ This primarily handles mousewheel zooms
   /*/
-  _HandleZoom() {
-    if (DBG) console.log(PR, '_HandleZoom')
+  HandleZoom() {
+    if (DBG) console.log(PR, 'HandleZoom')
     d3.select('.zoomer').attr("transform", d3.event.transform);
   }
   /*/ This handles zoom button zooms.
   /*/
-  _Transition(zoomLevel) {
-    if (DBG) console.log(PR, '_Transition')
+  Transition(zoomLevel) {
+    if (DBG) console.log(PR, 'Transition')
     this.d3svg.transition()
       //.delay(100)
       .duration(200)
       .call(this.zoom.scaleBy, zoomLevel);
   }
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ _Dragstarted(d, self) {
-    if (DBG) console.log(PR, '_Dragstarted', d.x, d.y)
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/
+  /*/
+  Dragstarted(d, self) {
+    if (DBG) console.log(PR, 'Dragstarted', d.x, d.y)
     if (!d3.event.active) self.simulation.alphaTarget(0.3).restart();
     d.fx = d.x;
     d.fy = d.y;
   }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ _Dragged(d) {
-    if (DBG) console.log(PR, '_Dragged')
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/
+  /*/
+  Dragged(d) {
+    if (DBG) console.log(PR, 'Dragged')
     d.fx = d3.event.x;
     d.fy = d3.event.y;
   }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ _Dragended(d, self) {
-    if (DBG) console.log(PR, '_Dragended')
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/
+  /*/
+  Dragended(d, self) {
+    if (DBG) console.log(PR, 'Dragended')
     if (!d3.event.active) self.simulation.alphaTarget(0.0001);
     d.fx = null;
     d.fy = null;

@@ -47,6 +47,7 @@ const { Route }    = require('react-router-dom');
 const ReactStrap   = require('reactstrap');
 const { Button } = ReactStrap;
 const NetGraph     = require('./components/NetGraph');
+const NCGraph = require('./components/NCGraph');
 const Search       = require('./components/Search');
 const NodeSelector = require('./components/NodeSelector');
 const InfoPanel    = require('./components/InfoPanel');
@@ -54,6 +55,7 @@ const FiltersPanel = require('./components/filter/FiltersPanel');
 const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
 const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
 const EDGELOGIC = require('./edge-logic'); // handles edge synthesis
+const SELECTIONLOGIC = require('./selection-logic'); // handles UI selection events
 const FILTER = require('./components/filter/FilterEnums');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
@@ -179,7 +181,8 @@ const FILTER = require('./components/filter/FilterEnums');
               </div>
               <div id="middle" style={{backgroundColor:'#fcfcfc', flex:'3 0 60%',marginTop:'38px'}}>
                 <InfoPanel/>
-                <NetGraph/>
+                {/* <NetGraph /> */}
+                <NCGraph />
                 <div style={{fontSize:'10px',position:'fixed',left:'0px',bottom:'0px',right:'0px',zIndex:'1500',color:'#aaa',backgroundColor:'#eee',padding:'5px 10px'}}>Please contact Professor
                 Kalani Craig, Institute for Digital Arts & Humanities at
                 (812) 856-5721 (BH) or

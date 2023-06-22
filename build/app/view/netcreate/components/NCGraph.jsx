@@ -10,7 +10,7 @@
 
     ## TO USE
 
-            <NetGraph/>
+            <NCGraph/>
 
     ## Why not use FauxDom?
 
@@ -27,7 +27,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = true;
+const DBG = false;
 const PR = 'NCGraph';
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
@@ -38,6 +38,7 @@ const ReactStrap = require('reactstrap');
 const { Button } = ReactStrap;
 const NCGraphRenderer = require('./NCGraphRenderer')
 const UNISYS     = require('unisys/client');
+import RENDERLOGIC from '../render-logic';
 
 let UDATA = null;
 
@@ -49,16 +50,16 @@ class NCGraph extends UNISYS.Component {
       super(props)
       this.state = {
         d3NetGraph: {},
+        d3data: {},
         nodeTypes: [],
-        edgeTypes: []
+        edgeTypes: [],
+        mouseOverNodeId: undefined
       }
 
       this.updateNCData = this.updateNCData.bind(this);
       this.updateTemplate = this.updateTemplate.bind(this);
       this.updateColorMap = this.updateColorMap.bind(this);
-      this.processNCData = this.processNCData.bind(this);
-      this.getHelp = this.getHelp.bind(this);
-      this.getUpdatedDateText = this.getUpdatedDateText.bind(this);
+      this.updateSelection = this.updateSelection.bind(this);
       this.onZoomReset = this.onZoomReset.bind(this);
       this.onZoomIn    = this.onZoomIn.bind(this);
       this.onZoomOut   = this.onZoomOut.bind(this);
@@ -70,6 +71,7 @@ class NCGraph extends UNISYS.Component {
       UDATA.OnAppStateChange('SYNTHESIZEDD3DATA', this.updateNCData);
       UDATA.OnAppStateChange('TEMPLATE', this.updateTemplate);
       UDATA.OnAppStateChange('COLORMAP', this.updateColorMap);
+      UDATA.OnAppStateChange('SELECTION', this.updateSelection);
       UDATA.HandleMessage('CONSTRUCT_GRAPH', this.constructGraph);
 
     } // constructor
@@ -87,9 +89,9 @@ class NCGraph extends UNISYS.Component {
    * @param {array} data.edges
    */
   updateNCData(data) {
-    if (DBG) console.log(PR, 'got state D3DATA', data);
-    const d3data = this.processNCData(data);
-    this.state.d3NetGraph.SetData(data);
+    if (DBG) console.log(PR, 'got state D3DATA', data, RENDERLOGIC);
+    const d3data = RENDERLOGIC.ProcessNCData(data);
+    this.state.d3NetGraph.SetData(d3data);
   }
   /**
    * Update default values when template has changed
@@ -98,8 +100,6 @@ class NCGraph extends UNISYS.Component {
   updateTemplate(data) {
     if (DBG) console.log(PR, 'got state TEMPLATE', data);
     const TEMPLATE = this.AppState('TEMPLATE');
-    // Update D3
-    this.state.d3NetGraph.UpdateDefaultValues(TEMPLATE);
     // Update Legends
     const nodeTypes = TEMPLATE.nodeDefs.type.options;
     const edgeTypes = TEMPLATE.edgeDefs.type.options;
@@ -119,92 +119,33 @@ class NCGraph extends UNISYS.Component {
     this.state.d3NetGraph.UpdateGraph();
   }
   /**
-   * Interprets SYNTEHSIZEDD3DATA into a simplified form for the renderer
-   * @param {*} data NCDATA { nodes, edges }
-   * @returns {Object} {
-   *                     nodes: [ ...{id, label, size, color, opacity, strokeColor, strokeWidth, help}],
-   *                     edges: [ ...{id, sourceId, targetId, size, color, opacity}]
-   *                   }
+   *
+   * @param {*} data
    */
-  processNCData(data) {
-    const d3data = {};
-    const TEMPLATE = this.AppState('TEMPLATE');
-    const COLORMAP = UDATA.AppState('COLORMAP');
-    const nodes = data.nodes.map(n => {
-        // Look up colors
-        // REVIEW: Using label match.  Should we use id instead?
-        // The advantage of using the label is backward compatibility with
-        // Google Fusion table data as well as exportability.
-        // If we save the type as an id, the data format will be
-        // less human-readable.
-        // The problem with this approach though is that any changes
-        // to the label text will result in a failed color lookup!
-      n.color = COLORMAP.nodeColorMap[n.type];
-      n.opacity = n.filteredTransparency;
-      n.size = Math.min(TEMPLATE.nodeSizeDefault + n.degrees, TEMPLATE.nodeSizeMax);
-      n.strokeColor = n.selected || n.strokeColor || undefined;
-      n.strokeWidth = n.selected || n.strokeColor ? '5px' : undefined;
-      n.help = this.getHelp(n);
-      return n;
-    })
-    d3data.nodes = nodes;
-    d3data.edges = data.edges;
-    return d3data;
+  updateSelection(data) {
+    if (DBG) console.log(PR, 'updateSelection', data);
+    const d3data = RENDERLOGIC.UpdateSelection(data);
+    this.state.d3NetGraph.SetData(d3data);
   }
-  /**
-   * Returns the tooltip help text for the node, using labels defined in the template
-   * @param {*} node
-   * @returns {string}
-   */
-  getHelp(node) {
-    const TEMPLATE = this.AppState('TEMPLATE');
-    const nodeDefs = TEMPLATE.nodeDefs;
-    let titleText = "";
-    if (nodeDefs.label.includeInGraphTooltip !== undefined) {
-      // Add Label
-      if (nodeDefs.label.includeInGraphTooltip) titleText += nodeDefs.label.displayLabel + ": " + node.label + "\n";
-      // Add type
-      if (nodeDefs.type.includeInGraphTooltip) titleText += nodeDefs.type.displayLabel + ": " + node.type + "\n";
-      // Add degrees
-      if (nodeDefs.degrees.includeInGraphTooltip) titleText += nodeDefs.degrees.displayLabel + ": " + node.degrees + "\n";
-      // Add notes
-      if (nodeDefs.notes.includeInGraphTooltip) titleText += nodeDefs.notes.displayLabel + ": " + node.notes + "\n";
-      // Add info
-      if (nodeDefs.info.includeInGraphTooltip) titleText += nodeDefs.info.displayLabel + ": " + node.info + "\n";
-      // Add updated info
-      if (nodeDefs.updated.includeInGraphTooltip) titleText += nodeDefs.updated.displayLabel + ": " + this.getUpdatedDateText(node);
-    } else {
-      // For backwards compatability
-      titleText += nodeDefs.displayLabel.label + ": " + node.label + "\n";
-    }
-    return titleText;
-  }
-  getUpdatedDateText(nodeEdge) {
-    const d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
-    const year = String(d.getFullYear());
-    const date = (d.getMonth() + 1) + "/" + d.getDate() + "/" + year.substr(2, 4);
-    const time = d.toTimeString().substr(0, 5);
-    const author = nodeEdge._nlog ? nodeEdge._nlog[nodeEdge._nlog.length - 1] : 'unknown';
-    const dateTime = date + ' at ' + time + " by " + author;
-    return dateTime;
-  }
-
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UI METHODS
 
-/*/
-/*/ onZoomReset() {
-      this.AppCall('ZOOM_RESET', {});
-    }
-/*/
-/*/ onZoomIn() {
-      this.AppCall('ZOOM_IN', {});
-    }
-/*/
-/*/ onZoomOut() {
-      this.AppCall('ZOOM_OUT', {});
-    }
+  /*/
+  /*/
+  onZoomReset() {
+    this.state.d3NetGraph.ZoomReset();
+  }
+  /*/
+  /*/
+  onZoomIn() {
+    this.state.d3NetGraph.ZoomIn();
+  }
+  /*/
+  /*/
+  onZoomOut() {
+    this.state.d3NetGraph.ZoomOut();
+  }
 
 
 
@@ -223,7 +164,7 @@ class NCGraph extends UNISYS.Component {
         // if d3NetGraph was previously created, deregister it so it stops receiving data updates
         this.state.d3NetGraph.Deregister();
       }
-      const d3NetGraph = new NCGraphRenderer(el); //
+      const d3NetGraph = new NCGraphRenderer(el);
       const nodeTypes = TEMPLATE.nodeDefs.type.options;
       const edgeTypes = TEMPLATE.edgeDefs.type.options;
       this.setState({ d3NetGraph, nodeTypes, edgeTypes });
@@ -242,6 +183,7 @@ class NCGraph extends UNISYS.Component {
       UDATA.AppStateChangeOff('SYNTHESIZEDD3DATA', this.updateNCData);
       UDATA.AppStateChangeOff('TEMPLATE', this.updateTemplate);
       UDATA.AppStateChangeOff('COLORMAP', this.updateColorMap);
+      UDATA.AppStateChangeOff('SELECTION', this.updateSelection);
       UDATA.UnhandleMessage('CONSTRUCT_GRAPH', this.constructGraph);
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
