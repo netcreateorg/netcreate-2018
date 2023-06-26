@@ -21,7 +21,7 @@ netcreate-config.js
 # And don't commit personal log files or temp
 *_log.md
 *.log
-/tmp
+/tmp*
 
 # And don't commit .zip archives either
 *.zip
