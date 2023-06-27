@@ -48,12 +48,14 @@ const ReactStrap   = require('reactstrap');
 const { Button } = ReactStrap;
 const NetGraph     = require('./components/NetGraph');
 const Search       = require('./components/Search');
+const NCGraph = require('./components/NCGraph');
 const NodeSelector = require('./components/NodeSelector');
 const InfoPanel    = require('./components/InfoPanel');
 const FiltersPanel = require('./components/filter/FiltersPanel');
 const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
 const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
 const EDGELOGIC = require('./edge-logic'); // handles edge synthesis
+const SELECTIONMGR = require('./selection-mgr'); // handles UI selection events
 const FILTER = require('./components/filter/FilterEnums');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
