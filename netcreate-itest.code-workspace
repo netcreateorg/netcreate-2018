@@ -16,6 +16,15 @@
       "**/node_modules": true,
       "**/package-lock.json": true
     },
+    // highlight sri-style module comment separators
+    "highlight.regexes": {
+      "(/// [^/]+? ///+)\n": [
+        {
+          "color": "#a3bdff",
+          "backgroundColor": "#2E4AE06f"
+        }
+      ]
+    },
     // make errors more obvious, de-emphasize warnings
     "workbench.colorCustomizations": {
       "editorError.border": "#ff0000"
