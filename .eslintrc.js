@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  ESLINT CONFIGURATION for URSYS/STEPSYS with VISUAL STUDIO CODE
+  ESLINT CONFIGURATION for NETCREATE ITEST (2023)
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -9,6 +9,9 @@ const { RULES } = require('./.eslintrc-rules');
 /// BASE CONFIGURATION ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const config = {
+  /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
+    We want to support both node-style 'require' and es6 module 'import'.
+  :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
   env: {
     browser: true,
     es6: true,
@@ -22,10 +25,6 @@ const config = {
     Plugins are packages that rules and sets of rules, but could also be
     something else (e.g. parser) that ESLINT can make use of.
     See: eslint.org/docs/user-guide/configuring#use-a-plugin
-
-    When using Typescript, we have to modify the default behavior
-    of ESLINT.
-    See: github.com/typescript-eslint/typescript-eslint
   :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
   plugins: ['react'],
   extends: [
