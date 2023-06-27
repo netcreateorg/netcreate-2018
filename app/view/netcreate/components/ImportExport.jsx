@@ -10,7 +10,7 @@
 
   This displays a subpanel on the "More..." tab.
 
-  `importexport-logic.js` (IELOGIC) handles all of the business logic for
+  `importexport-mgr.js` (IMPORTEXPORT) handles all of the business logic for
   importing and exporting.  See that file for details.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
@@ -31,7 +31,7 @@ const UNISYS   = require('unisys/client');
 const DATASTORE = require("system/datastore");
 const { EDITORTYPE } = require("system/util/enum");
 
-const IELOGIC = require("../importexport-logic");
+const IMPORTEXPORT = require('../importexport-mgr');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -134,8 +134,6 @@ class ImportExport extends UNISYS.Component {
 
   onNodeImportFileSelect(e) {
     const nodefile = e.target.files[0];
-    IELOGIC.NodefileValidate({ nodefile })
-      .then(result => {
         const msg = (
           <div>
             <div>{result.messageTitle}</div>
@@ -153,12 +151,12 @@ class ImportExport extends UNISYS.Component {
         });
         // Clear "Choose File"
         if (!result.isValid) document.getElementById('nodefileInput').value = "";
+    IMPORTEXPORT.NodefileValidate({ nodefile }).then(result => {
+      const msg = (
       });
   }
   onEdgeImportFileSelect(e) {
     const edgefile = e.target.files[0];
-    IELOGIC.EdgefileValidate({ edgefile })
-      .then(result => {
         const msg = (
           <div>
             <div>{result.messageTitle}</div>
@@ -176,6 +174,7 @@ class ImportExport extends UNISYS.Component {
         });
         // Clear "Choose File"
         if (!result.isValid) document.getElementById('edgefileInput').value = "";
+    IMPORTEXPORT.EdgefileValidate({ edgefile }).then(result => {
       });
   }
 
@@ -190,9 +189,9 @@ class ImportExport extends UNISYS.Component {
       nodeValidationMsgs: undefined
     });
     // Clear validated data so it doesn't get imported
-    if (!importIsActive) UDATA.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.IMPORTER });
-    IELOGIC.ResetNodeImportData();
-   }
+    if (!importIsActive)
+      UDATA.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.IMPORTER });
+    IMPORTEXPORT.ResetNodeImportData();
 
   clearEdgefileSelect() {
     // User Cancelled, reset to default
@@ -205,8 +204,9 @@ class ImportExport extends UNISYS.Component {
       edgeValidationMsgs: undefined
     });
     // Clear validated data so it doesn't get imported
-    if (!importIsActive) UDATA.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.IMPORTER });
-    IELOGIC.ResetEdgeImportData();
+    if (!importIsActive)
+      UDATA.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.IMPORTER });
+    IMPORTEXPORT.ResetEdgeImportData();
   }
 
   clearFileSelect() {
@@ -217,7 +217,7 @@ class ImportExport extends UNISYS.Component {
     this.clearNodefileSelect();
     this.clearEdgefileSelect();
 
-    IELOGIC.ResetImportData();
+    IMPORTEXPORT.ResetImportData();
     this.setState({
       nodeValidationMsgs: undefined,
       edgeValidationMsgs: undefined,

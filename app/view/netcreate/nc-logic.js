@@ -287,7 +287,7 @@ MOD.Hook('DISCONNECT', () => {
 MOD.Hook('INITIALIZE', () => {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ RELOAD_DB
-      Called by importexport-logic.js.MOD.Import:818
+      Called by importexport-mgr.js.MOD.Import:818
       During import, DB_MERGE will be called to merge the import data
       into the DB.  Then it will call RELOAD_DB to re-read the updated
       NCDATA from the database.  This is necessary because new ids will
@@ -582,7 +582,7 @@ MOD.Hook('INITIALIZE', () => {
     // FIXME: Need to also trigger resize!
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ NODE_TYPES_UPDATE is called by templateEditor-logic after user has changed the
+  /*/ NODE_TYPES_UPDATE is called by templateEditor-mgr after user has changed the
       node type options.  This maps changed options to a new name,
       and deleted type options to existing options.
       This updates:
@@ -624,7 +624,7 @@ MOD.Hook('INITIALIZE', () => {
     UDATA.SetAppState('NCDATA', NCDATA);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ EDGE_TYPES_UPDATE is called by templateEditor-logic after user has changed the
+  /*/ EDGE_TYPES_UPDATE is called by templateEditor-mgr after user has changed the
       edge type options.  This maps changed options to a new name,
       and deleted type options to existing options.
       This updates:
@@ -869,7 +869,7 @@ function m_SetAllObjs(obj_list, all = {}) {
     for (let key in all) obj[key] = all[key];
   });
 }
-MOD.SetAllObjs = m_SetAllObjs; // Expose for filter-logic.js
+MOD.SetAllObjs = m_SetAllObjs; // Expose for filter-mgr.js
 
 /// NODE HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1009,7 +1009,7 @@ const REGEX_REGEXCHARS = /[.*+?^${}()|[\]\\]/g;
 function u_EscapeRegexChars(string) {
   return string.replace(REGEX_REGEXCHARS, '\\$&'); // $& means the whole matched string
 }
-MOD.EscapeRegexChars = u_EscapeRegexChars; // Expose for filter-logic.js
+MOD.EscapeRegexChars = u_EscapeRegexChars; // Expose for filter-mgr.js
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Migrate Data from older formats
 

@@ -1,10 +1,10 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  EDGE LOGIC
+  EDGE MANAGER
 
-  edge-logic handles
+  edge-mgr handles
 
-  edge-logic takes the incoming FILTEREDD3DATA and simplifies the
+  edge-mgr takes the incoming FILTEREDD3DATA and simplifies the
   edges, doing the following:
     1. Removes any duplicate edges between a source and target
     2. Caclulates the edge size using the edge.weigth parameter
@@ -27,7 +27,7 @@ var UDATA = UNISYS.NewDataLink(MOD);
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
-const PR = "edge-logic: ";
+const PR = "edge-mgr: ";
 
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,7 +36,7 @@ const PR = "edge-logic: ";
 MOD.Hook("INITIALIZE", () => {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ FILTEREDD3DATA is updated by filter-logic after NCDATA is changed.
+  /*/ FILTEREDD3DATA is updated by filter-mgr after NCDATA is changed.
   /*/
   UDATA.OnAppStateChange("FILTEREDD3DATA", data => {
     m_SynthesizeEdges(data);

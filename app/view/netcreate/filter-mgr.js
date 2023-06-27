@@ -1,6 +1,6 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  FILTER LOGIC
+  FILTER MANAGER
 
 
   Filter Definitions
@@ -58,7 +58,7 @@
     --  Instead, it plots the new FILTEREDD3DATA state.  Whenever NCDATA changes,
         FILTERDD3DATA is udpated.
     --  This way there is only one source of truth: all draw updates
-        are routed through filter-logic.
+        are routed through filter-mgr.
     --  If filters have not been defined, we just pass the raw NCDATA
 
   * Filters can be stacked.
@@ -95,7 +95,7 @@ var UDATA = UNISYS.NewDataLink(MOD);
 
 /// APP STATE/DATA STRUCTURES /////////////////////////////////////////////////
 const PROMPTS = require("system/util/prompts");
-const NCLOGIC = require("./nc-logic");
+const NCLOGIC = require("./nc-logic").default;
 
 var TEMPLATE = null; // template definition for prompts
 var FDATA_RESTORE; // pristine FDATA for clearing
@@ -111,7 +111,7 @@ const DATASET = window.NC_CONFIG.dataset || "netcreate";
 const TEMPLATE_URL = `templates/${DATASET}.json`;
 
 const DBG = false;
-const PR = "filter-logic: ";
+const PR = "filter-mgr: ";
 
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -360,7 +360,7 @@ function m_FiltersApply() {
 
   // Update FILTEREDD3DATA
   UDATA.SetAppState("FILTEREDD3DATA", FILTEREDD3DATA);
-  // edge-logic handles this call and updates SYNTHESIZEDD3DATA, which is rendered by d3-simplenetgraph
+  // edge-mgr handles this call and updates SYNTHESIZEDD3DATA, which is rendered by d3-simplenetgraph
 
 }
 
@@ -454,7 +454,7 @@ function m_MatchNumber(operator, filterVal, objVal) {
         matches = objVal !== filterVal;
         break;
       default:
-        console.error(`filter-logic.js: Unknown operator ${operator}`);
+        console.error(`filter-mgr.js: Unknown operator ${operator}`);
         break;
     }
   }
@@ -603,13 +603,13 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3D
   });
 
   // 1. If source or target are missing, then remove the edge
-  if (source === undefined || target === undefined ) return false;
+  if (source === undefined || target === undefined) return false;
 
   // 2. If source or target have been removed via collapse or focus, remove the edge
   if (RemovedNodes.includes(source.id) || RemovedNodes.includes(target.id)) return false;
   // 3. if source or target is transparent, then we are transparent too
-  if ( source.filteredTransparency < 1.0 ||
-       target.filteredTransparency < 1.0) {
+  if (source.filteredTransparency < 1.0 ||
+    target.filteredTransparency < 1.0) {
     // regardless of filter definition...
     // ...if filterAction is FILTER
     // always hide edge if it's attached to a filtered node

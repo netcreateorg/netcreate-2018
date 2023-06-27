@@ -5,7 +5,7 @@
   General purpose utilities for manipulating NCDATA.
   Used by:
   * nc-logic
-  * filter-logic
+  * filter-mgr
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 

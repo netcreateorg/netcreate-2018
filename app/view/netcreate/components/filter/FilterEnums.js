@@ -30,7 +30,7 @@ FILTER.KEY.TARGET = "target";
 FILTER.OPERATORS = {};
 
 // key needs to match the OPERATOR name for lookup purposes
-// in filter-logic.js
+// in filter-mgr.js
 FILTER.OPERATORS.NO_OP = { key: "NO_OP", label: "--" };
 FILTER.OPERATORS.CONTAINS = { key: "CONTAINS", label: "contains" };
 FILTER.OPERATORS.NOT_CONTAINS = { key: "NOT_CONTAINS", label: "does not contain" };

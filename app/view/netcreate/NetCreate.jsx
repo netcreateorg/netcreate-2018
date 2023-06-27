@@ -53,8 +53,8 @@ const NodeSelector = require('./components/NodeSelector');
 const InfoPanel    = require('./components/InfoPanel');
 const FiltersPanel = require('./components/filter/FiltersPanel');
 const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
-const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
-const EDGELOGIC = require('./edge-logic'); // handles edge synthesis
+const FILTERMGR = require('./filter-mgr'); // handles filtering functions
+const EDGEMGR = require('./edge-mgr'); // handles edge synthesis
 const SELECTIONMGR = require('./selection-mgr'); // handles UI selection events
 const FILTER = require('./components/filter/FilterEnums');
 
