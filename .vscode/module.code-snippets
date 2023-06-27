@@ -1,0 +1,168 @@
+{
+  // Place your snippets for javascript here. Each snippet is defined under a snippet name and has a prefix, body and
+  // description. The prefix is what is used to trigger the snippet and the body will be expanded and inserted. Possible variables are:
+  // $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. Placeholders with the
+  // same ids are connected.
+  // Example:
+  // "Print to console": {
+  // 	"prefix": "log",
+  // 	"body": [
+  // 		"console.log('$1');",
+  // 		"$2"
+  // 	],
+  // 	"description": "Log output to console"
+  // }
+  "ursanode bare module": {
+    "prefix": "ur-module-elements",
+    "description": "a bare module ",
+    "body": [
+      "/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\\",
+      "",
+      "  description",
+      "",
+      "\\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/",
+      "",
+      "/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////",
+      "/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
+      "",
+      "",
+      "/// EXPORTS ///////////////////////////////////////////////////////////////////",
+      "/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+    ]
+  },
+  "ursanode header comment block": {
+    "prefix": "ur-comment-block-header",
+    "description": "a comment block with header",
+    "body": [
+      "",
+      "/// HEADER ////////////////////////////////////////////////////////////////////",
+      "/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:",
+      "    extended comment",
+      ":*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/\n"
+    ]
+  },
+  "ursanode function header": {
+    "prefix": "ur-jsdoc-function-block",
+    "description": "JSDOC header for functions",
+    "body": [
+      "",
+      "/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
+      "/** Description goes here",
+      " *  @param {object} obj - description",
+      " *  @oaram {string} obj.name - description",
+      " *  @returns {object}",
+      " */"
+    ]
+  },
+  "ursanode callout comment block": {
+    "prefix": "ur-comment-block",
+    "description": "comment block",
+    "body": [
+      "",
+      "/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:",
+      "    extended comment",
+      ":*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/\n"
+    ]
+  },
+  "ursanode module example": {
+    "prefix": "ur-module-example",
+    "description": "an example module using ES6 syntax (webpack, parcel)",
+    "body": [
+      "/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\\",
+      "  ",
+      "    Example of D.Sri's Module Style",
+      "    Designed to be more like C# in its lettercasing conventions",
+      "  ",
+      "  ",
+      "\\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/",
+      "",
+      "/// es6: import MODULEorCLASS from './module';",
+      "///      import { A, B } from './module';",
+      "/// cjs: const MODULEorCLASS = require('./module');",
+      "///      const { A, B } = require('./module');",
+      "",
+      "/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////",
+      "/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
+      "const TYPE_CONSTANT_A = 'A';",
+      "let m_collection = [];",
+      "",
+      "/// MODULE HELPERS /////////////////////////////////////////////////////////////",
+      "/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
+      "/** jsdoc comment",
+      " *  indent to align with top",
+      " */",
+      "function m_Method() {",
+      "  // helper functions for the module begin with m_PascalCase within module",
+      "  m_collection.push('hello');",
+      "  return 'hello';",
+      "}",
+      "",
+      "/** An Extended Comment Block *************************************************\\",
+      "",
+      "    For in-line documentation or longer explanations of key classes",
+      "    No need to add/remove comment prefixes for each line. JUST WRITE.",
+      "",
+      "\\*****************************************************************************/",
+      "",
+      "/// CLASS DECLARATION /////////////////////////////////////////////////////////",
+      "/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
+      "/** jsdoc comment",
+      " *  indent",
+      " */",
+      "class MyClass {",
+      "  /* for declaring classes, one per file */",
+      "  /* remove if you're making a module (see below) */",
+      "",
+      "  constructor() {",
+      "    this.propertyZ = 'Z'; // class instance prop declaration",
+      "  }",
+      "",
+      "  MyClassMethod() {",
+      "    /* _NOT_ following lowercase method conventions because C# */",
+      "    m_collection.push(this.propertyZ);",
+      "  }",
+      "}",
+      "// class static declarations",
+      "MyClass.StaticMethod = () => {",
+      "  /* properties attached to class declaration are class-wide (static) */",
+      "  /* and accessible by instances, but can not access instance vars (duh) */",
+      "};",
+      "MyClass.STATIC_CONSTANT = 'foo';",
+      "MyClass.staticProperty = 'bar';",
+      "",
+      "/// PUBLIC METHODS ////////////////////////////////////////////////////////////",
+      "/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
+      "/** jsdoc comment",
+      " *  indent",
+      " */",
+      "function PublicA() {}",
+      "/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
+      "/** jsdoc comment",
+      " *  indent",
+      " */",
+      "function PublicB() {}",
+      "",
+      "/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////",
+      "/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
+      "UR.HookPhase('MACHINE','PHASE',(...args)=>{",
+      "  /* optionally return Promise to hold phase (e.g. asset loading) */",
+      "})",
+      "",
+      "/// INITIALIZATION ////////////////////////////////////////////////////////////",
+      "/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
+      "/// any code that runs when module is loaded",
+      "(function(){",
+      "  /* use immediately-invoked function express (IIFE) for scope safety */",
+      "  /* though you probably don't need to */",
+      "})();",
+      "",
+      "/// EXPORTS ///////////////////////////////////////////////////////////////////",
+      "/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
+      "/// es6: export default MODULEorCLASS;",
+      "///      export { PublicA, PublicB };",
+      "/// cjs: module.exports = MODULEorCLASS;",
+      "///      module.exports = { A, B };",
+      ""
+    ]
+  }
+}
