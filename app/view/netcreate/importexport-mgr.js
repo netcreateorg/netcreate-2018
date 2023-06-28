@@ -187,7 +187,7 @@ function m_renderNodeValues(node, keys) {
       return;
     }
     // -- Normal processing -- wrap in quotes
-    if (node.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(node, key)) {
       RESULT.push(`"${m_encode(node[key])}"`); // enclose in quotes to support commas
       return;
     }
@@ -261,7 +261,7 @@ function m_renderEdgeValues(edge, keys) {
       return;
     }
     // -- normal processing -- wrap in quotes
-    if (edge.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(edge, key)) {
       RESULT.push(`"${m_encode(edge[key])}"`); // enclose in quotes to support commas
       return;
     }
