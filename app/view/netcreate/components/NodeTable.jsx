@@ -149,8 +149,11 @@ class NodeTable extends UNISYS.Component {
     if (filteredNodes.length > 0) {
       // If we're transitioning from "HILIGHT/FADE" to "COLLAPSE" or "FOCUS", then we
       // also need to remove nodes that are not in filteredNodes
-      const FDATA = UDATA.AppState("FDATA");
-      if (FDATA.filterAction === FILTER.ACTION.REDUCE|| FDATA.filterAction === FILTER.ACTION.FOCUS) {
+      const FILTERDEFS = UDATA.AppState('FILTERDEFS');
+      if (
+        FILTERDEFS.filterAction === FILTER.ACTION.REDUCE ||
+        FILTERDEFS.filterAction === FILTER.ACTION.FOCUS
+      ) {
         nodes = nodes.filter(node => {
           const filteredNode = filteredNodes.find(n => n.id === node.id);
           return filteredNode; // keep if it's in the list of filtered nodes
@@ -187,17 +190,19 @@ class NodeTable extends UNISYS.Component {
       // If we're transitioning from "COLLAPSE" or "FOCUS" to "HILIGHT/FADE", then we
       // also need to add back in nodes that are not in filteredNodes
       // (because "COLLAPSE" and "FOCUS" removes nodes that are not matched)
-      const FDATA = UDATA.AppState("FDATA");
-      if (FDATA.filterAction === FILTER.ACTION.FADE) {
-        const NCDATA = UDATA.AppState("NCDATA");
-        this.setState({
-          nodes: NCDATA.nodes,
-          filteredNodes
-        }, () => {
-          const nodes = this.sortTable(this.state.sortkey, NCDATA.nodes);
-          this.updateNodeFilterState(nodes, filteredNodes);
-        });
-
+      const FILTERDEFS = UDATA.AppState('FILTERDEFS');
+      if (FILTERDEFS.filterAction === FILTER.ACTION.FADE) {
+        const NCDATA = UDATA.AppState('NCDATA');
+        this.setState(
+          {
+            nodes: NCDATA.nodes,
+            filteredNodes
+          },
+          () => {
+            const nodes = this.sortTable(this.state.sortkey, NCDATA.nodes);
+            this.updateNodeFilterState(nodes, filteredNodes);
+          }
+        );
       } else {
         this.setState({
           nodes: filteredNodes,

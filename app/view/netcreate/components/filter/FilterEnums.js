@@ -52,8 +52,8 @@ Filter UDATA Messages
 Affects ALL Filters
 ===================
 
-  FDATA           AppState
-                  Sets the FDATA data object
+  FILTERDEFS      AppState
+                  Sets the FILTERDEFS data object
                   Triggers AppStateChange
 
   FILTER_CLEAR    Message / LocalCall

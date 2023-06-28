@@ -10,7 +10,7 @@
       |-- NumberFilter
       |-- SelectFilter
 
-  FiltersPanel reads data directly from FDATA.
+  FiltersPanel reads data directly from FILTERDEFS.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -39,23 +39,23 @@ class FiltersPanel extends UNISYS.Component {
     UDATA = UNISYS.NewDataLink(this);
 
     // Load Templates
-    // The intial `OnAppStateChange("FDATA")` event when the template is
+    // The intial `OnAppStateChange("FILTERDEFS")` event when the template is
     // first loaded is called well before FiltersPanel is
     // even constructed.  So we need to explicitly load it here.
-    const FDATA = UDATA.AppState("FDATA");
+    const FILTERDEFS = UDATA.AppState('FILTERDEFS');
     this.state = {
-      nodes: FDATA.nodes,
-      edges: FDATA.edges,
+      nodes: FILTERDEFS.nodes,
+      edges: FILTERDEFS.edges,
       filterAction: FILTER.ACTION.FADE,
       focusSourceLabel: undefined,
       focusRange: undefined
     };
-    UDATA.OnAppStateChange("FDATA", this.UpdateFilterDefs);
+    UDATA.OnAppStateChange('FILTERDEFS', this.UpdateFilterDefs);
   } // constructor
 
   componentWillUnmount() {
     // console.error('TBD: gracefully unsubscribe!')
-    UDATA.AppStateChangeOff("FDATA", this.UpdateFilterDefs);
+    UDATA.AppStateChangeOff('FILTERDEFS', this.UpdateFilterDefs);
   }
 
   UpdateFilterDefs(data) {
