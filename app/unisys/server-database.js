@@ -449,6 +449,11 @@ async function m_LoadTemplate() {
     needs to be moved here!
 /*/
 function m_MigrateTemplate() {
+  // 2023-0628 BASE Defaults -- these should have been previously defined
+  if (TEMPLATE.searchColor === undefined)
+    TEMPLATE.searchColor = TEMPLATE_SCHEMA.TEMPLATE.properties.searchColor.default;
+  if (TEMPLATE.sourceColor === undefined)
+    TEMPLATE.sourceColor = TEMPLATE_SCHEMA.TEMPLATE.properties.sourceColor.default;
   // 2023-0602 Filter Labels
   // See branch `dev-bl/template-filter-labels`, and fb28fa68ee42deffc778c1be013acea7dae85258
   if (TEMPLATE.filterFade === undefined)
