@@ -237,7 +237,7 @@ class SessionShell extends UNISYS.Component {
     // );
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  componentWillMount() {
+  componentDidMount() {
     // the code below reads a pre-existing matching path, which may be set
     // to a valid token string AFTER the changeHandler() detected a valid
     // login after a ForceReload. This is a bit hacky and the app would benefit
