@@ -2,7 +2,7 @@
 
     NetGraph is a React wrapper for a D3 network graph component.
 
-    This component uses React to create the base dom element, but NCGraphRenderer
+    This component uses React to create the base dom element, but ncGraphRenderer
     handles the data updates, rendering and animation updates.
 
     React is explicitly prevented from updating the component (see
@@ -49,7 +49,7 @@ class NCGraph extends UNISYS.Component {
   constructor(props) {
     super(props);
     this.state = {
-      d3NetGraph: {},
+      ncGraphRenderer: {},
       d3data: {},
       nodeTypes: [],
       edgeTypes: []
@@ -88,7 +88,7 @@ class NCGraph extends UNISYS.Component {
   updateVData(data) {
     if (DBG) console.log(PR, 'got state D3DATA', data, RENDERMGR);
     const d3data = RENDERMGR.ProcessNCData(data);
-    this.state.d3NetGraph.SetData(d3data);
+    this.state.ncGraphRenderer.SetData(d3data);
   }
   /**
    * Update default values when template has changed
@@ -113,7 +113,7 @@ class NCGraph extends UNISYS.Component {
    */
   updateColorMap(data) {
     if (DBG) console.log(PR, 'got state COLORMAP', data);
-    this.state.d3NetGraph.UpdateGraph();
+    this.state.ncGraphRenderer.UpdateGraph();
   }
   /**
    *
@@ -122,7 +122,7 @@ class NCGraph extends UNISYS.Component {
   updateSelection(data) {
     if (DBG) console.log(PR, 'updateSelection', data);
     const d3data = RENDERMGR.UpdateSelection(data);
-    this.state.d3NetGraph.SetData(d3data);
+    this.state.ncGraphRenderer.SetData(d3data);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -131,17 +131,17 @@ class NCGraph extends UNISYS.Component {
   /*/
   /*/
   onZoomReset() {
-    this.state.d3NetGraph.ZoomReset();
+    this.state.ncGraphRenderer.ZoomReset();
   }
   /*/
   /*/
   onZoomIn() {
-    this.state.d3NetGraph.ZoomIn();
+    this.state.ncGraphRenderer.ZoomIn();
   }
   /*/
   /*/
   onZoomOut() {
-    this.state.d3NetGraph.ZoomOut();
+    this.state.ncGraphRenderer.ZoomOut();
   }
 
   /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
@@ -152,16 +152,16 @@ class NCGraph extends UNISYS.Component {
     const netgraph = document.getElementById('netgraph');
     if (netgraph) netgraph.remove();
 
-    // D3NetGraph Constructor
+    // ncGraphRenderer Constructor
     const TEMPLATE = this.AppState('TEMPLATE');
-    if (this.state.d3NetGraph && this.state.d3NetGraph.Deregister) {
-      // if d3NetGraph was previously created, deregister it so it stops receiving data updates
-      this.state.d3NetGraph.Deregister();
+    if (this.state.ncGraphRenderer && this.state.ncGraphRenderer.Deregister) {
+      // if ncGraphRenderer was previously created, deregister it so it stops receiving data updates
+      this.state.ncGraphRenderer.Deregister();
     }
-    const d3NetGraph = new NCGraphRenderer(this.dom); // this.dom defined in render via ref
+    const ncGraphRenderer = new NCGraphRenderer(this.dom); // this.dom defined in render via ref
     const nodeTypes = TEMPLATE.nodeDefs.type.options;
     const edgeTypes = TEMPLATE.edgeDefs.type.options;
-    this.setState({ d3NetGraph, nodeTypes, edgeTypes });
+    this.setState({ ncGraphRenderer, nodeTypes, edgeTypes });
     this.forceUpdate(); // just once, needed to overcome shouldComponentUpdate override
   }
 
