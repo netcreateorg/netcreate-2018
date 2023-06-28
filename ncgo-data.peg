@@ -1,0 +1,22 @@
+start = file:Line* 
+
+Line
+  = head:Identifier WS+ tail:(Identifier WS*)* EOL {return `${head},${tail.join()}`}
+  / head:Identifier EOL { return head+'[IEOL]' }
+  / head:Identifier EOT { return head+'[IEOT]' }
+  / NL { return '' }
+
+Identifier 
+  = head:Letter tail:(Letter / Digit / "_")* { return `${head}${tail.join('')}`}
+Letter 
+  = [a-zA-Z]
+Digit 
+  = [0-9]
+
+EOL = WS* NL { return '[WS*NL]'}
+	/ WS* EOT { return '[WS*EOT]'}
+WS  = [ \t] { return '[WS]'}
+NL  = "\r\n" { return '[RN]' }
+	/ "\n" { return '[N]' }
+EOT = !. { return '[EOT]' }
+

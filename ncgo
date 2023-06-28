@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  TESTBED RUNNER
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+
+const { execSync } = require('child_process');
+const chockidar = require('chokidar');
+
+// Synchronous execution using execSync
+function ExecPeg() {
+  try {
+    execSync('FORCE_COLOR=1 node ncgo-peg.js', { stdio: 'inherit' });
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
+  }
+}
+ExecPeg();
+const watcher = chockidar.watch('./ncgo-*');
+watcher.on('change', path => {
+  ExecPeg();
+});
