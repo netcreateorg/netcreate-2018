@@ -56,7 +56,7 @@ class NCGraph extends UNISYS.Component {
       mouseOverNodeId: undefined
     };
 
-    this.updateNCData = this.updateNCData.bind(this);
+    this.updateVData = this.updateVData.bind(this);
     this.updateTemplate = this.updateTemplate.bind(this);
     this.updateColorMap = this.updateColorMap.bind(this);
     this.updateSelection = this.updateSelection.bind(this);
@@ -68,7 +68,7 @@ class NCGraph extends UNISYS.Component {
     /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
 
-    UDATA.OnAppStateChange('SYNTHESIZEDD3DATA', this.updateNCData);
+    UDATA.OnAppStateChange('VDATA', this.updateVData);
     UDATA.OnAppStateChange('TEMPLATE', this.updateTemplate);
     UDATA.OnAppStateChange('COLORMAP', this.updateColorMap);
     UDATA.OnAppStateChange('SELECTION', this.updateSelection);
@@ -86,7 +86,7 @@ class NCGraph extends UNISYS.Component {
    * @param {array} data.nodes
    * @param {array} data.edges
    */
-  updateNCData(data) {
+  updateVData(data) {
     if (DBG) console.log(PR, 'got state D3DATA', data, RENDERMGR);
     const d3data = RENDERMGR.ProcessNCData(data);
     this.state.d3NetGraph.SetData(d3data);
@@ -175,7 +175,7 @@ class NCGraph extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/
 /*/ componentWillUnMount() {
-    UDATA.AppStateChangeOff('SYNTHESIZEDD3DATA', this.updateNCData);
+    UDATA.AppStateChangeOff('VDATA', this.updateVData);
     UDATA.AppStateChangeOff('TEMPLATE', this.updateTemplate);
     UDATA.AppStateChangeOff('COLORMAP', this.updateColorMap);
     UDATA.AppStateChangeOff('SELECTION', this.updateSelection);

@@ -2,15 +2,13 @@
 
   EDGE MANAGER
 
-  edge-mgr handles
-
   edge-mgr takes the incoming FILTEREDD3DATA and simplifies the
   edges, doing the following:
     1. Removes any duplicate edges between a source and target
-    2. Caclulates the edge size using the edge.weigth parameter
-    3. Updates the SYNTHESIZEDD3DATA app state
+    2. Caclulates the edge size using the edge.weight parameter
+    3. Updates the VDATA app state
 
-  When SYNTHESIZEDD3DATA is updated, d3-simplenetgraph will redraw.
+  When VDATA is updated, NCGraphRenderer will redraw.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -39,7 +37,7 @@ MOD.Hook("INITIALIZE", () => {
   /*/ FILTEREDD3DATA is updated by filter-mgr after NCDATA is changed.
   /*/
   UDATA.OnAppStateChange("FILTEREDD3DATA", data => {
-    m_SynthesizeEdges(data);
+    m_RenderEdges(data);
   })
 
 }); // end UNISYS_INIT
@@ -48,13 +46,14 @@ MOD.Hook("INITIALIZE", () => {
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
- * m_SynthesizeEdges uses a Map to reduce duplicate edges into a simple
- * array, calculating edge size based on edge.weight parameter along the way.
+ * m_RenderEdges uses a Map to reduce duplicate edges into a single
+ * edge, calculating edge size based on edge.weight parameter along the way.
  * @param {Object} data FILTEREDD3DATA e.g. { nodes, edges }
+ * @return Updates VDATA AppState
  */
-function m_SynthesizeEdges(data) {
+function m_RenderEdges(data) {
   const DEFAULT_SIZE = 1;
-  const SYNTHESIZEDD3DATA = data;
+  const VDATA = data;
 
   const TEMPLATE = UDATA.AppState("TEMPLATE");
   const edgeSizeMax = TEMPLATE.edgeSizeMax;
@@ -72,7 +71,7 @@ function m_SynthesizeEdges(data) {
   // Synthesize duplicate edges into a single edge.
   const edgeMap = new Map(); // key = {source}{target}
   const edgeColorWeightMap = new Map(); // key = {source}{target}, value = colorMap[[color, weightTotal]]
-  SYNTHESIZEDD3DATA.edges.forEach(e => {
+  VDATA.edges.forEach(e => {
     const edgeKey = m_GetEdgeKey(e); // single key for both directions
     const currEdge = edgeMap.get(edgeKey);
     const eWeight = (Number(e.weight) || DEFAULT_SIZE); // weight defaults to 1, force Number
@@ -97,12 +96,12 @@ function m_SynthesizeEdges(data) {
   });
 
   // 5. Set Color
-  SYNTHESIZEDD3DATA.edges.forEach(e => {
+  VDATA.edges.forEach(e => {
     e.color = m_GetWeightiestColor(e, edgeColorWeightMap);
   });
 
-  SYNTHESIZEDD3DATA.edges = [...edgeMap.values()];
-  UDATA.SetAppState('SYNTHESIZEDD3DATA', SYNTHESIZEDD3DATA);
+  VDATA.edges = [...edgeMap.values()];
+  UDATA.SetAppState('VDATA', VDATA);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
