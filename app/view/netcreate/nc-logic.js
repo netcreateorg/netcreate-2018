@@ -399,10 +399,11 @@ MOD.Hook('INITIALIZE', () => {
     if (DBG) console.log(PR, 'SOURCE_SELECT found', node);
 
     if (node === undefined) {
-      // Node not found, create a new node
+      // Node not found, create a new state
       newState = {
         nodes: [],
-        edges: []
+        edges: [],
+        autosuggestHiliteNodeId: undefined
       };
     } else {
       // Load existing node and edges
@@ -430,7 +431,8 @@ MOD.Hook('INITIALIZE', () => {
       // create state change object
       newState = {
         nodes: [node],
-        edges: edges
+        edges: edges,
+        autosuggestHiliteNodeId: undefined
       };
     }
 

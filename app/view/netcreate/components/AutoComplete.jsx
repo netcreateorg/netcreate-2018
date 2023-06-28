@@ -323,11 +323,12 @@ class AutoComplete extends UNISYS.Component {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Autosuggest calls this whenever the user has highlighted a different suggestion
     from the suggestion list.
-/*/ onSuggestionHighlighted ({ suggestion }) {
-      if (suggestion && suggestion.id) this.AppCall('SOURCE_HILITE',{ nodeID: suggestion.id });
-    }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Autosuggest checks this before rendering suggestions
+/*/ onSuggestionHighlighted({ suggestion }) {
+    if (suggestion && suggestion.id)
+      this.AppCall('AUTOSUGGEST_HILITE_NODE', { nodeId: suggestion.id });
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Autosuggest checks this before rendering suggestions
     Set the prop to turn off suggestions
 /*/ shouldRenderSuggestions (value) {
       return this.state.mode===MODE_ACTIVE;

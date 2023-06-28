@@ -151,7 +151,7 @@ class NCGraphRenderer {
         UDATA.LocalCall('SOURCE_SELECT', { nodeLabels: [] });
       })
       .on('mouseover', d => {
-        UDATA.LocalCall('USER_HIGHLIGHT_NODE', { nodeId: undefined });
+        UDATA.LocalCall('USER_HILITE_NODE', { nodeId: undefined });
         // Deselect edges
         d3.selectAll('.edge')
           .transition()
@@ -320,7 +320,7 @@ class NCGraphRenderer {
         d3.event.stopPropagation();
       })
       .on('mouseover', d => {
-        UDATA.LocalCall('USER_HIGHLIGHT_NODE', { nodeId: d.id });
+        UDATA.LocalCall('USER_HILITE_NODE', { nodeId: d.id });
         d3.selectAll('.edge')
           .transition()
           .duration(500)

@@ -28,7 +28,8 @@ const PR = "selection-mgr: ";
 /*/ lifecycle INITIALIZE handler
 /*/
 MOD.Hook("INITIALIZE", () => {
-  UDATA.HandleMessage('USER_HIGHLIGHT_NODE', m_UserHighlightNode);
+  UDATA.HandleMessage('USER_HILITE_NODE', m_UserHighlightNode);
+  UDATA.HandleMessage('AUTOSUGGEST_HILITE_NODE', m_AutoSuggestHiliteNode);
 }); // end UNISYS_INIT
 
 
@@ -38,6 +39,12 @@ function m_UserHighlightNode(data) {
   // console.log('mouseover', data.nodeId)
   const SELECTION = UDATA.AppState('SELECTION');
   SELECTION.userHighlightNodeId = data.nodeId;
+  UDATA.SetAppState('SELECTION', SELECTION);
+}
+
+function m_AutoSuggestHiliteNode(data) {
+  const SELECTION = UDATA.AppState('SELECTION');
+  SELECTION.autosuggestHiliteNodeId = data.nodeId;
   UDATA.SetAppState('SELECTION', SELECTION);
 }
 
