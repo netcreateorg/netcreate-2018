@@ -154,13 +154,12 @@ class NCGraph extends UNISYS.Component {
     if (netgraph) netgraph.remove();
 
     // D3NetGraph Constructor
-    const el = ReactDOM.findDOMNode(this);
     const TEMPLATE = this.AppState('TEMPLATE');
     if (this.state.d3NetGraph && this.state.d3NetGraph.Deregister) {
       // if d3NetGraph was previously created, deregister it so it stops receiving data updates
       this.state.d3NetGraph.Deregister();
     }
-    const d3NetGraph = new NCGraphRenderer(el);
+    const d3NetGraph = new NCGraphRenderer(this.dom); // this.dom defined in render via ref
     const nodeTypes = TEMPLATE.nodeDefs.type.options;
     const edgeTypes = TEMPLATE.edgeDefs.type.options;
     this.setState({ d3NetGraph, nodeTypes, edgeTypes });
@@ -196,7 +195,7 @@ class NCGraph extends UNISYS.Component {
 /*/ render() {
     const { nodeTypes, edgeTypes } = this.state;
     return (
-      <div style={{ height: '100%' }}>
+      <div ref={dom => (this.dom = dom)} style={{ height: '100%' }}>
         <div style={{ margin: '10px 0 0 10px' }}>
           <div className="tooltipAnchor">
             <span style={{ fontSize: '9px' }}>
