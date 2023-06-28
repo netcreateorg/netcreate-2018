@@ -54,20 +54,9 @@ MOD.Hook("INITIALIZE", () => {
  */
 MOD.ProcessNCData = data => {
   if (DBG) console.log('ProcessNCData')
-  const TEMPLATE = UDATA.AppState('TEMPLATE');
-  const COLORMAP = UDATA.AppState('COLORMAP');
-  const nodes = data.nodes.map(n => {
-    // FIXME: Just copy over relevant attributes, don't copy the whole object!!!!
-    n.color = COLORMAP.nodeColorMap[n.type];
-    n.opacity = n.filteredTransparency;
-    n.size = Math.min(TEMPLATE.nodeSizeDefault + n.degrees, TEMPLATE.nodeSizeMax);
-    n.strokeColor = n.selected || n.strokeColor || undefined;
-    n.strokeWidth = n.selected || n.strokeColor ? '5px' : undefined;
-    n.help = m_GetHelp(n);
-    return n;
-  })
+  const nodes = m_UpdateNodes(data.nodes);
   const edges = m_UpdateEdges(data.edges);
-  D3DATA.nodes = nodes;
+  VDATA.nodes = nodes;
   VDATA.edges = edges;
   return VDATA;
 }
@@ -77,13 +66,46 @@ MOD.SetNCData = data => {
 }
 
 MOD.UpdateSelection = data => {
+  const nodes = m_UpdateNodes(VDATA.nodes);
   const edges = m_UpdateEdges(VDATA.edges);
+  VDATA.nodes = nodes;
   VDATA.edges = edges;
   return VDATA;
 }
 
 /// MODULE PRIVATE METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_UpdateNodes(nodes) {
+  const TEMPLATE = UDATA.AppState('TEMPLATE');
+  const SELECTION = UDATA.AppState('SELECTION');
+  const SEARCH = UDATA.AppState('SEARCH');
+  const selectedNodes = SELECTION.nodes ? SELECTION.nodes.map(n => n.id) : [];
+  const foundNodes = SEARCH.suggestedNodes ? SEARCH.suggestedNodes.map(n => n.id) : [];
+  const highlightStrokeColor = TEMPLATE.sourceColor;
+  const foundStrokeCOlor = TEMPLATE.searchColor;
+
+  const COLORMAP = UDATA.AppState('COLORMAP');
+  return nodes.map(n => {
+    const isSelected = selectedNodes.includes(n.id);
+    const isFound = foundNodes.includes(n.id);
+    // FIXME: Just copy over relevant attributes, don't copy the whole object!!!!
+    n.color = COLORMAP.nodeColorMap[n.type];
+    n.opacity = n.filteredTransparency;
+    n.size = Math.min(TEMPLATE.nodeSizeDefault + n.degrees, TEMPLATE.nodeSizeMax);
+    if (isSelected) {
+      n.strokeColor = highlightStrokeColor;
+      n.strokeWidth = '5px';
+    } else if (isFound) {
+      n.strokeColor = foundStrokeCOlor;
+      n.strokeWidth = '5px';
+    } else {
+      n.strokeColor = undefined;
+      n.strokeWidth = undefined;
+    }
+    n.help = m_GetHelp(n);
+    return n;
+  });
+}
 function m_UpdateEdges(edges) {
   const TEMPLATE = UDATA.AppState('TEMPLATE');
   const SELECTION = UDATA.AppState('SELECTION');
