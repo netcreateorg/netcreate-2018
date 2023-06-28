@@ -95,7 +95,7 @@ var UDATA = UNISYS.NewDataLink(MOD);
 
 /// APP STATE/DATA STRUCTURES /////////////////////////////////////////////////
 const PROMPTS = require("system/util/prompts");
-const NCLOGIC = require("./nc-logic").default;
+const NCLOGIC = require("./nc-logic");
 
 var TEMPLATE = null; // template definition for prompts
 var FDATA_RESTORE; // pristine FDATA for clearing

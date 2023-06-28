@@ -21,15 +21,15 @@ var UDATA = null;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const React        = require('react');
-const ReactStrap   = require('reactstrap');
-const { Button, Table }    = ReactStrap;
-const SETTINGS = require("settings");
-const NetMessage = require("unisys/common-netmessage-class");
+const React = require('react');
+const ReactStrap = require('reactstrap');
+const { Button, Table } = ReactStrap;
+const SETTINGS = require('settings');
+const NetMessage = require('unisys/common-netmessage-class');
 
-const UNISYS   = require('unisys/client');
-const DATASTORE = require("system/datastore");
-const { EDITORTYPE } = require("system/util/enum");
+const UNISYS = require('unisys/client');
+const DATASTORE = require('system/datastore');
+const { EDITORTYPE } = require('system/util/enum');
 
 const IMPORTEXPORT = require('../importexport-mgr');
 
@@ -42,7 +42,7 @@ const EDGEFILESTATUS_DEFAULT = 'Select an edge .csv file to import';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
 class ImportExport extends UNISYS.Component {
-  constructor (props) {
+  constructor(props) {
     super(props);
     const TEMPLATE = this.AppState('TEMPLATE');
     this.state = {
@@ -76,20 +76,20 @@ class ImportExport extends UNISYS.Component {
     this.unlockAll = this.unlockAll.bind(this);
 
     UDATA = UNISYS.NewDataLink(this);
-    UDATA.HandleMessage("EDIT_PERMISSIONS_UPDATE", this.handleEditStateUpdate);
+    UDATA.HandleMessage('EDIT_PERMISSIONS_UPDATE', this.handleEditStateUpdate);
   } // constructor
 
   componentDidMount() {
     this.updateEditState();
-    window.addEventListener("beforeunload", this.checkUnload);
-    window.addEventListener("unload", this.doUnload);
+    window.addEventListener('beforeunload', this.checkUnload);
+    window.addEventListener('unload', this.doUnload);
   }
 
   componentWillUnmount() {
-    UDATA.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.IMPORTER});
-    UDATA.UnhandleMessage("EDIT_PERMISSIONS_UPDATE", this.handleEditStateUpdate);
-    window.removeEventListener("beforeunload", this.checkUnload);
-    window.removeEventListener("unload", this.doUnload);
+    UDATA.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.IMPORTER });
+    UDATA.UnhandleMessage('EDIT_PERMISSIONS_UPDATE', this.handleEditStateUpdate);
+    window.removeEventListener('beforeunload', this.checkUnload);
+    window.removeEventListener('unload', this.doUnload);
   }
 
   checkUnload(e) {
@@ -104,7 +104,7 @@ class ImportExport extends UNISYS.Component {
 
   doUnload(e) {
     if (this.state.importIsActive) {
-      this.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.IMPORTER });
+      this.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.IMPORTER });
     }
   }
 
@@ -113,20 +113,23 @@ class ImportExport extends UNISYS.Component {
   handleEditStateUpdate(data) {
     const { importIsActive } = this.state;
     if (!importIsActive) {
-      const preventImport = data.templateBeingEdited || data.importActive || data.nodeOrEdgeBeingEdited || UNISYS.IsStandaloneMode();
+      const preventImport =
+        data.templateBeingEdited ||
+        data.importActive ||
+        data.nodeOrEdgeBeingEdited ||
+        UNISYS.IsStandaloneMode();
       this.setState({ preventImport });
     }
   }
   updateEditState() {
     // disable edit if someone else is editing a template, node, or edge
-    UDATA.NetCall("SRV_GET_EDIT_STATUS")
-      .then(this.handleEditStateUpdate);
+    UDATA.NetCall('SRV_GET_EDIT_STATUS').then(this.handleEditStateUpdate);
     DATASTORE.PromiseCalculateMaxNodeId().then(data => {
-      this.setState({ nextNodeId: data + 1 })
-    })
+      this.setState({ nextNodeId: data + 1 });
+    });
     DATASTORE.PromiseCalculateMaxEdgeId().then(data => {
-      this.setState({ nextEdgeId: data + 1 })
-    })
+      this.setState({ nextEdgeId: data + 1 });
+    });
   }
 
   onNodesExportSelect() {
@@ -138,48 +141,47 @@ class ImportExport extends UNISYS.Component {
 
   onNodeImportFileSelect(e) {
     const nodefile = e.target.files[0];
-        const msg = (
-          <div>
-            <div>{result.messageTitle}</div>
-            {result.messageJsx}
-          </div>
-        )
-        // if edge file was already okToImport, then this remains OK.
-        const okToImport = this.state.edgeOkToImport || result.isValid;
-        this.setState({
-          nodeOkToImport: result.isValid,
-          okToImport,
-          nodefileStatus: result.isValid ? 'Ready to Import' : NODEFILESTATUS_DEFAULT,
-          nodeValidationMsgs: msg,
-          importMsgs: undefined
-        });
-        // Clear "Choose File"
-        if (!result.isValid) document.getElementById('nodefileInput').value = "";
     IMPORTEXPORT.NodefileValidate({ nodefile }).then(result => {
       const msg = (
+        <div>
+          <div>{result.messageTitle}</div>
+          {result.messageJsx}
+        </div>
+      );
+      // if edge file was already okToImport, then this remains OK.
+      const okToImport = this.state.edgeOkToImport || result.isValid;
+      this.setState({
+        nodeOkToImport: result.isValid,
+        okToImport,
+        nodefileStatus: result.isValid ? 'Ready to Import' : NODEFILESTATUS_DEFAULT,
+        nodeValidationMsgs: msg,
+        importMsgs: undefined
       });
+      // Clear "Choose File"
+      if (!result.isValid) document.getElementById('nodefileInput').value = '';
+    });
   }
   onEdgeImportFileSelect(e) {
     const edgefile = e.target.files[0];
-        const msg = (
-          <div>
-            <div>{result.messageTitle}</div>
-            {result.messageJsx}
-          </div>
-        )
-        // if edge file was already okToImport, then this remains OK.
-        const okToImport = this.state.nodeOkToImport || result.isValid;
-        this.setState({
-          edgeOkToImport: result.isValid,
-          okToImport,
-          edgefileStatus: result.isValid ? 'Ready to Import' : EDGEFILESTATUS_DEFAULT,
-          edgeValidationMsgs: msg,
-          importMsgs: undefined
-        });
-        // Clear "Choose File"
-        if (!result.isValid) document.getElementById('edgefileInput').value = "";
     IMPORTEXPORT.EdgefileValidate({ edgefile }).then(result => {
+      const msg = (
+        <div>
+          <div>{result.messageTitle}</div>
+          {result.messageJsx}
+        </div>
+      );
+      // if edge file was already okToImport, then this remains OK.
+      const okToImport = this.state.nodeOkToImport || result.isValid;
+      this.setState({
+        edgeOkToImport: result.isValid,
+        okToImport,
+        edgefileStatus: result.isValid ? 'Ready to Import' : EDGEFILESTATUS_DEFAULT,
+        edgeValidationMsgs: msg,
+        importMsgs: undefined
       });
+      // Clear "Choose File"
+      if (!result.isValid) document.getElementById('edgefileInput').value = '';
+    });
   }
 
   clearNodefileSelect() {
@@ -196,6 +198,7 @@ class ImportExport extends UNISYS.Component {
     if (!importIsActive)
       UDATA.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.IMPORTER });
     IMPORTEXPORT.ResetNodeImportData();
+  }
 
   clearEdgefileSelect() {
     // User Cancelled, reset to default
@@ -215,9 +218,9 @@ class ImportExport extends UNISYS.Component {
 
   clearFileSelect() {
     // User Cancelled, reset to default
-    UDATA.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.IMPORTER });
-    document.getElementById('nodefileInput').value = "";
-    document.getElementById('edgefileInput').value = "";
+    UDATA.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.IMPORTER });
+    document.getElementById('nodefileInput').value = '';
+    document.getElementById('edgefileInput').value = '';
     this.clearNodefileSelect();
     this.clearEdgefileSelect();
 
@@ -226,7 +229,7 @@ class ImportExport extends UNISYS.Component {
       nodeValidationMsgs: undefined,
       edgeValidationMsgs: undefined,
       importMsgs: undefined
-    })
+    });
   }
 
   onDoImport() {
@@ -238,17 +241,17 @@ class ImportExport extends UNISYS.Component {
         edgeOkToImport: false,
         importMsgs: result.messageJsx
       });
-      document.getElementById('nodefileInput').value = "";
-      document.getElementById('edgefileInput').value = "";
+      document.getElementById('nodefileInput').value = '';
+      document.getElementById('edgefileInput').value = '';
     });
   }
 
   unlockAll() {
-    UDATA.NetCall("SRV_DBUNLOCKALL");
+    UDATA.NetCall('SRV_DBUNLOCKALL');
   }
 
-/// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   render() {
     const {
@@ -286,9 +289,15 @@ class ImportExport extends UNISYS.Component {
             padding: '10px 20px'
           }}
         >
-          <p><i>You cannot import data while someone is editing a node, edge,
-            or template, or in standalone view.</i></p>
-          <p><i>Please finish editing and try again.</i></p>
+          <p>
+            <i>
+              You cannot import data while someone is editing a node, edge, or template,
+              or in standalone view.
+            </i>
+          </p>
+          <p>
+            <i>Please finish editing and try again.</i>
+          </p>
         </div>
       );
     } else {
@@ -302,7 +311,9 @@ class ImportExport extends UNISYS.Component {
           }}
         >
           <h1>Import Data</h1>
-          <div className="small text-muted"><i>Import .csv data</i></div>
+          <div className="small text-muted">
+            <i>Import .csv data</i>
+          </div>
           <div className="small text-muted">
             To specify node and edge IDs in your import file, use the next unused ID:
             <ul>
@@ -312,7 +323,11 @@ class ImportExport extends UNISYS.Component {
           </div>
           <label className="small text-muted">
             Nodes:&nbsp;
-            <input type="file" accept="text/csv" id="nodefileInput" onInput={this.onNodeImportFileSelect}
+            <input
+              type="file"
+              accept="text/csv"
+              id="nodefileInput"
+              onInput={this.onNodeImportFileSelect}
               onClick={e => {
                 // Clear the selected node file whenever "Choose File" is clicked so that if the user
                 // cancels, the form is reset to a blank state.  This is necessary to clear out
@@ -320,11 +335,17 @@ class ImportExport extends UNISYS.Component {
                 this.clearNodefileSelect();
               }}
             />
-            &nbsp;<i className="small">{nodefileStatus}</i><br />
-          </label><br />
+            &nbsp;<i className="small">{nodefileStatus}</i>
+            <br />
+          </label>
+          <br />
           <label className="small text-muted">
             Edges:&nbsp;
-            <input type="file" accept="text/csv" id="edgefileInput" onInput={this.onEdgeImportFileSelect}
+            <input
+              type="file"
+              accept="text/csv"
+              id="edgefileInput"
+              onInput={this.onEdgeImportFileSelect}
               onClick={e => {
                 // Clear the selected edge file whenever "Choose File" is clicked so that if the user
                 // cancels, the form is reset to a blank state.  This is necessary to clear out
@@ -332,21 +353,35 @@ class ImportExport extends UNISYS.Component {
                 this.clearEdgefileSelect();
               }}
             />
-            &nbsp;<i className="small">{edgefileStatus}</i><br />
-          </label><br />
+            &nbsp;<i className="small">{edgefileStatus}</i>
+            <br />
+          </label>
+          <br />
           <label>
-            <Button style={{ fontSize: '0.8em', padding: '0px 2px' }} outline onClick={this.clearFileSelect}>
+            <Button
+              style={{ fontSize: '0.8em', padding: '0px 2px' }}
+              outline
+              onClick={this.clearFileSelect}
+            >
               Clear File Selections
             </Button>
-          </label><br />
-          {nodeValidationMsgs && <div className='small'>{nodeValidationMsgs}</div>}
-          {edgeValidationMsgs && <div className='small'>{edgeValidationMsgs}</div>}
-          {importMsgs && <div className='small'>{importMsgs}</div>}
-          <Button size="sm" outline color={importBtnDisabled ? "light" : "primary"} disabled={importBtnDisabled} onClick={this.onDoImport}>
+          </label>
+          <br />
+          {nodeValidationMsgs && <div className="small">{nodeValidationMsgs}</div>}
+          {edgeValidationMsgs && <div className="small">{edgeValidationMsgs}</div>}
+          {importMsgs && <div className="small">{importMsgs}</div>}
+          <Button
+            size="sm"
+            outline
+            color={importBtnDisabled ? 'light' : 'primary'}
+            disabled={importBtnDisabled}
+            onClick={this.onDoImport}
+          >
             Import
-          </Button>&nbsp;
+          </Button>
+          &nbsp;
         </div>
-      )
+      );
     }
 
     let unlockAlljsx;
@@ -355,19 +390,27 @@ class ImportExport extends UNISYS.Component {
         <div>
           <hr />
           <h1>Admin Tools</h1>
-          <Button size="sm" outline color={"warning"} onClick={this.unlockAll}>
+          <Button size="sm" outline color={'warning'} onClick={this.unlockAll}>
             Force Unlock All
           </Button>
           <label className="small text-muted">
-            Unlock ALL Template, Import, Node, and Edge Editing.<br />
-            When someone on the network is editing a template, importing data, or editing a node or edge, everyone
-            else on the network is prevented from editing a template or importing data and editing nodes and edges.<br />
-            ADMINS: Use this force the server to release the lock on editing if you know the lock was left on in error,
-            e.g. you know that there is no one on the network actively editing a template, importing, editing a node or an edge.
-            <p><b>WARNING</b>: Use this with utmost caution!  If someone is actively editing or importing, you can delete their work, or even worse, <b>corrupt the database!</b></p>
+            Unlock ALL Template, Import, Node, and Edge Editing.
+            <br />
+            When someone on the network is editing a template, importing data, or editing
+            a node or edge, everyone else on the network is prevented from editing a
+            template or importing data and editing nodes and edges.
+            <br />
+            ADMINS: Use this force the server to release the lock on editing if you know
+            the lock was left on in error, e.g. you know that there is no one on the
+            network actively editing a template, importing, editing a node or an edge.
+            <p>
+              <b>WARNING</b>: Use this with utmost caution! If someone is actively editing
+              or importing, you can delete their work, or even worse,{' '}
+              <b>corrupt the database!</b>
+            </p>
           </label>
         </div>
-      )
+      );
     }
 
     return (
@@ -379,14 +422,16 @@ class ImportExport extends UNISYS.Component {
           }}
         >
           <h1>Export Data</h1>
-
-          <i className="small text-muted">Export data in .csv format.</i><br/>
+          <i className="small text-muted">Export data in .csv format.</i>
+          <br />
           <Button size="sm" outline onClick={this.onNodesExportSelect}>
             Export Nodes
-          </Button>&nbsp;
+          </Button>
+          &nbsp;
           <Button size="sm" outline onClick={this.onEdgesExportSelect}>
             Export Edges
-          </Button>&nbsp;
+          </Button>
+          &nbsp;
         </div>
 
         {importjsx}
@@ -394,9 +439,7 @@ class ImportExport extends UNISYS.Component {
       </div>
     );
   }
-
 } // class Help
-
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

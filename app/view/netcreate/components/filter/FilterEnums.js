@@ -8,7 +8,7 @@ FILTER.PANEL_LABEL = 'VIEWS';
 FILTER.ACTION = {};
 FILTER.ACTION.FADE = 'FADE';
 FILTER.ACTION.FILTER = 'FILTERING'; // FIX: Remove this after we decide to remove FILTER/HIDE
-FILTER.ACTION.REDUCE= 'REMOVE';
+FILTER.ACTION.REDUCE = 'REMOVE';
 FILTER.ACTION.FOCUS = 'FOCUS';
 
 // Types of filters definable in template files.
@@ -16,8 +16,8 @@ FILTER.TYPES = {};
 FILTER.TYPES.STRING = 'string';
 FILTER.TYPES.NUMBER = 'number';
 FILTER.TYPES.SELECT = 'select';
-FILTER.TYPES.NODE   = 'node'; // edge source / target
-FILTER.TYPES.DATE   = 'date';
+FILTER.TYPES.NODE = 'node'; // edge source / target
+FILTER.TYPES.DATE = 'date';
 FILTER.TYPES.HIDDEN = 'hidden';
 
 // Special Edge Keys mapped to node objects

@@ -47,7 +47,7 @@ export function RecalculateAllEdgeSizes(data) {
   const size = new Map();
   function getKey(sourceId, targetId) {
     // key always starts with the smaller value
-    return sourceId<targetId ? `${sourceId}-${targetId}` : `${targetId}-${sourceId}`;
+    return sourceId < targetId ? `${sourceId}-${targetId}` : `${targetId}-${sourceId}`;
   }
   function inc(weight, sourceId, targetId) {
     const w = weight || 1;
