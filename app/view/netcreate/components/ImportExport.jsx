@@ -129,8 +129,12 @@ class ImportExport extends UNISYS.Component {
     })
   }
 
-  onNodesExportSelect() { IELOGIC.ExportNodes(); }
-  onEdgesExportSelect() { IELOGIC.ExportEdges(); }
+  onNodesExportSelect() {
+    IMPORTEXPORT.ExportNodes();
+  }
+  onEdgesExportSelect() {
+    IMPORTEXPORT.ExportEdges();
+  }
 
   onNodeImportFileSelect(e) {
     const nodefile = e.target.files[0];
@@ -227,7 +231,7 @@ class ImportExport extends UNISYS.Component {
 
   onDoImport() {
     if (DBG) console.log(PR, 'onDoImport');
-    IELOGIC.Import().then(result => {
+    IMPORTEXPORT.Import().then(result => {
       this.setState({
         okToImport: false, // imported, so hide "Import" button
         nodeOkToImport: false,

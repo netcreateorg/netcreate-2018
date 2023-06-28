@@ -1,6 +1,6 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  ## Import / Export Logic
+  ## Import / Export Manager
 
   See ImportExport.jsx for the UI.
 
@@ -68,7 +68,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const DBG = true;
-const PR = 'importexport-logic: ';
+const PR = 'importexport-mgr: ';
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -215,43 +215,41 @@ class Template extends UNISYS.Component {
 
   onTOMLfileSelect(e) { // import
     const tomlfile = e.target.files[0];
-    TEMPLATE_LOGIC.ValidateTOMLFile({ tomlfile })
-    .then(result => {
-        if (result.isValid) {
-          this.setState({
-            editScope: 'root'
-          });
-          this.loadEditor({
-            schema: SCHEMA.TEMPLATE,
-            startval: result.templateJSON
-          });
-        } else {
-          const errorMsg = result.error;
-          this.setState({
-            tomlfile: undefined,
-            tomlfileStatus: "Invalid template file!!!",
-            tomlfileErrors: errorMsg
-          });
-        }
-      });
+    TEMPLATE_MGR.ValidateTOMLFile({ tomlfile }).then(result => {
+      if (result.isValid) {
+        this.setState({
+          editScope: 'root'
+        });
+        this.loadEditor({
+          schema: SCHEMA.TEMPLATE,
+          startval: result.templateJSON
+        });
+      } else {
+        const errorMsg = result.error;
+        this.setState({
+          tomlfile: undefined,
+          tomlfileStatus: 'Invalid template file!!!',
+          tomlfileErrors: errorMsg
+        });
+      }
+    });
   }
 
   onDownloadTemplate() {
-    TEMPLATE_LOGIC.DownloadTemplate();
+    TEMPLATE_MGR.DownloadTemplate();
   }
 
   onSaveChanges() {
     const templateJSON = EDITOR.getValue(); // could be a snippet
     const { editScope } = this.state;
-    const template = TEMPLATE_LOGIC.UpdateTemplate(templateJSON, editScope);
-    TEMPLATE_LOGIC.SaveTemplateToFile(template)
-      .then(result => {
-        if (!result.OK) {
-          alert(result.info);
-        } else {
-          this.setState({ isBeingEdited: false });
-        }
-      });
+    const template = TEMPLATE_MGR.UpdateTemplate(templateJSON, editScope);
+    TEMPLATE_MGR.SaveTemplateToFile(template).then(result => {
+      if (!result.OK) {
+        alert(result.info);
+      } else {
+        this.setState({ isBeingEdited: false });
+      }
+    });
     this.releaseOpenEditor();
   }
 
