@@ -162,9 +162,10 @@ const FILTER = require('./components/filter/FilterEnums');
               display: 'flex', flexDirection: 'column',
               justifyContent: 'space-evenly', alignItems: 'center', zIndex: '3000'
             }}>
-              <div style={{color:'#fff',width:'100%',textAlign:'center'}}>
-                <b>{disconnectMsg}!</b> Your changes will not be saved!  Please report "{disconnectMsg}" to your administrator to restart the graph.
-              </div>
+          <div style={{ color: '#fff', width: '100%', textAlign: 'center' }}>
+            <b>{disconnectMsg}!</b> Your changes will not be saved! Please report &quot;
+            {disconnectMsg}&quot; to your administrator to restart the graph.
+          </div>
             </div>
             <Route path='/edit/:token' exact={true} component={SessionShell}/>
             <Route path='/edit' exact={true} component={SessionShell}/>
