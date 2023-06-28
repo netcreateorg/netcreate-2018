@@ -91,7 +91,7 @@ function m_UpdateEdges(edges) {
   return edges.map(e => {
     // FIXME: Just copy over relevant attributes, don't copy the whole object!!!!
     // width -- show full width unless mouse is over a node, in which case, do not show weight
-    //          size and max size checking was completed in edge-logic
+    //          size and max size checking was completed in edge-mgr
     const sourceId = typeof e.source === 'number' ? e.source : e.source.id;
     const targetId = typeof e.target === 'number' ? e.target : e.target.id;
     if (e.selected ||
@@ -99,7 +99,7 @@ function m_UpdateEdges(edges) {
       (sourceId === mouseOverNodeId) ||  // mouseover the source
       (targetId === mouseOverNodeId)     // or target
     ) {
-      // leave size alone, max size checking is in edge-logic
+      // leave size alone, max size checking is in edge-mgr
       e.width = e.size;
       e.opacity = e.filteredTransparency;
     } else {
