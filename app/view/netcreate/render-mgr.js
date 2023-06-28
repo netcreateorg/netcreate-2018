@@ -3,7 +3,7 @@
   RENDER MANAGER
 
   render-mgr handles the transformation of NCDATA (and it's subvariants
-  FILTEREDNCDATA and SYNTHESIZEDDATA) into `d3data` format that can be
+  FILTEREDNCDATA and VDATA) into `VDATA` format that can be
   rendered by NCGraphRenderer.
 
   It is loaded directly by NCGraph for processing.  In this way,
@@ -29,7 +29,7 @@ const PR = "render-mgr: ";
 
 /// MODULE DATA ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let D3DATA = {};
+let VDATA = {};
 
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,7 +45,7 @@ MOD.Hook("INITIALIZE", () => {
 /// MODULE PUBLIC METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
- * Interprets SYNTEHSIZEDD3DATA into a simplified form for the renderer
+ * Interprets VDATA into a simplified form for the renderer
  * @param {*} data NCDATA { nodes, edges }
  * @returns {Object} {
  *                     nodes: [ ...{id, label, size, color, opacity, strokeColor, strokeWidth, help}],
@@ -68,18 +68,18 @@ MOD.ProcessNCData = data => {
   })
   const edges = m_UpdateEdges(data.edges);
   D3DATA.nodes = nodes;
-  D3DATA.edges = edges;
-  return D3DATA;
+  VDATA.edges = edges;
+  return VDATA;
 }
 
 MOD.SetNCData = data => {
-  D3DATA = data;
+  VDATA = data;
 }
 
 MOD.UpdateSelection = data => {
-  const edges = m_UpdateEdges(D3DATA.edges);
-  D3DATA.edges = edges;
-  return D3DATA;
+  const edges = m_UpdateEdges(VDATA.edges);
+  VDATA.edges = edges;
+  return VDATA;
 }
 
 /// MODULE PRIVATE METHODS ////////////////////////////////////////////////////
