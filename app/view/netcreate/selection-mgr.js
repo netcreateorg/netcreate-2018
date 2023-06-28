@@ -42,6 +42,10 @@ function m_UserHighlightNode(data) {
   UDATA.SetAppState('SELECTION', SELECTION);
 }
 
+/**
+ * AUTOSUGGEST_HILITE_NODE shows the current mouse-over node name in a list of
+ * autosuggested/autocompleted node names from AutoComplete.
+ */
 function m_AutoSuggestHiliteNode(data) {
   const SELECTION = UDATA.AppState('SELECTION');
   SELECTION.autosuggestHiliteNodeId = data.nodeId;

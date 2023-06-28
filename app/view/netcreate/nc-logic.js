@@ -315,7 +315,6 @@ MOD.Hook('INITIALIZE', () => {
       if (nodes.length > 0) {
         let color = '#0000DD';
         nodes.forEach(node => {
-          m_MarkNodeById(node.id, color);
           UNISYS.Log('select node', node.id, node.label);
           let googlea = NC_CONFIG.googlea;
 
@@ -328,8 +327,6 @@ MOD.Hook('INITIALIZE', () => {
             });
           }
         });
-      } else {
-        m_UnMarkAllNodes();
       }
     }
   }); // StateChange SELECTION
@@ -341,15 +338,6 @@ MOD.Hook('INITIALIZE', () => {
     let { nodes, edges } = stateChange;
     let { searchLabel } = stateChange;
     let { activeAutoCompleteId } = stateChange;
-    // NODE LIST UPDATE
-    if (nodes !== undefined) {
-      if (nodes.length > 0) {
-        const color = TEMPLATE.searchColor || DEFAULT_SEARCH_COLOR;
-        nodes.forEach(node => m_MarkNodeById(node.id, color));
-      } else {
-        m_UnMarkAllNodes();
-      }
-    }
     // SEARCH LABEL UPDATE
     if (NCDATA.nodes.length < 150) {
       // JD to speedup processing for large sets
@@ -476,47 +464,6 @@ MOD.Hook('INITIALIZE', () => {
     }
   });
 
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ SOURCE_HILITE updates the currently rolled-over node name in a list of
-      node name selections when using AutoComplete.
-      The hilite can be selected via either the label or the node id.
-  /*/
-  /* ORIGINAL INQUIRIUM CODE
-  UDATA.HandleMessage("SOURCE_HILITE", function(data) {
-    let { nodeLabel, nodeID, color } = data;
-    if (nodeLabel) {
-      // Only mark nodes if something is selected
-      m_UnMarkAllNodes();
-      m_MarkNodeByLabel(nodeLabel, SOURCE_COLOR);
-    }
-    if (nodeID) {
-      // Only mark nodes if something is selected
-      m_UnMarkAllNodes();
-      m_MarkNodeById(nodeID, SOURCE_COLOR);
-    }
-    */
-
-  UDATA.HandleMessage('SOURCE_HILITE', function (data) {
-    let { nodeLabel, nodeID, color } = data;
-    if (nodeLabel) {
-      // Only mark nodes if something is selected
-      if (NCDATA.nodes.length < 250) {
-        // JD to speedup processing for large
-        m_UnMarkAllNodes();
-        m_MarkNodeByLabel(nodeLabel, TEMPLATE.sourceColor || DEFAULT_SOURCE_COLOR);
-      }
-    }
-    if (nodeID) {
-      // Only mark nodes if something is selected
-      if (NCDATA.nodes.length < 250) {
-        // JD to speedup processing for large
-        m_UnMarkAllNodes();
-        m_MarkNodeById(nodeID, TEMPLATE.sourceColor || DEFAULT_SOURCE_COLOR);
-      }
-    }
-
-    // NOTE: State is updated in the "MarkNodeBy*" functions above.
-  });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ SOURCE_UPDATE is called when the properties of a node has changed
       Globally updates DATASTORE and working NCDATA objects with the new node data.
@@ -1098,35 +1045,6 @@ function m_UnMarkAllNodes() {
 function m_UnStrokeAllNodes() {
   let props = { strokeColor: undefined };
   m_SetAllObjs(NCDATA.nodes, props);
-  UDATA.SetAppState('NCDATA', NCDATA);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Sets the `node.selected` property to `color` so it is hilited on graph
-/*/
-function m_MarkNodeById(id, color) {
-  let marked = {
-    selected:
-      TEMPLATE.sourceColor != undefined ? TEMPLATE.sourceColor : DEFAULT_SOURCE_COLOR
-  };
-  let normal = { selected: DESELECTED_COLOR };
-  // NOTE: this.getSelectedNodeColor(node,color) and
-  // this.getDeselectedNodeColor(node,color) are not yet implemented
-  // to override the properties
-  m_SetMatchingNodesByProp({ id }, marked, normal);
-
-  UDATA.SetAppState('NCDATA', NCDATA);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Sets the `node.selected` property to `color` so it is hilited on graph
-/*/
-function m_MarkNodeByLabel(label, color) {
-  let marked = { selected: color };
-  let normal = { selected: DESELECTED_COLOR };
-  // NOTE: this.getSelectedNodeColor(node,color) and
-  // this.getDeselectedNodeColor(node,color) are not yet implemented
-  // to override the properties
-  m_SetMatchingNodesByLabel(label, marked, normal);
-
   UDATA.SetAppState('NCDATA', NCDATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
