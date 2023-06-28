@@ -122,7 +122,7 @@ class NCGraph extends UNISYS.Component {
   updateSelection(data) {
     if (DBG) console.log(PR, 'updateSelection', data);
     const d3data = RENDERMGR.UpdateSelection(data);
-    this.state.ncGraphRenderer.SetData(d3data);
+    this.state.ncGraphRenderer.SetData(d3data, { skipForceUpdate: true });
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

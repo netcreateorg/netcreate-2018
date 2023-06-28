@@ -209,10 +209,19 @@ class NCGraphRenderer {
     this.zoomWrapper.selectAll('.node').remove();
   }
 
-  /*/ The parent container passes data to the d3 graph via this SetData call
-      which then triggers all the internal updates
-  /*/
-  SetData(newData) {
+  /**
+   * The parent container passes data to the d3 graph via this SetData call
+   * which then triggers all the internal updates
+   *
+   * When a SELECTION is updated, we use skipForceUpdate to preven the
+   * simulation from re-applying forces, causing nodes to move.  Without this
+   * as you mouseover a node, ALL the nodes move and it becomes impossible to
+   * select the node.
+   * @param {Object} newData VDATA { nodes, edges }
+   * @param {Object} options
+   * @param {boolean} options.skipForceUpdate skip force updates during selection updates
+   */
+  SetData(newData, options = {}) {
     if (newData) {
       // Make a shallow copy to protect against mutation, while
       // recycling old nodes to preserve position and velocity.
@@ -224,18 +233,19 @@ class NCGraphRenderer {
       this.data.nodes = newData.nodes.map(d => Object.assign(oldNodes.get(d.id) || {}, d));
       this.data.edges = newData.edges.map(d => Object.assign({}, d));
 
-      this.Initialize();
-      this.UpdateForces();
+      if (!options.skipForceUpdate) this.Initialize();
+      if (!options.skipForceUpdate) this.UpdateForces();
       this.UpdateGraph();
 
       // updates ignored until this is run restarts the simulation
       // (important if simulation has already slowed down)
-      this.simulation.alpha(0.3).restart(); // was 1 - JD
+      if (!options.skipForceUpdate) this.simulation.alpha(0.1).restart(); // was 1 - JD
     }
   }
 
   /*/ This sets up the force properties for the simulation and tick handler.
-/*/ Initialize() {
+  /*/
+  Initialize() {
     // Create the force layout.  After a call to force.start(), the tick
     // method will be called repeatedly until the layout "gels" in a stable
     // configuration.
@@ -452,7 +462,8 @@ class NCGraphRenderer {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Apply new force properties
     Call this on construct and if forceProperties have changed.
-/*/ UpdateForces() {
+  /*/
+  UpdateForces() {
     this.simulation
       .force(
         'link',
@@ -519,7 +530,8 @@ class NCGraphRenderer {
     gets drawn first -- the drawing order is determined by the ordering in the
     DOM.  See the notes under link_update.enter() above for one technique for
     setting the ordering in the DOM.
-/*/ Tick() {
+  /*/
+  Tick() {
     // Drawing the nodes: Update the location of each node group element
     // from the x, y fields of the corresponding node object.
     this.zoomWrapper.selectAll('.node').attr('transform', d => {
