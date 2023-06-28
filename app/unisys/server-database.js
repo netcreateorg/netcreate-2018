@@ -558,8 +558,7 @@ DB.PKT_GetDatabase = function (pkt) {
   if (DBG)
     console.log(
       PR,
-      `PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${
-        edges.length
+      `PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${edges.length
       } edges)`
     );
   m_MigrateNodes(nodes);
@@ -875,8 +874,7 @@ DB.PKT_Update = function (pkt) {
       if (!updatedNode)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
-            node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'insert', node: updatedNode };
@@ -897,8 +895,7 @@ DB.PKT_Update = function (pkt) {
       if (!updatedNode)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
-            node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'update', node: updatedNode };
@@ -938,8 +935,7 @@ DB.PKT_Update = function (pkt) {
       if (!updatedEdge)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
-            node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'insert', edge: updatedEdge };
@@ -962,8 +958,7 @@ DB.PKT_Update = function (pkt) {
       if (!updatedEdge)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
-            node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'update', edge: updatedEdge };

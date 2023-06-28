@@ -365,7 +365,7 @@ MOD.Hook('INITIALIZE', () => {
   }); // StateChange SELECTION
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ User has clicked on a suggestion from the AutoCopmlete suggestion list.
+  /*/ User has clicked on a suggestion from the AutoComplete suggestion list.
       The source node should be loaded in NodeSelector.
 
       OR, user has clicked on a node in the D3 graph.
