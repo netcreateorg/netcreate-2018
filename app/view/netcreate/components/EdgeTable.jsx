@@ -364,41 +364,29 @@ class EdgeTable extends UNISYS.Component {
     switch (sortkey) {
       case 'id':
         return this.sortByID(edges);
-        break;
       case 'source':
         return this.sortBySourceLabel(edges);
-        break;
       case 'target':
         return this.sortByTargetLabel(edges);
-        break;
       case 'Info':
         return this.sortByKey(edges, 'info', type);
-        break;
       case 'Weight':
         return this.sortByKey(edges, 'weight', type);
-        break;
       case 'provenance':
         return this.sortByKey(edges, 'provenance', type);
-        break;
       case 'comments':
         return this.sortByKey(edges, 'comments', type);
-        break;
       case 'Notes':
         return this.sortByKey(edges, 'notes', type);
-        break;
       case 'Category':
         return this.sortByKey(edges, 'category', type);
-        break;
       case 'Citations':
         return this.sortByKey(edges, 'citation', type);
-        break;
       case 'Updated':
         return this.sortByUpdated(edges);
-        break;
       case 'Relationship':
       default:
         return this.sortByKey(edges, 'type', type);
-        break;
     }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
