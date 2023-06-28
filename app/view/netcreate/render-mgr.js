@@ -87,7 +87,7 @@ MOD.UpdateSelection = data => {
 function m_UpdateEdges(edges) {
   const TEMPLATE = UDATA.AppState('TEMPLATE');
   const SELECTION = UDATA.AppState('SELECTION');
-  const { mouseOverNodeId } = SELECTION;
+  const { userHighlightNodeId } = SELECTION;
   return edges.map(e => {
     // FIXME: Just copy over relevant attributes, don't copy the whole object!!!!
     // width -- show full width unless mouse is over a node, in which case, do not show weight
@@ -95,9 +95,9 @@ function m_UpdateEdges(edges) {
     const sourceId = typeof e.source === 'number' ? e.source : e.source.id;
     const targetId = typeof e.target === 'number' ? e.target : e.target.id;
     if (e.selected ||
-      (mouseOverNodeId === undefined) || // no mouseover
-      (sourceId === mouseOverNodeId) ||  // mouseover the source
-      (targetId === mouseOverNodeId)     // or target
+      (userHighlightNodeId === undefined) || // no mouseover
+      (sourceId === userHighlightNodeId) ||  // mouseover the source
+      (targetId === userHighlightNodeId)     // or target
     ) {
       // leave size alone, max size checking is in edge-mgr
       e.width = e.size;

@@ -28,16 +28,16 @@ const PR = "selection-mgr: ";
 /*/ lifecycle INITIALIZE handler
 /*/
 MOD.Hook("INITIALIZE", () => {
-  UDATA.HandleMessage('MOUSE_OVER_NODE', m_MouseOverNode);
+  UDATA.HandleMessage('USER_HIGHLIGHT_NODE', m_UserHighlightNode);
 }); // end UNISYS_INIT
 
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_MouseOverNode(data) {
+function m_UserHighlightNode(data) {
   // console.log('mouseover', data.nodeId)
   const SELECTION = UDATA.AppState('SELECTION');
-  SELECTION.mouseOverNodeId = data.nodeId;
+  SELECTION.userHighlightNodeId = data.nodeId;
   UDATA.SetAppState('SELECTION', SELECTION);
 }
 

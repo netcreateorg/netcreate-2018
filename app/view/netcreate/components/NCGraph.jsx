@@ -52,8 +52,7 @@ class NCGraph extends UNISYS.Component {
       d3NetGraph: {},
       d3data: {},
       nodeTypes: [],
-      edgeTypes: [],
-      mouseOverNodeId: undefined
+      edgeTypes: []
     };
 
     this.updateVData = this.updateVData.bind(this);
