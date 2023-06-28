@@ -9,13 +9,21 @@
     // configure glob patterns for excluding files and folders.
     "files.exclude": {
       "**/.git": true,
-      "**/.svn": true,
-      "**/.hg": true,
-      "**/CVS": true,
       "**/.DS_Store": true,
+      "**/node_modules": true
+    },
+    "search.exclude": {
       "**/node_modules": true,
-      "**/bower_components": true,
-      "*.sublime-*": true
+      "**/package-lock.json": true
+    },
+    // highlight sri-style module comment separators
+    "highlight.regexes": {
+      "(/// [^/]+? ///+)\n": [
+        {
+          "color": "#a3bdff",
+          "backgroundColor": "#2E4AE06f"
+        }
+      ]
     },
     // make errors more obvious, de-emphasize warnings
     "workbench.colorCustomizations": {
