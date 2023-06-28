@@ -2,7 +2,7 @@
 
   EDGE MANAGER
 
-  edge-mgr takes the incoming FILTEREDD3DATA and simplifies the
+  edge-mgr takes the incoming FILTEREDNCDATA and simplifies the
   edges, doing the following:
     1. Removes any duplicate edges between a source and target
     2. Caclulates the edge size using the edge.weight parameter
@@ -34,9 +34,9 @@ const PR = "edge-mgr: ";
 MOD.Hook("INITIALIZE", () => {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ FILTEREDD3DATA is updated by filter-mgr after NCDATA is changed.
+  /*/ FILTEREDNCDATA is updated by filter-mgr after NCDATA is changed.
   /*/
-  UDATA.OnAppStateChange("FILTEREDD3DATA", data => {
+  UDATA.OnAppStateChange("FILTEREDNCDATA", data => {
     m_RenderEdges(data);
   })
 
@@ -48,7 +48,7 @@ MOD.Hook("INITIALIZE", () => {
 /**
  * m_RenderEdges uses a Map to reduce duplicate edges into a single
  * edge, calculating edge size based on edge.weight parameter along the way.
- * @param {Object} data FILTEREDD3DATA e.g. { nodes, edges }
+ * @param {Object} data FILTEREDNCDATA e.g. { nodes, edges }
  * @return Updates VDATA AppState
  */
 function m_RenderEdges(data) {

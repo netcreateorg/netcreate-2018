@@ -5,7 +5,7 @@
     NodeTable is used to to display a table of nodes for review.
 
     It displays NCDATA.
-    But also checks FILTEREDD3DATA to show highlight/filtered state
+    But also checks FILTEREDNCDATA to show highlight/filtered state
 
   ## TO USE
 
@@ -83,38 +83,36 @@ class NodeTable extends UNISYS.Component {
     this.OnAppStateChange('NCDATA', this.handleDataUpdate);
 
     // Track Filtered Data Updates too
-    this.OnAppStateChange('FILTEREDD3DATA', this.handleFilterDataUpdate);
+    this.OnAppStateChange('FILTEREDNCDATA', this.handleFilterDataUpdate);
 
     // Handle Template updates
     this.OnAppStateChange('TEMPLATE', this.OnTemplateUpdate);
 
   } // constructor
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ componentDidMount () {
-      if (DBG) console.error('NodeTable.componentDidMount!');
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/
+/*/ componentDidMount() {
+    if (DBG) console.error('NodeTable.componentDidMount!');
 
-      this.onStateChange_SESSION(this.AppState('SESSION'));
+    this.onStateChange_SESSION(this.AppState('SESSION'));
 
-      // Explicitly retrieve data because we may not have gotten a NCDATA
-      // update while we were hidden.
-      // filtered data needs to be set before D3Data
-      const FILTEREDD3DATA = UDATA.AppState('FILTEREDD3DATA');
-      this.setState({ filteredNodes: FILTEREDD3DATA.nodes },
-        () => {
-          let NCDATA = this.AppState('NCDATA');
-          this.handleDataUpdate(NCDATA);
-        }
-      )
-    }
+    // Explicitly retrieve data because we may not have gotten a NCDATA
+    // update while we were hidden.
+    // filtered data needs to be set before D3Data
+    const FILTEREDNCDATA = UDATA.AppState('FILTEREDNCDATA');
+    this.setState({ filteredNodes: FILTEREDNCDATA.nodes }, () => {
+      let NCDATA = this.AppState('NCDATA');
+      this.handleDataUpdate(NCDATA);
+    });
+  }
 
-    componentWillUnmount() {
-      this.AppStateChangeOff('SESSION', this.onStateChange_SESSION);
-      this.AppStateChangeOff('NCDATA', this.handleDataUpdate);
-      this.AppStateChangeOff('FILTEREDD3DATA', this.handleFilterDataUpdate);
-      this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
-    }
+  componentWillUnmount() {
+    this.AppStateChangeOff('SESSION', this.onStateChange_SESSION);
+    this.AppStateChangeOff('NCDATA', this.handleDataUpdate);
+    this.AppStateChangeOff('FILTEREDNCDATA', this.handleFilterDataUpdate);
+    this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
+  }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Handle change in SESSION data

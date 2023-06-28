@@ -298,7 +298,7 @@ function m_GenerateEdgesArray(edges, edgekeys) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Exports FILTERED data, not the full data set.
 MOD.ExportNodes = () => {
-  const DATA = UDATA.AppState('FILTEREDD3DATA');
+  const DATA = UDATA.AppState('FILTEREDNCDATA');
   const TEMPLATE = UDATA.AppState('TEMPLATE');
   const { nodes } = DATA;
   let EXPORT = '';
@@ -360,7 +360,7 @@ MOD.ExportNodes = () => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Exports FILTERED data, not the full data set.
 MOD.ExportEdges = () => {
-  const DATA = UDATA.AppState('FILTEREDD3DATA');
+  const DATA = UDATA.AppState('FILTEREDNCDATA');
   const TEMPLATE = UDATA.AppState('TEMPLATE');
   const { edges } = DATA;
   let EXPORT = '';

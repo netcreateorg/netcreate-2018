@@ -5,7 +5,7 @@
     EdgeTable is used to to display a table of edges for review.
 
     It displays NCDATA.
-    But also read FILTEREDD3DATA to show highlight/filtered state
+    But also read FILTEREDNCDATA to show highlight/filtered state
 
 
   ## TO USE
@@ -92,7 +92,7 @@ class EdgeTable extends UNISYS.Component {
     this.OnAppStateChange('TEMPLATE', this.OnTemplateUpdate);
 
     // Track Filtered Data Updates too
-    this.OnAppStateChange('FILTEREDD3DATA', this.handleFilterDataUpdate);
+    this.OnAppStateChange('FILTEREDNCDATA', this.handleFilterDataUpdate);
   } // constructor
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -104,8 +104,8 @@ class EdgeTable extends UNISYS.Component {
     // Explicitly retrieve data because we may not have gotten a NCDATA
     // update while we were hidden.
     // filtered data needs to be set before D3Data
-    const FILTEREDD3DATA = UDATA.AppState('FILTEREDD3DATA');
-    this.setState({ filteredEdges: FILTEREDD3DATA.edges }, () => {
+    const FILTEREDNCDATA = UDATA.AppState('FILTEREDNCDATA');
+    this.setState({ filteredEdges: FILTEREDNCDATA.edges }, () => {
       let NCDATA = this.AppState('NCDATA');
       this.handleDataUpdate(NCDATA);
     });
@@ -114,7 +114,7 @@ class EdgeTable extends UNISYS.Component {
   componentWillUnmount() {
     this.AppStateChangeOff('SESSION', this.onStateChange_SESSION);
     this.AppStateChangeOff('NCDATA', this.handleDataUpdate);
-    this.AppStateChangeOff('FILTEREDD3DATA', this.handleFilterDataUpdate);
+    this.AppStateChangeOff('FILTEREDNCDATA', this.handleFilterDataUpdate);
     this.AppStateChangeOff('TEMPLATE', this.OnTemplateUpdate);
   }
 
@@ -201,7 +201,7 @@ class EdgeTable extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Handle FILTEREDD3DATA updates sent by filters-logic.m_FiltersApply
+  /*/ Handle FILTEREDNCDATA updates sent by filters-logic.m_FiltersApply
       Note that edge.soourceLabel and edge.targetLabel should already be set
       by filter-mgr.
   /*/

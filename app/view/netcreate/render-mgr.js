@@ -3,7 +3,7 @@
   RENDER MANAGER
 
   render-mgr handles the transformation of NCDATA (and it's subvariants
-  FILTEREDD3DATA and SYNTHESIZEDDATA) into `d3data` format that can be
+  FILTEREDNCDATA and SYNTHESIZEDDATA) into `d3data` format that can be
   rendered by NCGraphRenderer.
 
   It is loaded directly by NCGraph for processing.  In this way,

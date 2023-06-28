@@ -53,9 +53,9 @@
         "Filter" shows matching nodes/edges and removes the non-matching
         nodes/edges from the display without affecting the underlying data.
 
-  * With Version 1.4, the only data that is graphed is FILTEREDD3DATA.
+  * With Version 1.4, the only data that is graphed is FILTEREDNCDATA.
     --  d3-simplenetgraph no longer plots on NCDATA changes.
-    --  Instead, it plots the new FILTEREDD3DATA state.  Whenever NCDATA changes,
+    --  Instead, it plots the new FILTEREDNCDATA state.  Whenever NCDATA changes,
         FILTERDD3DATA is udpated.
     --  This way there is only one source of truth: all draw updates
         are routed through filter-mgr.
@@ -330,7 +330,7 @@ function m_FilterDefine(data) {
  * @param {Object} data A UDATA pkt {defs}
  */
 function m_FiltersApply() {
-  const FILTEREDD3DATA = UDATA.AppState("NCDATA");
+  const FILTEREDNCDATA = UDATA.AppState("NCDATA");
   const FDATA = UDATA.AppState("FDATA");
 
   // skip if FDATA has not been defined yet
@@ -338,16 +338,16 @@ function m_FiltersApply() {
 
   // stuff 'sourceLabel' and 'targetLabel' into edges for quicker filtering
   // otherwise we have to constantly look up the node label
-  FILTEREDD3DATA.edges = FILTEREDD3DATA.edges.map(e => {
-    const source = FILTEREDD3DATA.nodes.find(n => n.id === e.source);
-    const target = FILTEREDD3DATA.nodes.find(n => n.id === e.target);
+  FILTEREDNCDATA.edges = FILTEREDNCDATA.edges.map(e => {
+    const source = FILTEREDNCDATA.nodes.find(n => n.id === e.source);
+    const target = FILTEREDNCDATA.nodes.find(n => n.id === e.target);
     e.sourceLabel = source ? source.label : 'deleted';
     e.targetLabel = target ? target.label : 'deleted';
     return e;
   })
 
-  m_FiltersApplyToNodes(FDATA, FILTEREDD3DATA);
-  m_FiltersApplyToEdges(FDATA, FILTEREDD3DATA);
+  m_FiltersApplyToNodes(FDATA, FILTEREDNCDATA);
+  m_FiltersApplyToEdges(FDATA, FILTEREDNCDATA);
 
   // REVIEW 2023-0530
   // -- If "Filter/Hide" functionality is going to be kept, this needs to be reworked!
@@ -355,11 +355,11 @@ function m_FiltersApply() {
   //
   // Recalculate sizes
   // ALWAYS recalculate, e.g. if switching from Collapse to Highlight or clearing data
-  UTILS.RecalculateAllEdgeSizes(FILTEREDD3DATA);
-  UTILS.RecalculateAllNodeDegrees(FILTEREDD3DATA);
+  UTILS.RecalculateAllEdgeSizes(FILTEREDNCDATA);
+  UTILS.RecalculateAllNodeDegrees(FILTEREDNCDATA);
 
-  // Update FILTEREDD3DATA
-  UDATA.SetAppState("FILTEREDD3DATA", FILTEREDD3DATA);
+  // Update FILTEREDNCDATA
+  UDATA.SetAppState("FILTEREDNCDATA", FILTEREDNCDATA);
   // edge-mgr handles this call and updates VDATA, which is rendered by d3-simplenetgraph
 
 }
@@ -468,17 +468,17 @@ function m_MatchNumber(operator, filterVal, objVal) {
 
 /**
  * Side effect:
- *   FILTEREDD3DATA.nodes are updated with `isFilteredOut` flags.
+ *   FILTEREDNCDATA.nodes are updated with `isFilteredOut` flags.
  *
  * @param {Array} filters
  */
-function m_FiltersApplyToNodes(FDATA, FILTEREDD3DATA) {
+function m_FiltersApplyToNodes(FDATA, FILTEREDNCDATA) {
   RemovedNodes = [];
 
   // if current filter is focus, calculate bacon_values
-  if (FDATA.filterAction === FILTER.ACTION.FOCUS) m_FocusPrep(FDATA, FILTEREDD3DATA);
+  if (FDATA.filterAction === FILTER.ACTION.FOCUS) m_FocusPrep(FDATA, FILTEREDNCDATA);
 
-  FILTEREDD3DATA.nodes = FILTEREDD3DATA.nodes.filter(node => {
+  FILTEREDNCDATA.nodes = FILTEREDNCDATA.nodes.filter(node => {
     return m_NodeIsFiltered(node, FDATA);
   });
 }
@@ -575,27 +575,27 @@ function m_IsNodeMatchedByFilter(node, filter) {
 /*/ EDGE FILTERS
 /*/
 
-function m_FiltersApplyToEdges(FDATA, FILTEREDD3DATA) {
+function m_FiltersApplyToEdges(FDATA, FILTEREDNCDATA) {
   const { filterAction } = FDATA;
   const { filters, transparency } = FDATA.edges;
-  if (!FILTEREDD3DATA.edges) return; // no data
-  FILTEREDD3DATA.edges = FILTEREDD3DATA.edges.filter(edge => {
-    return m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3DATA);
+  if (!FILTEREDNCDATA.edges) return; // no data
+  FILTEREDNCDATA.edges = FILTEREDNCDATA.edges.filter(edge => {
+    return m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDNCDATA);
   });
 }
 
 /*/ Side effect: Sets `isFiltered`
 /*/
-function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3DATA) {
+function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDNCDATA) {
   // let all_no_op = true; // all filters are no_op
   let keepEdge = true;
-  const source = FILTEREDD3DATA.nodes.find(e => {
+  const source = FILTEREDNCDATA.nodes.find(e => {
     // on init, edge.source is just an id.  only with d3 processing does it
     // get transformed into a node object.  so we have to check the type.
     const sourceId = (typeof edge.source === 'number') ? edge.source : edge.source.id;
     return e.id === sourceId;
   });
-  const target = FILTEREDD3DATA.nodes.find(e => {
+  const target = FILTEREDNCDATA.nodes.find(e => {
     // on init, edge.target is just an id.  only with d3 processing does it
     // get transformed into a node object.  so we have to check the type.
     const targetId = (typeof edge.target === 'number') ? edge.target : edge.target.id;
@@ -759,7 +759,7 @@ function m_SetBaconValue(bacon_value, max_bacon_value, puredata, sourceNodes) {
 }
 
 /**
- * Prepares `puredata` (aka FILTEREDD3DATA) for filtering by
+ * Prepares `puredata` (aka FILTEREDNCDATA) for filtering by
  * seeding node data with "degrees of separation" (aka "bacon_value") from the selected node
  * Uses FDATA specifications for the focus selection and range
  * Modifies puredata by reference

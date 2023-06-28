@@ -141,21 +141,21 @@ var UDATA = UNISYS.NewDataLink(MOD);
     * edges: all edges (not all may be actually changed)
 
 
-    FILTEREDD3DATA
+    FILTEREDNCDATA
 
-    FILTEREDD3DATA is the processed network data. It is derived from NCDATA.
+    FILTEREDNCDATA is the processed network data. It is derived from NCDATA.
     It represents a subset of NCDATA with filtered items tagged (for highlight)
-    or removed. d3 will alter FILTEREDD3DATA, replacing edge source/targets
+    or removed. d3 will alter FILTEREDNCDATA, replacing edge source/targets
     ids with node objects.
-    FILTEREDD3DATA is updated whenever NCDATA is updated.
+    FILTEREDNCDATA is updated whenever NCDATA is updated.
 
-    There are three key differences between NCDATA and FILTEREDD3DATA:
+    There are three key differences between NCDATA and FILTEREDNCDATA:
     1. edge.source and edge.target in NCDATA refer to node ids
-       whereas in FILTEREDD3DATA, edge.source and edge.target are node objects
-    2. Only FILTEREDD3DATA is passed to d3.  d3 never directly touches NCDATA.
-    3. FILTEREDD3DATA is directly derived from NCDATA, and can contain a subset
+       whereas in FILTEREDNCDATA, edge.source and edge.target are node objects
+    2. Only FILTEREDNCDATA is passed to d3.  d3 never directly touches NCDATA.
+    3. FILTEREDNCDATA is directly derived from NCDATA, and can contain a subset
        of the nodes or edges of NCDATA. In contrast, NCDATA contains ALL nodes
-       and edges.  When a filter is set, FILTEREDD3DATA is updated from
+       and edges.  When a filter is set, FILTEREDNCDATA is updated from
        NCDATA, with nodes and edges removed or marked according to the filter.
 
 \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -/*/
