@@ -95,15 +95,19 @@ function m_UpdateNodes(nodes) {
     n.opacity = n.filteredTransparency;
     n.size = Math.min(TEMPLATE.nodeSizeDefault + n.degrees, TEMPLATE.nodeSizeMax);
     if (isAutosuggestHilited) {
-      n.strokeColor = '#33333388';
-      n.strokeWidth = '5px';
+      // n.shape = 'rectangle';
+      n.strokeColor = '#ccc';
+      n.strokeWidth = '8px';
     } else if (isSelected) {
+      // n.shape = 'rectangle';
       n.strokeColor = highlightStrokeColor;
       n.strokeWidth = '5px';
     } else if (isFound) {
+      // n.shape = 'circle';
       n.strokeColor = foundStrokeColor;
       n.strokeWidth = '5px';
     } else {
+      // n.shape = 'circle';
       n.strokeColor = undefined;
       n.strokeWidth = undefined;
     }

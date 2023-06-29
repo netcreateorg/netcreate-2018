@@ -233,6 +233,7 @@ class NCGraphRenderer {
       this.data.nodes = newData.nodes.map(d => Object.assign(oldNodes.get(d.id) || {}, d));
       this.data.edges = newData.edges.map(d => Object.assign({}, d));
 
+      // FIXME: REVIEW: is this not necessary?  Just check initialize once?
       if (!options.skipForceUpdate) this.Initialize();
       if (!options.skipForceUpdate) this.UpdateForces();
       this.UpdateGraph();
@@ -337,6 +338,17 @@ class NCGraphRenderer {
       .attr('fill', d => d.color)
       .style('opacity', d => d.opacity);
 
+    // EXPERIMENTAL: Show rectangle shapes
+    // REVIEW: Is there a way not to create this if it's not needed?
+    // elementG
+    //   .append('rect')
+    //   .attr('width', d => d.size * 2)
+    //   .attr('height', d => d.size * 2)
+    //   .attr('x', d => -d.size)
+    //   .attr('y', d => -d.size)
+    //   .attr('fill', d => d.color)
+    //   .style('opacity', 0);
+
     // enter node: also append 'text' element
     elementG
       .append('text')
@@ -409,7 +421,9 @@ class NCGraphRenderer {
     nodeElements
       .merge(nodeElements)
       .selectAll('text')
-      .attr('color', d => d.strokeColor)
+      .attr('fill', d => d.strokeColor)
+      // .attr('stroke', d => d.strokeColor) // stroke overlaps on text
+      // .attr('stroke-width', '0.5px') // stroke overlaps on text
       .attr('font-weight', d => {
         return d.strokeColor ? 'bold' : undefined;
       })
@@ -422,6 +436,15 @@ class NCGraphRenderer {
       .merge(nodeElements)
       .selectAll('title') // node tooltip
       .text(d => d.help);
+
+    // EXPERIMENTAL: Show rectangle shapes
+    // nodeElements
+    //   .merge(nodeElements)
+    //   .selectAll('rect')
+    //   .attr('stroke', d => d.strokeColor)
+    //   .attr('stroke-width', d => d.strokeWidth)
+    //   .style('opacity', d => d.shape === 'rectangle' ? 1 : 0);
+
     // TELL D3 what to do when a data node goes away
     nodeElements.exit().remove();
 
