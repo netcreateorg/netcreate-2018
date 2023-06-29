@@ -239,6 +239,8 @@ class NCGraphRenderer {
 
       // updates ignored until this is run restarts the simulation
       // (important if simulation has already slowed down)
+      // skipForceUpdate here is helpful for preventing force updates when hovering
+      // or tryng to select an object.
       if (!options.skipForceUpdate) this.simulation.alpha(0.1).restart(); // was 1 - JD
     }
   }
