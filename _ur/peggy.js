@@ -6,26 +6,25 @@
 
 const peggy = require('peggy');
 const fs = require('fs');
-const { exec, execSync } = require('child_process');
-const chockidar = require('chokidar');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const FN = 'ncgo-data.peg';
 let grammar;
 let parser;
 const INPUT = `
-  boop boap banana
-  fooo gooo hooo
-  away
+this is test input
+there are only identifiers
+away
 `.trim();
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const FILENAME = '_ur/graph-parser.peg';
 
 /// PARSER STUFF //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function ProcessGrammar(input) {
   let out;
   try {
-    grammar = fs.readFileSync(FN, 'utf8');
+    grammar = fs.readFileSync(FILENAME, 'utf8');
   } catch (err) {
     console.error('file error', err);
   }
