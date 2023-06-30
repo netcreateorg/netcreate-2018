@@ -65,6 +65,7 @@ class NodeTable extends UNISYS.Component {
     this.OnTemplateUpdate = this.OnTemplateUpdate.bind(this);
     this.onButtonClick = this.onButtonClick.bind(this);
     this.onToggleExpanded = this.onToggleExpanded.bind(this);
+    this.onHighlightRow = this.onHighlightRow.bind(this);
     this.setSortKey = this.setSortKey.bind(this);
     this.sortSymbol = this.sortSymbol.bind(this);
 
@@ -385,6 +386,12 @@ class NodeTable extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/
   /*/
+  onHighlightRow(nodeId) {
+    UDATA.LocalCall('TABLE_HILITE_NODE', { nodeId });
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/
+  /*/
   setSortKey(key, type) {
     if (key === this.state.sortkey) this.sortDirection = -1 * this.sortDirection;
     // if this was already the key, flip the direction
@@ -437,6 +444,7 @@ class NodeTable extends UNISYS.Component {
                   `;
     return (
       <div
+        onMouseLeave={() => this.onHighlightRow(undefined)}
         style={{
           overflow: 'auto',
           position: 'relative',
@@ -539,6 +547,7 @@ class NodeTable extends UNISYS.Component {
                   color: node.isFiltered ? 'red' : 'black',
                   opacity: node.filteredTransparency
                 }}
+                onMouseOver={() => this.onHighlightRow(node.id)}
               >
                 <td>
                   <Button size="sm" outline value={node.id} onClick={this.onButtonClick}>

@@ -30,6 +30,7 @@ const PR = "selection-mgr: ";
 MOD.Hook("INITIALIZE", () => {
   UDATA.HandleMessage('USER_HILITE_NODE', m_UserHighlightNode);
   UDATA.HandleMessage('AUTOSUGGEST_HILITE_NODE', m_AutoSuggestHiliteNode);
+  UDATA.HandleMessage('TABLE_HILITE_NODE', m_TableHiliteNode);
 }); // end UNISYS_INIT
 
 
@@ -49,6 +50,16 @@ function m_UserHighlightNode(data) {
 function m_AutoSuggestHiliteNode(data) {
   const SELECTION = UDATA.AppState('SELECTION');
   SELECTION.autosuggestHiliteNodeId = data.nodeId;
+  UDATA.SetAppState('SELECTION', SELECTION);
+}
+
+/**
+ * User is hovering over a row in the NodeTable.
+ * The corresponding node in the graph will also highlighted.
+ */
+function m_TableHiliteNode(data) {
+  const SELECTION = UDATA.AppState('SELECTION');
+  SELECTION.tableHiliteNodeId = data.nodeId;
   UDATA.SetAppState('SELECTION', SELECTION);
 }
 

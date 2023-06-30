@@ -81,6 +81,7 @@ function m_UpdateNodes(nodes) {
   const SEARCH = UDATA.AppState('SEARCH');
   const selectedNodes = SELECTION.nodes ? SELECTION.nodes.map(n => n.id) : [];
   const autosuggestHiliteNodeId = SELECTION.autosuggestHiliteNodeId;
+  const tableHiliteNodeId = SELECTION.tableHiliteNodeId;
   const foundNodes = SEARCH.suggestedNodes ? SEARCH.suggestedNodes.map(n => n.id) : [];
   const highlightStrokeColor = TEMPLATE.sourceColor;
   const foundStrokeColor = TEMPLATE.searchColor;
@@ -88,6 +89,7 @@ function m_UpdateNodes(nodes) {
   const COLORMAP = UDATA.AppState('COLORMAP');
   return nodes.map(n => {
     const isAutosuggestHilited = autosuggestHiliteNodeId === n.id;
+    const isTabletHilited = tableHiliteNodeId === n.id;
     const isSelected = selectedNodes.includes(n.id);
     const isFound = foundNodes.includes(n.id);
     // FIXME: Just copy over relevant attributes, don't copy the whole object!!!!
@@ -96,6 +98,9 @@ function m_UpdateNodes(nodes) {
     n.size = Math.min(TEMPLATE.nodeSizeDefault + n.degrees, TEMPLATE.nodeSizeMax);
     if (isAutosuggestHilited) {
       // n.shape = 'rectangle';
+      n.strokeColor = '#ccc';
+      n.strokeWidth = '8px';
+    } else if (isTabletHilited) {
       n.strokeColor = '#ccc';
       n.strokeWidth = '8px';
     } else if (isSelected) {
