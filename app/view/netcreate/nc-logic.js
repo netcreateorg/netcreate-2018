@@ -370,7 +370,7 @@ MOD.Hook('INITIALIZE', () => {
     let { nodeLabels = [], nodeIDs = [] } = data;
     let nodeLabel = nodeLabels.shift();
     let nodeID = nodeIDs.shift();
-    let node, newState;
+    let node, newSelection, newHilite;
 
     if (nodeID) {
       node = m_FindNodeById(nodeID); // Node IDs should be integers, not strings
@@ -388,11 +388,13 @@ MOD.Hook('INITIALIZE', () => {
 
     if (node === undefined) {
       // Node not found, create a new state
-      newState = {
+      newSelection = {
         nodes: [],
-        edges: [],
-        autosuggestHiliteNodeId: undefined
+        edges: []
       };
+      newHilite = {
+        autosuggestHiliteNodeId: undefined
+      }
     } else {
       // Load existing node and edges
       let edges = [];
@@ -417,15 +419,18 @@ MOD.Hook('INITIALIZE', () => {
         }
       }
       // create state change object
-      newState = {
+      newSelection = {
         nodes: [node],
-        edges: edges,
-        autosuggestHiliteNodeId: undefined
+        edges: edges
       };
+      newHilite = {
+        autosuggestHiliteNodeId: undefined
+      }
     }
 
     // Set the SELECTION state so that listeners such as NodeSelectors update themselves
-    UDATA.SetAppState('SELECTION', newState);
+    UDATA.SetAppState('SELECTION', newSelection);
+    UDATA.SetAppState('HILITE', newHilite);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
