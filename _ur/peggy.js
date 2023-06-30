@@ -16,37 +16,42 @@ Fishman:    One,, two   , three
 once upon a   time there: was, a kind of,     cat
 
     leading : spaces cant exist, what
-
+I: "am   a cat"   ,ok
 
 `;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const FILENAME = '_ur/graph-parser.peg';
 
+/**
+ * This function takes a multi-line string and performs the following operations:
+ * - Replaces all newline types with '\n'
+ * - Removes trailing whitespace from each line while preserving leading whitespace
+ * - Removes all tab characters
+ * - Processes comma and colon delimited sequences in each line:
+ *   - Removes whitespace around each delimiter except when inside quotes
+ *   - Collapses all internal whitespace to a single space, while preserving leading whitespace in each part
+ * (written, with effort, by ChatGPT4)
+ * @param {string} str - The input string to be normalized.
+ * @return {string} - The normalized string.
+ */
 function normalizeText(str) {
-  // Ensure all newlines are \n
-  let normalizedStr = str.replace(/\r\n|\r/g, '\n');
-
-  // Remove trailing whitespace for each line, but preserve leading whitespace
-  normalizedStr = normalizedStr
+  let normalizedStr = str.replace(/\r\n|\r/g, '\n'); // conform newlines
+  normalizedStr = normalizedStr // remove trailing/preserve leading whitespace
     .split('\n')
     .map(line => line.replace(/\s+$/, ''))
     .join('\n');
-
-  // Remove all \t
-  normalizedStr = normalizedStr.replace(/\t/g, '');
-
-  // Split normalizedStr into lines to process each line individually
-  let lines = normalizedStr.split('\n');
-
+  normalizedStr = normalizedStr.replace(/\t/g, '  '); // replace tabs with 2 spaces
+  let lines = normalizedStr.split('\n'); // split string into lines
+  /** process whitespace around delimiters */
   const processDelimited = (line, delimiter) => {
-    // Split the line based on the delimiter
-    let parts = line.split(delimiter);
+    let parts = line.split(delimiter); // split lines based on delimiter
     for (let i = 0; i < parts.length; i++) {
       // Ignore the string if it's inside quotes
       if (!parts[i].startsWith('"') && !parts[i].endsWith('"')) {
         // Preserve leading spaces for the first part
         if (i !== 0) parts[i] = parts[i].trim();
         else {
+          // preserve space
           let leadingSpaces = parts[i].match(/^(\s*)/)[0];
           parts[i] = leadingSpaces + parts[i].trim();
           // Collapse whitespace to a single space, ignoring leading spaces
@@ -58,14 +63,11 @@ function normalizeText(str) {
     }
     return parts.join(delimiter);
   };
-
   for (let i = 0; i < lines.length; i++) {
-    lines[i] = processDelimited(lines[i], ',');
-    lines[i] = processDelimited(lines[i], ':');
+    lines[i] = processDelimited(lines[i], ',', { preserve: true });
+    lines[i] = processDelimited(lines[i], ':', { preserve: true });
   }
-
   normalizedStr = lines.join('\n');
-
   return normalizedStr;
 }
 
