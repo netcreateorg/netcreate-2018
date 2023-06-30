@@ -99,8 +99,8 @@ function m_UpdateNodes(nodes) {
     n.color = COLORMAP.nodeColorMap[n.type];
     n.opacity = n.filteredTransparency;
     n.size = Math.min(TEMPLATE.nodeSizeDefault + n.degrees, TEMPLATE.nodeSizeMax);
+    n.selected = false;
     if (isAutosuggestHilited) {
-      // n.shape = 'rectangle';
       n.strokeColor = '#ccc';
       n.strokeWidth = '8px';
     } else if (isTabletHilited) {
@@ -111,13 +111,14 @@ function m_UpdateNodes(nodes) {
       n.strokeColor = highlightStrokeColor;
       n.strokeWidth = '5px';
     } else if (isFound) {
-      // n.shape = 'circle';
       n.strokeColor = foundStrokeColor;
       n.strokeWidth = '5px';
     } else {
-      // n.shape = 'circle';
       n.strokeColor = undefined;
       n.strokeWidth = undefined;
+    }
+    if (isSelected) {
+      n.selected = true; // selection state can be displayed simultaneously with hilite
     }
     n.help = m_GetHelp(n);
     return n;

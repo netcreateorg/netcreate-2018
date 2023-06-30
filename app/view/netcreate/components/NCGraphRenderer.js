@@ -15,7 +15,8 @@
 
     The data is:
       data = { nodes, edges }
-      nodes = [ ...{id, label, size, color, opacity}]
+      nodes = [ ...{id, label, selected,
+                    size, color, opacity, strokeColor, strokeWidth, help}],
       edges = [ ...{id, sourceId, targetId, size, color, opacity}]
 
     This uses D3 Version 4.0.
@@ -236,7 +237,7 @@ class NCGraphRenderer {
       // FIXME: REVIEW: is this not necessary?  Just check initialize once?
       if (!options.skipForceUpdate) this.Initialize();
       if (!options.skipForceUpdate) this.UpdateForces();
-      this.UpdateGraph();
+      this.UpdateGraph(options.skipForceUpdate);
 
       // updates ignored until this is run restarts the simulation
       // (important if simulation has already slowed down)
@@ -282,7 +283,8 @@ class NCGraphRenderer {
     This method actually does more than just "update" an existing graph; in D3
     you can write code that initializes AND updates data.
 
-/*/ UpdateGraph() {
+  /*/
+  UpdateGraph() {
     // DATA JOIN
     // select all elemnts with class .node in d3svg
     // bind selected elements with elements in this.data.nodes,
@@ -482,6 +484,75 @@ class NCGraphRenderer {
     if (this.data.edges) {
       this.simulation.force('link').links(this.data.edges);
     }
+
+    // SELECTION ARROW
+    // Theoretically can show more than one
+    this.d3svg.selectAll('#selectorArrow').remove();
+
+    // SINGLE ARROW APPROACH
+    // nodeElements
+    //   .merge(nodeElements)
+    //   .filter(d => d.selected)
+    //   .append('g')
+    //   .attr('id', 'selectorArrow')
+    //   .attr('transform', d => `translate(${- d.size - 5},0)`)
+    //   .append('polygon')
+    //   .attr('points', '0,0 -10,5 -10,-5 ')
+    //   .attr('fill', 'red')
+    //   .append('animateTransform')
+    //   .attr('attributeName', 'transform')
+    //   .attr('attributeType', 'XML')
+    //   .attr('type', 'rotate')
+    //   .attr('from', d => `0 ${d.size + 5} 0`)
+    //   .attr('to', d => `360 ${d.size + 5} 0`)
+    //   .attr('dur', '2s')
+    //   .attr('repeatCount', 'indefinite')
+
+    // MULTIPLE ARROW APPROACH
+    this.selectorArrows = nodeElements
+      .merge(nodeElements)
+      .filter(d => d.selected)
+      .append('g')
+      .attr('id', 'selectorArrow')
+      .attr('transform', d => `translate(${- d.size - 5},0)`)
+    this.selectorArrows
+      .append('polygon')
+      .attr('points', '0,0 -10,5 -10,-5 ')
+      .attr('fill', d => d.strokeColor)
+      .append('animateTransform')
+      .attr('attributeName', 'transform')
+      .attr('attributeType', 'XML')
+      .attr('type', 'rotate')
+      .attr('from', d => `0 ${d.size + 5} 0`)
+      .attr('to', d => `360 ${d.size + 5} 0`)
+      .attr('dur', '6s')
+      .attr('repeatCount', 'indefinite')
+    this.selectorArrows
+      .append('polygon')
+      .attr('transform', d => `translate(${d.size + 5},0)`)
+      .attr('points', '0,0 -10,5 -10,-5 ')
+      .attr('fill', d => d.strokeColor)
+      .append('animateTransform')
+      .attr('attributeName', 'transform')
+      .attr('attributeType', 'XML')
+      .attr('type', 'rotate')
+      .attr('from', d => `120 ${d.size + 5} 0`) // different rotation start
+      .attr('to', d => `480 ${d.size + 5} 0`) // different rotation end
+      .attr('dur', '6s')
+      .attr('repeatCount', 'indefinite')
+    this.selectorArrows
+      .append('polygon')
+      .attr('transform', d => `translate(${d.size + 5},0)`)
+      .attr('points', '0,0 -10,5 -10,-5 ')
+      .attr('fill', d => d.strokeColor)
+      .append('animateTransform')
+      .attr('attributeName', 'transform')
+      .attr('attributeType', 'XML')
+      .attr('type', 'rotate')
+      .attr('from', d => `240 ${d.size + 5} 0`) // different rotation start
+      .attr('to', d => `600 ${d.size + 5} 0`) // different rotation end
+      .attr('dur', '6s')
+      .attr('repeatCount', 'indefinite')
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
