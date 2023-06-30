@@ -292,13 +292,13 @@ MOD.TEMPLATE = {
     },
     "searchColor": {
       type: 'string',
-      description: 'Outline color of nodes selected via search (hex).',
+      description: 'Outline color of nodes highlighted via search (hex).',
       default: '#008800',
       format: 'color'
     },
     "sourceColor": {
       type: 'string',
-      description: 'Outline color of node highlighted during auto complete (hex).',
+      description: 'Outline color of node selected to view / edit (hex).',
       default: '#FFa500',
       format: 'color'
     },
