@@ -11,34 +11,29 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-const { exec } = require('child_process');
+const { fork } = require('child_process');
 const chockidar = require('chokidar');
 const express = require('express');
 
 /// STATE /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let OUT = 'ExecPeg';
+let PEGGY;
 
 /// RUN NODE COMMAND /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function ExecPeg() {
   try {
-    exec('FORCE_COLOR=1 node _ur/peggy.js', (error, stdout, stderr) => {
-      if (error) {
-        console.error('got error', error.toString());
-        process.exit();
-      }
-      if (stdout) {
-        OUT = stdout;
-        console.log(OUT);
-      }
-      if (stderr) {
-        console.error('***', stderr);
-      }
-    });
-  } catch (error) {
-    console.error(`Error: ${error.message}`);
+    PEGGY = fork('_ur/peggy.js');
+  } catch (err) {
+    console.log(err.toString());
   }
+  PEGGY.on('message', msg => {
+    console.log('peggy:', msg);
+  });
+  PEGGY.on('error', err => {
+    console.error('peggy:error:', err);
+  });
 }
 
 /// WEBSERVER STUFF ///////////////////////////////////////////////////////////

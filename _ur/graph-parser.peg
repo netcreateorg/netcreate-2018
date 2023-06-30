@@ -1,22 +1,54 @@
-start = file:Line* 
-
+{
+	function crunch(arr){
+        const pos = arr.length - 2;
+    	return arr.map(e=>e[pos]).join('')
+	}
+}
+Start
+  = Line*
+  / !.
+  
 Line
-  = head:Identifier WS+ tail:(Identifier WS*)* EOL {return `${head},${tail.join()}`}
-  / head:Identifier EOL { return head+'[IEOL]' }
-  / head:Identifier EOT { return head+'[IEOT]' }
-  / NL { return '' }
+  = Comment
+  / BlankLine
+  / Command
 
-Identifier 
-  = head:Letter tail:(Letter / Digit / "_")* { return `${head}${tail.join('')}`}
-Letter 
-  = [a-zA-Z]
-Digit 
-  = [0-9]
+Command
+  = _ node:Node _ NodeDL _ edge:(!EdgeDL .)+ _ tail:((!EdgeDL .)* _ ) {
+  	return { 
+      node: node.map(([,ch])=>ch).join(''),
+      edge: `[${edge.map(([,ch])=>ch).join('')}]`
+    } 
+  }
 
-EOL = WS* NL { return '[WS*NL]'}
-	/ WS* EOT { return '[WS*EOT]'}
-WS  = [ \t] { return '[WS]'}
-NL  = "\r\n" { return '[RN]' }
-	/ "\n" { return '[N]' }
-EOT = !. { return '[EOT]' }
+Node = name:(!NodeDL .)* {
+  return name
+}
 
+EdgeList
+  = edge:(!EdgeDL .)* EdgeDL { 
+    return {
+      edge
+    }
+  }
+
+NodeDL = ":"
+EdgeDL = ","
+
+BlankLine
+  = _ NL { return { blank:true }}
+
+Comment
+  = _ "//" _ cmt:(!NL .)* NL {
+      return { comment: crunch(cmt) }
+    }
+
+NL 
+  = "\r\n" / "\n" / "\r"
+  
+_ "opt whitespace"
+  = [ \t]*  
+
+{
+	return ""	
+}
