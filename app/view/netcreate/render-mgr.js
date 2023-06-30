@@ -48,7 +48,9 @@ MOD.Hook("INITIALIZE", () => {
  * Interprets VDATA into a simplified form for the renderer
  * @param {*} data NCDATA { nodes, edges }
  * @returns {Object} {
- *                     nodes: [ ...{id, label, size, color, opacity, strokeColor, strokeWidth, help}],
+ *                     nodes: [ ...{id, label, selected,
+ *                                  size, color, opacity, strokeColor, strokeWidth,
+ *                                  help}],
  *                     edges: [ ...{id, sourceId, targetId, size, color, opacity}]
  *                   }
  */
@@ -78,10 +80,11 @@ MOD.UpdateSelection = data => {
 function m_UpdateNodes(nodes) {
   const TEMPLATE = UDATA.AppState('TEMPLATE');
   const SELECTION = UDATA.AppState('SELECTION');
+  const HILITE = UDATA.AppState('HILITE');
   const SEARCH = UDATA.AppState('SEARCH');
   const selectedNodes = SELECTION.nodes ? SELECTION.nodes.map(n => n.id) : [];
-  const autosuggestHiliteNodeId = SELECTION.autosuggestHiliteNodeId;
-  const tableHiliteNodeId = SELECTION.tableHiliteNodeId;
+  const autosuggestHiliteNodeId = HILITE.autosuggestHiliteNodeId;
+  const tableHiliteNodeId = HILITE.tableHiliteNodeId;
   const foundNodes = SEARCH.suggestedNodes ? SEARCH.suggestedNodes.map(n => n.id) : [];
   const highlightStrokeColor = TEMPLATE.sourceColor;
   const foundStrokeColor = TEMPLATE.searchColor;
@@ -122,8 +125,8 @@ function m_UpdateNodes(nodes) {
 }
 function m_UpdateEdges(edges) {
   const TEMPLATE = UDATA.AppState('TEMPLATE');
-  const SELECTION = UDATA.AppState('SELECTION');
-  const { userHighlightNodeId } = SELECTION;
+  const HILITE = UDATA.AppState('HILITE');
+  const { userHighlightNodeId } = HILITE;
   return edges.map(e => {
     // FIXME: Just copy over relevant attributes, don't copy the whole object!!!!
     // width -- show full width unless mouse is over a node, in which case, do not show weight

@@ -71,6 +71,7 @@ class NCGraph extends UNISYS.Component {
     UDATA.OnAppStateChange('TEMPLATE', this.updateTemplate);
     UDATA.OnAppStateChange('COLORMAP', this.updateColorMap);
     UDATA.OnAppStateChange('SELECTION', this.updateSelection);
+    UDATA.OnAppStateChange('HILITE', this.updateSelection);
     UDATA.HandleMessage('CONSTRUCT_GRAPH', this.constructGraph);
   } // constructor
 
@@ -178,6 +179,7 @@ class NCGraph extends UNISYS.Component {
     UDATA.AppStateChangeOff('TEMPLATE', this.updateTemplate);
     UDATA.AppStateChangeOff('COLORMAP', this.updateColorMap);
     UDATA.AppStateChangeOff('SELECTION', this.updateSelection);
+    UDATA.AppStateChangeOff('HILITE', this.updateSelection);
     UDATA.UnhandleMessage('CONSTRUCT_GRAPH', this.constructGraph);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
