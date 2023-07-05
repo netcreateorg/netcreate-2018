@@ -1,0 +1,76 @@
+.ncnode {
+  border-radius: 15px;
+  padding: 8px;
+}
+
+.ncnode .nodelabel {
+  padding: 5px 10px;
+  font-size: 18px;
+  font-weight: bold;
+  overflow: hidden;
+}
+.ncnode .edgebutton {
+  background-color: #0003;
+  border-radius: 10px;
+  border-color: transparent;
+  width: 100%;
+  margin-bottom: 3px;
+  text-align: left;
+  overflow: hidden;
+}
+.ncnode .formview {
+  display: grid;
+  grid-template-columns: 70px auto;
+}
+.ncnode .formview label {
+  font-size: 10px;
+  line-height: 18px;
+  opacity: 0.7;
+  text-align: right;
+}
+.ncnode .formview div {
+  padding-left: 10px;
+  font-size: 16px;
+  text-align: left;
+  opacity: 1;
+}
+
+.ncnode .tabcontainer {
+}
+.ncnode .tabcontainer .tabselectors {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding-top: 3px;
+}
+.ncnode .tabcontainer .tabselectors button {
+  border: none;
+  color: #999;
+  background-color: transparent;
+  height: 25px;
+  font-size: 10px;
+  overflow: hidden;
+}
+.ncnode .tabcontainer .tabselectors button:hover {
+  background-color: #fff2;
+}
+.ncnode .tabcontainer .tabselectors button.selected {
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  color: #666;
+  background-color: #fff4;
+}
+.ncnode .tabcontainer .tabselectors button.selected:focus {
+  outline: none;
+}
+.ncnode .tabcontainer .tabview {
+  padding: 5px;
+  background-color: #fff4;
+}
+.ncnode .provenance label {
+  line-height: 12px;
+  margin-bottom: 0.25rem; /* override bootstrap */
+}
+.ncnode .provenance div {
+  font-size: 10px;
+  opacity: 0.7;
+}

@@ -47,6 +47,7 @@ const { Route } = require('react-router-dom');
 const ReactStrap = require('reactstrap');
 const { Button } = ReactStrap;
 const NetGraph = require('./components/NetGraph');
+const NCNode = require('./components/NCNode');
 const NCGraph = require('./components/NCGraph');
 const Search = require('./components/Search');
 const NodeSelector = require('./components/NodeSelector');
@@ -202,6 +203,7 @@ class NetCreate extends UNISYS.Component {
           >
             <div style={{ display: 'flex', flexFlow: 'column nowrap' }}>
               <Search />
+              <NCNode />
               <NodeSelector />
             </div>
           </div>
