@@ -10,7 +10,7 @@
       |-- NumberFilter
       |-- SelectFilter
 
-  FiltersPanel reads data directly from FDATA.
+  FiltersPanel reads data directly from FILTERDEFS.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -23,7 +23,7 @@ const ReactStrap = require('reactstrap');
 const { Button, ButtonGroup, Input, Label, FormGroup } = ReactStrap;
 
 const UNISYS = require('unisys/client');
-var UDATA  = null;
+var UDATA = null;
 
 /// CLASS /////////////////////////////////////////////////////////////////////
 class FiltersPanel extends UNISYS.Component {
@@ -39,23 +39,23 @@ class FiltersPanel extends UNISYS.Component {
     UDATA = UNISYS.NewDataLink(this);
 
     // Load Templates
-    // The intial `OnAppStateChange("FDATA")` event when the template is
+    // The intial `OnAppStateChange("FILTERDEFS")` event when the template is
     // first loaded is called well before FiltersPanel is
     // even constructed.  So we need to explicitly load it here.
-    const FDATA = UDATA.AppState("FDATA");
+    const FILTERDEFS = UDATA.AppState('FILTERDEFS');
     this.state = {
-      nodes: FDATA.nodes,
-      edges: FDATA.edges,
+      nodes: FILTERDEFS.nodes,
+      edges: FILTERDEFS.edges,
       filterAction: FILTER.ACTION.FADE,
       focusSourceLabel: undefined,
       focusRange: undefined
     };
-    UDATA.OnAppStateChange("FDATA", this.UpdateFilterDefs);
+    UDATA.OnAppStateChange('FILTERDEFS', this.UpdateFilterDefs);
   } // constructor
 
   componentWillUnmount() {
     // console.error('TBD: gracefully unsubscribe!')
-    UDATA.AppStateChangeOff("FDATA", this.UpdateFilterDefs);
+    UDATA.AppStateChangeOff('FILTERDEFS', this.UpdateFilterDefs);
   }
 
   UpdateFilterDefs(data) {
@@ -65,19 +65,22 @@ class FiltersPanel extends UNISYS.Component {
         edges: data.edges,
         filterAction: data.filterAction || state.filterAction,
         filterActionHelp: data.filterActionHelp || state.filterActionHelp,
-        focusSourceLabel: data.focus && data.focus.sourceLabel ? `"${data.focus.sourceLabel}"` : "<nothing selected>",
+        focusSourceLabel:
+          data.focus && data.focus.sourceLabel
+            ? `"${data.focus.sourceLabel}"`
+            : '<nothing selected>',
         focusRange: data.focus && data.focus.range ? data.focus.range : undefined
-      }
+      };
     });
   }
 
   LookupFilterHelp(filterAction) {
-    const TEMPLATE = UDATA.AppState("TEMPLATE");
+    const TEMPLATE = UDATA.AppState('TEMPLATE');
     if (filterAction === FILTER.ACTION.FADE) return TEMPLATE.filterFadeHelp;
     //if (filterAction === FILTER.ACTION.FILTER) return FILTER.ACTION.HELP.FILTER; // FIX: Remove this once we decide we don't want to support Filter/hide
     if (filterAction === FILTER.ACTION.REDUCE) return TEMPLATE.filterReduceHelp;
     if (filterAction === FILTER.ACTION.FOCUS) return TEMPLATE.filterFocusHelp;
-    return "Help not found";
+    return 'Help not found';
   }
 
   OnClearBtnClick() {
@@ -85,7 +88,7 @@ class FiltersPanel extends UNISYS.Component {
   }
 
   SelectFilterAction(filterAction) {
-    const TEMPLATE = UDATA.AppState("TEMPLATE");
+    const TEMPLATE = UDATA.AppState('TEMPLATE');
     this.setState({ filterAction });
     UDATA.LocalCall('FILTERS_UPDATE', { filterAction });
   }
@@ -95,7 +98,7 @@ class FiltersPanel extends UNISYS.Component {
     const defs = [this.state.nodes, this.state.edges];
 
     // Can we assume TEMPLATE is already loaded by the time we render?
-    const TEMPLATE = UDATA.AppState("TEMPLATE");
+    const TEMPLATE = UDATA.AppState('TEMPLATE');
 
     const labelFade = TEMPLATE.filterFade;
     const labelReduce = TEMPLATE.filterReduce;
@@ -105,32 +108,40 @@ class FiltersPanel extends UNISYS.Component {
 
     let FilterControlPanel;
     if (filterAction === FILTER.ACTION.FOCUS) {
-      FilterControlPanel = <FocusFilter
-        filter={{ value: 0 }}
-        focusSourceLabel={focusSourceLabel}
-        focusRange={focusRange}
-    />;
+      FilterControlPanel = (
+        <FocusFilter
+          filter={{ value: 0 }}
+          focusSourceLabel={focusSourceLabel}
+          focusRange={focusRange}
+        />
+      );
     } else {
-      FilterControlPanel = defs.map(def => <FilterGroup
-        key={def.label}
-        group={def.group}
-        label={def.label}
-        filters={def.filters}
-        filterAction={filterAction}
-        transparency={def.transparency}
-        onFiltersChange={this.OnFilterChange}
-      />);
-     }
+      FilterControlPanel = defs.map(def => (
+        <FilterGroup
+          key={def.label}
+          group={def.group}
+          label={def.label}
+          filters={def.filters}
+          filterAction={filterAction}
+          transparency={def.transparency}
+          onFiltersChange={this.OnFilterChange}
+        />
+      ));
+    }
 
     return (
-      <div className="filterPanel"
+      <div
+        className="filterPanel"
         style={{
           overflow: 'hidden',
-          margin: '6px 0', padding: '5px',
-          display: 'flex', flexDirection: 'column',
+          margin: '6px 0',
+          padding: '5px',
+          display: 'flex',
+          flexDirection: 'column',
           backgroundColor: '#EEE',
           zIndex: '2000'
-        }}>
+        }}
+      >
         <ButtonGroup>
           <Button
             onClick={() => this.SelectFilterAction(FILTER.ACTION.FADE)}
@@ -139,9 +150,12 @@ class FiltersPanel extends UNISYS.Component {
             disabled={filterAction === FILTER.ACTION.FADE}
             style={{
               color: filterAction === FILTER.ACTION.FADE ? '#333' : '#fff',
-              backgroundColor: filterAction === FILTER.ACTION.FADE ? 'transparent' : '#6c757d88'
+              backgroundColor:
+                filterAction === FILTER.ACTION.FADE ? 'transparent' : '#6c757d88'
             }}
-          >{labelFade}</Button>
+          >
+            {labelFade}
+          </Button>
           {/* Hide "Filter" panel.  We will probably remove this functionality.
           <Button
             onClick={() => this.SelectFilterAction(FILTER.ACTION.FILTER)}
@@ -159,10 +173,13 @@ class FiltersPanel extends UNISYS.Component {
             outline={filterAction === FILTER.ACTION.REDUCE}
             disabled={filterAction === FILTER.ACTION.REDUCE}
             style={{
-              color: filterAction === FILTER.ACTION.REDUCE? '#333' : '#fff',
-              backgroundColor: filterAction === FILTER.ACTION.REDUCE? 'transparent' : '#6c757d88'
+              color: filterAction === FILTER.ACTION.REDUCE ? '#333' : '#fff',
+              backgroundColor:
+                filterAction === FILTER.ACTION.REDUCE ? 'transparent' : '#6c757d88'
             }}
-          >{labelReduce}</Button>
+          >
+            {labelReduce}
+          </Button>
           <Button
             onClick={() => this.SelectFilterAction(FILTER.ACTION.FOCUS)}
             active={filterAction === FILTER.ACTION.FOCUS}
@@ -170,26 +187,36 @@ class FiltersPanel extends UNISYS.Component {
             disabled={filterAction === FILTER.ACTION.FOCUS}
             style={{
               color: filterAction === FILTER.ACTION.FOCUS ? '#333' : '#fff',
-              backgroundColor: filterAction === FILTER.ACTION.FOCUS ? 'transparent' : '#6c757d88'
+              backgroundColor:
+                filterAction === FILTER.ACTION.FOCUS ? 'transparent' : '#6c757d88'
             }}
-          >{labelFocus}</Button>
+          >
+            {labelFocus}
+          </Button>
         </ButtonGroup>
-        <Label className="small text-muted" style={{ padding: '0.5em 0 0 0.5em', marginBottom: '0' }}>
+        <Label
+          className="small text-muted"
+          style={{ padding: '0.5em 0 0 0.5em', marginBottom: '0' }}
+        >
           {filterActionHelp}
         </Label>
-        <div style={{
-          display: 'flex', flexDirection: 'column', flexGrow: `1`,
-          overflowY: 'scroll'
-        }}>
-          <div>
-            {FilterControlPanel}
-          </div>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            flexGrow: `1`,
+            overflowY: 'scroll'
+          }}
+        >
+          <div>{FilterControlPanel}</div>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-evenly', padding: '5px' }}>
-          <Button size="sm" onClick={this.OnClearBtnClick} >Clear Filters</Button>
+          <Button size="sm" onClick={this.OnClearBtnClick}>
+            Clear Filters
+          </Button>
         </div>
       </div>
-    )
+    );
   }
 }
 

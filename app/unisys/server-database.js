@@ -449,6 +449,11 @@ async function m_LoadTemplate() {
     needs to be moved here!
 /*/
 function m_MigrateTemplate() {
+  // 2023-0628 BASE Defaults -- these should have been previously defined
+  if (TEMPLATE.searchColor === undefined)
+    TEMPLATE.searchColor = TEMPLATE_SCHEMA.TEMPLATE.properties.searchColor.default;
+  if (TEMPLATE.sourceColor === undefined)
+    TEMPLATE.sourceColor = TEMPLATE_SCHEMA.TEMPLATE.properties.sourceColor.default;
   // 2023-0602 Filter Labels
   // See branch `dev-bl/template-filter-labels`, and fb28fa68ee42deffc778c1be013acea7dae85258
   if (TEMPLATE.filterFade === undefined)
@@ -553,8 +558,7 @@ DB.PKT_GetDatabase = function (pkt) {
   if (DBG)
     console.log(
       PR,
-      `PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${
-        edges.length
+      `PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${edges.length
       } edges)`
     );
   m_MigrateNodes(nodes);
@@ -870,8 +874,7 @@ DB.PKT_Update = function (pkt) {
       if (!updatedNode)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
-            node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'insert', node: updatedNode };
@@ -892,8 +895,7 @@ DB.PKT_Update = function (pkt) {
       if (!updatedNode)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
-            node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'update', node: updatedNode };
@@ -933,8 +935,7 @@ DB.PKT_Update = function (pkt) {
       if (!updatedEdge)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
-            node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'insert', edge: updatedEdge };
@@ -957,8 +958,7 @@ DB.PKT_Update = function (pkt) {
       if (!updatedEdge)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
-            node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'update', edge: updatedEdge };

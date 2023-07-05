@@ -1,5 +1,11 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+
+    DEPRECATED -- NCGraphRenderer replaces d3-simplenetgraph
+
+
+
+
     D3 Simple NetGraph
 
     This uses D3 Version 4.0.

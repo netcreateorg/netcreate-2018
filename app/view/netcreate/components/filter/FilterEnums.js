@@ -8,7 +8,7 @@ FILTER.PANEL_LABEL = 'VIEWS';
 FILTER.ACTION = {};
 FILTER.ACTION.FADE = 'FADE';
 FILTER.ACTION.FILTER = 'FILTERING'; // FIX: Remove this after we decide to remove FILTER/HIDE
-FILTER.ACTION.REDUCE= 'REMOVE';
+FILTER.ACTION.REDUCE = 'REMOVE';
 FILTER.ACTION.FOCUS = 'FOCUS';
 
 // Types of filters definable in template files.
@@ -16,8 +16,8 @@ FILTER.TYPES = {};
 FILTER.TYPES.STRING = 'string';
 FILTER.TYPES.NUMBER = 'number';
 FILTER.TYPES.SELECT = 'select';
-FILTER.TYPES.NODE   = 'node'; // edge source / target
-FILTER.TYPES.DATE   = 'date';
+FILTER.TYPES.NODE = 'node'; // edge source / target
+FILTER.TYPES.DATE = 'date';
 FILTER.TYPES.HIDDEN = 'hidden';
 
 // Special Edge Keys mapped to node objects
@@ -30,7 +30,7 @@ FILTER.KEY.TARGET = "target";
 FILTER.OPERATORS = {};
 
 // key needs to match the OPERATOR name for lookup purposes
-// in filter-logic.js
+// in filter-mgr.js
 FILTER.OPERATORS.NO_OP = { key: "NO_OP", label: "--" };
 FILTER.OPERATORS.CONTAINS = { key: "CONTAINS", label: "contains" };
 FILTER.OPERATORS.NOT_CONTAINS = { key: "NOT_CONTAINS", label: "does not contain" };
@@ -52,8 +52,8 @@ Filter UDATA Messages
 Affects ALL Filters
 ===================
 
-  FDATA           AppState
-                  Sets the FDATA data object
+  FILTERDEFS      AppState
+                  Sets the FILTERDEFS data object
                   Triggers AppStateChange
 
   FILTER_CLEAR    Message / LocalCall
