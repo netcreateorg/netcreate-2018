@@ -16,7 +16,7 @@
     The data is:
       data = { nodes, edges }
       nodes = [ ...{id, label, selected,
-                    size, color, opacity, strokeColor, strokeWidth, help}],
+                    size, color, opacity, strokeColor, strokeWidth, textColor, help}],
       edges = [ ...{id, sourceId, targetId, size, color, opacity}]
 
     This uses D3 Version 4.0.
@@ -423,7 +423,7 @@ class NCGraphRenderer {
     nodeElements
       .merge(nodeElements)
       .selectAll('text')
-      .attr('fill', d => d.strokeColor)
+      .attr('fill', d => d.textColor)
       // .attr('stroke', d => d.strokeColor) // stroke overlaps on text
       // .attr('stroke-width', '0.5px') // stroke overlaps on text
       .attr('font-weight', d => {

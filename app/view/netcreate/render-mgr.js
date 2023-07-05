@@ -101,21 +101,26 @@ function m_UpdateNodes(nodes) {
     n.size = Math.min(TEMPLATE.nodeSizeDefault + n.degrees, TEMPLATE.nodeSizeMax);
     n.selected = false;
     if (isAutosuggestHilited) {
+      n.textColor = '#ccc';
       n.strokeColor = '#ccc';
       n.strokeWidth = '8px';
     } else if (isTabletHilited) {
+      n.textColor = '#ccc';
       n.strokeColor = '#ccc';
       n.strokeWidth = '8px';
     } else if (isSelected) {
       // n.shape = 'rectangle';
+      n.textColor = highlightStrokeColor;
       n.strokeColor = highlightStrokeColor;
       n.strokeWidth = '5px';
     } else if (isFound) {
+      n.textColor = foundStrokeColor;
       n.strokeColor = foundStrokeColor;
       n.strokeWidth = '5px';
     } else {
-      n.strokeColor = undefined;
-      n.strokeWidth = undefined;
+      n.textColor = '#333';
+      n.strokeColor = '#fff'; // default to white border
+      n.strokeWidth = '3px';
     }
     if (isSelected) {
       n.selected = true; // selection state can be displayed simultaneously with hilite
