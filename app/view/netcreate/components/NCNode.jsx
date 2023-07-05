@@ -37,6 +37,7 @@ class NCNode extends UNISYS.Component {
     this.updateSelection = this.updateSelection.bind(this);
     this.loadNode = this.loadNode.bind(this);
     this.loadEdges = this.loadEdges.bind(this);
+    this.loadAttributes = this.loadAttributes.bind(this);
     this.uiSelectTab = this.uiSelectTab.bind(this);
     this.renderView = this.renderView.bind(this);
     this.renderEdit = this.renderEdit.bind(this);
@@ -93,12 +94,7 @@ class NCNode extends UNISYS.Component {
       this.clearSelection();
       return;
     }
-    // REVIEW: Does ui-mgr define this mapping?  Or do we read it from the template?
-    const attributes = {
-      type: node.type,
-      notes: node.notes,
-      info: node.info
-    };
+    const attributes = this.loadAttributes(node);
     this.setState(
       {
         id: node.id,
@@ -135,11 +131,41 @@ class NCNode extends UNISYS.Component {
     });
     this.setState({ edges: linkedEdges });
   }
+  /**
+   * Loads up the `attributes` object defined by the TEMPLATE
+   * Will skip attributes that are `hidden` by the template
+   * REVIEW: Currently the parameters will show up in random object order.
+   * @param {Object} node
+   * @returns {Object} { ...attr-key: attr-value }
+   */
+  loadAttributes(node) {
+    const NODEDEFS = UDATA.AppState('TEMPLATE').nodeDefs;
+    const BUILTIN_FIELDS = [
+      'id',
+      'label',
+      'provenance',
+      'created',
+      'updated',
+      'revision'
+    ];
+    const attributes = {};
+    Object.keys(NODEDEFS).forEach(k => {
+      if (BUILTIN_FIELDS.includes(k)) return; // skip built-in fields
+      const attr_def = NODEDEFS[k];
+      if (attr_def.hidden) return; // skip hidden fields
+      attributes[k] = node[k];
+    });
+    return attributes;
+  }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// HELPER METHODS
+  /**
+   * Sets the background color of the node editor via `backgroundColor` state.
+   * Currently the background color is determined by the template node type
+   * color mapping.  This will eventually be replaced with a color manager.
+   */
   setBackgroundColor() {
-    // This will eventually be replaced with a proper color manager
     const { attributes } = this.state;
     const type = attributes ? attributes.type : undefined;
     if (!type) return;
@@ -207,9 +233,10 @@ class NCNode extends UNISYS.Component {
   }
   renderAttributesTab() {
     const { id, attributes } = this.state;
+    const NODEDEFS = UDATA.AppState('TEMPLATE').nodeDefs;
     const items = [];
     Object.keys(attributes).forEach(k => {
-      items.push(this.renderLabel(id, k));
+      items.push(this.renderLabel(id, NODEDEFS[k].displayLabel));
       items.push(this.renderStringValue(id, k, attributes[k]));
     });
     return <div className="formview">{items}</div>;
