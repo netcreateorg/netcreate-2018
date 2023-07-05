@@ -459,6 +459,7 @@ class NCGraphRenderer {
       .classed('edge', true)
       .style('stroke', e => e.color)
       .style('stroke-width', e => e.width)
+      .style('stroke-linecap', 'round')
       // Edge selection disabled.
       // .on("click",   (d) => {
       //   if (DBG) console.log('clicked on',d.label,d.id)
@@ -472,6 +473,7 @@ class NCGraphRenderer {
       // .classed("selected", e => e.selected) // is this used?
       .style('stroke', e => e.color)
       .style('stroke-width', e => e.width)
+      .style('stroke-linecap', 'round')
       .transition()
       .duration(500)
       .style('opacity', e => e.opacity);
