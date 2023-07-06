@@ -19,6 +19,7 @@ const PR = 'NCNode';
 const React = require('react');
 const UNISYS = require('unisys/client');
 const EDGEMGR = require('../edge-mgr'); // handles edge synthesis
+const { EDITORTYPE } = require('system/util/enum');
 
 let UDATA;
 const BUILTIN_FIELDS = [
@@ -49,12 +50,15 @@ class NCNode extends UNISYS.Component {
     super(props);
 
     this.state = {
-      allowedToEdit: false
+      isLoggedIn: false
     }; // initialized on componentDidMount and clearSelection
 
     // STATE MANAGEMENT
     this.resetState = this.resetState.bind(this);
     this.updateSession = this.updateSession.bind(this);
+    this.setPermissions = this.setPermissions.bind(this);
+    this.updatePermissions = this.updatePermissions.bind(this);
+
     // EVENT HANDLERS
     this.checkUnload = this.checkUnload.bind(this);
     this.doUnload = this.doUnload.bind(this);
@@ -96,6 +100,7 @@ class NCNode extends UNISYS.Component {
     /// REGISTER LISTENERS
     UDATA.OnAppStateChange('SESSION', this.updateSession);
     UDATA.OnAppStateChange('SELECTION', this.updateSelection);
+    UDATA.HandleMessage('EDIT_PERMISSIONS_UPDATE', this.setPermissions);
   }
 
   componentDidMount() {
@@ -104,7 +109,9 @@ class NCNode extends UNISYS.Component {
     window.addEventListener('unload', this.doUnload);
   }
   componentWillUnmount() {
+    UDATA.AppStateChangeOff('SESSION', this.updateSession);
     UDATA.AppStateChangeOff('SELECTION', this.updateSelection);
+    UDATA.UnhandleMessage('EDIT_PERMISSIONS_UPDATE', this.setPermissions);
     window.removeEventListener('beforeunload', this.checkUnload);
     window.removeEventListener('unload', this.doUnload);
   }
@@ -115,12 +122,17 @@ class NCNode extends UNISYS.Component {
   resetState() {
     this.setState({
       // SYSTEM STATE
-      // allowedToEdit: false, // don't clear session state!
+      // isLoggedIn: false, // don't clear session state!
       // UI State
+      editBtnDisable: false,
+      editBtnHide: false,
       viewMode: VIEWMODE.VIEW,
       selectedTab: TABS.ATTRIBUTES,
       backgroundColor: 'transparent',
-      dbIsLocked: false, // shows db lock message next to Edit Node button
+      isLockedByDB: false, // shows db lock message next to Edit Node button
+      isLockedByTemplate: false,
+      isLockedByImport: false,
+      editLockMessage: '',
       // NODE DEFS
       id: null,
       label: '',
@@ -149,8 +161,8 @@ class NCNode extends UNISYS.Component {
 
   doUnload(event) {
     if (this.state.viewMode === VIEWMODE.EDIT) {
-      this.NetCall('SRV_DBUNLOCKNODE', { nodeID: this.state.id });
-      // this.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.NODE });
+      UDATA.NetCall('SRV_DBUNLOCKNODE', { nodeID: this.state.id });
+      UDATA.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.NODE });
     }
   }
 
@@ -164,7 +176,40 @@ class NCNode extends UNISYS.Component {
    * SessionShell.componentWillMount()
    */
   updateSession(decoded) {
-    this.setState({ allowedToEdit: decoded.isValid });
+    this.setState({ isLoggedIn: decoded.isValid });
+  }
+  setPermissions(data) {
+    const { id } = this.state;
+    const nodeIsLocked = data.lockedNodes.includes(id);
+    this.setState(
+      {
+        isLockedByDB: nodeIsLocked,
+        isLockedByTemplate: data.templateBeingEdited,
+        isLockedByImport: data.importActive
+      },
+      () => this.updatePermissions()
+    );
+  }
+  updatePermissions() {
+    const { isLoggedIn, isLockedByDB, isLockedByTemplate, isLockedByImport } = this.state;
+    const TEMPLATE = UDATA.AppState('TEMPLATE');
+    let editLockMessage = '';
+    let editBtnDisable = false;
+    let editBtnHide = true;
+    if (isLoggedIn) editBtnHide = false;
+    if (isLockedByDB) {
+      editBtnDisable = true;
+      editLockMessage += TEMPLATE.nodeIsLockedMessage;
+    }
+    if (isLockedByTemplate) {
+      editBtnDisable = true;
+      editLockMessage += TEMPLATE.templateIsLockedMessage;
+    }
+    if (isLockedByImport) {
+      editBtnDisable = true;
+      editLockMessage += TEMPLATE.importIsLockedMessage;
+    }
+    this.setState({ editBtnDisable, editBtnHide, editLockMessage });
   }
 
   clearSelection() {
@@ -206,9 +251,12 @@ class NCNode extends UNISYS.Component {
         this.setBackgroundColor();
         this.loadEdges(node.id);
         this.isNodeLocked(nodeIsLocked => {
-          this.setState({
-            dbIsLocked: nodeIsLocked
-          });
+          this.setState(
+            {
+              isLockedByDB: nodeIsLocked
+            },
+            () => this.updatePermissions()
+          );
         });
       }
     );
@@ -271,6 +319,8 @@ class NCNode extends UNISYS.Component {
         console.log(`SERVER SAYS: lock success! you can edit Node ${data.nodeID}`);
         console.log(`SERVER SAYS: unlock the node after successful DBUPDATE`);
         lockSuccess = true;
+        // When a node is being edited, lock the Template from being edited
+        UDATA.NetCall('SRV_REQ_EDIT_LOCK', { editor: EDITORTYPE.NODE });
       }
       if (typeof cb === 'function') cb(lockSuccess);
     });
@@ -284,6 +334,8 @@ class NCNode extends UNISYS.Component {
       } else if (data.unlocked) {
         console.log(`SERVER SAYS: unlock success! you have released Node ${data.nodeID}`);
         unlockSuccess = true;
+        // Release Template lock
+        UDATA.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.NODE });
       }
       if (typeof cb === 'function') cb(unlockSuccess);
     });
@@ -318,7 +370,7 @@ class NCNode extends UNISYS.Component {
       this.unlockNode(() => {
         this.setState({
           viewMode: VIEWMODE.VIEW,
-          dbIsLocked: false
+          isLockedByDB: false
         });
       });
     });
@@ -352,7 +404,7 @@ class NCNode extends UNISYS.Component {
    */
   uiRequestEditNode() {
     this.lockNode(lockSuccess => {
-      this.setState({ dbIsLocked: !lockSuccess }, () => {
+      this.setState({ isLockedByDB: !lockSuccess }, () => {
         if (lockSuccess) this.enableEditMode();
       });
     });
@@ -363,12 +415,13 @@ class NCNode extends UNISYS.Component {
   }
 
   uiDisableEditMode() {
-    this.unlockNode(() =>
+    this.unlockNode(() => {
       this.setState({
         viewMode: VIEWMODE.VIEW,
-        dbIsLocked: false
-      })
-    );
+        isLockedByDB: false
+      });
+      UDATA.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.NODE });
+    });
   }
 
   uiStringInputUpdate(event) {
@@ -411,9 +464,14 @@ class NCNode extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// RENDER METHODS
   renderView() {
-    const { selectedTab, backgroundColor, allowedToEdit, dbIsLocked, label } = this.state;
-    const TEMPLATE = UDATA.AppState('TEMPLATE');
-    const nodeIsLockedMessage = TEMPLATE.nodeIsLockedMessage;
+    const {
+      selectedTab,
+      backgroundColor,
+      editBtnDisable,
+      editBtnHide,
+      editLockMessage,
+      label
+    } = this.state;
     const bgcolor = backgroundColor + '44'; // hack opacity
     return (
       <div className="ncnode">
@@ -431,15 +489,17 @@ class NCNode extends UNISYS.Component {
           </div>
           {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
           <div className="controlbar">
-            {allowedToEdit && selectedTab !== TABS.EDGES && (
-              <button id="editbtn" onClick={this.uiRequestEditNode} disabled={dbIsLocked}>
+            {!editBtnHide && selectedTab !== TABS.EDGES && (
+              <button
+                id="editbtn"
+                onClick={this.uiRequestEditNode}
+                disabled={editBtnDisable}
+              >
                 Edit
               </button>
             )}
           </div>
-          {allowedToEdit && dbIsLocked && (
-            <div className="message warning">{nodeIsLockedMessage}</div>
-          )}
+          {editLockMessage && <div className="message warning">{editLockMessage}</div>}
         </div>
       </div>
     );

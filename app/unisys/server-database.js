@@ -1265,7 +1265,8 @@ DB.RegenerateDefaultTemplate = () => {
 /**
  * Returns object with flags indicating whether the template is being edited,
  * data is being imported, or node or edge are being edited
- * @returns {templateBeingEdited:boolean, importActive:boolean, nodeOrEdgeBeingEdited:boolean}
+ * @returns {templateBeingEdited:boolean, importActive:boolean, nodeOrEdgeBeingEdited:boolean,
+ *           lockedNodes:array, lockedEdges:array }
  */
 DB.GetEditStatus = () => {
   // If there are any 'template' open editors, then templateBeingEdited is true
@@ -1277,7 +1278,11 @@ DB.GetEditStatus = () => {
     m_open_editors.length > 0 &&
     (m_open_editors.includes(EDITORTYPE.NODE) ||
       m_open_editors.includes(EDITORTYPE.EDGE));
-  return { templateBeingEdited, importActive, nodeOrEdgeBeingEdited };
+  return {
+    templateBeingEdited, importActive, nodeOrEdgeBeingEdited,
+    lockedNodes: [...m_locked_nodes.keys()],
+    lockedEdges: [...m_locked_edges.keys()]
+  };
 };
 /**
  * Register a template, import, node or edge as being actively edited.
