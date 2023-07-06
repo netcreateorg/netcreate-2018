@@ -559,7 +559,7 @@ class NCGraphRenderer {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Apply new force properties
-    Call this on construct and if forceProperties have changed.
+      Call this on construct and if forceProperties have changed.
   /*/
   UpdateForces() {
     this.simulation

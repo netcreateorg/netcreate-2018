@@ -544,15 +544,14 @@ class EdgeEditor extends UNISYS.Component {
   /// UDATA STATE HANDLERS //////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ When the user is creating a new node, they need to set a target node.
-    The target node is set via an AutoComplete field.
-    When a node is selected via the AutoComplete field, the SELECTION state is updated.
-    So EdgeEditor needs to listen to the SELECTION state in order to
-    know the target node has been selected.
-    SELECTION is also triggered when the network updates an edge.
+      The target node is set via an AutoComplete field.
+      When a node is selected via the AutoComplete field, the SELECTION state is updated.
+      So EdgeEditor needs to listen to the SELECTION state in order to
+      know the target node has been selected.
+      SELECTION is also triggered when the network updates an edge.
   /*/
   handleSelection(data) {
     if (DBG) console.log('EdgeEditor', this.props.edgeID, 'got SELECTION data', data);
-
     // If we're one of the edges that have been updated, and we're not currently being edited,
     // then update the data.
     // If we're not currently being edited, then if edges have been updated, update self
