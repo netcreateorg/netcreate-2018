@@ -2,6 +2,13 @@
 
     Prototype Simple NetCreate Node Editor
 
+    Data is currently in a transitional state.
+    Currently all properties are saved in a flat list.
+    Eventually we might want to differentiate between
+    built-in properties (e.g. id, created), and template-defined custom
+    `attributes`.  There is an awkward translation between these two
+    representations during data load, update, and save.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const DBG = false;
@@ -14,7 +21,15 @@ const UNISYS = require('unisys/client');
 const EDGEMGR = require('../edge-mgr'); // handles edge synthesis
 
 let UDATA;
-
+const BUILTIN_FIELDS = [
+  'id',
+  'label',
+  'provenance',
+  'degrees',
+  'created',
+  'updated',
+  'revision'
+];
 const VIEWMODE = {
   EDIT: 'edit',
   VIEW: 'view'
@@ -35,18 +50,33 @@ class NCNode extends UNISYS.Component {
 
     this.clearSelection = this.clearSelection.bind(this);
     this.updateSelection = this.updateSelection.bind(this);
+
     this.loadNode = this.loadNode.bind(this);
     this.loadEdges = this.loadEdges.bind(this);
     this.loadAttributes = this.loadAttributes.bind(this);
+    this.updateLockState = this.lockNode.bind(this);
+    this.unlockNode = this.unlockNode.bind(this);
+    this.saveNode = this.saveNode.bind(this);
+
     this.uiSelectTab = this.uiSelectTab.bind(this);
+    this.uiRequestEditNode = this.uiRequestEditNode.bind(this);
+    this.enableEditMode = this.enableEditMode.bind(this);
+    this.uiDisableEditMode = this.uiDisableEditMode.bind(this);
+    this.uiStringInputUpdate = this.uiStringInputUpdate.bind(this);
+    this.uiNumberInputUpdate = this.uiNumberInputUpdate.bind(this);
+    this.uiSelectInputUpdate = this.uiSelectInputUpdate.bind(this);
+
     this.renderView = this.renderView.bind(this);
     this.renderEdit = this.renderEdit.bind(this);
     this.renderTabSelectors = this.renderTabSelectors.bind(this);
-    this.renderAttributesTab = this.renderAttributesTab.bind(this);
+    this.renderAttributesTabView = this.renderAttributesTabView.bind(this);
+    this.renderAttributesTabEdit = this.renderAttributesTabEdit.bind(this);
     this.renderEdgesTab = this.renderEdgesTab.bind(this);
     this.renderProvenanceTab = this.renderProvenanceTab.bind(this);
     this.renderLabel = this.renderLabel.bind(this);
     this.renderStringValue = this.renderStringValue.bind(this);
+    this.renderStringInput = this.renderStringInput.bind(this);
+    this.renderNumberInput = this.renderNumberInput.bind(this);
 
     /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
@@ -67,9 +97,11 @@ class NCNode extends UNISYS.Component {
   /// EVENT HANDLERS
   clearSelection() {
     this.setState({
+      // UI State
       viewMode: VIEWMODE.VIEW,
       selectedTab: TABS.ATTRIBUTES,
       backgroundColor: 'transparent',
+      dbIsLocked: false,
       // NODE DEFS
       id: null,
       label: '',
@@ -89,6 +121,7 @@ class NCNode extends UNISYS.Component {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// DATA LOADING
+  ///
   loadNode(node) {
     if (!node) {
       this.clearSelection();
@@ -108,6 +141,11 @@ class NCNode extends UNISYS.Component {
       () => {
         this.setBackgroundColor();
         this.loadEdges(node.id);
+        this.isNodeLocked(nodeIsLocked => {
+          this.setState({
+            dbIsLocked: nodeIsLocked
+          });
+        });
       }
     );
   }
@@ -133,21 +171,15 @@ class NCNode extends UNISYS.Component {
   }
   /**
    * Loads up the `attributes` object defined by the TEMPLATE
-   * Will skip attributes that are `hidden` by the template
+   * Will skip
+   *   * BUILTIN fields
+   *   * attributes that are `hidden` by the template
    * REVIEW: Currently the parameters will show up in random object order.
    * @param {Object} node
    * @returns {Object} { ...attr-key: attr-value }
    */
   loadAttributes(node) {
     const NODEDEFS = UDATA.AppState('TEMPLATE').nodeDefs;
-    const BUILTIN_FIELDS = [
-      'id',
-      'label',
-      'provenance',
-      'created',
-      'updated',
-      'revision'
-    ];
     const attributes = {};
     Object.keys(NODEDEFS).forEach(k => {
       if (BUILTIN_FIELDS.includes(k)) return; // skip built-in fields
@@ -156,6 +188,76 @@ class NCNode extends UNISYS.Component {
       attributes[k] = node[k];
     });
     return attributes;
+  }
+
+  /**
+   * Tries to lock the node for editing.
+   * If the lock fails, then it means the node was already locked
+   * previously and we're not allowed to edit
+   * @param {function} cb callback function
+   * @returns {boolean} true if lock was successful
+   */
+  lockNode(cb) {
+    const { id } = this.state;
+    let lockSuccess = false;
+    UDATA.NetCall('SRV_DBLOCKNODE', { nodeID: id }).then(data => {
+      if (data.NOP) {
+        console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
+      } else if (data.locked) {
+        console.log(`SERVER SAYS: lock success! you can edit Node ${data.nodeID}`);
+        console.log(`SERVER SAYS: unlock the node after successful DBUPDATE`);
+        lockSuccess = true;
+      }
+      if (typeof cb === 'function') cb(lockSuccess);
+    });
+  }
+  unlockNode(cb) {
+    const { id } = this.state;
+    let unlockSuccess = false;
+    UDATA.NetCall('SRV_DBUNLOCKNODE', { nodeID: id }).then(data => {
+      if (data.NOP) {
+        console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
+      } else if (data.unlocked) {
+        console.log(`SERVER SAYS: unlock success! you have released Node ${data.nodeID}`);
+        unlockSuccess = true;
+      }
+      if (typeof cb === 'function') cb(unlockSuccess);
+    });
+  }
+  isNodeLocked(cb) {
+    const { id } = this.state;
+    let nodeIsLocked = false;
+    UDATA.NetCall('SRV_DBISNODELOCKED', { nodeID: id }).then(data => {
+      if (data.NOP) {
+        console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
+      } else if (data.locked) {
+        console.log(`SERVER SAYS: Node is locked! You cannot edit Node ${data.nodeID}`);
+        nodeIsLocked = true;
+      }
+      if (typeof cb === 'function') cb(nodeIsLocked);
+    });
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// DATA SAVING
+  ///
+  saveNode() {
+    const { id, label, attributes, provenance, created, updated, revision } = this.state;
+
+    const node = { id, label, provenance, created, updated, revision };
+    Object.keys(attributes).forEach(k => (node[k] = attributes[k]));
+
+    // write data to database
+    // setting dbWrite to true will distinguish this update
+    // from a remote one
+    this.AppCall('DB_UPDATE', { node }).then(() => {
+      this.unlockNode(() => {
+        this.setState({
+          viewMode: VIEWMODE.VIEW,
+          dbIsLocked: false
+        });
+      });
+    });
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -175,38 +277,144 @@ class NCNode extends UNISYS.Component {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UI EVENT HANDLERS
+
   uiSelectTab(event) {
     this.setState({ selectedTab: event.target.value });
+  }
+
+  /**
+   * If `lockNode` is not successful, then that means the node was
+   * already locked, so we can't edit.
+   */
+  uiRequestEditNode() {
+    this.lockNode(lockSuccess => {
+      this.setState({ dbIsLocked: !lockSuccess }, () => {
+        if (lockSuccess) this.enableEditMode();
+      });
+    });
+  }
+
+  enableEditMode() {
+    this.setState({ viewMode: VIEWMODE.EDIT });
+  }
+
+  uiDisableEditMode() {
+    this.unlockNode(() =>
+      this.setState({
+        viewMode: VIEWMODE.VIEW,
+        dbIsLocked: false
+      })
+    );
+  }
+
+  uiStringInputUpdate(event) {
+    const nodeDefKey = event.target.id;
+    if (BUILTIN_FIELDS.includes(nodeDefKey)) {
+      data[nodeDefKey] = event.target.value;
+      const data = {};
+      this.setState(data);
+    } else {
+      const { attributes } = this.state;
+      attributes[nodeDefKey] = event.target.value;
+      this.setState({ attributes });
+    }
+  }
+  uiNumberInputUpdate(event) {
+    const nodeDefKey = event.target.id;
+    if (BUILTIN_FIELDS.includes(nodeDefKey)) {
+      data[nodeDefKey] = Number(event.target.value);
+      const data = {};
+      this.setState(data);
+    } else {
+      const { attributes } = this.state;
+      attributes[nodeDefKey] = Number(event.target.value);
+      this.setState({ attributes });
+    }
+  }
+  uiSelectInputUpdate(event) {
+    const nodeDefKey = event.target.id;
+    if (BUILTIN_FIELDS.includes(nodeDefKey)) {
+      data[nodeDefKey] = event.target.value;
+      const data = {};
+      this.setState(data);
+    } else {
+      const { attributes } = this.state;
+      attributes[nodeDefKey] = event.target.value;
+      this.setState({ attributes });
+    }
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// RENDER METHODS
   renderView() {
-    const { selectedTab, backgroundColor, id, label } = this.state;
+    const { selectedTab, backgroundColor, dbIsLocked, label } = this.state;
+    const TEMPLATE = UDATA.AppState('TEMPLATE');
+    const nodeIsLockedMessage = TEMPLATE.nodeIsLockedMessage;
     const bgcolor = backgroundColor + '33'; // hack opacity
     return (
-      <div
-        className="ncnode view"
-        style={{
-          background: bgcolor
-        }}
-      >
-        {/* BUILT-IN - - - - - - - - - - - - - - - - - */}
-        <div className="nodelabel">{this.renderStringValue(id, 'LABEL', label)}</div>
-        {/* TABS - - - - - - - - - - - - - - - - - - - */}
-        <div className="tabcontainer">
-          {this.renderTabSelectors()}
-          <div className="tabview">
-            {selectedTab === TABS.ATTRIBUTES && this.renderAttributesTab()}
-            {selectedTab === TABS.EDGES && this.renderEdgesTab()}
-            {selectedTab === TABS.PROVENANCE && this.renderProvenanceTab()}
+      <div className="ncnode">
+        <div
+          className="view"
+          style={{
+            background: bgcolor
+          }}
+        >
+          {/* BUILT-IN - - - - - - - - - - - - - - - - - */}
+          <div className="nodelabel">{this.renderStringValue('label', label)}</div>
+          {/* TABS - - - - - - - - - - - - - - - - - - - */}
+          <div className="tabcontainer">
+            {this.renderTabSelectors()}
+            <div className="tabview">
+              {selectedTab === TABS.ATTRIBUTES && this.renderAttributesTabView()}
+              {selectedTab === TABS.EDGES && this.renderEdgesTab()}
+              {selectedTab === TABS.PROVENANCE && this.renderProvenanceTab()}
+            </div>
           </div>
+          {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
+          <div className="controlbar">
+            <button id="editbtn" onClick={this.uiRequestEditNode} disabled={dbIsLocked}>
+              Edit Node
+            </button>
+          </div>
+          {dbIsLocked && <div className="message warning">{nodeIsLockedMessage}</div>}
         </div>
       </div>
     );
   }
 
-  renderEdit() {}
+  renderEdit() {
+    const { selectedTab, backgroundColor, id, label } = this.state;
+    const bgcolor = backgroundColor + '33'; // hack opacity
+    return (
+      <div className="ncnode">
+        <div
+          className="edit"
+          style={{
+            background: bgcolor
+          }}
+        >
+          {/* BUILT-IN - - - - - - - - - - - - - - - - - */}
+          <div className="nodelabel">{this.renderStringInput('label', label)}</div>
+          {/* TABS - - - - - - - - - - - - - - - - - - - */}
+          <div className="tabcontainer">
+            {this.renderTabSelectors()}
+            <div className="tabview">
+              {selectedTab === TABS.ATTRIBUTES && this.renderAttributesTabEdit()}
+              {selectedTab === TABS.EDGES && this.renderEdgesTab()}
+              {selectedTab === TABS.PROVENANCE && this.renderProvenanceTab()}
+            </div>
+          </div>
+          {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
+          <div className="controlbar">
+            <button className="cancelbtn" onClick={this.uiDisableEditMode}>
+              Cancel
+            </button>
+            <button onClick={this.saveNode}>Save</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// RENDER HELPERS
@@ -231,13 +439,36 @@ class NCNode extends UNISYS.Component {
       </div>
     );
   }
-  renderAttributesTab() {
+  renderAttributesTabView() {
     const { id, attributes } = this.state;
     const NODEDEFS = UDATA.AppState('TEMPLATE').nodeDefs;
     const items = [];
     Object.keys(attributes).forEach(k => {
-      items.push(this.renderLabel(id, NODEDEFS[k].displayLabel));
-      items.push(this.renderStringValue(id, k, attributes[k]));
+      items.push(this.renderLabel(k, NODEDEFS[k].displayLabel));
+      items.push(this.renderStringValue(k, attributes[k]));
+    });
+    return <div className="formview">{items}</div>;
+  }
+  renderAttributesTabEdit() {
+    const { id, attributes } = this.state;
+    const NODEDEFS = UDATA.AppState('TEMPLATE').nodeDefs;
+    const items = [];
+    Object.keys(attributes).forEach(k => {
+      items.push(this.renderLabel(k, NODEDEFS[k].displayLabel));
+      const type = NODEDEFS[k].type;
+      switch (type) {
+        case 'string':
+          items.push(this.renderStringInput(k, attributes[k]));
+          break;
+        case 'number':
+          items.push(this.renderNumberInput(k, attributes[k]));
+          break;
+        case 'select':
+          items.push(this.renderOptionsInput(k, attributes[k]));
+          break;
+        default:
+          items.push(this.renderStringValue(k, attributes[k])); // display unsupported type
+      }
     });
     return <div className="formview">{items}</div>;
   }
@@ -274,32 +505,75 @@ class NCNode extends UNISYS.Component {
     );
   }
   renderProvenanceTab() {
-    const { id, provenance, created, updated, revision } = this.state;
+    const { provenance, degrees, created, updated, revision } = this.state;
+    const NODEDEFS = UDATA.AppState('TEMPLATE').nodeDefs;
     return (
       <div className="provenance formview">
-        {this.renderLabel(id, 'PROVENANCE')}
-        {this.renderStringValue(id, 'PROVENANCE', provenance)}
-        {this.renderLabel(id, 'CREATED')}
-        {this.renderStringValue(id, 'CREATED', created)}
-        {this.renderLabel(id, 'UPDATED')}
-        {this.renderStringValue(id, 'UPDATED', updated)}
-        {this.renderLabel(id, 'REVISION')}
-        {this.renderStringValue(id, 'REVISION', revision)}
+        {this.renderLabel('provenancelabel', NODEDEFS.provenance.displayLabel)}
+        {this.renderStringValue('provenancelabel', provenance)}
+        {this.renderLabel('createdlabel', NODEDEFS.created.displayLabel)}
+        {this.renderStringValue('createdlabel', created)}
+        {this.renderLabel('updatedlabel', NODEDEFS.updated.displayLabel)}
+        {this.renderStringValue('updatedlabel', updated)}
+        {this.renderLabel('revisionlabel', NODEDEFS.revision.displayLabel)}
+        {this.renderStringValue('revisionlabel', revision)}
+        {this.renderLabel('degreeslabel', NODEDEFS.degrees.displayLabel)}
+        {this.renderStringValue('degreeslabel', degrees)}
       </div>
     );
   }
-  renderLabel(id, label) {
+  renderLabel(nodeDefKey, label) {
     return (
-      <label htmlFor={`${id}.${label}`} key={`${id}.${label}label`}>
+      <label htmlFor={nodeDefKey} key={`${nodeDefKey}label`}>
         {label}
       </label>
     );
   }
-  renderStringValue(id, label, value) {
+  renderStringValue(nodeDefKey, value) {
     return (
-      <div id={`${id}.${label}`} key={`${id}.${label}value`}>
+      <div id={nodeDefKey} key={`${nodeDefKey}value`}>
         {value}
       </div>
+    );
+  }
+  renderStringInput(nodeDefKey, value) {
+    return (
+      <input
+        id={nodeDefKey}
+        key={`${nodeDefKey}input`}
+        value={value}
+        type="string"
+        onChange={this.uiStringInputUpdate}
+      />
+    );
+  }
+  renderNumberInput(nodeDefKey, value) {
+    return (
+      <input
+        id={nodeDefKey}
+        key={`${nodeDefKey}input`}
+        value={value}
+        type="number"
+        onChange={this.uiNumberInputUpdate}
+      />
+    );
+  }
+  renderOptionsInput(nodeDefKey, value) {
+    const NODEDEFS = UDATA.AppState('TEMPLATE').nodeDefs;
+    const options = NODEDEFS[nodeDefKey].options;
+    return (
+      <select
+        id={nodeDefKey}
+        key={`${nodeDefKey}select`}
+        value={value}
+        onChange={this.uiSelectInputUpdate}
+      >
+        {options.map(o => (
+          <option key={o.label} value={o.label}>
+            {o.label}
+          </option>
+        ))}
+      </select>
     );
   }
 
