@@ -381,7 +381,7 @@ class NCNode extends UNISYS.Component {
     } else {
       const { attributes } = this.state;
       attributes[nodeDefKey] = event.target.value;
-      this.setState({ attributes });
+      this.setState({ attributes }, () => this.setBackgroundColor());
     }
   }
   uiNumberInputUpdate(event) {
@@ -393,7 +393,7 @@ class NCNode extends UNISYS.Component {
     } else {
       const { attributes } = this.state;
       attributes[nodeDefKey] = Number(event.target.value);
-      this.setState({ attributes });
+      this.setState({ attributes }, () => this.setBackgroundColor());
     }
   }
   uiSelectInputUpdate(event) {
@@ -405,7 +405,7 @@ class NCNode extends UNISYS.Component {
     } else {
       const { attributes } = this.state;
       attributes[nodeDefKey] = event.target.value;
-      this.setState({ attributes });
+      this.setState({ attributes }, () => this.setBackgroundColor());
     }
   }
 
