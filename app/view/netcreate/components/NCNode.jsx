@@ -350,7 +350,7 @@ class NCNode extends UNISYS.Component {
     const { selectedTab, backgroundColor, dbIsLocked, label } = this.state;
     const TEMPLATE = UDATA.AppState('TEMPLATE');
     const nodeIsLockedMessage = TEMPLATE.nodeIsLockedMessage;
-    const bgcolor = backgroundColor + '33'; // hack opacity
+    const bgcolor = backgroundColor + '44'; // hack opacity
     return (
       <div className="ncnode">
         <div
@@ -384,13 +384,14 @@ class NCNode extends UNISYS.Component {
 
   renderEdit() {
     const { selectedTab, backgroundColor, id, label } = this.state;
-    const bgcolor = backgroundColor + '33'; // hack opacity
+    const bgcolor = backgroundColor + '66'; // hack opacity
     return (
       <div className="ncnode">
         <div
           className="edit"
           style={{
-            background: bgcolor
+            background: bgcolor,
+            borderColor: backgroundColor
           }}
         >
           {/* BUILT-IN - - - - - - - - - - - - - - - - - */}
