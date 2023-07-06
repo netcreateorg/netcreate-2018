@@ -1,6 +1,18 @@
+.screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #0003;
+  z-index: 1;
+}
+
 .ncnode {
   background-color: #fff; /* knock out gray body bg */
   border-radius: 15px;
+  position: relative;
+  z-index: 10;
 }
 
 /* HTML Components */

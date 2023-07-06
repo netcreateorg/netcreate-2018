@@ -51,6 +51,7 @@ class NCNode extends UNISYS.Component {
     this.state = {
       allowedToEdit: false
     }; // initialized on componentDidMount and clearSelection
+
     // STATE MANAGEMENT
     this.resetState = this.resetState.bind(this);
     this.updateSession = this.updateSession.bind(this);
@@ -431,9 +432,9 @@ class NCNode extends UNISYS.Component {
           </div>
           {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
           <div className="controlbar">
-            {allowedToEdit && (
+            {allowedToEdit && selectedTab !== TABS.EDGES && (
               <button id="editbtn" onClick={this.uiRequestEditNode} disabled={dbIsLocked}>
-                Edit Node
+                Edit
               </button>
             )}
           </div>
@@ -449,31 +450,34 @@ class NCNode extends UNISYS.Component {
     const { selectedTab, backgroundColor, id, label } = this.state;
     const bgcolor = backgroundColor + '66'; // hack opacity
     return (
-      <div className="ncnode">
-        <div
-          className="edit"
-          style={{
-            background: bgcolor,
-            borderColor: backgroundColor
-          }}
-        >
-          {/* BUILT-IN - - - - - - - - - - - - - - - - - */}
-          <div className="nodelabel">{this.renderStringInput('label', label)}</div>
-          {/* TABS - - - - - - - - - - - - - - - - - - - */}
-          <div className="tabcontainer">
-            {this.renderTabSelectors()}
-            <div className="tabview">
-              {selectedTab === TABS.ATTRIBUTES && this.renderAttributesTabEdit()}
-              {selectedTab === TABS.EDGES && this.renderEdgesTab()}
-              {selectedTab === TABS.PROVENANCE && this.renderProvenanceTab()}
+      <div>
+        <div className="screen"></div>
+        <div className="ncnode">
+          <div
+            className="edit"
+            style={{
+              background: bgcolor,
+              borderColor: backgroundColor
+            }}
+          >
+            {/* BUILT-IN - - - - - - - - - - - - - - - - - */}
+            <div className="nodelabel">{this.renderStringInput('label', label)}</div>
+            {/* TABS - - - - - - - - - - - - - - - - - - - */}
+            <div className="tabcontainer">
+              {this.renderTabSelectors()}
+              <div className="tabview">
+                {selectedTab === TABS.ATTRIBUTES && this.renderAttributesTabEdit()}
+                {selectedTab === TABS.EDGES && this.renderEdgesTab()}
+                {selectedTab === TABS.PROVENANCE && this.renderProvenanceTab()}
+              </div>
             </div>
-          </div>
-          {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
-          <div className="controlbar">
-            <button className="cancelbtn" onClick={this.uiDisableEditMode}>
-              Cancel
-            </button>
-            <button onClick={this.saveNode}>Save</button>
+            {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
+            <div className="controlbar">
+              <button className="cancelbtn" onClick={this.uiDisableEditMode}>
+                Cancel
+              </button>
+              <button onClick={this.saveNode}>Save</button>
+            </div>
           </div>
         </div>
       </div>
@@ -483,7 +487,7 @@ class NCNode extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// RENDER HELPERS
   renderTabSelectors() {
-    const { selectedTab } = this.state;
+    const { selectedTab, viewMode } = this.state;
     return (
       <div className="tabselectors">
         {Object.keys(TABS).map(k => {
@@ -495,6 +499,7 @@ class NCNode extends UNISYS.Component {
               className={selectedTab === TABS[k] ? 'selected' : ''}
               onClick={this.uiSelectTab}
               value={TABS[k]}
+              disabled={viewMode === VIEWMODE.EDIT}
             >
               {TABS[k]}
             </button>
@@ -648,8 +653,9 @@ class NCNode extends UNISYS.Component {
     if (!id) return ''; // nothing selected
     if (viewMode === VIEWMODE.VIEW) {
       return this.renderView();
+    } else {
+      return this.renderEdit();
     }
-    return this.renderEdit();
   }
 }
 
