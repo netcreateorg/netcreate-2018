@@ -349,8 +349,8 @@ class NCNode extends UNISYS.Component {
   uiStringInputUpdate(event) {
     const nodeDefKey = event.target.id;
     if (BUILTIN_FIELDS.includes(nodeDefKey)) {
-      data[nodeDefKey] = event.target.value;
       const data = {};
+      data[nodeDefKey] = event.target.value;
       this.setState(data);
     } else {
       const { attributes } = this.state;
@@ -361,8 +361,8 @@ class NCNode extends UNISYS.Component {
   uiNumberInputUpdate(event) {
     const nodeDefKey = event.target.id;
     if (BUILTIN_FIELDS.includes(nodeDefKey)) {
-      data[nodeDefKey] = Number(event.target.value);
       const data = {};
+      data[nodeDefKey] = Number(event.target.value);
       this.setState(data);
     } else {
       const { attributes } = this.state;
@@ -373,8 +373,8 @@ class NCNode extends UNISYS.Component {
   uiSelectInputUpdate(event) {
     const nodeDefKey = event.target.id;
     if (BUILTIN_FIELDS.includes(nodeDefKey)) {
-      data[nodeDefKey] = event.target.value;
       const data = {};
+      data[nodeDefKey] = event.target.value;
       this.setState(data);
     } else {
       const { attributes } = this.state;
