@@ -125,10 +125,18 @@ class NCNode extends UNISYS.Component {
   /// DATA LOADING
   ///
   loadNode(node) {
+    const { viewMode } = this.state;
+
+    // If we're editing, ignore the select!
+    if (viewMode === VIEWMODE.EDIT) return;
+
+    // If no node was selected, deselect
     if (!node) {
       this.clearSelection();
       return;
     }
+
+    // Load the node
     const attributes = this.loadAttributes(node);
     this.setState(
       {
