@@ -113,7 +113,6 @@ class NCNode extends UNISYS.Component {
   /// STATE MANAGEMENT
   ///
   resetState() {
-    console.error('reset state');
     this.setState({
       // SYSTEM STATE
       // allowedToEdit: false, // don't clear session state!
@@ -525,18 +524,19 @@ class NCNode extends UNISYS.Component {
     Object.keys(attributes).forEach(k => {
       items.push(this.renderLabel(k, NODEDEFS[k].displayLabel));
       const type = NODEDEFS[k].type;
+      const value = attributes[k] || ''; // catch `undefined` or React will complain about changing from uncontrolled to controlled
       switch (type) {
         case 'string':
-          items.push(this.renderStringInput(k, attributes[k]));
+          items.push(this.renderStringInput(k, value));
           break;
         case 'number':
-          items.push(this.renderNumberInput(k, attributes[k]));
+          items.push(this.renderNumberInput(k, value));
           break;
         case 'select':
-          items.push(this.renderOptionsInput(k, attributes[k]));
+          items.push(this.renderOptionsInput(k, value));
           break;
         default:
-          items.push(this.renderStringValue(k, attributes[k])); // display unsupported type
+          items.push(this.renderStringValue(k, value)); // display unsupported type
       }
     });
     return <div className="formview">{items}</div>;
