@@ -48,6 +48,8 @@ class NCNode extends UNISYS.Component {
   constructor(props) {
     super(props);
 
+    this.state = {}; // initialized on componentDidMount and clearSelection
+
     this.clearSelection = this.clearSelection.bind(this);
     this.updateSelection = this.updateSelection.bind(this);
 
@@ -86,7 +88,7 @@ class NCNode extends UNISYS.Component {
     UDATA.OnAppStateChange('SELECTION', this.updateSelection);
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.clearSelection(); // Initialize State
   }
   componentWillUnmount() {
