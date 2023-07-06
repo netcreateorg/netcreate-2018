@@ -14,7 +14,7 @@ Start
 Line
   = BlankLine
   / Comment
-  / Command2
+  / Command
 
 BlankLine
   = NL { return { blank:true }}
@@ -25,15 +25,7 @@ Comment
   }
 
 Command
-  = node:Node edges:(!NL .)* NL {
-  	return { 
-      node,
-      edges
-    } 
-  }
-
-Command2
-  = node:Node edges:EdgeList2  {
+  = node:Node edges:EdgeList {
   	return { 
       node,
       edges
@@ -41,12 +33,6 @@ Command2
   }
 
 EdgeList
-  = list:(!NL .)* { 
-      // return the entire list of edgenames as string with , in them
-      return list.map(e=>e[1]).join('');
-  }
-
-EdgeList2
   = req:(!EdgeDL !NL .)+ NL { return [req.map(e=>e[2]).join('')] }
   / req:(!EdgeDL .)+ opt:(EdgeDL (!EdgeDL !NL .)*)* NL {
     let terms = [];
