@@ -51,20 +51,22 @@ class NCNode extends UNISYS.Component {
     this.state = {
       allowedToEdit: false
     }; // initialized on componentDidMount and clearSelection
-
+    // STATE MANAGEMENT
     this.resetState = this.resetState.bind(this);
     this.updateSession = this.updateSession.bind(this);
-
+    // EVENT HANDLERS
+    this.checkUnload = this.checkUnload.bind(this);
+    this.doUnload = this.doUnload.bind(this);
     this.clearSelection = this.clearSelection.bind(this);
     this.updateSelection = this.updateSelection.bind(this);
-
+    // DATA LOADING
     this.loadNode = this.loadNode.bind(this);
     this.loadEdges = this.loadEdges.bind(this);
     this.loadAttributes = this.loadAttributes.bind(this);
     this.updateLockState = this.lockNode.bind(this);
     this.unlockNode = this.unlockNode.bind(this);
     this.saveNode = this.saveNode.bind(this);
-
+    // UI HANDLERS
     this.uiSelectTab = this.uiSelectTab.bind(this);
     this.uiRequestEditNode = this.uiRequestEditNode.bind(this);
     this.enableEditMode = this.enableEditMode.bind(this);
@@ -72,9 +74,10 @@ class NCNode extends UNISYS.Component {
     this.uiStringInputUpdate = this.uiStringInputUpdate.bind(this);
     this.uiNumberInputUpdate = this.uiNumberInputUpdate.bind(this);
     this.uiSelectInputUpdate = this.uiSelectInputUpdate.bind(this);
-
+    // RENDERERS -- Main
     this.renderView = this.renderView.bind(this);
     this.renderEdit = this.renderEdit.bind(this);
+    // RENDER HELPERS
     this.renderTabSelectors = this.renderTabSelectors.bind(this);
     this.renderAttributesTabView = this.renderAttributesTabView.bind(this);
     this.renderAttributesTabEdit = this.renderAttributesTabEdit.bind(this);
@@ -96,9 +99,13 @@ class NCNode extends UNISYS.Component {
 
   componentDidMount() {
     this.clearSelection(); // Initialize State
+    window.addEventListener('beforeunload', this.checkUnload);
+    window.addEventListener('unload', this.doUnload);
   }
   componentWillUnmount() {
     UDATA.AppStateChangeOff('SELECTION', this.updateSelection);
+    window.removeEventListener('beforeunload', this.checkUnload);
+    window.removeEventListener('unload', this.doUnload);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -129,6 +136,24 @@ class NCNode extends UNISYS.Component {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// EVENT HANDLERS
+  ///
+  checkUnload(event) {
+    event.preventDefault();
+    if (this.state.viewMode === VIEWMODE.EDIT) {
+      (event || window.event).returnValue = null;
+    } else {
+      Reflect.deleteProperty(event, 'returnValue');
+    }
+    return event;
+  }
+
+  doUnload(event) {
+    if (this.state.viewMode === VIEWMODE.EDIT) {
+      this.NetCall('SRV_DBUNLOCKNODE', { nodeID: this.state.id });
+      // this.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.NODE });
+    }
+  }
+
   /**
    * Handle change in SESSION data
    * SESSION is called by SessionSHell when the ID changes
