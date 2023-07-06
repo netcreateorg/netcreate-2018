@@ -48,7 +48,12 @@ class NCNode extends UNISYS.Component {
   constructor(props) {
     super(props);
 
-    this.state = {}; // initialized on componentDidMount and clearSelection
+    this.state = {
+      allowedToEdit: false
+    }; // initialized on componentDidMount and clearSelection
+
+    this.resetState = this.resetState.bind(this);
+    this.updateSession = this.updateSession.bind(this);
 
     this.clearSelection = this.clearSelection.bind(this);
     this.updateSelection = this.updateSelection.bind(this);
@@ -85,6 +90,7 @@ class NCNode extends UNISYS.Component {
 
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     /// REGISTER LISTENERS
+    UDATA.OnAppStateChange('SESSION', this.updateSession);
     UDATA.OnAppStateChange('SELECTION', this.updateSelection);
   }
 
@@ -96,14 +102,18 @@ class NCNode extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// EVENT HANDLERS
-  clearSelection() {
+  /// STATE MANAGEMENT
+  ///
+  resetState() {
+    console.error('reset state');
     this.setState({
+      // SYSTEM STATE
+      // allowedToEdit: false, // don't clear session state!
       // UI State
       viewMode: VIEWMODE.VIEW,
       selectedTab: TABS.ATTRIBUTES,
       backgroundColor: 'transparent',
-      dbIsLocked: false,
+      dbIsLocked: false, // shows db lock message next to Edit Node button
       // NODE DEFS
       id: null,
       label: '',
@@ -115,6 +125,25 @@ class NCNode extends UNISYS.Component {
       // EDGES
       edges: []
     });
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// EVENT HANDLERS
+  /**
+   * Handle change in SESSION data
+   * SESSION is called by SessionSHell when the ID changes
+   * set system-wide. data: { classId, projId, hashedId, groupId, isValid }
+   * Called both by componentWillMount() and AppStateChange handler.
+   * The 'SESSION' state change is triggered in two places in SessionShell during
+   * its handleChange() when active typing is occuring, and also during
+   * SessionShell.componentWillMount()
+   */
+  updateSession(decoded) {
+    this.setState({ allowedToEdit: decoded.isValid });
+  }
+
+  clearSelection() {
+    this.resetState();
   }
   updateSelection(data) {
     const node = data.nodes[0]; // select the first node
@@ -357,18 +386,13 @@ class NCNode extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// RENDER METHODS
   renderView() {
-    const { selectedTab, backgroundColor, dbIsLocked, label } = this.state;
+    const { selectedTab, backgroundColor, allowedToEdit, dbIsLocked, label } = this.state;
     const TEMPLATE = UDATA.AppState('TEMPLATE');
     const nodeIsLockedMessage = TEMPLATE.nodeIsLockedMessage;
     const bgcolor = backgroundColor + '44'; // hack opacity
     return (
       <div className="ncnode">
-        <div
-          className="view"
-          style={{
-            background: bgcolor
-          }}
-        >
+        <div className="view" style={{ background: bgcolor }}>
           {/* BUILT-IN - - - - - - - - - - - - - - - - - */}
           <div className="nodelabel">{this.renderStringValue('label', label)}</div>
           {/* TABS - - - - - - - - - - - - - - - - - - - */}
@@ -382,11 +406,15 @@ class NCNode extends UNISYS.Component {
           </div>
           {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
           <div className="controlbar">
-            <button id="editbtn" onClick={this.uiRequestEditNode} disabled={dbIsLocked}>
-              Edit Node
-            </button>
+            {allowedToEdit && (
+              <button id="editbtn" onClick={this.uiRequestEditNode} disabled={dbIsLocked}>
+                Edit Node
+              </button>
+            )}
           </div>
-          {dbIsLocked && <div className="message warning">{nodeIsLockedMessage}</div>}
+          {allowedToEdit && dbIsLocked && (
+            <div className="message warning">{nodeIsLockedMessage}</div>
+          )}
         </div>
       </div>
     );
