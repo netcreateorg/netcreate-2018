@@ -176,6 +176,11 @@ UNISYS.RegisterHandlers = () => {
     return UDB.PKT_RequestUnlockNode(pkt);
   });
 
+  UNET.HandleMessage('SRV_DBISNODELOCKED', function (pkt) {
+    if (DBG) console.log(PR, sprint_message(pkt));
+    return UDB.PKT_IsNodeLocked(pkt);
+  });
+
   UNET.HandleMessage('SRV_DBLOCKEDGE', function (pkt) {
     if (DBG) console.log(PR, sprint_message(pkt));
     return UDB.PKT_RequestLockEdge(pkt);

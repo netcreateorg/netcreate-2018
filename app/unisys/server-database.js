@@ -759,6 +759,16 @@ DB.PKT_RequestUnlockNode = function (pkt) {
   return m_MakeLockError(`nodeID ${nodeID} was not locked so can't unlock`);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DB.PKT_IsNodeLocked = function (pkt) {
+  let { nodeID } = pkt.Data();
+  const uaddr = pkt.s_uaddr;
+  let errcode = m_IsInvalidNode(nodeID);
+  if (errcode) return errcode;
+  // check if node is already locked
+  const isLocked = m_locked_nodes.has(nodeID);
+  return { nodeID, locked: isLocked };
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_IsInvalidNode(nodeID) {
   if (!nodeID) return m_MakeLockError(`undefined nodeID`);
   nodeID = Number.parseInt(nodeID, 10);
