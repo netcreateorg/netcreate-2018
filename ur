@@ -24,7 +24,7 @@ let PEGGY;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function ExecPeg() {
   try {
-    PEGGY = fork('_ur/peggy.js');
+    PEGGY = fork('_ur/x-peggy.js');
   } catch (err) {
     console.log(err.toString());
   }

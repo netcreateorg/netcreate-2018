@@ -1,54 +1,73 @@
 {
-	function crunch(arr){
-        const pos = arr.length - 2;
-    	return arr.map(e=>e[pos]).join('')
-	}
+  const DQUO='"';
+  const SQUO="'";
+  function stripQuotes(str) {
+    if (str.startsWith(DQUO) && str.endsWith(DQUO)) return str.slice(1,-1);
+    if (str.startsWith(SQUO) && str.endsWith(SQUO)) return str.slice(1,-1);
+    return str;
+  }
 }
+
 Start
-  = Line*
-  / !.
-  
+  = content:Line* !. { return content }
+
 Line
-  = Comment
-  / BlankLine
-  / Command
+  = BlankLine
+  / Comment
+  / Command2
+
+BlankLine
+  = NL { return { blank:true }}
+
+Comment
+  = "//" _ cmt:(!NL .)* NL {
+    return { comment: cmt.map(e=>e[1]).join('') }
+  }
 
 Command
-  = _ node:Node _ NodeDL _ edge:(!EdgeDL .)+ _ tail:((!EdgeDL .)* _ ) {
+  = node:Node edges:(!NL .)* NL {
   	return { 
-      node: node.map(([,ch])=>ch).join(''),
-      edge: `[${edge.map(([,ch])=>ch).join('')}]`
+      node,
+      edges
     } 
   }
 
-Node = name:(!NodeDL .)* {
-  return name
-}
-
-EdgeList
-  = edge:(!EdgeDL .)* EdgeDL { 
-    return {
-      edge
-    }
+Command2
+  = node:Node edges:EdgeList2  {
+  	return { 
+      node,
+      edges
+    } 
   }
 
-NodeDL = ":"
-EdgeDL = ","
+EdgeList
+  = list:(!NL .)* { 
+      // return the entire list of edgenames as string with , in them
+      return list.map(e=>e[1]).join('');
+  }
 
-BlankLine
-  = _ NL { return { blank:true }}
-
-Comment
-  = _ "//" _ cmt:(!NL .)* NL {
-      return { comment: crunch(cmt) }
-    }
-
-NL 
-  = "\r\n" / "\n" / "\r"
+EdgeList2
+  = req:(!EdgeDL !NL .)+ NL { return [req.map(e=>e[2]).join('')] }
+  / req:(!EdgeDL .)+ opt:(EdgeDL (!EdgeDL !NL .)*)* NL {
+    let terms = [];
+    // first term
+    terms.push(req.map(arg=>arg[1]).join('')); 
+    // additional terms that matched
+    opt.forEach(match=>{
+      // match is [string,array<array>]]
+      let term = match[1].map(chs=>chs[2]).join('');
+      term = stripQuotes(term);
+      terms.push(term);
+    });
+    return terms;
+  }
   
+Node 
+  = name:(!NodeDL .)* NodeDL { return name.map(e=>e[1]).join('') }
+
+NodeDL = ':'
+EdgeDL = ','
+
+NL = "\r\n" / "\n" / "\r"  
 _ "opt whitespace"
   = [ \t]*  
-
-{
-	return ""	
-}
