@@ -602,14 +602,18 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3D
     return e.id === targetId;
   });
 
+  // 0. First set default transparency
+  // restore default transparency, otherwise it could remain faded out
+  edge.filteredTransparency = EDGE_DEFAULT_TRANSPARENCY; // opaque
+
   // 1. If source or target are missing, then remove the edge
-  if (source === undefined || target === undefined ) return false;
+  if (source === undefined || target === undefined) return false;
 
   // 2. If source or target have been removed via collapse or focus, remove the edge
   if (RemovedNodes.includes(source.id) || RemovedNodes.includes(target.id)) return false;
   // 3. if source or target is transparent, then we are transparent too
-  if ( source.filteredTransparency < 1.0 ||
-       target.filteredTransparency < 1.0) {
+  if (source.filteredTransparency < 1.0 ||
+    target.filteredTransparency < 1.0) {
     // regardless of filter definition...
     // ...if filterAction is FILTER
     // always hide edge if it's attached to a filtered node
@@ -642,8 +646,6 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDD3D
   } else if (filterAction === FILTER.ACTION.FADE) {
     if (!keepEdge) {
       edge.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
-    } else {
-      edge.filteredTransparency = EDGE_DEFAULT_TRANSPARENCY; // opaque
     }
     return true; // always keep in array
   } else if (filterAction === FILTER.ACTION.REDUCE) {
