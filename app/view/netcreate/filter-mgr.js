@@ -602,6 +602,10 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDNCD
     return e.id === targetId;
   });
 
+  // 0. First set default transparency
+  // restore default transparency, otherwise it could remain faded out
+  edge.filteredTransparency = EDGE_DEFAULT_TRANSPARENCY; // opaque
+
   // 1. If source or target are missing, then remove the edge
   if (source === undefined || target === undefined) return false;
 
@@ -642,8 +646,6 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDNCD
   } else if (filterAction === FILTER.ACTION.FADE) {
     if (!keepEdge) {
       edge.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
-    } else {
-      edge.filteredTransparency = EDGE_DEFAULT_TRANSPARENCY; // opaque
     }
     return true; // always keep in array
   } else if (filterAction === FILTER.ACTION.REDUCE) {
