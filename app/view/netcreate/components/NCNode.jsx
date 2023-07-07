@@ -549,11 +549,13 @@ class NCNode extends UNISYS.Component {
   }
 
   renderEdit() {
-    const { selectedTab, backgroundColor, matchingNodeLabels, id, label } = this.state;
+    const { selectedTab, backgroundColor, matchingNodeLabels, label } = this.state;
     const bgcolor = backgroundColor + '66'; // hack opacity
     const matchList = matchingNodeLabels
       ? matchingNodeLabels.map(l => <div key={l}>{l}</div>)
       : undefined;
+    const duplicateWarning = UDATA.AppState('TEMPLATE').duplicateWarning;
+    const isDuplicate = matchingNodeLabels && matchingNodeLabels.includes(label);
     return (
       <div>
         <div className="screen"></div>
@@ -567,7 +569,12 @@ class NCNode extends UNISYS.Component {
           >
             {/* BUILT-IN - - - - - - - - - - - - - - - - - */}
             <div className="nodelabel">{this.renderLabelInput('label', label)}</div>
-            {matchList && <div className="matchlist">{matchList}</div>}
+            {matchList && (
+              <div className="matchlist">
+                {isDuplicate && <div className="message warning">{duplicateWarning}</div>}
+                {matchList}
+              </div>
+            )}
             {/* TABS - - - - - - - - - - - - - - - - - - - */}
             <div className="tabcontainer">
               {this.renderTabSelectors()}
