@@ -101,6 +101,7 @@ class NCNode extends UNISYS.Component {
     this.uiSelectTab = this.uiSelectTab.bind(this);
     this.uiRequestEditNode = this.uiRequestEditNode.bind(this);
     this.enableEditMode = this.enableEditMode.bind(this);
+    this.uiCancelEditMode = this.uiCancelEditMode.bind(this);
     this.uiDisableEditMode = this.uiDisableEditMode.bind(this);
     this.uiStringInputUpdate = this.uiStringInputUpdate.bind(this);
     this.uiLabelInputUpdate = this.uiLabelInputUpdate.bind(this);
@@ -154,6 +155,7 @@ class NCNode extends UNISYS.Component {
     this.setState({
       // SYSTEM STATE
       // isLoggedIn: false, // don't clear session state!
+      previousState: {},
       // UI State
       editBtnDisable: false,
       editBtnHide: false,
@@ -440,7 +442,26 @@ class NCNode extends UNISYS.Component {
   }
 
   enableEditMode() {
-    this.setState({ viewMode: VIEWMODE.EDIT });
+    const { label, attributes, provenance } = this.state;
+    const previousState = {
+      label,
+      attributes: Object.assign({}, attributes),
+      provenance: Object.assign({}, provenance)
+    };
+    this.setState({ viewMode: VIEWMODE.EDIT, previousState });
+  }
+
+  uiCancelEditMode() {
+    const { previousState } = this.state;
+    // restore previous state
+    this.setState(
+      {
+        label: previousState.label,
+        attributes: previousState.attributes,
+        provenance: previousState.provenance
+      },
+      () => this.uiDisableEditMode()
+    );
   }
 
   uiDisableEditMode() {
@@ -586,7 +607,7 @@ class NCNode extends UNISYS.Component {
             </div>
             {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
             <div className="controlbar">
-              <button className="cancelbtn" onClick={this.uiDisableEditMode}>
+              <button className="cancelbtn" onClick={this.uiCancelEditMode}>
                 Cancel
               </button>
               <button onClick={this.saveNode}>Save</button>
