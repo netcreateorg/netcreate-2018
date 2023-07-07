@@ -84,6 +84,15 @@
   font-weight: bold;
   overflow: hidden;
 }
+.ncnode .matchlist {
+  position: fixed;
+  color: #3339;
+  background-color: #fff;
+  margin: -10px 0 0 10px;
+  padding: 3px 10px;
+  font-size: 12px;
+  z-index: 15;
+}
 .ncnode .edgebutton {
   background-color: #0003;
   border-radius: 10px;

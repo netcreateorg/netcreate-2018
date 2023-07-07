@@ -103,6 +103,7 @@ class NCNode extends UNISYS.Component {
     this.enableEditMode = this.enableEditMode.bind(this);
     this.uiDisableEditMode = this.uiDisableEditMode.bind(this);
     this.uiStringInputUpdate = this.uiStringInputUpdate.bind(this);
+    this.uiLabelInputUpdate = this.uiLabelInputUpdate.bind(this);
     this.uiNumberInputUpdate = this.uiNumberInputUpdate.bind(this);
     this.uiSelectInputUpdate = this.uiSelectInputUpdate.bind(this);
     // RENDERERS -- Main
@@ -117,7 +118,9 @@ class NCNode extends UNISYS.Component {
     this.renderLabel = this.renderLabel.bind(this);
     this.renderStringValue = this.renderStringValue.bind(this);
     this.renderStringInput = this.renderStringInput.bind(this);
+    this.renderLabelInput = this.renderLabelInput.bind(this);
     this.renderNumberInput = this.renderNumberInput.bind(this);
+    this.renderOptionsInput = this.renderOptionsInput.bind(this);
 
     /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
@@ -186,7 +189,6 @@ class NCNode extends UNISYS.Component {
     }
     return event;
   }
-
   doUnload(event) {
     if (this.state.viewMode === VIEWMODE.EDIT) {
       UDATA.NetCall('SRV_DBUNLOCKNODE', { nodeID: this.state.id });
@@ -239,7 +241,6 @@ class NCNode extends UNISYS.Component {
     }
     this.setState({ editBtnDisable, editBtnHide, editLockMessage });
   }
-
   clearSelection() {
     this.resetState();
   }
@@ -464,6 +465,20 @@ class NCNode extends UNISYS.Component {
       this.setState({ attributes }, () => this.setBackgroundColor());
     }
   }
+  uiLabelInputUpdate(event) {
+    const { id } = this.state;
+    const nodeDefKey = event.target.id;
+    const data = {};
+    data[nodeDefKey] = event.target.value;
+    this.setState(data);
+    UDATA.LocalCall('FIND_MATCHING_NODES', { searchString: event.target.value }).then(
+      data => {
+        const foundLabels =
+          data.nodes && data.nodes.length > 0 ? data.nodes.map(d => d.label) : undefined;
+        this.setState({ matchingNodeLabels: foundLabels });
+      }
+    );
+  }
   uiNumberInputUpdate(event) {
     const nodeDefKey = event.target.id;
     if (BUILTIN_FIELDS.includes(nodeDefKey)) {
@@ -534,8 +549,11 @@ class NCNode extends UNISYS.Component {
   }
 
   renderEdit() {
-    const { selectedTab, backgroundColor, id, label } = this.state;
+    const { selectedTab, backgroundColor, matchingNodeLabels, id, label } = this.state;
     const bgcolor = backgroundColor + '66'; // hack opacity
+    const matchList = matchingNodeLabels
+      ? matchingNodeLabels.map(l => <div key={l}>{l}</div>)
+      : undefined;
     return (
       <div>
         <div className="screen"></div>
@@ -548,7 +566,8 @@ class NCNode extends UNISYS.Component {
             }}
           >
             {/* BUILT-IN - - - - - - - - - - - - - - - - - */}
-            <div className="nodelabel">{this.renderStringInput('label', label)}</div>
+            <div className="nodelabel">{this.renderLabelInput('label', label)}</div>
+            {matchList && <div className="matchlist">{matchList}</div>}
             {/* TABS - - - - - - - - - - - - - - - - - - - */}
             <div className="tabcontainer">
               {this.renderTabSelectors()}
@@ -701,6 +720,18 @@ class NCNode extends UNISYS.Component {
         value={value}
         type="string"
         onChange={this.uiStringInputUpdate}
+      />
+    );
+  }
+  // special handler for node label
+  renderLabelInput(nodeDefKey, value) {
+    return (
+      <input
+        id={nodeDefKey}
+        key={`${nodeDefKey}input`}
+        value={value}
+        type="string"
+        onChange={this.uiLabelInputUpdate}
       />
     );
   }

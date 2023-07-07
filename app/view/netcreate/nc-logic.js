@@ -578,6 +578,10 @@ MOD.Hook('INITIALIZE', () => {
     UDATA.SetAppState('NCDATA', NCDATA);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  UDATA.HandleMessage('FIND_MATCHING_NODES', data => {
+    return { nodes: m_FindMatchingNodesByLabel(data.searchString) };
+  });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ EDGE_TYPES_UPDATE is called by templateEditor-mgr after user has changed the
       edge type options.  This maps changed options to a new name,
       and deleted type options to existing options.
