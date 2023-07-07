@@ -454,8 +454,8 @@ class NCNode extends UNISYS.Component {
     const editableTab = selectedTab === TABS.EDGES ? TABS.ATTRIBUTES : selectedTab;
     const previousState = {
       label,
-      attributes: Object.assign({}, attributes),
-      provenance: Object.assign({}, provenance)
+      attributes: Object.assign({}, attributes)
+      // provenance: Object.assign({}, provenance) // uncomment after provenence is implemented
     };
     this.setState({
       viewMode: VIEWMODE.EDIT,
@@ -470,8 +470,8 @@ class NCNode extends UNISYS.Component {
     this.setState(
       {
         label: previousState.label,
-        attributes: previousState.attributes,
-        provenance: previousState.provenance
+        attributes: previousState.attributes
+        // provenance: previousState.provenance // uncomment after provenence is implemented
       },
       () => this.uiDisableEditMode()
     );
