@@ -2,12 +2,38 @@
 
     Prototype Simple NetCreate Node Editor
 
+    Built for Version 2.0 ITEST.
+
+    Provides a viewer and editor for the currently selected node.
+
+    USAGE
+
+      <NCNode />
+
+    Main changes for 2.0:
+    * Node data is made up of built-in parameters (e.g. label, provenance),
+      and arbitrary custom parameters defined via the template.  This Node
+      editor can support wide variety of data.
+
+    DATA UPDATES
+    * Updates are triggered mostly by:
+      1.  SELECTION state updates when nodes and edges change
+      2.  PERMISSION state updates when locks are set and released.
+
     Data is currently in a transitional state.
     Currently all properties are saved in a flat list.
     Eventually we might want to differentiate between
     built-in properties (e.g. id, created), and template-defined custom
     `attributes`.  There is an awkward translation between these two
     representations during data load, update, and save.
+
+
+    PERMISSIONS
+    Editting is restricted by:
+    * User must be logged in
+    * Template is not being edited
+    * Data is not beingimported
+    * Someone else is not editing the node (and has placed a lock on it)
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -101,6 +127,7 @@ class NCNode extends UNISYS.Component {
     UDATA.OnAppStateChange('SESSION', this.updateSession);
     UDATA.OnAppStateChange('SELECTION', this.updateSelection);
     UDATA.HandleMessage('EDIT_PERMISSIONS_UPDATE', this.setPermissions);
+    UDATA.HandleMessage('NODE_EDIT', this.uiRequestEditNode); // Node Table request
   }
 
   componentDidMount() {
@@ -112,6 +139,7 @@ class NCNode extends UNISYS.Component {
     UDATA.AppStateChangeOff('SESSION', this.updateSession);
     UDATA.AppStateChangeOff('SELECTION', this.updateSelection);
     UDATA.UnhandleMessage('EDIT_PERMISSIONS_UPDATE', this.setPermissions);
+    UDATA.UnhandleMessage('NODE_EDIT', this.uiRequestEditNode);
     window.removeEventListener('beforeunload', this.checkUnload);
     window.removeEventListener('unload', this.doUnload);
   }
