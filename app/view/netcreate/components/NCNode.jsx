@@ -442,13 +442,20 @@ class NCNode extends UNISYS.Component {
   }
 
   enableEditMode() {
-    const { label, attributes, provenance } = this.state;
+    const { selectedTab, label, attributes, provenance } = this.state;
+    // If user was on Edges tab while requesting edit (e.g. from Node Table), then
+    // switch to Attributes tab first.
+    const editableTab = selectedTab === TABS.EDGES ? TABS.ATTRIBUTES : selectedTab;
     const previousState = {
       label,
       attributes: Object.assign({}, attributes),
       provenance: Object.assign({}, provenance)
     };
-    this.setState({ viewMode: VIEWMODE.EDIT, previousState });
+    this.setState({
+      viewMode: VIEWMODE.EDIT,
+      selectedTab: editableTab,
+      previousState
+    });
   }
 
   uiCancelEditMode() {
