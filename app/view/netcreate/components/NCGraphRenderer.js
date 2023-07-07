@@ -488,7 +488,6 @@ class NCGraphRenderer {
     }
 
     // SELECTION ARROW
-    // Theoretically can show more than one
     this.d3svg.selectAll('#selectorArrow').remove();
 
     // SINGLE ARROW APPROACH
@@ -704,7 +703,8 @@ class NCGraphRenderer {
   /*/
   Dragstarted(d, self) {
     if (DBG) console.log(PR, 'Dragstarted', d.x, d.y);
-    if (!d3.event.active) self.simulation.alphaTarget(0.3).restart();
+    // if (!d3.event.active) self.simulation.alphaTarget(0.3).restart(); // orig value results in a lot of movement after selection
+    if (!d3.event.active) self.simulation.alphaTarget(0.01).restart(); // minimize shift after selection
     d.fx = d.x;
     d.fy = d.y;
   }
