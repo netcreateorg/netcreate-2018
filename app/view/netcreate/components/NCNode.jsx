@@ -223,7 +223,8 @@ class NCNode extends UNISYS.Component {
     );
   }
   updatePermissions() {
-    const { isLoggedIn, isLockedByDB, isLockedByTemplate, isLockedByImport } = this.state;
+    const { isLoggedIn, isLockedByDB, isLockedByTemplate, isLockedByImport } =
+      this.state;
     const TEMPLATE = UDATA.AppState('TEMPLATE');
     let editLockMessage = '';
     let editBtnDisable = false;
@@ -363,7 +364,9 @@ class NCNode extends UNISYS.Component {
       if (data.NOP) {
         console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
       } else if (data.unlocked) {
-        console.log(`SERVER SAYS: unlock success! you have released Node ${data.nodeID}`);
+        console.log(
+          `SERVER SAYS: unlock success! you have released Node ${data.nodeID}`
+        );
         unlockSuccess = true;
         // Release Template lock
         UDATA.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.NODE });
@@ -378,7 +381,9 @@ class NCNode extends UNISYS.Component {
       if (data.NOP) {
         console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
       } else if (data.locked) {
-        console.log(`SERVER SAYS: Node is locked! You cannot edit Node ${data.nodeID}`);
+        console.log(
+          `SERVER SAYS: Node is locked! You cannot edit Node ${data.nodeID}`
+        );
         nodeIsLocked = true;
       }
       if (typeof cb === 'function') cb(nodeIsLocked);
@@ -389,7 +394,8 @@ class NCNode extends UNISYS.Component {
   /// DATA SAVING
   ///
   saveNode() {
-    const { id, label, attributes, provenance, created, updated, revision } = this.state;
+    const { id, label, attributes, provenance, created, updated, revision } =
+      this.state;
 
     const node = { id, label, provenance, created, updated, revision };
     Object.keys(attributes).forEach(k => (node[k] = attributes[k]));
@@ -502,7 +508,9 @@ class NCNode extends UNISYS.Component {
     UDATA.LocalCall('FIND_MATCHING_NODES', { searchString: event.target.value }).then(
       data => {
         const foundLabels =
-          data.nodes && data.nodes.length > 0 ? data.nodes.map(d => d.label) : undefined;
+          data.nodes && data.nodes.length > 0
+            ? data.nodes.map(d => d.label)
+            : undefined;
         this.setState({ matchingNodeLabels: foundLabels });
       }
     );
@@ -570,7 +578,9 @@ class NCNode extends UNISYS.Component {
               </button>
             )}
           </div>
-          {editLockMessage && <div className="message warning">{editLockMessage}</div>}
+          {editLockMessage && (
+            <div className="message warning">{editLockMessage}</div>
+          )}
         </div>
       </div>
     );
@@ -599,7 +609,9 @@ class NCNode extends UNISYS.Component {
             <div className="nodelabel">{this.renderLabelInput('label', label)}</div>
             {matchList && (
               <div className="matchlist">
-                {isDuplicate && <div className="message warning">{duplicateWarning}</div>}
+                {isDuplicate && (
+                  <div className="message warning">{duplicateWarning}</div>
+                )}
                 {matchList}
               </div>
             )}
