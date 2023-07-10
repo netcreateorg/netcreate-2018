@@ -31,7 +31,8 @@ var DBG = false;
 
 const SETTINGS = require('settings');
 const isLocalHost =
-  SETTINGS.EJSProp('client').ip === '127.0.0.1' || location.href.includes('admin=true');
+  SETTINGS.EJSProp('client').ip === '127.0.0.1' ||
+  location.href.includes('admin=true');
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -143,7 +144,8 @@ class EdgeTable extends UNISYS.Component {
     var time = d.toTimeString().substr(0, 5);
     var dateTime = date + ' at ' + time;
     var titleString = 'v' + nodeEdge.meta.revision;
-    if (nodeEdge._nlog) titleString += ' by ' + nodeEdge._nlog[nodeEdge._nlog.length - 1];
+    if (nodeEdge._nlog)
+      titleString += ' by ' + nodeEdge._nlog[nodeEdge._nlog.length - 1];
     var tag = <span title={titleString}> {dateTime} </span>;
 
     return tag;
@@ -555,7 +557,10 @@ class EdgeTable extends UNISYS.Component {
           <thead>
             <tr>
               <th width="4%" hidden={!DBG}>
-                <Button size="sm" onClick={() => this.setSortKey('id', edgeDefs.id.type)}>
+                <Button
+                  size="sm"
+                  onClick={() => this.setSortKey('id', edgeDefs.id.type)}
+                >
                   ID {this.sortSymbol('id')}
                 </Button>
               </th>
@@ -632,7 +637,9 @@ class EdgeTable extends UNISYS.Component {
               <th width="7%" hidden={edgeDefs.provenance.hidden}>
                 <Button
                   size="sm"
-                  onClick={() => this.setSortKey('provenance', edgeDefs.provenance.type)}
+                  onClick={() =>
+                    this.setSortKey('provenance', edgeDefs.provenance.type)
+                  }
                 >
                   {edgeDefs.provenance.displayLabel} {this.sortSymbol('provenance')}
                 </Button>
@@ -667,7 +674,12 @@ class EdgeTable extends UNISYS.Component {
                 <td hidden={!DBG}>{edge.id}</td>
                 <td hidden={!DBG}>{edge.size}</td>
                 <td>
-                  <Button size="sm" outline value={edge.id} onClick={this.onButtonClick}>
+                  <Button
+                    size="sm"
+                    outline
+                    value={edge.id}
+                    onClick={this.onButtonClick}
+                  >
                     {isLocked ? 'View' : 'Edit'}
                   </Button>
                 </td>
