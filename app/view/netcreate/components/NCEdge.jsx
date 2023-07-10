@@ -81,6 +81,7 @@ class NCEdge extends UNISYS.Component {
     this.lockEdge = this.lockEdge.bind(this);
     this.unlockEdge = this.unlockEdge.bind(this);
     this.isEdgeLocked = this.isEdgeLocked.bind(this);
+    this.editEdge = this.editEdge.bind(this);
     this.saveEdge = this.saveEdge.bind(this);
     // HELPER METHODS
     this.setBackgroundColor = this.setBackgroundColor.bind(this);
@@ -105,7 +106,7 @@ class NCEdge extends UNISYS.Component {
     UDATA.HandleMessage('EDGE_OPEN', this.reqLoadEdge);
     UDATA.HandleMessage('EDGE_DESELECT', this.clearSelection);
     UDATA.HandleMessage('EDIT_PERMISSIONS_UPDATE', this.setPermissions);
-    // UDATA.HandleMessage('NODE_EDIT', this.uiRequestEditNode); // Node Table request
+    UDATA.HandleMessage('EDGE_EDIT', this.editEdge); // EdgeTable request
   }
 
   componentDidMount() {
@@ -122,7 +123,7 @@ class NCEdge extends UNISYS.Component {
     UDATA.UnhandleMessage('EDGE_OPEN', this.reqLoadEdge);
     UDATA.UnhandleMessage('EDGE_DESELECT', this.clearSelection);
     UDATA.UnhandleMessage('EDIT_PERMISSIONS_UPDATE', this.setPermissions);
-    // UDATA.UnhandleMessage('NODE_EDIT', this.uiRequestEditNode);
+    UDATA.UnhandleMessage('EDGE_EDIT', this.editEdge);
     window.removeEventListener('beforeunload', this.checkUnload);
     window.removeEventListener('unload', this.doUnload);
   }
@@ -373,6 +374,17 @@ class NCEdge extends UNISYS.Component {
       if (typeof cb === 'function') cb(edgeIsLocked);
     });
   }
+  /**
+   * If `lockEdge` is not successful, then that means the edge was
+   * already locked, so we can't edit.
+   */
+  editEdge() {
+    this.lockEdge(lockSuccess => {
+      this.setState({ isLockedByDB: !lockSuccess }, () => {
+        if (lockSuccess) this.enableEditMode();
+      });
+    });
+  }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// DATA SAVING
@@ -415,17 +427,9 @@ class NCEdge extends UNISYS.Component {
     this.setState({ selectedTab: event.target.value });
   }
 
-  /**
-   * If `lockEdge` is not successful, then that means the edge was
-   * already locked, so we can't edit.
-   */
   uiRequestEditEdge(event) {
     event.stopPropagation();
-    this.lockEdge(lockSuccess => {
-      this.setState({ isLockedByDB: !lockSuccess }, () => {
-        if (lockSuccess) this.enableEditMode();
-      });
-    });
+    this.editEdge();
   }
 
   uiDeselectEdge() {

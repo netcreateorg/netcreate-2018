@@ -91,6 +91,7 @@ class NCNode extends UNISYS.Component {
     this.doUnload = this.doUnload.bind(this);
     this.clearSelection = this.clearSelection.bind(this);
     this.updateSelection = this.updateSelection.bind(this);
+    this.selectEdgeAndEdit = this.selectEdgeAndEdit.bind(this);
     this.deselectEdge = this.deselectEdge.bind(this);
     // DATA LOADING
     this.loadNode = this.loadNode.bind(this);
@@ -138,6 +139,7 @@ class NCNode extends UNISYS.Component {
     UDATA.OnAppStateChange('SELECTION', this.updateSelection);
     UDATA.HandleMessage('EDIT_PERMISSIONS_UPDATE', this.setPermissions);
     UDATA.HandleMessage('NODE_EDIT', this.uiRequestEditNode); // Node Table request
+    UDATA.HandleMessage('EDGE_SELECT_AND_EDIT', this.selectEdgeAndEdit);
     UDATA.HandleMessage('EDGE_DESELECT', this.deselectEdge);
   }
 
@@ -258,6 +260,26 @@ class NCNode extends UNISYS.Component {
   updateSelection(data) {
     const node = data.nodes[0]; // select the first node
     this.loadNode(node);
+  }
+  /**
+   * In order to edit an edge, we must first select the source
+   * 1. (this assumes SOURCE_SELECT was already called)
+   * 2. select the Edges tab
+   * 3. open the edge (load the edge data into NCEdge)
+   * 4. trigger edge edit mode
+   * @param {Object} data
+   * @param {string} data.edgeId
+   */
+  selectEdgeAndEdit(data) {
+    const { edgeId } = data;
+    this.setState({ selectedTab: TABS.EDGES, selectedEdgeId: edgeId }, () => {
+      const { edges } = this.state;
+      const edge = edges.find(e => e.id === Number(edgeId));
+      this.setState({ selectedEdgeId: edgeId });
+      UDATA.LocalCall('EDGE_OPEN', { edge }).then(() => {
+        UDATA.LocalCall('EDGE_EDIT', { edgeId });
+      });
+    });
   }
   deselectEdge() {
     this.setState({ selectedEdgeId: null });

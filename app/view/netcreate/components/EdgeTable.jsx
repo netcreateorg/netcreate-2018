@@ -420,9 +420,9 @@ class EdgeTable extends UNISYS.Component {
 
     if (DBG) console.log('EdgeTable: Edge id', edge.id, 'selected for editing');
 
-    // Load Source then Edge
+    // Load Source Node then Edge
     UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [edge.source] }).then(() => {
-      UDATA.LocalCall('EDGE_EDIT', { edgeID: edge.id });
+      UDATA.LocalCall('EDGE_SELECT_AND_EDIT', { edgeId: edge.id });
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
