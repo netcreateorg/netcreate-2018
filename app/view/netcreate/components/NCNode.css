@@ -8,7 +8,7 @@
   z-index: 1;
 }
 
-.ncnode {
+.nccomponent {
   background-color: #fff; /* knock out gray body bg */
   border-radius: 15px;
   position: relative;
@@ -16,7 +16,7 @@
 }
 
 /* HTML Components */
-.ncnode button {
+.nccomponent button {
   background-color: #fff6;
   border-radius: 5px;
   border-color: #0006;
@@ -25,13 +25,17 @@
   color: #333;
   margin-left: 15px;
 }
-.ncnode button:disabled {
+.nccomponent button:hover,
+.nccomponent button.cancelbtn:hover {
+  background-color: #fff9;
+}
+.nccomponent button:disabled {
   background-color: #fff3;
   border-color: #0003;
   color: #3333;
   cursor: not-allowed;
 }
-.ncnode input {
+.nccomponent input {
   width: 100%;
   border-radius: 5px;
   border-color: #0006;
@@ -41,7 +45,7 @@
   margin-bottom: 5px;
   padding: 0 5px;
 }
-.ncnode select {
+.nccomponent select {
   width: 100%;
   border-radius: 5px;
   border-color: #0006;
@@ -51,40 +55,64 @@
   margin-bottom: 5px;
 }
 /* HTML Component Subtypes */
-.ncnode button.cancelbtn {
+.nccomponent button.cancelbtn {
   background-color: transparent;
   border-color: #999;
   color: #666;
 }
 
 /* Text Style */
-.ncnode .message {
+.nccomponent .message {
   font-size: 12px;
 }
-.ncnode .warning {
+.nccomponent .warning {
   color: red;
 }
 
 /* Layout Components */
+.nccomponent.ncedge {
+  /* position: fixed;
+  left: 290px;
+  top: 130px; */
+  /* margin: 0 20px; */
+  margin: 10px 0;
+  height: 0;
+  overflow: hidden;
+  z-index: 15;
+}
+.nccomponent.ncedge.fullheight {
+  height: fit-content;
+  transition-property: height;
+  transition-duration: 4s;
+  transition-timing-function: ease-in-out;
+  transition-delay: 2s;
+}
 
-.ncnode .view,
-.ncnode .edit {
+.nccomponent.ncedge,
+.nccomponent.ncedge .view,
+.nccomponent.ncedge .edit {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.nccomponent .view,
+.nccomponent .edit {
   border-radius: 15px;
   padding: 8px;
 }
 
-.ncnode .edit {
+.nccomponent .edit {
   border: 2px;
   border-style: solid;
 }
 
-.ncnode .nodelabel {
+.nccomponent .nodelabel {
   padding: 5px 10px;
   font-size: 18px;
   font-weight: bold;
   overflow: hidden;
 }
-.ncnode .matchlist {
+.nccomponent .matchlist {
   position: fixed;
   color: #3339;
   background-color: #fff;
@@ -93,7 +121,7 @@
   font-size: 12px;
   z-index: 15;
 }
-.ncnode .edgebutton {
+.nccomponent .edgebutton {
   background-color: #0003;
   border-radius: 10px;
   border-color: transparent;
@@ -102,32 +130,32 @@
   text-align: left;
   overflow: hidden;
 }
-.ncnode .formview {
+.nccomponent .formview {
   display: grid;
   grid-template-columns: 70px auto;
   column-gap: 10px;
 }
-.ncnode .formview label {
+.nccomponent .formview label {
   font-size: 10px;
   line-height: 18px;
   opacity: 0.7;
   text-align: right;
 }
-.ncnode .formview div {
+.nccomponent .formview div {
   padding-left: 10px;
   font-size: 16px;
   text-align: left;
   opacity: 1;
 }
 
-.ncnode .tabcontainer {
+.nccomponent .tabcontainer {
 }
-.ncnode .tabcontainer .tabselectors {
+.nccomponent .tabcontainer .tabselectors {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   padding-top: 3px;
 }
-.ncnode .tabcontainer .tabselectors button {
+.nccomponent .tabcontainer .tabselectors button {
   border: none;
   color: #0006;
   background-color: transparent;
@@ -135,32 +163,32 @@
   font-size: 10px;
   overflow: hidden;
 }
-.ncnode .tabcontainer .tabselectors button:hover {
+.nccomponent .tabcontainer .tabselectors button:hover {
   background-color: #fff2;
 }
-.ncnode .tabcontainer .tabselectors button.selected {
+.nccomponent .tabcontainer .tabselectors button.selected {
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
   color: #666;
   background-color: #fff4;
 }
-.ncnode .tabcontainer .tabselectors button.selected:focus {
+.nccomponent .tabcontainer .tabselectors button.selected:focus {
   outline: none;
 }
-.ncnode .tabcontainer .tabview {
+.nccomponent .tabcontainer .tabview {
   padding: 10px 5px 5px 5px;
   background-color: #fff4;
 }
-.ncnode .provenance label {
+.nccomponent .provenance label {
   line-height: 12px;
   margin-bottom: 0.25rem; /* override bootstrap */
 }
-.ncnode .provenance div {
+.nccomponent .provenance div {
   font-size: 10px;
   opacity: 0.7;
 }
 
-.ncnode .controlbar {
+.nccomponent .controlbar {
   display: flex;
   justify-content: flex-end;
   padding: 10px 0 0 0;

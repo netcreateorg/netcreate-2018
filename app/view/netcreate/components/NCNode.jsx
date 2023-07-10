@@ -32,7 +32,7 @@
     Editting is restricted by:
     * User must be logged in
     * Template is not being edited
-    * Data is not beingimported
+    * Data is not being imported
     * Someone else is not editing the node (and has placed a lock on it)
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
@@ -46,6 +46,7 @@ const React = require('react');
 const UNISYS = require('unisys/client');
 const EDGEMGR = require('../edge-mgr'); // handles edge synthesis
 const { EDITORTYPE } = require('system/util/enum');
+const NCEdge = require('./NCEdge');
 
 let UDATA;
 const BUILTIN_FIELDS = [
@@ -90,13 +91,17 @@ class NCNode extends UNISYS.Component {
     this.doUnload = this.doUnload.bind(this);
     this.clearSelection = this.clearSelection.bind(this);
     this.updateSelection = this.updateSelection.bind(this);
+    this.deselectEdge = this.deselectEdge.bind(this);
     // DATA LOADING
     this.loadNode = this.loadNode.bind(this);
     this.loadEdges = this.loadEdges.bind(this);
     this.loadAttributes = this.loadAttributes.bind(this);
-    this.updateLockState = this.lockNode.bind(this);
+    this.lockNode = this.lockNode.bind(this);
     this.unlockNode = this.unlockNode.bind(this);
+    this.isNodeLocked = this.isNodeLocked.bind(this);
     this.saveNode = this.saveNode.bind(this);
+    // HELPER METHODS
+    this.setBackgroundColor = this.setBackgroundColor.bind(this);
     // UI HANDLERS
     this.uiSelectTab = this.uiSelectTab.bind(this);
     this.uiRequestEditNode = this.uiRequestEditNode.bind(this);
@@ -107,6 +112,7 @@ class NCNode extends UNISYS.Component {
     this.uiLabelInputUpdate = this.uiLabelInputUpdate.bind(this);
     this.uiNumberInputUpdate = this.uiNumberInputUpdate.bind(this);
     this.uiSelectInputUpdate = this.uiSelectInputUpdate.bind(this);
+    this.uiViewEdge = this.uiViewEdge.bind(this);
     // RENDERERS -- Main
     this.renderView = this.renderView.bind(this);
     this.renderEdit = this.renderEdit.bind(this);
@@ -132,10 +138,11 @@ class NCNode extends UNISYS.Component {
     UDATA.OnAppStateChange('SELECTION', this.updateSelection);
     UDATA.HandleMessage('EDIT_PERMISSIONS_UPDATE', this.setPermissions);
     UDATA.HandleMessage('NODE_EDIT', this.uiRequestEditNode); // Node Table request
+    UDATA.HandleMessage('EDGE_DESELECT', this.deselectEdge);
   }
 
   componentDidMount() {
-    this.clearSelection(); // Initialize State
+    this.resetState(); // Initialize State
     window.addEventListener('beforeunload', this.checkUnload);
     window.addEventListener('unload', this.doUnload);
   }
@@ -161,6 +168,7 @@ class NCNode extends UNISYS.Component {
       editBtnHide: false,
       viewMode: VIEWMODE.VIEW,
       selectedTab: TABS.ATTRIBUTES,
+      selectedEdgeId: null,
       backgroundColor: 'transparent',
       isLockedByDB: false, // shows db lock message next to Edit Node button
       isLockedByTemplate: false,
@@ -200,7 +208,7 @@ class NCNode extends UNISYS.Component {
 
   /**
    * Handle change in SESSION data
-   * SESSION is called by SessionSHell when the ID changes
+   * SESSION is called by SessionShell when the ID changes
    * set system-wide. data: { classId, projId, hashedId, groupId, isValid }
    * Called both by componentWillMount() and AppStateChange handler.
    * The 'SESSION' state change is triggered in two places in SessionShell during
@@ -251,6 +259,9 @@ class NCNode extends UNISYS.Component {
     const node = data.nodes[0]; // select the first node
     this.loadNode(node);
   }
+  deselectEdge() {
+    this.setState({ selectedEdgeId: null });
+  }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// DATA LOADING
@@ -260,6 +271,9 @@ class NCNode extends UNISYS.Component {
 
     // If we're editing, ignore the select!
     if (viewMode === VIEWMODE.EDIT) return;
+
+    // close any open edges
+    UDATA.LocalCall('EDGE_DESELECT');
 
     // If no node was selected, deselect
     if (!node) {
@@ -422,8 +436,7 @@ class NCNode extends UNISYS.Component {
    */
   setBackgroundColor() {
     const { attributes } = this.state;
-    const type = attributes ? attributes.type : undefined;
-    if (!type) return;
+    const type = attributes ? attributes.type : ''; // "" matches undefined
     const COLORMAP = UDATA.AppState('COLORMAP');
     this.setState({ backgroundColor: COLORMAP.nodeColorMap[type] });
   }
@@ -432,7 +445,9 @@ class NCNode extends UNISYS.Component {
   /// UI EVENT HANDLERS
 
   uiSelectTab(event) {
-    this.setState({ selectedTab: event.target.value });
+    const selectedTab = event.target.value;
+    this.setState({ selectedTab });
+    if (event.target.value !== TABS.EDGES) UDATA.LocalCall('EDGE_DESELECT');
   }
 
   /**
@@ -540,6 +555,13 @@ class NCNode extends UNISYS.Component {
     }
   }
 
+  uiViewEdge(edgeId) {
+    const { edges } = this.state;
+    const edge = edges.find(e => e.id === Number(edgeId));
+    this.setState({ selectedEdgeId: edgeId });
+    UDATA.LocalCall('EDGE_OPEN', { edge });
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// RENDER METHODS
   renderView() {
@@ -553,7 +575,7 @@ class NCNode extends UNISYS.Component {
     } = this.state;
     const bgcolor = backgroundColor + '44'; // hack opacity
     return (
-      <div className="ncnode">
+      <div className="nccomponent">
         <div className="view" style={{ background: bgcolor }}>
           {/* BUILT-IN - - - - - - - - - - - - - - - - - */}
           <div className="nodelabel">{this.renderStringValue('label', label)}</div>
@@ -597,7 +619,7 @@ class NCNode extends UNISYS.Component {
     return (
       <div>
         <div className="screen"></div>
-        <div className="ncnode">
+        <div className="nccomponent">
           <div
             className="edit"
             style={{
@@ -696,7 +718,7 @@ class NCNode extends UNISYS.Component {
     return <div className="formview">{items}</div>;
   }
   renderEdgesTab() {
-    const { id, label, edges } = this.state;
+    const { selectedEdgeId, id, label, edges } = this.state;
     const NCDATA = UDATA.AppState('NCDATA');
     const TEMPLATE = UDATA.AppState('TEMPLATE');
     const me = (
@@ -709,20 +731,24 @@ class NCNode extends UNISYS.Component {
           const targetNode = NCDATA.nodes.find(n => n.id === e.target);
           const color = EDGEMGR.LookupEdgeColor(e, TEMPLATE);
           const bgcolor = color + '33'; // opacity hack
-          return (
-            <div key={e.id}>
-              <button
-                size="sm"
-                className="edgebutton"
-                onClick={this.onEdgeClick}
-                style={{ backgroundColor: bgcolor }}
-              >
-                {id === e.source ? me : sourceNode.label}
-                &nbsp;<span title={e.type}>&#x2794;</span>&nbsp;
-                {id === e.target ? me : targetNode.label}
-              </button>
-            </div>
-          );
+          if (e.id === selectedEdgeId) {
+            return <NCEdge key={e.id} edge={e} />;
+          } else {
+            return (
+              <div key={e.id}>
+                <button
+                  size="sm"
+                  className="edgebutton"
+                  onClick={() => this.uiViewEdge(e.id)}
+                  style={{ backgroundColor: bgcolor }}
+                >
+                  {id === e.source ? me : sourceNode.label}
+                  &nbsp;<span title={e.type}>&#x2794;</span>&nbsp;
+                  {id === e.target ? me : targetNode.label}
+                </button>
+              </div>
+            );
+          }
         })}
       </div>
     );

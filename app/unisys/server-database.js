@@ -764,7 +764,6 @@ DB.PKT_IsNodeLocked = function (pkt) {
   const uaddr = pkt.s_uaddr;
   let errcode = m_IsInvalidNode(nodeID);
   if (errcode) return errcode;
-  // check if node is already locked
   const isLocked = m_locked_nodes.has(nodeID);
   return { nodeID, locked: isLocked };
 };
@@ -813,6 +812,15 @@ DB.PKT_RequestUnlockEdge = function (pkt) {
   }
   // this is an error because nodeID wasn't in the lock table
   return m_MakeLockError(`edgeID ${edgeID} was not locked so can't unlock`);
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DB.PKT_IsEdgeLocked = function (pkt) {
+  let { edgeID } = pkt.Data();
+  const uaddr = pkt.s_uaddr;
+  let errcode = m_IsInvalidEdge(edgeID);
+  if (errcode) return errcode;
+  const isLocked = m_locked_edges.has(edgeID);
+  return { edgeID, locked: isLocked };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_IsInvalidEdge(edgeID) {
