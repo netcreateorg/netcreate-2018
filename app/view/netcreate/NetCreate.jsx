@@ -148,7 +148,8 @@ class NetCreate extends UNISYS.Component {
   /*/ Define the component structure of the web application
   /*/
   render() {
-    const { isLoggedIn, disconnectMsg, layoutNodesOpen, layoutFiltersOpen } = this.state;
+    const { isLoggedIn, disconnectMsg, layoutNodesOpen, layoutFiltersOpen } =
+      this.state;
 
     // show or hide graph
     // Use 'visibiliity' css NOT React's 'hidden' so size is properly
@@ -173,7 +174,8 @@ class NetCreate extends UNISYS.Component {
           }}
         >
           <div style={{ color: '#fff', width: '100%', textAlign: 'center' }}>
-            <b>{disconnectMsg}!</b> Your changes will not be saved! Please report &quot;
+            <b>{disconnectMsg}!</b> Your changes will not be saved! Please report
+            &quot;
             {disconnectMsg}&quot; to your administrator to restart the graph.
           </div>
         </div>
@@ -228,9 +230,9 @@ class NetCreate extends UNISYS.Component {
               }}
             >
               Please contact Professor Kalani Craig, Institute for Digital Arts &
-              Humanities at (812) 856-5721 (BH) or craigkl@indiana.edu with questions or
-              concerns and/or to request information contained on this website in an
-              accessible format.
+              Humanities at (812) 856-5721 (BH) or craigkl@indiana.edu with questions
+              or concerns and/or to request information contained on this website in
+              an accessible format.
             </div>
           </div>
           {layoutFiltersOpen ? (
