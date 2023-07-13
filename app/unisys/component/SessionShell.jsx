@@ -57,35 +57,46 @@ const DBG = false;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const React = require("react");
-const PROMPTS = require("system/util/prompts");
-const SESSION = require("unisys/common-session");
-const PR = PROMPTS.Pad("SessionShell");
-const ReactStrap = require("reactstrap");
-const { InputGroup, InputGroupAddon, Button, Col, Row, Form, FormGroup, FormFeedback, Input, Label } = ReactStrap;
-const { Redirect } = require("react-router-dom");
-const UNISYS = require("unisys/client");
+const React = require('react');
+const PROMPTS = require('system/util/prompts');
+const SESSION = require('unisys/common-session');
+const PR = PROMPTS.Pad('SessionShell');
+const ReactStrap = require('reactstrap');
+const {
+  InputGroup,
+  InputGroupAddon,
+  Button,
+  Col,
+  Row,
+  Form,
+  FormGroup,
+  FormFeedback,
+  Input,
+  Label
+} = ReactStrap;
+const { Redirect } = require('react-router-dom');
+const UNISYS = require('unisys/client');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// these styles are copied from AutoComplete.css
 const INPUT_STYLE = {
-  border: "1px solid #aaa",
-  fontFamily: "Helvetica, sans-serif",
+  border: '1px solid #aaa',
+  fontFamily: 'Helvetica, sans-serif',
   fontWeight: 300,
-  fontSize: "10px",
-  textAlign: "right",
-  textTransform: "uppercase"
+  fontSize: '10px',
+  textAlign: 'right',
+  textTransform: 'uppercase'
 };
 const GROUP_STYLE = {
-  backgroundColor: "#777",
-  color: "white",
-  marginTop: "-10px"
+  backgroundColor: '#777',
+  color: 'white',
+  marginTop: '-10px'
 };
 const LABEL_STYLE = {
-  verticalAlign: "top",
-  marginBottom: "0.15rem",
-  marginTop: "0.15rem"
+  verticalAlign: 'top',
+  marginBottom: '0.15rem',
+  marginTop: '0.15rem'
 };
 /// Move login to navbar
 const NAV_LOGIN_STYLE = {
@@ -95,8 +106,8 @@ const NAV_LOGIN_STYLE = {
   zIndex: '2000'
 };
 const NAV_LOGIN_FEEDBACK_STYLE = {
-  position: "absolute",
-  right: "210px"
+  position: 'absolute',
+  right: '210px'
 };
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
@@ -108,7 +119,8 @@ class SessionShell extends UNISYS.Component {
     this.renderLoggedIn = this.renderLoggedIn.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
-    this.state = {   // `state` tracks the login input field
+    this.state = {
+      // `state` tracks the login input field
       token: null,
       classId: null,
       projId: null,
@@ -140,7 +152,7 @@ class SessionShell extends UNISYS.Component {
       let classproj = `${decoded.classId}-${decoded.projId}`;
       // prefix with unicode non-breaking space
       let gid = `\u00A0${decoded.groupId}`;
-      let subid = decoded.subId ? `USER\u00A0${decoded.subId}` : "";
+      let subid = decoded.subId ? `USER\u00A0${decoded.subId}` : '';
       return (
         <div style={NAV_LOGIN_STYLE}>
           <Label style={LABEL_STYLE} className="small">
@@ -172,7 +184,7 @@ class SessionShell extends UNISYS.Component {
       //   </FormGroup>
       // );
     } else {
-      return <p>ERROR:renderLoggedIn didn't get valid decoded object</p>;
+      return <p>ERROR:renderLoggedIn didn&apos;t get valid decoded object</p>;
     }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -182,10 +194,10 @@ class SessionShell extends UNISYS.Component {
     let { token, classId, projId, groupId, subId, hashedId, isValid } = this.state;
     if (token) token = token.toUpperCase();
     let formFeedback, tip, input;
-    tip = "Type group ID";
-    if (classId) tip = "Scanning for valid code...";
-    if (projId) tip = "Waiting for valid code...";
-    if (groupId) tip = "Waiting for extra ID...";
+    tip = 'Type group ID';
+    if (classId) tip = 'Scanning for valid code...';
+    if (projId) tip = 'Waiting for valid code...';
+    if (groupId) tip = 'Waiting for extra ID...';
     if (hashedId) {
       if (hashedId.length >= 3) {
         if (!groupId) tip = `'${token}' is an invalid code`;
@@ -196,28 +208,83 @@ class SessionShell extends UNISYS.Component {
       }
     }
     if (groupId) {
-      if (subId===0) {
+      if (subId === 0) {
         tip = `e.g. ${classId}-${projId}-${hashedId} followed by -ID<num>`;
-        input = <Input invalid name="sessionToken" id="sessionToken" bsSize="sm" style={INPUT_STYLE} className="text-right" placeholder="CLASSID-PROJID-CODE" onChange={this.handleChange} />
-        formFeedback = <FormFeedback style={NAV_LOGIN_FEEDBACK_STYLE} className="text-right"><small>{tip}</small></FormFeedback>
+        input = (
+          <Input
+            invalid
+            name="sessionToken"
+            id="sessionToken"
+            bsSize="sm"
+            style={INPUT_STYLE}
+            className="text-right"
+            placeholder="CLASSID-PROJID-CODE"
+            onChange={this.handleChange}
+          />
+        );
+        formFeedback = (
+          <FormFeedback style={NAV_LOGIN_FEEDBACK_STYLE} className="text-right">
+            <small>{tip}</small>
+          </FormFeedback>
+        );
       } else {
-        input = <Input valid name="sessionToken" id="sessionToken" bsSize="sm" style={INPUT_STYLE} className="text-right" placeholder="CLASSID-PROJID-CODE" onChange={this.handleChange} />
-        formFeedback = <FormFeedback valid style={NAV_LOGIN_FEEDBACK_STYLE} className="text-right"><small>{tip}</small></FormFeedback>
+        input = (
+          <Input
+            valid
+            name="sessionToken"
+            id="sessionToken"
+            bsSize="sm"
+            style={INPUT_STYLE}
+            className="text-right"
+            placeholder="CLASSID-PROJID-CODE"
+            onChange={this.handleChange}
+          />
+        );
+        formFeedback = (
+          <FormFeedback valid style={NAV_LOGIN_FEEDBACK_STYLE} className="text-right">
+            <small>{tip}</small>
+          </FormFeedback>
+        );
       }
     } else {
-        input = <Input invalid name="sessionToken" id="sessionToken" bsSize="sm" style={INPUT_STYLE} className="text-right" placeholder="CLASSID-PROJID-CODE" onChange={this.handleChange} />
-        formFeedback = <FormFeedback style={NAV_LOGIN_FEEDBACK_STYLE} className="text-right"><small>{tip}</small></FormFeedback>
+      input = (
+        <Input
+          invalid
+          name="sessionToken"
+          id="sessionToken"
+          bsSize="sm"
+          style={INPUT_STYLE}
+          className="text-right"
+          placeholder="CLASSID-PROJID-CODE"
+          onChange={this.handleChange}
+        />
+      );
+      formFeedback = (
+        <FormFeedback style={NAV_LOGIN_FEEDBACK_STYLE} className="text-right">
+          <small>{tip}</small>
+        </FormFeedback>
+      );
     }
 
     return (
       <Form onSubmit={this.onSubmit} style={NAV_LOGIN_STYLE}>
-      <FormGroup row>
-        <InputGroup>
-          <InputGroupAddon addonType="prepend"><Button style={{fontSize:'10px'}} color="secondary" size="sm" disabled={!isValid} onSubmit={this.onSubmit}>LOGIN</Button></InputGroupAddon>
-          {input}
-          {formFeedback}
-        </InputGroup>
-      </FormGroup>
+        <FormGroup row>
+          <InputGroup>
+            <InputGroupAddon addonType="prepend">
+              <Button
+                style={{ fontSize: '10px' }}
+                color="secondary"
+                size="sm"
+                disabled={!isValid}
+                onSubmit={this.onSubmit}
+              >
+                LOGIN
+              </Button>
+            </InputGroupAddon>
+            {input}
+            {formFeedback}
+          </InputGroup>
+        </FormGroup>
       </Form>
     );
 
@@ -237,7 +304,7 @@ class SessionShell extends UNISYS.Component {
     // );
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  componentWillMount() {
+  componentDidMount() {
     // the code below reads a pre-existing matching path, which may be set
     // to a valid token string AFTER the changeHandler() detected a valid
     // login after a ForceReload. This is a bit hacky and the app would benefit
@@ -249,7 +316,7 @@ class SessionShell extends UNISYS.Component {
     // by the componentDidUpdate() call.
     let token = this.props.match.params.token;
     let decoded = SESSION.DecodeToken(token, window.NC_CONFIG.dataset) || {};
-    this.SetAppState("SESSION", decoded);
+    this.SetAppState('SESSION', decoded);
     this.previousIsValid = decoded.isValid;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -267,9 +334,11 @@ class SessionShell extends UNISYS.Component {
       return (
         <div style={NAV_LOGIN_STYLE}>
           <Col sm={16}>
-            <Label style={LABEL_STYLE} className="small">{prompt}</Label>
+            <Label style={LABEL_STYLE} className="small">
+              {prompt}
+            </Label>
           </Col>
-          </div>
+        </div>
       );
     }
 
@@ -298,7 +367,7 @@ class SessionShell extends UNISYS.Component {
     if (!token) return; // don't bother to check if this was a result of changes from the form
     let decoded = SESSION.DecodeToken(token, window.NC_CONFIG.dataset);
     if (decoded.isValid !== this.previousIsValid) {
-      this.SetAppState("SESSION", decoded);
+      this.SetAppState('SESSION', decoded);
       this.previousIsValid = decoded.isValid;
     }
   }
@@ -319,13 +388,13 @@ class SessionShell extends UNISYS.Component {
       // force a page URL change
       if (BRUTAL_REDIRECT) {
         const redirect = `./#/edit/${this.state.token}`;
-        window.location=redirect;
+        window.location = redirect;
       } else {
-        const redirect = `./edit/${this.state.token}`
+        const redirect = `./edit/${this.state.token}`;
         this.props.history.push(redirect);
       }
     }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   }
 } // UNISYS.Component SessionShell
 

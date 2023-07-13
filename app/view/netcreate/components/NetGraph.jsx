@@ -1,5 +1,12 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+
+    DEPRECATED -- NCGraph replaces NetGraph
+
+
+
+
+
     NetGraph is a React wrapper for a D3 net graph component.
 
     This component uses React to create the base dom element, but D3NetGraph

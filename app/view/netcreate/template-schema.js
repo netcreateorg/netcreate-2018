@@ -8,7 +8,7 @@
   the json-editor needs to support and provides meta data about how to
   display and handle the edits.
 
-  `templateEditor-logic.js` handles initialization client-side.
+  `templateEditor-mgr.js` handles initialization client-side.
 
   NOTE: This schema is NOT the same as the `toml` template file schema.  This
   schema is used by `json-editor` to know how to display a UI for editing the
@@ -287,18 +287,18 @@ MOD.TEMPLATE = {
     },
     "edgeDefaultTransparency": {
       type: 'number',
-      description: 'Default transparency for edges (0 - 1.',
+      description: 'Default transparency for edges (0 - 1).',
       default: 0.7
     },
     "searchColor": {
       type: 'string',
-      description: 'Outline color of nodes selected via search (hex).',
+      description: 'Outline color of nodes highlighted via search (hex).',
       default: '#008800',
       format: 'color'
     },
     "sourceColor": {
       type: 'string',
-      description: 'Outline color of node highlighted during auto complete (hex).',
+      description: 'Outline color of node selected to view / edit (hex).',
       default: '#FFa500',
       format: 'color'
     },

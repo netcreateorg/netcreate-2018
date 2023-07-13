@@ -141,21 +141,21 @@ var UDATA = UNISYS.NewDataLink(MOD);
     * edges: all edges (not all may be actually changed)
 
 
-    FILTEREDD3DATA
+    FILTEREDNCDATA
 
-    FILTEREDD3DATA is the processed network data. It is derived from NCDATA.
+    FILTEREDNCDATA is the processed network data. It is derived from NCDATA.
     It represents a subset of NCDATA with filtered items tagged (for highlight)
-    or removed. d3 will alter FILTEREDD3DATA, replacing edge source/targets
+    or removed. d3 will alter FILTEREDNCDATA, replacing edge source/targets
     ids with node objects.
-    FILTEREDD3DATA is updated whenever NCDATA is updated.
+    FILTEREDNCDATA is updated whenever NCDATA is updated.
 
-    There are three key differences between NCDATA and FILTEREDD3DATA:
+    There are three key differences between NCDATA and FILTEREDNCDATA:
     1. edge.source and edge.target in NCDATA refer to node ids
-       whereas in FILTEREDD3DATA, edge.source and edge.target are node objects
-    2. Only FILTEREDD3DATA is passed to d3.  d3 never directly touches NCDATA.
-    3. FILTEREDD3DATA is directly derived from NCDATA, and can contain a subset
+       whereas in FILTEREDNCDATA, edge.source and edge.target are node objects
+    2. Only FILTEREDNCDATA is passed to d3.  d3 never directly touches NCDATA.
+    3. FILTEREDNCDATA is directly derived from NCDATA, and can contain a subset
        of the nodes or edges of NCDATA. In contrast, NCDATA contains ALL nodes
-       and edges.  When a filter is set, FILTEREDD3DATA is updated from
+       and edges.  When a filter is set, FILTEREDNCDATA is updated from
        NCDATA, with nodes and edges removed or marked according to the filter.
 
 \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -/*/
@@ -287,7 +287,7 @@ MOD.Hook('DISCONNECT', () => {
 MOD.Hook('INITIALIZE', () => {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ RELOAD_DB
-      Called by importexport-logic.js.MOD.Import:818
+      Called by importexport-mgr.js.MOD.Import:818
       During import, DB_MERGE will be called to merge the import data
       into the DB.  Then it will call RELOAD_DB to re-read the updated
       NCDATA from the database.  This is necessary because new ids will
@@ -315,7 +315,6 @@ MOD.Hook('INITIALIZE', () => {
       if (nodes.length > 0) {
         let color = '#0000DD';
         nodes.forEach(node => {
-          m_MarkNodeById(node.id, color);
           UNISYS.Log('select node', node.id, node.label);
           let googlea = NC_CONFIG.googlea;
 
@@ -328,8 +327,6 @@ MOD.Hook('INITIALIZE', () => {
             });
           }
         });
-      } else {
-        m_UnMarkAllNodes();
       }
     }
   }); // StateChange SELECTION
@@ -341,15 +338,6 @@ MOD.Hook('INITIALIZE', () => {
     let { nodes, edges } = stateChange;
     let { searchLabel } = stateChange;
     let { activeAutoCompleteId } = stateChange;
-    // NODE LIST UPDATE
-    if (nodes !== undefined) {
-      if (nodes.length > 0) {
-        const color = TEMPLATE.searchColor || DEFAULT_SEARCH_COLOR;
-        nodes.forEach(node => m_MarkNodeById(node.id, color));
-      } else {
-        m_UnMarkAllNodes();
-      }
-    }
     // SEARCH LABEL UPDATE
     if (NCDATA.nodes.length < 150) {
       // JD to speedup processing for large sets
@@ -365,7 +353,7 @@ MOD.Hook('INITIALIZE', () => {
   }); // StateChange SELECTION
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ User has clicked on a suggestion from the AutoCopmlete suggestion list.
+  /*/ User has clicked on a suggestion from the AutoComplete suggestion list.
       The source node should be loaded in NodeSelector.
 
       OR, user has clicked on a node in the D3 graph.
@@ -382,7 +370,7 @@ MOD.Hook('INITIALIZE', () => {
     let { nodeLabels = [], nodeIDs = [] } = data;
     let nodeLabel = nodeLabels.shift();
     let nodeID = nodeIDs.shift();
-    let node, newState;
+    let node, newSelection, newHilite;
 
     if (nodeID) {
       node = m_FindNodeById(nodeID); // Node IDs should be integers, not strings
@@ -399,11 +387,14 @@ MOD.Hook('INITIALIZE', () => {
     if (DBG) console.log(PR, 'SOURCE_SELECT found', node);
 
     if (node === undefined) {
-      // Node not found, create a new node
-      newState = {
+      // Node not found, create a new state
+      newSelection = {
         nodes: [],
         edges: []
       };
+      newHilite = {
+        autosuggestHiliteNodeId: undefined
+      }
     } else {
       // Load existing node and edges
       let edges = [];
@@ -428,14 +419,18 @@ MOD.Hook('INITIALIZE', () => {
         }
       }
       // create state change object
-      newState = {
+      newSelection = {
         nodes: [node],
         edges: edges
       };
+      newHilite = {
+        autosuggestHiliteNodeId: undefined
+      }
     }
 
     // Set the SELECTION state so that listeners such as NodeSelectors update themselves
-    UDATA.SetAppState('SELECTION', newState);
+    UDATA.SetAppState('SELECTION', newSelection);
+    UDATA.SetAppState('HILITE', newHilite);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
@@ -474,47 +469,6 @@ MOD.Hook('INITIALIZE', () => {
     }
   });
 
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ SOURCE_HILITE updates the currently rolled-over node name in a list of
-      node name selections when using AutoComplete.
-      The hilite can be selected via either the label or the node id.
-  /*/
-  /* ORIGINAL INQUIRIUM CODE
-  UDATA.HandleMessage("SOURCE_HILITE", function(data) {
-    let { nodeLabel, nodeID, color } = data;
-    if (nodeLabel) {
-      // Only mark nodes if something is selected
-      m_UnMarkAllNodes();
-      m_MarkNodeByLabel(nodeLabel, SOURCE_COLOR);
-    }
-    if (nodeID) {
-      // Only mark nodes if something is selected
-      m_UnMarkAllNodes();
-      m_MarkNodeById(nodeID, SOURCE_COLOR);
-    }
-    */
-
-  UDATA.HandleMessage('SOURCE_HILITE', function (data) {
-    let { nodeLabel, nodeID, color } = data;
-    if (nodeLabel) {
-      // Only mark nodes if something is selected
-      if (NCDATA.nodes.length < 250) {
-        // JD to speedup processing for large
-        m_UnMarkAllNodes();
-        m_MarkNodeByLabel(nodeLabel, TEMPLATE.sourceColor || DEFAULT_SOURCE_COLOR);
-      }
-    }
-    if (nodeID) {
-      // Only mark nodes if something is selected
-      if (NCDATA.nodes.length < 250) {
-        // JD to speedup processing for large
-        m_UnMarkAllNodes();
-        m_MarkNodeById(nodeID, TEMPLATE.sourceColor || DEFAULT_SOURCE_COLOR);
-      }
-    }
-
-    // NOTE: State is updated in the "MarkNodeBy*" functions above.
-  });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ SOURCE_UPDATE is called when the properties of a node has changed
       Globally updates DATASTORE and working NCDATA objects with the new node data.
@@ -582,7 +536,7 @@ MOD.Hook('INITIALIZE', () => {
     // FIXME: Need to also trigger resize!
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ NODE_TYPES_UPDATE is called by templateEditor-logic after user has changed the
+  /*/ NODE_TYPES_UPDATE is called by templateEditor-mgr after user has changed the
       node type options.  This maps changed options to a new name,
       and deleted type options to existing options.
       This updates:
@@ -624,7 +578,7 @@ MOD.Hook('INITIALIZE', () => {
     UDATA.SetAppState('NCDATA', NCDATA);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ EDGE_TYPES_UPDATE is called by templateEditor-logic after user has changed the
+  /*/ EDGE_TYPES_UPDATE is called by templateEditor-mgr after user has changed the
       edge type options.  This maps changed options to a new name,
       and deleted type options to existing options.
       This updates:
@@ -869,7 +823,7 @@ function m_SetAllObjs(obj_list, all = {}) {
     for (let key in all) obj[key] = all[key];
   });
 }
-MOD.SetAllObjs = m_SetAllObjs; // Expose for filter-logic.js
+MOD.SetAllObjs = m_SetAllObjs; // Expose for filter-mgr.js
 
 /// NODE HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1009,7 +963,7 @@ const REGEX_REGEXCHARS = /[.*+?^${}()|[\]\\]/g;
 function u_EscapeRegexChars(string) {
   return string.replace(REGEX_REGEXCHARS, '\\$&'); // $& means the whole matched string
 }
-MOD.EscapeRegexChars = u_EscapeRegexChars; // Expose for filter-logic.js
+MOD.EscapeRegexChars = u_EscapeRegexChars; // Expose for filter-mgr.js
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Migrate Data from older formats
 
@@ -1096,35 +1050,6 @@ function m_UnMarkAllNodes() {
 function m_UnStrokeAllNodes() {
   let props = { strokeColor: undefined };
   m_SetAllObjs(NCDATA.nodes, props);
-  UDATA.SetAppState('NCDATA', NCDATA);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Sets the `node.selected` property to `color` so it is hilited on graph
-/*/
-function m_MarkNodeById(id, color) {
-  let marked = {
-    selected:
-      TEMPLATE.sourceColor != undefined ? TEMPLATE.sourceColor : DEFAULT_SOURCE_COLOR
-  };
-  let normal = { selected: DESELECTED_COLOR };
-  // NOTE: this.getSelectedNodeColor(node,color) and
-  // this.getDeselectedNodeColor(node,color) are not yet implemented
-  // to override the properties
-  m_SetMatchingNodesByProp({ id }, marked, normal);
-
-  UDATA.SetAppState('NCDATA', NCDATA);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Sets the `node.selected` property to `color` so it is hilited on graph
-/*/
-function m_MarkNodeByLabel(label, color) {
-  let marked = { selected: color };
-  let normal = { selected: DESELECTED_COLOR };
-  // NOTE: this.getSelectedNodeColor(node,color) and
-  // this.getDeselectedNodeColor(node,color) are not yet implemented
-  // to override the properties
-  m_SetMatchingNodesByLabel(label, marked, normal);
-
   UDATA.SetAppState('NCDATA', NCDATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

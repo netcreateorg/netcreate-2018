@@ -37,19 +37,19 @@ let NCDATA = {};
 DSTOR.Hook("INITIALIZE", () => {
   // DBUPDATE_ALL is a local call originating from within the app
   // Used to update the full NCDATA object during template updates
-  UDATA.HandleMessage("DBUPDATE_ALL", function(data) {
+  UDATA.HandleMessage("DBUPDATE_ALL", function (data) {
     DSTOR.UpdateDataPromise(data);
   });
 
   // DB_UPDATE is a local call originating from within the app
   // Generally used to update individual nodes and edges
-  UDATA.HandleMessage("DB_UPDATE", function(data) {
+  UDATA.HandleMessage("DB_UPDATE", function (data) {
     DSTOR.UpdateServerDB(data);
   });
 
   // DB_INSERT is a local call originating from within the app
   // Generally used to add new nodes and edges after an import
-  UDATA.HandleMessage("DB_INSERT", function(data) {
+  UDATA.HandleMessage("DB_INSERT", function (data) {
     DSTOR.InsertServerDB(data);
   });
 
@@ -58,9 +58,9 @@ DSTOR.Hook("INITIALIZE", () => {
   // Unlike DB_INSERT, it'll update existing nodes/edges
   UDATA.HandleMessage("DB_MERGE", DSTOR.MergeServerDB);
 
-  UDATA.OnAppStateChange('SESSION', function( decodedData ) {
+  UDATA.OnAppStateChange('SESSION', function (decodedData) {
     let { isValid, token } = decodedData;
-    console.log('Handling SESSION',isValid);
+    console.log('Handling SESSION', isValid);
     if (isValid) DSTOR.SetSessionGroupID(decodedData);
   });
 
@@ -72,13 +72,13 @@ DSTOR.Hook("INITIALIZE", () => {
 /*/ datastore needs to set NetMessage GroupID property on behalf of SESSIONS
     because SESSION can't include NetMessage (or vice versa)
 /*/
-DSTOR.SetSessionGroupID = function ( decodedData ) {
+DSTOR.SetSessionGroupID = function (decodedData) {
   let { token, isValid } = decodedData;
   if (isValid) {
     NetMessage.GlobalSetGroupID(token);
-    console.log('setting NetMessage group id',token);
+    console.log('setting NetMessage group id', token);
   } else {
-    console.warn('will not set bad group id:',token);
+    console.warn('will not set bad group id:', token);
   }
 };
 
@@ -86,16 +86,16 @@ DSTOR.SetSessionGroupID = function ( decodedData ) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Placeholder DATA access function
 /*/
-DSTOR.Data = function() {
+DSTOR.Data = function () {
   return NCDATA;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Write update to database
 /*/
-DSTOR.UpdateServerDB = function(data) {
+DSTOR.UpdateServerDB = function (data) {
   // check that network is online
   if (UNISYS.IsStandaloneMode()) {
-    console.warn(PR,`STANDALONE MODE: UpdateServerDB() suppressed!`);
+    console.warn(PR, `STANDALONE MODE: UpdateServerDB() suppressed!`);
     return;
   }
   // it is!
@@ -125,7 +125,7 @@ DSTOR.PromiseCalculateMaxNodeId = function () {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ get a unique NodeID
 /*/
-DSTOR.PromiseNewNodeID = function() {
+DSTOR.PromiseNewNodeID = function () {
   return new Promise((resolve, reject) => {
     UDATA.NetCall("SRV_DBGETNODEID").then(data => {
       if (data.nodeID) {
@@ -144,9 +144,9 @@ DSTOR.PromiseNewNodeID = function() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ get multiple unique NodeIDs
 /*/
-DSTOR.PromiseNewNodeIDs = function(count) {
+DSTOR.PromiseNewNodeIDs = function (count) {
   return new Promise((resolve, reject) => {
-    UDATA.NetCall("SRV_DBGETNODEIDS", {count}).then(data => {
+    UDATA.NetCall("SRV_DBGETNODEIDS", { count }).then(data => {
       if (data.nodeIDs) {
         if (DBG) console.log(PR, "server allocated node_id", data.nodeIDs);
         resolve(data.nodeIDs);
@@ -174,7 +174,7 @@ DSTOR.PromiseCalculateMaxEdgeId = function () {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ get a unique Edge
 /*/
-DSTOR.PromiseNewEdgeID = function() {
+DSTOR.PromiseNewEdgeID = function () {
   return new Promise((resolve, reject) => {
     UDATA.NetCall("SRV_DBGETEDGEID").then(data => {
       if (data.edgeID) {
@@ -193,9 +193,9 @@ DSTOR.PromiseNewEdgeID = function() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ get multiple unique EdgeIDs
 /*/
-DSTOR.PromiseNewEdgeIDs = function(count) {
+DSTOR.PromiseNewEdgeIDs = function (count) {
   return new Promise((resolve, reject) => {
-    UDATA.NetCall("SRV_DBGETEDGEIDS", {count}).then(data => {
+    UDATA.NetCall("SRV_DBGETEDGEIDS", { count }).then(data => {
       if (data.edgeIDs) {
         if (DBG) console.log(PR, "server allocated edge_id:", data.edgeIDs);
         resolve(data.edgeIDs);
@@ -210,7 +210,7 @@ DSTOR.PromiseNewEdgeIDs = function(count) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Load default data set from a JSON file in /assets/data
 /*/
-DSTOR.PromiseJSONFile = function(jsonFile) {
+DSTOR.PromiseJSONFile = function (jsonFile) {
   if (typeof jsonFile !== "string") {
     throw new Error("pass arg <filename_in_assets/data>");
   }
@@ -256,7 +256,7 @@ DSTOR.PromiseTOMLFile = function (tomlFile) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Load D3 Database
 /*/
-DSTOR.PromiseD3Data = function() {
+DSTOR.PromiseD3Data = function () {
   // UDATA.Call() returns a promise
   return UDATA.Call("SRV_DBGET", {}); // server.js
 };
@@ -265,11 +265,11 @@ DSTOR.PromiseD3Data = function() {
 /*/
 DSTOR.SaveTemplateFile = template => {
   // UDATA.Call() returns a promise
-  return UDATA.Call("SRV_TEMPLATESAVE", {template}); // server.js
+  return UDATA.Call("SRV_TEMPLATESAVE", { template }); // server.js
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Get Template File Path.
-    Called by templateEditor-logic when downloading template file.
+    Called by templateEditor-mgr when downloading template file.
 /*/
 DSTOR.GetTemplateTOMLFileName = () => {
   return UDATA.Call("SRV_GET_TEMPLATETOML_FILENAME");

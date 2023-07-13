@@ -1,6 +1,6 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  ## Import / Export Logic
+  ## Import / Export Manager
 
   See ImportExport.jsx for the UI.
 
@@ -68,7 +68,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const DBG = true;
-const PR = 'importexport-logic: ';
+const PR = 'importexport-mgr: ';
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -187,7 +187,7 @@ function m_renderNodeValues(node, keys) {
       return;
     }
     // -- Normal processing -- wrap in quotes
-    if (node.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(node, key)) {
       RESULT.push(`"${m_encode(node[key])}"`); // enclose in quotes to support commas
       return;
     }
@@ -233,7 +233,7 @@ function m_renderEdgeValues(edge, keys) {
       // DEPRECATED -- 'attribute' handler.
       const subKeys = Object.keys(key); // can have multiple subKeys
       subKeys.forEach(k => {
-        RESULT.push( m_renderNodeValues(edge[k], key[k]) );
+        RESULT.push(m_renderNodeValues(edge[k], key[k]));
       });
     }
     // Special Data Handling
@@ -261,7 +261,7 @@ function m_renderEdgeValues(edge, keys) {
       return;
     }
     // -- normal processing -- wrap in quotes
-    if (edge.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(edge, key)) {
       RESULT.push(`"${m_encode(edge[key])}"`); // enclose in quotes to support commas
       return;
     }
@@ -298,7 +298,7 @@ function m_GenerateEdgesArray(edges, edgekeys) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Exports FILTERED data, not the full data set.
 MOD.ExportNodes = () => {
-  const DATA = UDATA.AppState('FILTEREDD3DATA');
+  const DATA = UDATA.AppState('FILTEREDNCDATA');
   const TEMPLATE = UDATA.AppState('TEMPLATE');
   const { nodes } = DATA;
   let EXPORT = '';
@@ -360,7 +360,7 @@ MOD.ExportNodes = () => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Exports FILTERED data, not the full data set.
 MOD.ExportEdges = () => {
-  const DATA = UDATA.AppState('FILTEREDD3DATA');
+  const DATA = UDATA.AppState('FILTEREDNCDATA');
   const TEMPLATE = UDATA.AppState('TEMPLATE');
   const { edges } = DATA;
   let EXPORT = '';
@@ -505,7 +505,7 @@ async function m_NodefileCheckHeaders(data) {
     .map(k => k.exportLabel);
 
   const { nodefile } = data;
-  if (nodefile===undefined) return { isValid: false, missingKeys, fileKeys: []}; // User cancelled
+  if (nodefile === undefined) return { isValid: false, missingKeys, fileKeys: [] }; // User cancelled
   let result = await nodefile.text();
   // Validate Data
   const lines = result.split(REGEXMatchLFNotInQuotes);
@@ -534,7 +534,7 @@ async function m_NodefileCheckHeaders(data) {
       </div>
     )
   }
-  return {isValid, messageJsx, headers, lines};
+  return { isValid, messageJsx, headers, lines };
 }
 /**
  * Reads each line, mapping data fields to internal representation fields
@@ -585,7 +585,7 @@ function m_NodefileLoadNodes(headers, lines) {
           // Note that Number("") => 0
           // We don't want empty ids to be converted to id 0
           // so we explicitly replace it with NaN
-          node[internalLabel] = field==='' ? NaN : field; // ids are numbers
+          node[internalLabel] = field === '' ? NaN : field; // ids are numbers
         } else if (['created', 'updated', 'revision'].includes(internalLabel)) {
           // meta fields
           if (node.meta === undefined) node.meta = {};
@@ -653,7 +653,7 @@ function m_NodefileValidateNodes(nodes) {
     );
   } else {
     messageJsx = (
-      <ul style={{color: 'red'}}>{nodeImportErrors.map((e, i) => (<li key={i}>{e}</li>))}</ul>
+      <ul style={{ color: 'red' }}>{nodeImportErrors.map((e, i) => (<li key={i}>{e}</li>))}</ul>
     )
   }
   return { isValid, messageJsx, nodes, IMPORT_NCDATA }
@@ -721,7 +721,7 @@ async function m_EdgefileCheckHeaders(data) {
     .map(k => k.exportLabel);
 
   const { edgefile } = data;
-  if (edgefile===undefined) return { isValid: false, missingKeys, fileKeys: []}; // User cancelled
+  if (edgefile === undefined) return { isValid: false, missingKeys, fileKeys: [] }; // User cancelled
   let result = await edgefile.text();
   // Validate Data
   const lines = result.split(REGEXMatchLFNotInQuotes);
@@ -750,7 +750,7 @@ async function m_EdgefileCheckHeaders(data) {
       </div>
     )
   }
-  return {isValid, messageJsx, headers, lines};
+  return { isValid, messageJsx, headers, lines };
 }
 /**
  * Reads each line, mapping data fields to internal representation fields
@@ -802,7 +802,7 @@ function m_EdgefileLoadEdges(headers, lines) {
           // Note that Number("") => 0
           // We don't want empty ids to be converted to id 0
           // so we explicitly replace it with NaN
-          edge[internalLabel] = field==='' ? NaN : field; // ids are numbers
+          edge[internalLabel] = field === '' ? NaN : field; // ids are numbers
         } else if (['created', 'updated', 'revision'].includes(internalLabel)) {
           // meta fields
           if (edge.meta === undefined) edge.meta = {};
@@ -874,7 +874,7 @@ function m_EdgefileValidateEdges(edges) {
     );
   } else {
     messageJsx = (
-      <ul style={{color: 'red'}}>{edgeImportErrors.map((e, i) => (<li key={i}>{e}</li>))}</ul>
+      <ul style={{ color: 'red' }}>{edgeImportErrors.map((e, i) => (<li key={i}>{e}</li>))}</ul>
     )
   }
   return { isValid, messageJsx, edges, IMPORT_NCDATA }

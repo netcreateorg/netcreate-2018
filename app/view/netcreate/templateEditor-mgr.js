@@ -1,6 +1,6 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Template Logic
+  Template Editor Manager
 
   Client-side
 
@@ -71,7 +71,7 @@ MOD.ValidateTOMLFile = async data => {
     let tomlText = await tomlfile.text();
     const json = TOML.parse(tomlText);
     const isValid = true;
-    return {isValid, templateJSON: json};
+    return { isValid, templateJSON: json };
   } catch (err) {
     return { isValid: false, error: err };
   }
