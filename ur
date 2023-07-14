@@ -11,30 +11,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-const { fork } = require('child_process');
 const chockidar = require('chokidar');
 const express = require('express');
-
-/// STATE /////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let OUT = 'ExecPeg';
-let PEGGY;
-
-/// RUN NODE COMMAND /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ExecPeg() {
-  try {
-    PEGGY = fork('_ur/x-peggy.js');
-  } catch (err) {
-    console.log(err.toString());
-  }
-  PEGGY.on('message', msg => {
-    console.log('peggy:', msg);
-  });
-  PEGGY.on('error', err => {
-    console.error('peggy:error:', err);
-  });
-}
+const { fork } = require('child_process');
 
 /// WEBSERVER STUFF ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -66,12 +45,12 @@ function StartAppServer() {
 
 /// FIRST RUN /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-ExecPeg();
 StartAppServer();
+const peggy = fork('./_ur/modules/parse/_parse');
 
 /// WATCH FOR CHANGES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const watcher = chockidar.watch('./ncgo-*');
+const watcher = chockidar.watch('./app-*');
 watcher.on('change', path => {
   ExecPeg();
 });
