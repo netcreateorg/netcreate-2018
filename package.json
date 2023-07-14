@@ -10,9 +10,7 @@
     "package:debug": "brunch watch -e package_debug -s",
     "clean": "rm -rf ./public ./node_modules; npm ci",
     "debug": "LOGGY_STACKS=true BRUNCH_DEVTOOLS=true ./brunch-debug watch --server",
-    "log": "tail -f -n100 \"$(ls -at ./runtime/logs/* | head -n 1)\"",
-    "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "log": "tail -f -n100 \"$(ls -at ./runtime/logs/* | head -n 1)\""
   },
   "repository": {
     "type": "git",
@@ -26,10 +24,6 @@
   "homepage": "https://github.com/daveseah/netcreate-itest#readme",
   "devDependencies": {
     "@babel/core": "^7.11.1",
-    "@storybook/addon-actions": "^6.0.6",
-    "@storybook/addon-essentials": "^6.0.6",
-    "@storybook/addon-links": "^6.0.6",
-    "@storybook/react": "^6.0.6",
     "auto-reload-brunch": "^2.7.1",
     "babel-brunch": "^6.1.1",
     "babel-loader": "^8.1.0",
@@ -60,6 +54,7 @@
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.3",
     "d3": "^4.13.0",
+    "express": "^4.18.2",
     "fs-extra": "^6.0.1",
     "hashids": "^1.1.4",
     "ip": "^1.1.5",
