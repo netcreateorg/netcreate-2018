@@ -13,9 +13,9 @@ let grammar;
 let data;
 let parser;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const F_GRAMMAR = '_ur/modules/parse/graph-parser.peg';
-const F_DATA = '_ur/modules/parse/graph-data.txt';
-const F_TEST = '_ur/modules/parse/graph-test.txt';
+const F_GRAMMAR = './graph-parser.peg';
+const F_DATA = './graph-data.txt';
+const F_TEST = './graph-test.txt';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * This function takes a multi-line string and performs the following operations:

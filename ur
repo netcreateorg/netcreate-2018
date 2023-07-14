@@ -46,7 +46,7 @@ function StartAppServer() {
 /// FIRST RUN /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 StartAppServer();
-const peggy = fork('./_ur/modules/parse/_parse');
+const peggy = fork('_init_parse', { cwd: './_ur/parse' });
 
 /// WATCH FOR CHANGES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
