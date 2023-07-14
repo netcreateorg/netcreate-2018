@@ -1,0 +1,8 @@
+I AM A CAT: Mr Cat is Going To Sleep, "Bonanza's Claim"
+// this is a comment
+
+FILTER_CLEAR: InfoPanel, FiltersPanel
+FILTER_DEFINE: FilterGroupProperties, FocusFilter, NumbersFilter, SelectFilter, StringFilter
+FILTER_SUMMARY_UPDATE: filter-logic
+FILTERS_UPDATE: FiltersPanel
+NODE_EDIT: NodeTable
