@@ -206,7 +206,7 @@ class NetCreate extends UNISYS.Component {
             <div style={{ display: 'flex', flexFlow: 'column nowrap' }}>
               <Search />
               <NCNode />
-              <NodeSelector />
+              {/* <NodeSelector /> */}
             </div>
           </div>
           <div
