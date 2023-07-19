@@ -191,13 +191,14 @@ function m_GetHelp(node) {
  * @returns
  */
 function m_GetUpdatedDateText(nodeEdge) {
-  const d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
-  const year = String(d.getFullYear());
-  const date = (d.getMonth() + 1) + "/" + d.getDate() + "/" + year.substr(2, 4);
-  const time = d.toTimeString().substr(0, 5);
-  const author = nodeEdge._nlog ? nodeEdge._nlog[nodeEdge._nlog.length - 1] : 'unknown';
-  const dateTime = date + ' at ' + time + " by " + author;
-  return dateTime;
+  // console.warn('skipping m_GetUpdateDateText for now...revise after provenance/meta.revision is removed')
+  // const d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
+  // const year = String(d.getFullYear());
+  // const date = (d.getMonth() + 1) + "/" + d.getDate() + "/" + year.substr(2, 4);
+  // const time = d.toTimeString().substr(0, 5);
+  // const author = nodeEdge._nlog ? nodeEdge._nlog[nodeEdge._nlog.length - 1] : 'unknown';
+  // const dateTime = date + ' at ' + time + " by " + author;
+  // return dateTime;
 }
 
 
