@@ -179,9 +179,10 @@ class NCGraphRenderer {
     this.zoom = d3.zoom().on('zoom', this.m_HandleZoom);
 
     /*/ Create svg element which will contain our D3 DOM elements.
-      Add default click handler so when clicking empty space, deselect all.
-      NOTE: the svg element is actualy d3.selection object, not an svg obj.
-  /*/ this.d3svg = d3
+        Add default click handler so when clicking empty space, deselect all.
+        NOTE: the svg element is actualy d3.selection object, not an svg obj.
+    /*/
+    this.d3svg = d3
       .select(rootElement)
       .append('svg')
       .attr('id', 'netgraph')
@@ -189,7 +190,9 @@ class NCGraphRenderer {
       .attr('height', '100%') // then set center dynamically below
       .on('click', (e, event) => {
         // Deselect
-        UDATA.LocalCall('SOURCE_SELECT', { nodeLabels: [] });
+        UDATA.LocalCall('D3_SELECT_NODE', { nodeLabels: [] });
+        // DEPRECATED for now 7/2023 -- use D3_SELECT_NODE instead
+        // UDATA.LocalCall('SOURCE_SELECT', { nodeLabels: [] });
       })
       .on('mouseover', d => {
         UDATA.LocalCall('USER_HILITE_NODE', { nodeId: undefined });
@@ -363,7 +366,9 @@ class NCGraphRenderer {
       )
       .on('click', d => {
         if (DBG) console.log('clicked on', d.label, d.id);
-        UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [d.id] });
+        UDATA.LocalCall('D3_SELECT_NODE', { nodeIDs: [d.id] });
+        // DEPRECATED for now 7/2023 -- use D3_SELECT_NODE instead
+        // UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [d.id] });
         d3.event.stopPropagation();
       })
       .on('mouseover', d => {

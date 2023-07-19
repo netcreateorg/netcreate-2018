@@ -29,9 +29,10 @@ const PR = 'NCEdge';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const UNISYS = require('unisys/client');
-const EDGEMGR = require('../edge-mgr'); // handles edge synthesis
 const { EDITORTYPE } = require('system/util/enum');
 const NCUI = require('../nc-ui');
+const NCAutoSuggest = require('./NCAutoSuggest');
+const NCDialog = require('./NCDialog');
 
 let UDATA;
 const BUILTIN_FIELDS = [
@@ -44,11 +45,15 @@ const BUILTIN_FIELDS = [
   'updated',
   'revision'
 ];
-export const TABS = {
+const TABS = {
   // Also used as labels
   ATTRIBUTES: 'ATTRIBUTES',
   PROVENANCE: 'PROVENANCE'
 };
+
+const EDGE_NOT_SET_LABEL = '...';
+const ARROW_DOWN = `\u2193`;
+const ARROW_UPDOWN = `\u21F5`;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -82,31 +87,49 @@ class NCEdge extends UNISYS.Component {
     this.unlockEdge = this.unlockEdge.bind(this);
     this.isEdgeLocked = this.isEdgeLocked.bind(this);
     this.editEdge = this.editEdge.bind(this);
+    this.UpdateDerivedValues = this.UpdateDerivedValues.bind(this);
+    this.ValidateSourceTarget = this.ValidateSourceTarget.bind(this);
+    this.OfferToCreateNewNode = this.OfferToCreateNewNode.bind(this);
+    this.CreateNode = this.CreateNode.bind(this);
+    this.BackToEditing = this.BackToEditing.bind(this);
+    this.SetSourceTarget = this.SetSourceTarget.bind(this);
+    this.ThenSaveSourceTarget = this.ThenSaveSourceTarget.bind(this);
+    // DATA SAVING
     this.saveEdge = this.saveEdge.bind(this);
     // HELPER METHODS
     this.setBackgroundColor = this.setBackgroundColor.bind(this);
-    // UI HANDLERS
+    this.SetSourceTargetNodeColor = this.SetSourceTargetNodeColor.bind(this);
+    this.SwapSourceAndTarget = this.SwapSourceAndTarget.bind(this);
+    // UI MANIPULATION METHODS
+    this.EnableEditMode = this.EnableEditMode.bind(this);
+    // UI EVENT HANDLERS
     this.uiSelectTab = this.uiSelectTab.bind(this);
     this.uiRequestEditEdge = this.uiRequestEditEdge.bind(this);
     this.uiDeselectEdge = this.uiDeselectEdge.bind(this);
-    this.enableEditMode = this.enableEditMode.bind(this);
     this.uiCancelEditMode = this.uiCancelEditMode.bind(this);
     this.uiDisableEditMode = this.uiDisableEditMode.bind(this);
     this.uiInputUpdate = this.uiInputUpdate.bind(this);
+    this.UIEnableSourceTargetSelect = this.UIEnableSourceTargetSelect.bind(this);
+    this.UISourceTargetInputUpdate = this.UISourceTargetInputUpdate.bind(this);
+    this.UISourceTargetInputSelect = this.UISourceTargetInputSelect.bind(this);
     // RENDERERS -- Main
-    this.renderView = this.renderView.bind(this);
-    this.renderEdit = this.renderEdit.bind(this);
+    this.RenderView = this.RenderView.bind(this);
+    this.RenderEdit = this.RenderEdit.bind(this);
+    // FORM RENDERERS
+    this.RenderSourceTargetButton = this.RenderSourceTargetButton.bind(this);
 
     /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
 
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     /// REGISTER LISTENERS
+    UDATA.OnAppStateChange('SESSION', this.updateSession);
     UDATA.OnAppStateChange('SELECTION', this.updateSelection);
     UDATA.HandleMessage('EDGE_OPEN', this.reqLoadEdge);
     UDATA.HandleMessage('EDGE_DESELECT', this.clearSelection);
     UDATA.HandleMessage('EDIT_PERMISSIONS_UPDATE', this.setPermissions);
     UDATA.HandleMessage('EDGE_EDIT', this.editEdge); // EdgeTable request
+    UDATA.HandleMessage('SELECT_SOURCETARGET', this.SetSourceTarget);
   }
 
   componentDidMount() {
@@ -119,11 +142,13 @@ class NCEdge extends UNISYS.Component {
     window.addEventListener('unload', this.doUnload);
   }
   componentWillUnmount() {
+    UDATA.AppStateChangeOff('SESSION', this.updateSession);
     UDATA.AppStateChangeOff('SELECTION', this.updateSelection);
     UDATA.UnhandleMessage('EDGE_OPEN', this.reqLoadEdge);
     UDATA.UnhandleMessage('EDGE_DESELECT', this.clearSelection);
     UDATA.UnhandleMessage('EDIT_PERMISSIONS_UPDATE', this.setPermissions);
     UDATA.UnhandleMessage('EDGE_EDIT', this.editEdge);
+    UDATA.UnhandleMessage('SELECT_SOURCETARGET', this.SetSourceTarget);
     window.removeEventListener('beforeunload', this.checkUnload);
     window.removeEventListener('unload', this.doUnload);
   }
@@ -133,40 +158,49 @@ class NCEdge extends UNISYS.Component {
   ///
   resetState() {
     this.setState({
-      // SYSTEM STATE
-      // isLoggedIn: false, // don't clear session state!
-      // previousState: {},
-      // // UI State
-      editBtnDisable: false,
-      editBtnHide: false,
-      viewMode: NCUI.VIEWMODE.VIEW,
-      selectedTab: TABS.ATTRIBUTES,
-      // backgroundColor: 'transparent',
-      isLockedByDB: false, // shows db lock message next to Edit Node button
-      isLockedByTemplate: false,
-      isLockedByImport: false,
-      editLockMessage: '',
-      // EDGE DEFS
+      // EDGE DEFS 'core state data'
       id: null,
-      source: null,
-      target: null,
+      // source: null, // avoid ambiguous keys, use sourceId instead
+      // target: null, // avoid ambiguous keys, use targetId instead
       sourceId: null,
       targetId: null,
-      sourceNode: undefined,
-      targetNode: undefined,
       attributes: [],
-      provenance: []
+      provenance: [],
       // created: undefined,
       // updated: undefined,
       // revision: 0
+
+      // SYSTEM STATE
+      // isLoggedIn: false, // don't clear session state!
+      // previousState: {},
+
+      // UI State 'u'
+      uEditBtnDisable: false,
+      uEditBtnHide: false,
+      uViewMode: NCUI.VIEWMODE.VIEW,
+      uSelectedTab: TABS.ATTRIBUTES,
+      uSelectSourceTarget: undefined,
+      uBackgroundColor: '#ccc', // edge component bgcolor determined by type/COLORMAP
+      uIsLockedByDB: false, // shows db lock message next to Edit Node button
+      uIsLockedByTemplate: false,
+      uIsLockedByImport: false,
+      uEditLockMessage: '',
+      uNewNodeKey: undefined,
+      uNewNodeLabel: undefined,
+
+      // DERIVED VALUES 'd'
+      dSourceNode: undefined,
+      dSourceNodeColor: null,
+      dTargetNode: undefined,
+      dTargetNodeColor: null
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// EVENT HANDLERS
+  /// SYSTEM/NETWORK EVENT HANDLERS
   ///
   checkUnload(event) {
     event.preventDefault();
-    if (this.state.viewMode === NCUI.VIEWMODE.EDIT) {
+    if (this.state.uViewMode === NCUI.VIEWMODE.EDIT) {
       (event || window.event).returnValue = null;
     } else {
       Reflect.deleteProperty(event, 'returnValue');
@@ -174,7 +208,7 @@ class NCEdge extends UNISYS.Component {
     return event;
   }
   doUnload(event) {
-    if (this.state.viewMode === NCUI.VIEWMODE.EDIT) {
+    if (this.state.uViewMode === NCUI.VIEWMODE.EDIT) {
       UDATA.NetCall('SRV_DBUNLOCKEDGE', { edgeID: this.state.id });
       UDATA.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.EDGE });
     }
@@ -209,41 +243,54 @@ class NCEdge extends UNISYS.Component {
     const edgeIsLocked = data.lockedEdges.includes(id);
     this.setState(
       {
-        isLockedByDB: edgeIsLocked,
-        isLockedByTemplate: data.templateBeingEdited,
-        isLockedByImport: data.importActive
+        uIsLockedByDB: edgeIsLocked,
+        uIsLockedByTemplate: data.templateBeingEdited,
+        uIsLockedByImport: data.importActive
       },
       () => this.updatePermissions()
     );
   }
   updatePermissions() {
-    const { isLockedByDB, isLockedByTemplate, isLockedByImport } = this.state;
+    const { uIsLockedByDB, uIsLockedByTemplate, uIsLockedByImport } = this.state;
     const isLoggedIn = this.isLoggedIn();
     const TEMPLATE = UDATA.AppState('TEMPLATE');
-    let editLockMessage = '';
-    let editBtnDisable = false;
-    let editBtnHide = true;
-    if (isLoggedIn) editBtnHide = false;
-    if (isLockedByDB) {
-      editBtnDisable = true;
-      editLockMessage += TEMPLATE.edgeIsLockedMessage;
+    let uEditLockMessage = '';
+    let uEditBtnDisable = false;
+    let uEditBtnHide = true;
+    if (isLoggedIn) uEditBtnHide = false;
+    if (uIsLockedByDB) {
+      uEditBtnDisable = true;
+      uEditLockMessage += TEMPLATE.edgeIsLockedMessage;
     }
-    if (isLockedByTemplate) {
-      editBtnDisable = true;
-      editLockMessage += TEMPLATE.templateIsLockedMessage;
+    if (uIsLockedByTemplate) {
+      uEditBtnDisable = true;
+      uEditLockMessage += TEMPLATE.templateIsLockedMessage;
     }
-    if (isLockedByImport) {
-      editBtnDisable = true;
-      editLockMessage += TEMPLATE.importIsLockedMessage;
+    if (uIsLockedByImport) {
+      uEditBtnDisable = true;
+      uEditLockMessage += TEMPLATE.importIsLockedMessage;
     }
-    this.setState({ editBtnDisable, editBtnHide, editLockMessage });
+    this.setState({ uEditBtnDisable, uEditBtnHide, uEditLockMessage });
   }
   clearSelection() {
     this.resetState();
   }
   updateSelection(data) {
-    // const edge = data.edges[0]; // select the first node
-    // this.loadEdge(edge);
+    const { sourceTargetSelect } = this.state;
+    const selectedNode = data.nodes[0]; // select the first node
+    if (sourceTargetSelect === 'source') {
+      this.setState({
+        sourceId: selectedNode.id,
+        dSourceNode: selectedNode
+      });
+    } else if (sourceTargetSelect === 'target') {
+      this.setState({
+        targetId: selectedNode.id,
+        dTargetNode: selectedNode
+      });
+    } else {
+      // ignore the selection
+    }
   }
   reqLoadEdge(data) {
     // handler for UDATA call, interprets the net `data`
@@ -254,21 +301,16 @@ class NCEdge extends UNISYS.Component {
   /// DATA LOADING
   ///
   loadEdge(edge) {
-    const { viewMode } = this.state;
+    const { uViewMode } = this.state;
 
     // If we're editing, ignore the select!
-    if (viewMode === NCUI.VIEWMODE.EDIT) return;
+    if (uViewMode === NCUI.VIEWMODE.EDIT) return;
 
     // If no edge was selected, deselect
     if (!edge) {
       this.clearSelection();
       return;
     }
-
-    // Look up source/target nodes
-    const NCDATA = UDATA.AppState('NCDATA');
-    const sourceNode = NCDATA.nodes.find(n => n.id === edge.source);
-    const targetNode = NCDATA.nodes.find(n => n.id === edge.target);
 
     // Load the edge
     const attributes = this.loadAttributes(edge);
@@ -277,25 +319,13 @@ class NCEdge extends UNISYS.Component {
         id: edge.id,
         sourceId: edge.source,
         targetId: edge.target,
-        attributes: attributes,
+        attributes: attributes
         // provenance: edge.provenance,
-        sourceNode,
-        targetNode
         // created: edge.created,
         // updated: edge.updated,
         // revision: edge.revision
       },
-      () => {
-        this.setBackgroundColor();
-        // setTimeout(() => {
-        this.setState({ animateHeight: 'fullheight' }); // animate transition
-        // }, 500);
-        this.isEdgeLocked(edgeIsLocked => {
-          this.setState({ isLockedByDB: edgeIsLocked }, () =>
-            this.updatePermissions()
-          );
-        });
-      }
+      () => this.UpdateDerivedValues()
     );
   }
   /**
@@ -364,6 +394,9 @@ class NCEdge extends UNISYS.Component {
     let edgeIsLocked = false;
     UDATA.NetCall('SRV_DBISEDGELOCKED', { edgeID: id }).then(data => {
       if (data.NOP) {
+        // ISSUE Server will return error can't lock if the edge
+        // hadn't been created yet.
+        // do we skip the lock here?
         console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
       } else if (data.locked) {
         console.log(
@@ -380,10 +413,169 @@ class NCEdge extends UNISYS.Component {
    */
   editEdge() {
     this.lockEdge(lockSuccess => {
-      this.setState({ isLockedByDB: !lockSuccess }, () => {
-        if (lockSuccess) this.enableEditMode();
+      this.setState({ uIsLockedByDB: !lockSuccess }, () => {
+        if (lockSuccess) this.EnableEditMode();
       });
     });
+  }
+
+  /**
+   * After loading or updating edge core parameters, run this to
+   * load and update any derived values.
+   */
+  UpdateDerivedValues() {
+    const { sourceId, targetId } = this.state;
+    // Look up source/target nodes
+    const NCDATA = UDATA.AppState('NCDATA');
+    const dSourceNode = NCDATA.nodes.find(n => n.id === sourceId) || {
+      label: EDGE_NOT_SET_LABEL
+    };
+    const dTargetNode = NCDATA.nodes.find(n => n.id === targetId) || {
+      label: EDGE_NOT_SET_LABEL
+    };
+    this.setState(
+      {
+        dSourceNode,
+        dTargetNode
+      },
+      () => {
+        this.setBackgroundColor();
+        this.SetSourceTargetNodeColor();
+        // setTimeout(() => {
+        this.setState({ animateHeight: 'fullheight' }); // animate transition
+        // }, 500);
+        this.isEdgeLocked(edgeIsLocked => {
+          this.setState({ uIsLockedByDB: edgeIsLocked }, () =>
+            this.updatePermissions()
+          );
+        });
+      }
+    );
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// SET SOURCE / TARGET
+  ///
+  /// Selecting a source or target node is a multi-step process.
+  /// 1. First, you need to Enable editing
+  /// 2. Then, you need to click on a Source or Target node to activate
+  ///    the source or target for selection
+  /// 3. Once you enable source or target editing, you need to decide
+  ///    how you want to select the node...
+  ///    A. Click on the node on the d3 graph to select the node, or...
+  ///    B. Type the full node name, or...
+  ///    C. Type a partial name, and..
+  ///       and arrow up/down to highlight
+  ///       and hit Enter to select
+  ///       or click name to select
+  ///    D. Type a new node name and
+  ///       and hit Enter to add a new node
+  ///       and show dialog confirm creating a new node
+  /// 5. Click "Save" to exit edit mode
+  ///
+  /**
+   * User has selected a new source or target
+   * validate it to make sure it exists
+   * if it doesn't, offer to create a new one
+   * @param {string} key 'source' or 'target'
+   * @param {string} value
+   * @param {number} id
+   */
+  ValidateSourceTarget(key, value, id) {
+    // if we have an id, then the selected source/target is an existing node
+    // but we should probably validate it anyway?
+    if (id) {
+      // find node by 'id'
+      UDATA.LocalCall('FIND_NODE_BY_PROP', {
+        key: 'id',
+        searchString: id
+      }).then(data => {
+        if (data.nodes.length > 0) {
+          const node = data.nodes[0];
+          this.ThenSaveSourceTarget(key, node);
+        } else {
+          this.OfferToCreateNewNode(key, value);
+        }
+      });
+    } else {
+      // find node by 'label'
+      UDATA.LocalCall('FIND_NODE_BY_PROP', {
+        key: 'label',
+        searchString: value
+      }).then(data => {
+        if (data.nodes.length > 0) {
+          const node = data.nodes[0];
+          this.ThenSaveSourceTarget(key, node);
+        } else {
+          this.OfferToCreateNewNode(key, value);
+        }
+      });
+    }
+  }
+  /**
+   * User has input a new node name that doesn't match an existing node
+   * so offer to create a new node
+   * @param {string} key 'source' or 'target'
+   * @param {string} value
+   */
+  OfferToCreateNewNode(key, value) {
+    this.setState({
+      uNewNodeKey: key,
+      uNewNodeLabel: value
+    });
+  }
+  /**
+   * NCDialog offer to create a new node -- user decided to create a new
+   * new node, so add it.
+   */
+  CreateNode() {
+    const { uNewNodeKey, uNewNodeLabel } = this.state;
+    UDATA.LocalCall('NODE_CREATE', { label: uNewNodeLabel }).then(node => {
+      this.setState({ uNewNodeKey: undefined, uNewNodeLabel: undefined }, () =>
+        this.ThenSaveSourceTarget(uNewNodeKey, node)
+      );
+    });
+  }
+  /**
+   * NCDialog offer to create a new node -- user clicked Cancel so
+   * go back to editing the node
+   */
+  BackToEditing() {
+    this.setState({ uNewNodeKey: undefined, uNewNodeLabel: undefined });
+  }
+  /**
+   * User has selected a source or target node by clicking on D3 graph
+   * Called by Selection Manager via SELECT_SOURCETARGET
+   * @param {Object} data
+   * @param {Object} data.node
+   */
+  SetSourceTarget(data) {
+    const { uSelectSourceTarget } = this.state;
+    UDATA.LocalCall('SELECTMGR_SET_MODE', { mode: 'normal' });
+    this.ThenSaveSourceTarget(uSelectSourceTarget, data.node);
+  }
+  /**
+   * Save the source or target after either creating new node or selecting
+   * an existing ndoe.
+   * Runs after validateSourceTarget
+   * @param {string} key 'source' or 'target'
+   * @param {Object} node {id, label}
+   */
+  ThenSaveSourceTarget(key, node) {
+    // MUST save sourceId or targetId to determine source/target
+    // but ideally set all three?  because that's what loadEdge does?
+    const state = {
+      uSelectSourceTarget: undefined,
+      uNewNodeKey: undefined, // clear NCDialog
+      uNewNodeLabel: undefined // clear NCDialog
+    };
+    if (key === 'source') {
+      state.sourceId = node.id;
+    } else {
+      // 'target'
+      state.targetId = node.id;
+    }
+    this.setState(state, () => this.UpdateDerivedValues());
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -391,15 +583,19 @@ class NCEdge extends UNISYS.Component {
   ///
   saveEdge() {
     const { id, sourceId, targetId, attributes, provenance } = this.state;
-
-    const edge = { id, sourceId, targetId, provenance };
+    const edge = {
+      id,
+      source: sourceId,
+      target: targetId,
+      provenance
+    };
     Object.keys(attributes).forEach(k => (edge[k] = attributes[k]));
-
     this.AppCall('DB_UPDATE', { edge }).then(() => {
       this.unlockEdge(() => {
         this.setState({
-          viewMode: NCUI.VIEWMODE.VIEW,
-          isLockedByDB: false
+          uViewMode: NCUI.VIEWMODE.VIEW,
+          uIsLockedByDB: false,
+          uSelectSourceTarget: undefined
         });
       });
     });
@@ -409,22 +605,78 @@ class NCEdge extends UNISYS.Component {
   /// HELPER METHODS
   ///
   /**
-   * Sets the background color of the node editor via `backgroundColor` state.
+   * Sets the background color of the node editor via `uBackgroundColor` state.
    * Currently the background color is determined by the template edge type
    * color mapping.  This will eventually be replaced with a color manager.
    */
   setBackgroundColor() {
     const { attributes } = this.state;
-    const type = attributes ? attributes.type : ''; // "" matches undefined
+    const type = attributes && attributes.type;
     const COLORMAP = UDATA.AppState('COLORMAP');
-    this.setState({ backgroundColor: COLORMAP.edgeColorMap[type] });
+    const uBackgroundColor = COLORMAP.edgeColorMap[type] || '#555555';
+    this.setState({ uBackgroundColor });
+  }
+  SetSourceTargetNodeColor() {
+    const { dSourceNode, dTargetNode } = this.state;
+    const COLORMAP = UDATA.AppState('COLORMAP');
+    const dSourceNodeColor =
+      COLORMAP.nodeColorMap[dSourceNode ? dSourceNode.type : ''];
+    const dTargetNodeColor =
+      COLORMAP.nodeColorMap[dTargetNode ? dTargetNode.type : ''];
+    this.setState({ dSourceNodeColor, dTargetNodeColor });
+  }
+  SwapSourceAndTarget() {
+    const {
+      sourceId,
+      dSourceNode,
+      dSourceNodeColor,
+      targetId,
+      dTargetNode,
+      dTargetNodeColor
+    } = this.state;
+
+    // swap
+    const swappedTargetId = sourceId;
+    const swappedSourceId = targetId;
+    const swappedTargetNode = dSourceNode;
+    const swappedSourceNode = dTargetNode;
+    const swappedTargetNodeColor = dSourceNodeColor;
+    const swappedSourceNodeColor = dTargetNodeColor;
+
+    this.setState({
+      sourceId: swappedSourceId,
+      dSourceNode: swappedSourceNode,
+      dSourceNodeColor: swappedSourceNodeColor,
+      targetId: swappedTargetId,
+      dTargetNode: swappedTargetNode,
+      dTargetNodeColor: swappedTargetNodeColor
+    });
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// UI MANIPULATION METHODS
+  ///
+  EnableEditMode() {
+    const { uSelectedTab, sourceId, targetId, attributes, provenance } = this.state;
+    const previousState = {
+      sourceId,
+      targetId,
+      attributes: Object.assign({}, attributes)
+      // provenance: Object.assign({}, provenance) // uncomment after provenence is implemented
+    };
+    this.setState({
+      uViewMode: NCUI.VIEWMODE.EDIT,
+      uSelectedTab,
+      previousState
+    });
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UI EVENT HANDLERS
   ///
   uiSelectTab(event) {
-    this.setState({ selectedTab: event.target.value });
+    event.stopPropagation();
+    this.setState({ uSelectedTab: event.target.value });
   }
 
   uiRequestEditEdge(event) {
@@ -436,20 +688,6 @@ class NCEdge extends UNISYS.Component {
     UDATA.LocalCall('EDGE_DESELECT');
   }
 
-  enableEditMode() {
-    const { selectedTab, sourceId, targetId, attributes, provenance } = this.state;
-    const previousState = {
-      sourceId,
-      targetId,
-      attributes: Object.assign({}, attributes)
-      // provenance: Object.assign({}, provenance) // uncomment after provenence is implemented
-    };
-    this.setState({
-      viewMode: NCUI.VIEWMODE.EDIT,
-      selectedTab,
-      previousState
-    });
-  }
   uiCancelEditMode() {
     const { previousState } = this.state;
     // restore previous state
@@ -457,17 +695,21 @@ class NCEdge extends UNISYS.Component {
       {
         sourceId: previousState.sourceId,
         targetId: previousState.targetId,
-        attributes: previousState.attributes
+        attributes: previousState.attributes,
+        uSelectSourceTarget: undefined
         // provenance: Object.assign({}, provenance) // uncomment after provenence is implemented
       },
-      () => this.uiDisableEditMode()
+      () => {
+        this.UpdateDerivedValues();
+        this.uiDisableEditMode();
+      }
     );
   }
   uiDisableEditMode() {
     this.unlockEdge(() => {
       this.setState({
-        viewMode: NCUI.VIEWMODE.VIEW,
-        isLockedByDB: false
+        uViewMode: NCUI.VIEWMODE.VIEW,
+        uIsLockedByDB: false
       });
       UDATA.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.EDGE });
     });
@@ -485,92 +727,122 @@ class NCEdge extends UNISYS.Component {
     }
   }
 
+  UIEnableSourceTargetSelect(event) {
+    const key = event.target.id;
+    this.setState({ uSelectSourceTarget: key });
+    UDATA.LocalCall('SELECTMGR_SET_MODE', { mode: 'sourcetarget' });
+  }
+
+  /**
+   * Handles keystrokes as user inputs new node in form
+   * @param {string} key
+   * @param {string} value
+   */
+  UISourceTargetInputUpdate(key, value) {
+    const updatedState = {};
+    if (key === 'source') {
+      updatedState.dSourceNode = { label: value };
+    } else {
+      updatedState.dTargetNode = { label: value };
+    }
+    this.setState(updatedState);
+  }
+
+  /**
+   * User has selected a node with NCAutoSuggest, either
+   * - Clicking on a suggested node
+   * - Hitting Enter with the form field showing either a valid node or a new node
+   * @param {string} key
+   * @param {string} value
+   */
+  UISourceTargetInputSelect(key, value, id) {
+    this.ValidateSourceTarget(key, value, id);
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// RENDER METHODS
-  renderView() {
+  RenderView() {
     const {
-      selectedTab,
-      backgroundColor,
+      uSelectedTab,
+      uBackgroundColor,
       animateHeight,
-      editBtnDisable,
-      editBtnHide,
-      editLockMessage,
-      sourceNode,
-      targetNode
+      uEditBtnDisable,
+      uEditBtnHide,
+      uEditLockMessage,
+      dSourceNode = { label: undefined },
+      dTargetNode = { label: undefined }
     } = this.state;
-    const bgcolor = backgroundColor + '44'; // hack opacity
-    const label = sourceNode.label + ' \u2794 ' + targetNode.label;
+    const bgcolor = uBackgroundColor + '66'; // hack opacity
     const defs = UDATA.AppState('TEMPLATE').edgeDefs;
-
     return (
       <div className={`nccomponent ncedge ${animateHeight}`}>
         <div
           className="view"
-          style={{ background: bgcolor }}
+          style={{ backgroundColor: bgcolor }}
           onClick={this.uiDeselectEdge}
         >
           {/* BUILT-IN - - - - - - - - - - - - - - - - - */}
-          <div className="nodelabel">{NCUI.RenderStringValue('label', label)}</div>
           <div className="formview">
             {NCUI.RenderLabel('source', defs['source'].displayLabel)}
-            {NCUI.RenderStringValue('source', sourceNode.label)}
+            {this.RenderSourceTargetButton('source', dSourceNode.label, true)}
+            <div />
+            <div className="targetarrow">{ARROW_DOWN}</div>
             {NCUI.RenderLabel('target', defs['target'].displayLabel)}
-            {NCUI.RenderStringValue('target', targetNode.label)}
+            {this.RenderSourceTargetButton('target', dTargetNode.label, true)}
           </div>
           {/* TABS - - - - - - - - - - - - - - - - - - - */}
           <div className="tabcontainer">
             {NCUI.RenderTabSelectors(TABS, this.state, this.uiSelectTab)}
             <div className="tabview">
-              {selectedTab === TABS.ATTRIBUTES &&
+              {uSelectedTab === TABS.ATTRIBUTES &&
                 NCUI.RenderAttributesTabView(this.state, defs)}
-              {selectedTab === TABS.PROVENANCE &&
+              {uSelectedTab === TABS.PROVENANCE &&
                 NCUI.RenderProvenanceTab(this.state, defs)}
             </div>
           </div>
           {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
           <div className="controlbar">
-            {!editBtnHide && selectedTab !== TABS.EDGES && (
+            {!uEditBtnHide && uSelectedTab !== TABS.EDGES && (
               <button
                 id="editbtn"
                 onClick={this.uiRequestEditEdge}
-                disabled={editBtnDisable}
+                disabled={uEditBtnDisable}
               >
                 Edit
               </button>
             )}
           </div>
-          {editLockMessage && (
-            <div className="message warning">{editLockMessage}</div>
+          {uEditLockMessage && (
+            <div className="message warning">{uEditLockMessage}</div>
           )}
         </div>
       </div>
     );
   }
 
-  renderEdit() {
+  RenderEdit() {
     const {
-      selectedTab,
-      backgroundColor,
+      uSelectedTab,
+      uSelectSourceTarget,
+      uBackgroundColor,
+      uNewNodeLabel,
       animateHeight,
-      editBtnDisable,
-      editBtnHide,
-      editLockMessage,
-      sourceNode,
-      targetNode
+      dSourceNode,
+      dTargetNode
     } = this.state;
-    const label = sourceNode.label + ' \u2794 ' + targetNode.label;
-    const bgcolor = backgroundColor + '66'; // hack opacity
+    const bgcolor = uBackgroundColor + '99'; // hack opacity
     const defs = UDATA.AppState('TEMPLATE').edgeDefs;
-    // const matchList = matchingNodeLabels
-    //   ? matchingNodeLabels.map(l => <div key={l}>{l}</div>)
-    //   : undefined;
-    // console.log(
-    //   'matchlist',
-    //   label,
-    //   matchingNodeLabels && matchingNodeLabels.includes(label),
-    //   matchList,
-    //   matchingNodeLabels
-    // );
+    const AskNodeDialog = uNewNodeLabel ? (
+      <NCDialog
+        message={`Node "${uNewNodeLabel}" does not exist.  Do you want to create it?`}
+        okmessage={`Create "${uNewNodeLabel}" node`}
+        onOK={this.CreateNode}
+        cancelmessage="Back to Edge Edit"
+        onCancel={this.BackToEditing}
+      />
+    ) : (
+      ''
+    );
     return (
       <div>
         <div className="screen"></div>
@@ -579,19 +851,33 @@ class NCEdge extends UNISYS.Component {
             className="edit"
             style={{
               background: bgcolor,
-              borderColor: backgroundColor
+              borderColor: uBackgroundColor
             }}
           >
             {/* BUILT-IN - - - - - - - - - - - - - - - - - */}
-            <div className="nodelabel">{NCUI.RenderStringValue('label', label)}</div>
-            {/* {matchList && <div className="matchlist">{matchList}</div>} */}
+            <div className="formview">
+              {NCUI.RenderLabel('source', defs['source'].displayLabel)}
+              {this.RenderSourceTargetButton('source', dSourceNode.label)}
+              <div />
+              <div className="targetarrow">
+                <button
+                  className="swapbtn"
+                  onClick={this.SwapSourceAndTarget}
+                  title="Swap 'Source' and 'Target' nodes"
+                >
+                  {ARROW_UPDOWN}
+                </button>
+              </div>
+              {NCUI.RenderLabel('target', defs['target'].displayLabel)}
+              {this.RenderSourceTargetButton('target', dTargetNode.label)}
+            </div>
             {/* TABS - - - - - - - - - - - - - - - - - - - */}
             <div className="tabcontainer">
               {NCUI.RenderTabSelectors(TABS, this.state, this.uiSelectTab)}
               <div className="tabview">
-                {selectedTab === TABS.ATTRIBUTES &&
+                {uSelectedTab === TABS.ATTRIBUTES &&
                   NCUI.RenderAttributesTabEdit(this.state, defs, this.uiInputUpdate)}
-                {selectedTab === TABS.PROVENANCE &&
+                {uSelectedTab === TABS.PROVENANCE &&
                   NCUI.RenderProvenanceTab(this.state, defs)}
               </div>
             </div>
@@ -600,22 +886,71 @@ class NCEdge extends UNISYS.Component {
               <button className="cancelbtn" onClick={this.uiCancelEditMode}>
                 Cancel
               </button>
-              <button onClick={this.saveEdge}>Save</button>
+              <button onClick={this.saveEdge} disabled={uSelectSourceTarget}>
+                Save
+              </button>
             </div>
           </div>
         </div>
+        {AskNodeDialog}
       </div>
     );
   }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// FORM RENDERERS
+  ///
+
+  /**
+   * The Source and Target Buttons are used for
+   * - Displaying the source / target name in the view/edit panel
+   * - Click on Source or Target to select a new one
+   * @param {string} key
+   * @param {string} value
+   * @param {boolean} disabled Used by renderView to disable source/target selection buttons
+   * @returns {jsx}
+   */
+  RenderSourceTargetButton(key, value, disabled) {
+    const { uSelectSourceTarget, dSourceNodeColor, dTargetNodeColor } = this.state;
+    let color;
+    if (!disabled && (uSelectSourceTarget === key || value === undefined)) {
+      return (
+        <NCAutoSuggest
+          statekey={key}
+          value={value}
+          onChange={this.UISourceTargetInputUpdate}
+          onSelect={this.UISourceTargetInputSelect}
+        />
+      );
+    } else {
+      color = key === 'source' ? dSourceNodeColor : dTargetNodeColor;
+      return (
+        <div>
+          <button
+            id={key}
+            key={`${key}value`}
+            className="sourcetargetbtn"
+            onClick={this.UIEnableSourceTargetSelect}
+            style={{ backgroundColor: color + '55', borderColor: color }}
+            disabled={disabled}
+          >
+            {value}
+          </button>
+        </div>
+      );
+    }
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// MAIN RENDER
+  ///
   render() {
-    const { id, viewMode } = this.state;
+    const { id, uViewMode } = this.state;
     if (!id) return ''; // nothing selected
-    if (viewMode === NCUI.VIEWMODE.VIEW) {
-      return this.renderView();
+    if (uViewMode === NCUI.VIEWMODE.VIEW) {
+      return this.RenderView();
     } else {
-      return this.renderEdit();
+      return this.RenderEdit();
     }
   }
 }

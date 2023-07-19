@@ -12,6 +12,9 @@
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
+const UNISYS = require('unisys/client');
+const MOD = UNISYS.NewModule(module.id);
+const UDATA = UNISYS.NewDataLink(MOD);
 
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
@@ -73,20 +76,24 @@ function m_UISelectInputUpdate(event, cb) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// LAYOUT RENDERERS
+///
 function RenderTabSelectors(TABS, state, onclick) {
-  const { selectedTab, viewMode } = state;
+  const { uSelectedTab, uViewMode } = state;
+  const columnsDef = `repeat(${Object.keys(TABS).length}, 1fr)`;
   return (
-    <div className="tabselectors">
+    <div className="tabselectors"
+      style={{ color: 'red', gridTemplateColumns: columnsDef }}
+    >
       {Object.keys(TABS).map(k => {
         return (
           <button
             id={k}
             key={k}
             type="button"
-            className={selectedTab === TABS[k] ? 'selected' : ''}
+            className={uSelectedTab === TABS[k] ? 'selected' : ''}
             onClick={onclick}
             value={TABS[k]}
-            disabled={viewMode === VIEWMODE.EDIT}
+            disabled={uViewMode === VIEWMODE.EDIT}
           >
             {TABS[k]}
           </button>
@@ -151,11 +158,12 @@ function RenderProvenanceTab(state, defs) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// FORM RENDERERS
+///
 function RenderLabel(key, label) {
   return <label htmlFor={key} key={`${key}label`}>{label}</label>
 }
 function RenderStringValue(key, value) {
-  return <div id={key} key={`${key}value`}>{value}</div>
+  return <div id={key} key={`${key}value`} className="viewvalue">{value}</div>
 }
 /**
  * There are two levels of callbacks necessary here.
@@ -167,26 +175,6 @@ function RenderStringValue(key, value) {
  * @returns
  */
 function m_RenderStringInput(key, value, cb) {
-  return (
-    <input
-      id={key}
-      key={`${key}input`}
-      value={value}
-      type="string"
-      onChange={event => m_UIStringInputUpdate(event, cb)}
-    />
-  );
-}
-/**
- * There are two levels of callbacks necessary here.
- * 1. The `onChange` handler (in this module) processes the input's onChange event, and...
- * 2. ...then passes the resulting value to the `cb` function in the parent module.
- * @param {string} key
- * @param {string} value
- * @param {function} cb
- * @returns
- */
-function m_RenderLabelInput(key, value, cb) {
   return (
     <input
       id={key}

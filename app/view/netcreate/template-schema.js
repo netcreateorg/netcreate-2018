@@ -132,7 +132,7 @@ MOD.EDGETYPEOPTIONS = {
         type: 'string',
         title: 'Label',
         default: '' // leave '' for "No Type Selected"
-      },
+      }
     }
   }
 }

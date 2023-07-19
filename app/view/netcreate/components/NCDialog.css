@@ -1,0 +1,37 @@
+.dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 100;
+}
+
+.dialog .screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #0006;
+  z-index: 101;
+}
+
+.dialog .dialogwindow {
+  position: relative;
+  background-color: white;
+  padding: 25px;
+  z-index: 110;
+}
+
+.dialog .dialogmessage {
+  margin-bottom: 25px;
+}
+.dialog .dialogcontrolbar {
+  display: flex;
+  justify-content: right;
+}

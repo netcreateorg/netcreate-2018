@@ -12,6 +12,7 @@
   background-color: #fff; /* knock out gray body bg */
   border-radius: 15px;
   position: relative;
+  font-size: 14px;
   z-index: 10;
 }
 
@@ -37,13 +38,18 @@
 }
 .nccomponent input {
   width: 100%;
-  border-radius: 5px;
+  border-radius: 2px;
   border-color: #0006;
   border-width: 1px;
   border-style: solid;
   background-color: #fff8;
   margin-bottom: 5px;
   padding: 0 5px;
+}
+.nccomponent input.invalid,
+.nccomponent input.invalid:focus {
+  outline: #f00;
+  border-color: #f00;
 }
 .nccomponent select {
   width: 100%;
@@ -59,6 +65,36 @@
   background-color: transparent;
   border-color: #999;
   color: #666;
+}
+.nccomponent button.sourcetargetbtn {
+  border-radius: 15px;
+  width: 100%;
+  margin-left: 0;
+  padding: 0 8px;
+  text-align: left;
+}
+.nccomponent button.sourcetargetbtn:disabled {
+  border: none;
+  color: #333;
+}
+.nccomponent button.swapbtn {
+  font-size: 18px;
+  line-height: 18px;
+  width: 25px;
+  margin: 7px 0 5px 0;
+  padding: 3px;
+}
+.nccomponent button.edgebutton {
+  background-color: #0003;
+  border-radius: 10px;
+  border-color: transparent;
+  width: 100%;
+  margin: 0 0 3px 0;
+  text-align: left;
+  overflow: hidden;
+}
+.nccomponent button.addedgebutton {
+  margin: 5px;
 }
 
 /* Text Style */
@@ -92,7 +128,7 @@
 .nccomponent.ncedge .view,
 .nccomponent.ncedge .edit {
   border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .nccomponent .view,
@@ -108,32 +144,35 @@
 
 .nccomponent .nodelabel {
   padding: 5px 10px;
-  font-size: 18px;
   font-weight: bold;
+  text-align: left;
   overflow: hidden;
 }
 .nccomponent .matchlist {
   position: fixed;
   color: #3339;
   background-color: #fff;
-  margin: -10px 0 0 10px;
-  padding: 3px 10px;
+  margin: -5px 0 0 10px;
+  padding: 3px 0;
   font-size: 12px;
   z-index: 15;
 }
-.nccomponent .edgebutton {
-  background-color: #0003;
-  border-radius: 10px;
-  border-color: transparent;
-  width: 100%;
-  margin: 0 0 3px 0;
-  text-align: left;
-  overflow: hidden;
+.nccomponent .matchlist div {
+  padding: 0 10px;
+}
+.nccomponent .matchlist div:hover {
+  background-color: #ddd;
+  cursor: pointer;
+}
+.nccomponent .matchlist div.highlighted {
+  background-color: #ccc;
+  cursor: pointer;
 }
 .nccomponent .formview {
   display: grid;
   grid-template-columns: 70px auto;
   column-gap: 10px;
+  margin-bottom: 10px;
 }
 .nccomponent .formview label {
   font-size: 10px;
@@ -141,18 +180,25 @@
   opacity: 0.7;
   text-align: right;
 }
-.nccomponent .formview div {
+.nccomponent .formview .viewvalue {
   padding-left: 10px;
-  font-size: 16px;
   text-align: left;
   opacity: 1;
+  overflow: hidden;
+  overflow-wrap: anywhere; /* prevents form extending into graph */
 }
-
+.nccomponent .formview div.targetarrow {
+  margin-top: -5px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+}
 .nccomponent .tabcontainer {
+  margin-top: 5px;
 }
 .nccomponent .tabcontainer .tabselectors {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr; /* overriden */
   padding-top: 3px;
 }
 .nccomponent .tabcontainer .tabselectors button {
@@ -169,15 +215,20 @@
 .nccomponent .tabcontainer .tabselectors button.selected {
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
   color: #666;
-  background-color: #fff4;
+  background-color: #fff8;
 }
 .nccomponent .tabcontainer .tabselectors button.selected:focus {
   outline: none;
 }
 .nccomponent .tabcontainer .tabview {
   padding: 10px 5px 5px 5px;
-  background-color: #fff4;
+  background-color: #fff8;
+}
+.nccomponent .tabcontainer .tabview .edges {
+  text-align: center;
 }
 .nccomponent .provenance label {
   line-height: 12px;
@@ -192,4 +243,13 @@
   display: flex;
   justify-content: flex-end;
   padding: 10px 0 0 0;
+}
+
+.nccomponent .formview .helptop {
+  position: absolute;
+  margin-top: -22px;
+  padding: 0 5px;
+  color: #666;
+  background-color: #ff0c;
+  font-size: 12px;
 }
