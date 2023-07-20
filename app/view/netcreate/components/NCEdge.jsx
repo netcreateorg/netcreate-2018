@@ -8,7 +8,7 @@
 
     USAGE
 
-      <NCNEdge edge={edge}/>
+      <NCNEdge key={e.id} edge={edge} parentNodeId={nodeId}/>
 
     This is designed to be embedded in an <NCNode> object.
     There should only be one open NCEdge component at a time.
@@ -84,7 +84,7 @@ class NCEdge extends UNISYS.Component {
     this.loadEdge = this.loadEdge.bind(this);
     this.loadAttributes = this.loadAttributes.bind(this);
     this.lockEdge = this.lockEdge.bind(this);
-    this.unlockEdge = this.unlockEdge.bind(this);
+    this.UnlockEdge = this.UnlockEdge.bind(this);
     this.isEdgeLocked = this.isEdgeLocked.bind(this);
     this.editEdge = this.editEdge.bind(this);
     this.UpdateDerivedValues = this.UpdateDerivedValues.bind(this);
@@ -95,7 +95,7 @@ class NCEdge extends UNISYS.Component {
     this.SetSourceTarget = this.SetSourceTarget.bind(this);
     this.ThenSaveSourceTarget = this.ThenSaveSourceTarget.bind(this);
     // DATA SAVING
-    this.saveEdge = this.saveEdge.bind(this);
+    this.SaveEdge = this.SaveEdge.bind(this);
     // HELPER METHODS
     this.setBackgroundColor = this.setBackgroundColor.bind(this);
     this.SetSourceTargetNodeColor = this.SetSourceTargetNodeColor.bind(this);
@@ -372,7 +372,11 @@ class NCEdge extends UNISYS.Component {
       if (typeof cb === 'function') cb(lockSuccess);
     });
   }
-  unlockEdge(cb) {
+  /**
+   * Returns whether the unlock is successful
+   * @param {function} cb Callback function to handle cleanup after unlock
+   */
+  UnlockEdge(cb) {
     const { id } = this.state;
     let unlockSuccess = false;
     UDATA.NetCall('SRV_DBUNLOCKEDGE', { edgeID: id }).then(data => {
@@ -581,7 +585,7 @@ class NCEdge extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// DATA SAVING
   ///
-  saveEdge() {
+  SaveEdge() {
     const { id, sourceId, targetId, attributes, provenance } = this.state;
     const edge = {
       id,
@@ -591,7 +595,7 @@ class NCEdge extends UNISYS.Component {
     };
     Object.keys(attributes).forEach(k => (edge[k] = attributes[k]));
     this.AppCall('DB_UPDATE', { edge }).then(() => {
-      this.unlockEdge(() => {
+      this.UnlockEdge(() => {
         this.setState({
           uViewMode: NCUI.VIEWMODE.VIEW,
           uIsLockedByDB: false,
@@ -706,7 +710,7 @@ class NCEdge extends UNISYS.Component {
     );
   }
   uiDisableEditMode() {
-    this.unlockEdge(() => {
+    this.UnlockEdge(() => {
       this.setState({
         uViewMode: NCUI.VIEWMODE.VIEW,
         uIsLockedByDB: false
@@ -774,6 +778,7 @@ class NCEdge extends UNISYS.Component {
     } = this.state;
     const bgcolor = uBackgroundColor + '66'; // hack opacity
     const defs = UDATA.AppState('TEMPLATE').edgeDefs;
+    const disableSourceTargetInView = true;
     return (
       <div className={`nccomponent ncedge ${animateHeight}`}>
         <div
@@ -784,11 +789,19 @@ class NCEdge extends UNISYS.Component {
           {/* BUILT-IN - - - - - - - - - - - - - - - - - */}
           <div className="formview">
             {NCUI.RenderLabel('source', defs['source'].displayLabel)}
-            {this.RenderSourceTargetButton('source', dSourceNode.label, true)}
+            {this.RenderSourceTargetButton(
+              'source',
+              dSourceNode.label,
+              disableSourceTargetInView
+            )}
             <div />
             <div className="targetarrow">{ARROW_DOWN}</div>
             {NCUI.RenderLabel('target', defs['target'].displayLabel)}
-            {this.RenderSourceTargetButton('target', dTargetNode.label, true)}
+            {this.RenderSourceTargetButton(
+              'target',
+              dTargetNode.label,
+              disableSourceTargetInView
+            )}
           </div>
           {/* TABS - - - - - - - - - - - - - - - - - - - */}
           <div className="tabcontainer">
@@ -821,7 +834,10 @@ class NCEdge extends UNISYS.Component {
   }
 
   RenderEdit() {
+    const { parentNodeId } = this.props;
     const {
+      sourceId,
+      targetId,
       uSelectedTab,
       uSelectSourceTarget,
       uBackgroundColor,
@@ -857,7 +873,11 @@ class NCEdge extends UNISYS.Component {
             {/* BUILT-IN - - - - - - - - - - - - - - - - - */}
             <div className="formview">
               {NCUI.RenderLabel('source', defs['source'].displayLabel)}
-              {this.RenderSourceTargetButton('source', dSourceNode.label)}
+              {this.RenderSourceTargetButton(
+                'source',
+                dSourceNode.label,
+                parentNodeId === sourceId
+              )}
               <div />
               <div className="targetarrow">
                 <button
@@ -869,7 +889,11 @@ class NCEdge extends UNISYS.Component {
                 </button>
               </div>
               {NCUI.RenderLabel('target', defs['target'].displayLabel)}
-              {this.RenderSourceTargetButton('target', dTargetNode.label)}
+              {this.RenderSourceTargetButton(
+                'target',
+                dTargetNode.label,
+                parentNodeId === targetId
+              )}
             </div>
             {/* TABS - - - - - - - - - - - - - - - - - - - */}
             <div className="tabcontainer">
@@ -886,7 +910,7 @@ class NCEdge extends UNISYS.Component {
               <button className="cancelbtn" onClick={this.uiCancelEditMode}>
                 Cancel
               </button>
-              <button onClick={this.saveEdge} disabled={uSelectSourceTarget}>
+              <button onClick={this.SaveEdge} disabled={uSelectSourceTarget}>
                 Save
               </button>
             </div>
