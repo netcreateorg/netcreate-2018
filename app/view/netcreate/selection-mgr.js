@@ -57,7 +57,7 @@ MOD.Hook("INITIALIZE", () => {
  */
 function m_SetMode(data) {
   let newmode = SELECTION_MODE.NORMAL; // default
-  if (data.mode === 'sourcetarget') newmode = SELECTION_MODE.SOURCETARGET;
+  if (Object.values(SELECTION_MODE).includes(data.mode)) newmode = data.mode;
   m_SelectionMode = newmode;
 }
 
@@ -73,6 +73,9 @@ function m_D3SelectNode(data) {
   const node = m_GetNode(data);
   if (m_SelectionMode === SELECTION_MODE.NORMAL) {
     m_SendSelectionUpdate(node);
+  } else if (m_SelectionMode === SELECTION_MODE.EDGE_EDIT) {
+    // ignore selection during EDGE_EDIT if SOURCE/TARGET has not been selected yet
+    if (DBG) console.log(PR, 'm_D3SelectNode: ignoring selection during edge edit mode')
   } else if (m_SelectionMode === SELECTION_MODE.SOURCETARGET) {
     m_SendSourceTargetSelectionUpdate(node);
   } else {

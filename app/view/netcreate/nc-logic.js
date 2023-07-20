@@ -690,7 +690,7 @@ MOD.Hook('INITIALIZE', () => {
     }
     // if there was one edge
     if (updatedEdges.length === 1) {
-      console.log('nc-logic.EDGE_UPDATE: updating existing edge', updatedEdges);
+      if (DBG) console.log('nc-logic.EDGE_UPDATE: updating existing edge', updatedEdges);
     }
     // if there were more edges than expected
     if (updatedEdges.length > 1) {

@@ -555,7 +555,8 @@ class NCEdge extends UNISYS.Component {
    */
   SetSourceTarget(data) {
     const { uSelectSourceTarget } = this.state;
-    UDATA.LocalCall('SELECTMGR_SET_MODE', { mode: 'normal' });
+    // The source/target has been set already, so return to edge edit mode
+    UDATA.LocalCall('SELECTMGR_SET_MODE', { mode: 'edge_edit' });
     this.ThenSaveSourceTarget(uSelectSourceTarget, data.node);
   }
   /**
@@ -596,6 +597,7 @@ class NCEdge extends UNISYS.Component {
     Object.keys(attributes).forEach(k => (edge[k] = attributes[k]));
     this.AppCall('DB_UPDATE', { edge }).then(() => {
       this.UnlockEdge(() => {
+        UDATA.LocalCall('SELECTMGR_SET_MODE', { mode: 'normal' });
         this.setState({
           uViewMode: NCUI.VIEWMODE.VIEW,
           uIsLockedByDB: false,
@@ -660,6 +662,9 @@ class NCEdge extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UI MANIPULATION METHODS
   ///
+  /**
+   * Save `previousState` so that we can undo/restore data if user cancels
+   */
   EnableEditMode() {
     const { uSelectedTab, sourceId, targetId, attributes, provenance } = this.state;
     const previousState = {
@@ -673,6 +678,7 @@ class NCEdge extends UNISYS.Component {
       uSelectedTab,
       previousState
     });
+    UDATA.LocalCall('SELECTMGR_SET_MODE', { mode: 'edge_edit' });
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -715,6 +721,7 @@ class NCEdge extends UNISYS.Component {
         uViewMode: NCUI.VIEWMODE.VIEW,
         uIsLockedByDB: false
       });
+      UDATA.LocalCall('SELECTMGR_SET_MODE', { mode: 'normal' });
       UDATA.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.EDGE });
     });
   }
