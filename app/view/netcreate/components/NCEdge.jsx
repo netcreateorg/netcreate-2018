@@ -882,6 +882,7 @@ class NCEdge extends UNISYS.Component {
     ) : (
       ''
     );
+    const saveIsDisabled = uSelectSourceTarget || isNaN(sourceId) || isNaN(targetId);
     return (
       <div>
         <div className="screen"></div>
@@ -933,7 +934,7 @@ class NCEdge extends UNISYS.Component {
               <button className="cancelbtn" onClick={this.uiCancelEditMode}>
                 Cancel
               </button>
-              <button onClick={this.SaveEdge} disabled={uSelectSourceTarget}>
+              <button onClick={this.SaveEdge} disabled={saveIsDisabled}>
                 Save
               </button>
             </div>
