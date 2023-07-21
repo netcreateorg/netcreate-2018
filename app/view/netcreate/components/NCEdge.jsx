@@ -555,8 +555,13 @@ class NCEdge extends UNISYS.Component {
    */
   SetSourceTarget(data) {
     const { uSelectSourceTarget } = this.state;
+
     // The source/target has been set already, so return to edge edit mode
     UDATA.LocalCall('SELECTMGR_SET_MODE', { mode: 'edge_edit' });
+
+    // Clear the secondary selection
+    UDATA.LocalCall('SELECTMGR_DESELECT_SECONDARY');
+
     this.ThenSaveSourceTarget(uSelectSourceTarget, data.node);
   }
   /**
@@ -597,6 +602,9 @@ class NCEdge extends UNISYS.Component {
     Object.keys(attributes).forEach(k => (edge[k] = attributes[k]));
     this.AppCall('DB_UPDATE', { edge }).then(() => {
       this.UnlockEdge(() => {
+        // Clear the secondary selection
+        UDATA.LocalCall('SELECTMGR_DESELECT_SECONDARY');
+
         UDATA.LocalCall('SELECTMGR_SET_MODE', { mode: 'normal' });
         this.setState({
           uViewMode: NCUI.VIEWMODE.VIEW,
@@ -721,6 +729,10 @@ class NCEdge extends UNISYS.Component {
         uViewMode: NCUI.VIEWMODE.VIEW,
         uIsLockedByDB: false
       });
+
+      // Clear the secondary selection
+      UDATA.LocalCall('SELECTMGR_DESELECT_SECONDARY');
+
       UDATA.LocalCall('SELECTMGR_SET_MODE', { mode: 'normal' });
       UDATA.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.EDGE });
     });
@@ -936,13 +948,20 @@ class NCEdge extends UNISYS.Component {
    * The Source and Target Buttons are used for
    * - Displaying the source / target name in the view/edit panel
    * - Click on Source or Target to select a new one
+   * - Showing a focus ring (outline) after having secondarily selected a source/target
    * @param {string} key
    * @param {string} value
    * @param {boolean} disabled Used by renderView to disable source/target selection buttons
    * @returns {jsx}
    */
   RenderSourceTargetButton(key, value, disabled) {
-    const { uSelectSourceTarget, dSourceNodeColor, dTargetNodeColor } = this.state;
+    const {
+      sourceId,
+      targetId,
+      uSelectSourceTarget,
+      dSourceNodeColor,
+      dTargetNodeColor
+    } = this.state;
     let color;
     if (!disabled && (uSelectSourceTarget === key || value === undefined)) {
       return (
@@ -955,12 +974,22 @@ class NCEdge extends UNISYS.Component {
       );
     } else {
       color = key === 'source' ? dSourceNodeColor : dTargetNodeColor;
+      // Ssecondary selection?
+      const SELECTION = UDATA.AppState('SELECTION');
+      let isSecondarySelection = false;
+      if (key === 'source') {
+        isSecondarySelection = SELECTION.selectedSecondary === sourceId;
+      } else {
+        // key === 'target'
+        isSecondarySelection = SELECTION.selectedSecondary === targetId;
+      }
+      const selected = isSecondarySelection ? 'selected' : '';
       return (
         <div>
           <button
             id={key}
             key={`${key}value`}
-            className="sourcetargetbtn"
+            className={`sourcetargetbtn ${selected}`}
             onClick={this.UIEnableSourceTargetSelect}
             style={{ backgroundColor: color + '55', borderColor: color }}
             disabled={disabled}

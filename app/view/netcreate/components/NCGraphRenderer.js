@@ -26,6 +26,7 @@
       nodes = [ ...{ id :number,
                      label :string,
                      selected :boolean,
+                     selectedSecondary :boolean,  // for selected source/target node
                      size :number,
                      color :string(css),
                      opacity :number(0-1),
@@ -536,6 +537,7 @@ class NCGraphRenderer {
 
     // SELECTION ARROW
     this.d3svg.selectAll('#selectorArrow').remove();
+    this.d3svg.selectAll('#secondarySelectorArrow').remove();
 
     // SINGLE ARROW APPROACH
     // nodeElements
@@ -601,6 +603,27 @@ class NCGraphRenderer {
       .attr('to', d => `600 ${d.size + 5} 0`) // different rotation end
       .attr('dur', '6s')
       .attr('repeatCount', 'indefinite')
+
+    // SECONDARY SELECTOR ARROW
+    nodeElements
+      .merge(nodeElements)
+      .filter(d => d.selectedSecondary)
+      .append('g')
+      .attr('id', 'secondarySelectorArrow')
+      .attr('transform', d => `translate(${- d.size - 5},0)`)
+      .append('polygon')
+      .attr('points', '0,0 -10,5 -10,-5 ')
+      .attr('fill', 'blue')
+      // .attr('fill', d => d.strokeColor)
+      .append('animateTransform')
+      .attr('attributeName', 'transform')
+      .attr('attributeType', 'XML')
+      .attr('type', 'rotate')
+      .attr('from', d => `0 ${d.size + 5} 0`)
+      .attr('to', d => `360 ${d.size + 5} 0`)
+      .attr('dur', '2s')
+      .attr('repeatCount', 'indefinite')
+
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

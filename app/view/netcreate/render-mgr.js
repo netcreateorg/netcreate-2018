@@ -48,7 +48,7 @@ MOD.Hook("INITIALIZE", () => {
  * Interprets VDATA into a simplified form for the renderer
  * @param {*} data NCDATA { nodes, edges }
  * @returns {Object} {
- *                     nodes: [ ...{id, label, selected,
+ *                     nodes: [ ...{id, label, selected, selectedSecondary,
  *                                  size, color, opacity, strokeColor, strokeWidth,
  *                                  help}],
  *                     edges: [ ...{id, sourceId, targetId, size, color, opacity}]
@@ -94,12 +94,14 @@ function m_UpdateNodes(nodes) {
     const isAutosuggestHilited = autosuggestHiliteNodeId === n.id;
     const isTabletHilited = tableHiliteNodeId === n.id;
     const isSelected = selectedNodes.includes(n.id);
+    const isSecondarySelected = SELECTION.selectedSecondary === n.id;
     const isFound = foundNodes.includes(n.id);
     // FIXME: Just copy over relevant attributes, don't copy the whole object!!!!
     n.color = COLORMAP.nodeColorMap[n.type];
     n.opacity = n.filteredTransparency;
     n.size = Math.min(TEMPLATE.nodeSizeDefault + n.degrees, TEMPLATE.nodeSizeMax);
     n.selected = false;
+    n.selectedSecondary = false;
     if (isAutosuggestHilited) {
       n.textColor = '#ccc';
       n.strokeColor = '#ccc';
@@ -124,6 +126,9 @@ function m_UpdateNodes(nodes) {
     }
     if (isSelected) {
       n.selected = true; // selection state can be displayed simultaneously with hilite
+    }
+    if (isSecondarySelected) {
+      n.selectedSecondary = true; // edge source/target is selected
     }
     n.help = m_GetHelp(n);
     return n;

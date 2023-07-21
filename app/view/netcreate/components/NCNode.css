@@ -73,6 +73,9 @@
   padding: 0 8px;
   text-align: left;
 }
+.nccomponent button.sourcetargetbtn.selected {
+  outline: 1px solid blue;
+}
 .nccomponent button.sourcetargetbtn:disabled {
   border: none;
   color: #333;

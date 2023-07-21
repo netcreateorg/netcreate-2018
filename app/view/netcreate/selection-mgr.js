@@ -6,6 +6,25 @@
   * mouse over graph node
   * Others TBD as selection is rewritten.
 
+  SELECTION data is
+    { nodes: [], edges: [], selectedSecondary: undefined };
+
+  In general
+  * `nodes[0]` will be the selected graph node (using the animated 3 arrow
+                        cursor) with an open Node editor
+  * `edges[]` are the edges linked to `nodes[0]`
+  * `selectedSecondary` is the node id of the source or target node
+                        that are highlighted in the graph (using the
+                        animated single arrow cursor)
+
+  As of 2023-07 this is a WIP.  There are remnants of v1.x SELECTION management
+  in nc-logic.  A lot of the more complex logic has been cleaned up and
+  deprecated:
+    * AutoComplete
+    * NodeSelector
+    * EdgeEditor
+    * d3-simplenetgraph
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 
@@ -41,6 +60,7 @@ let m_SelectionMode = SELECTION_MODE.NORMAL; // default
 MOD.Hook("INITIALIZE", () => {
   UDATA.HandleMessage('SELECTMGR_SET_MODE', m_SetMode);
   UDATA.HandleMessage('D3_SELECT_NODE', m_D3SelectNode);
+  UDATA.HandleMessage('SELECTMGR_DESELECT_SECONDARY', m_DeselectSecondary);
   // NODETABLE_SELECT_NODE
   // AUTOSUGGEST_SELECT_NODE?
 }); // end UNISYS_INIT
@@ -116,7 +136,7 @@ function m_SendSelectionUpdate(node) {
   let newSelection, newHilite;
   if (node === undefined) {
     // Node not found, clear selection state
-    newSelection = { nodes: [], edges: [] };
+    newSelection = { nodes: [], edges: [], selectedSecondary: undefined };
     newHilite = { autosuggestHiliteNodeId: undefined };
   } else {
     // Load existing node and edges
@@ -127,7 +147,7 @@ function m_SendSelectionUpdate(node) {
         NCDATA.edges.filter(edge => edge.source === nid || edge.target === nid)
       );
     // create select state object
-    newSelection = { nodes: [node], edges };
+    newSelection = { nodes: [node], edges, selectedSecondary: undefined };
     newHilite = { autosuggestHiliteNodeId: undefined };
   }
   // Broadcast selection/hilite updates
@@ -141,9 +161,27 @@ function m_SendSelectionUpdate(node) {
  */
 function m_SendSourceTargetSelectionUpdate(node) {
   if (node === undefined) return; // skip update
+
   UDATA.LocalCall('SELECT_SOURCETARGET', { node });
+
+  // Broadcast secondary selection -- show animated arrow
+  const SELECTION = UDATA.AppState('SELECTION');
+  SELECTION.selectedSecondary = node.id;
+  UDATA.SetAppState('SELECTION', SELECTION);
 }
 
+/**
+ * Deselect the secondary selection
+ * During Edge editing, after the user has selected the source or target
+ * node, we turn off the secondary select (so the single blue rotating arrow
+ * is cleared from the graph)
+ */
+function m_DeselectSecondary() {
+  // Broadcast secondary deselection -- remove animated arrow
+  const SELECTION = UDATA.AppState('SELECTION');
+  SELECTION.selectedSecondary = undefined;
+  UDATA.SetAppState('SELECTION', SELECTION);
+}
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
