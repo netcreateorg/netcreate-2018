@@ -96,9 +96,8 @@ class NCAutoSuggest extends UNISYS.Component {
    * --  Hitting Esc will cancel the autosuggest, also hitting Tab will prevent selecting the next field
    * --  Hitting Enter will select the item
    * @param {Object} event
-   * @param {funciton} cb call back
    */
-  m_UIKeyDown(event, cb) {
+  m_UIKeyDown(event) {
     const { matches, higlightedLine } = this.state;
     const { statekey, value, onSelect } = this.props;
     const keystroke = event.key;

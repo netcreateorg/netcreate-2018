@@ -60,6 +60,7 @@ let m_SelectionMode = SELECTION_MODE.NORMAL; // default
 MOD.Hook("INITIALIZE", () => {
   UDATA.HandleMessage('SELECTMGR_SET_MODE', m_SetMode);
   UDATA.HandleMessage('D3_SELECT_NODE', m_D3SelectNode);
+  UDATA.HandleMessage('SELECTMGR_SELECT_SECONDARY', m_SelectSecondary);
   UDATA.HandleMessage('SELECTMGR_DESELECT_SECONDARY', m_DeselectSecondary);
   // NODETABLE_SELECT_NODE
   // AUTOSUGGEST_SELECT_NODE?
@@ -129,7 +130,7 @@ function m_GetNode(searchdata) {
 
 /**
  * Broadcast SELECTION and HILITE updates for selecting a single node
- * @param {*} node
+ * @param {Object} node
  */
 function m_SendSelectionUpdate(node) {
   const NCDATA = UDATA.AppState('NCDATA');
@@ -157,19 +158,25 @@ function m_SendSelectionUpdate(node) {
 
 /**
  * Broadcast SELECT_SOURCETARGET updates for selecting a source or target
- * @param {*} node
+ * @param {Object} node
  */
 function m_SendSourceTargetSelectionUpdate(node) {
   if (node === undefined) return; // skip update
-
   UDATA.LocalCall('SELECT_SOURCETARGET', { node });
-
-  // Broadcast secondary selection -- show animated arrow
-  const SELECTION = UDATA.AppState('SELECTION');
-  SELECTION.selectedSecondary = node.id;
-  UDATA.SetAppState('SELECTION', SELECTION);
 }
 
+/**
+ * During Edge editing, show animated cursor after user selects a source
+ * or target node.  (For secondary selections)
+ * Broadcast SELECTMGR_SELECT_SECONDARY updates for selecting a source or target
+ * @param {Object} data
+ * @param {Object} data.node
+ */
+function m_SelectSecondary(data) {
+  const SELECTION = UDATA.AppState('SELECTION');
+  SELECTION.selectedSecondary = data.node.id;
+  UDATA.SetAppState('SELECTION', SELECTION);
+}
 /**
  * Deselect the secondary selection
  * During Edge editing, after the user has selected the source or target

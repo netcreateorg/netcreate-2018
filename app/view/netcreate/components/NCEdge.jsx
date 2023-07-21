@@ -585,6 +585,10 @@ class NCEdge extends UNISYS.Component {
       // 'target'
       state.targetId = node.id;
     }
+
+    // show secondary selection
+    UDATA.LocalCall('SELECTMGR_SELECT_SECONDARY', { node });
+
     this.setState(state, () => this.UpdateDerivedValues());
   }
 
