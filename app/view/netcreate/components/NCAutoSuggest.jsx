@@ -148,7 +148,7 @@ class NCAutoSuggest extends UNISYS.Component {
           ))
         : undefined;
     return (
-      <div>
+      <div style={{ position: 'relative' }}>
         <div className="helptop">Click on a node, or type a node name</div>
         <input
           id={statekey}
