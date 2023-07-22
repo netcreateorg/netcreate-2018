@@ -824,7 +824,7 @@ class NCNode extends UNISYS.Component {
             onClick={this.UIAddEdge}
             disabled={editBtnDisable}
           >
-            Add New Edge
+            New Edge
           </button>
         )}
       </div>

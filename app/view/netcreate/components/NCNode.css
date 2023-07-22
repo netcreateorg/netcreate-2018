@@ -152,26 +152,7 @@
   text-align: left;
   overflow: hidden;
 }
-.nccomponent .matchlist {
-  position: fixed;
-  color: #3339;
-  background-color: #fff;
-  margin: -5px 0 0 10px;
-  padding: 3px 0;
-  font-size: 12px;
-  z-index: 15;
-}
-.nccomponent .matchlist div {
-  padding: 0 10px;
-}
-.nccomponent .matchlist div:hover {
-  background-color: #ddd;
-  cursor: pointer;
-}
-.nccomponent .matchlist div.highlighted {
-  background-color: #ccc;
-  cursor: pointer;
-}
+
 .nccomponent .formview {
   display: grid;
   grid-template-columns: 70px auto;
@@ -247,13 +228,4 @@
   display: flex;
   justify-content: flex-end;
   padding: 10px 0 0 0;
-}
-
-.nccomponent .formview .helptop {
-  position: absolute;
-  bottom: 120%;
-  padding: 0 5px;
-  color: #666;
-  background-color: #ff0c;
-  font-size: 12px;
 }

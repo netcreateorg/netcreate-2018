@@ -11,6 +11,11 @@
         onSelect={this.handleSelection}
       />
 
+    PROPS
+
+      onChange(key, value) -- returns `key` and `value` for the input field
+      onSelect(key, value) -- returns `key` and `value` for the final submission
+
     This will look up matching nodes via FIND_MATCHING_NODES nc-logic request.
 
     This is a simple HTML component that will allow users to enter arbitrary
@@ -18,6 +23,8 @@
     menu options.
 
     It can be used in a NCNode or NCEdge
+
+    `statekey` provides a unique key for source/target selection
 
     Replaces the AutoComplete and AutoSuggest components.
 
@@ -128,6 +135,7 @@ class NCAutoSuggest extends UNISYS.Component {
       const highlightedNode = matches[newHighlightedLine];
       UDATA.LocalCall('AUTOSUGGEST_HILITE_NODE', { nodeId: highlightedNode.id });
     }
+    console.log('newHighlitedLine', matches, newHighlightedLine);
   }
 
   render() {
@@ -137,7 +145,7 @@ class NCAutoSuggest extends UNISYS.Component {
       matches && matches.length > 0
         ? matches.map((n, i) => (
             <div
-              key={n.label}
+              key={`${n.label}${i}`}
               value={n.label}
               className={higlightedLine === i ? 'highlighted' : ''}
               onClick={() => this.m_UISelect(statekey, n.label)}
