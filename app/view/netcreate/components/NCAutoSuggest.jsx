@@ -11,6 +11,12 @@
         onSelect={this.handleSelection}
       />
 
+    PROPS
+
+      onChange(key, value) -- returns `key` and `value` for the input field
+      onSelect(key, valuem, id) -- returns `key` and `value` for the final submission
+                                   as well as the matching id
+
     This will look up matching nodes via FIND_MATCHING_NODES nc-logic request.
 
     This is a simple HTML component that will allow users to enter arbitrary
@@ -18,6 +24,8 @@
     menu options.
 
     It can be used in a NCNode or NCEdge
+
+    `statekey` provides a unique key for source/target selection
 
     Replaces the AutoComplete and AutoSuggest components.
 
@@ -86,7 +94,7 @@ class NCAutoSuggest extends UNISYS.Component {
     const { onSelect } = this.props;
     const { matches } = this.state;
     const matchedNode = matches ? matches.find(n => n.label === value) : undefined;
-    this.setState({ isValidNode: matchedNode, matches: [] }); // clear matches
+    this.setState({ isValidNode: matchedNode, matches: [], higlightedLine: -1 }); // clear matches
     if (typeof onSelect === 'function')
       onSelect(key, value, matchedNode ? matchedNode.id : undefined); // callback function NCEdge.uiSourceTargetInputUpdate
   }
@@ -105,11 +113,12 @@ class NCAutoSuggest extends UNISYS.Component {
     let newHighlightedLine = higlightedLine;
     if (keystroke === 'Enter') {
       let selectedValue = value;
+      console.log('UIKeydown', higlightedLine, ' matches', matches);
       if (higlightedLine > -1) {
         // there is highlight, so select that
         selectedValue = matches[higlightedLine].label;
       }
-      this.m_UISelect(statekey, selectedValue, onSelect); // user selects current highlight
+      this.m_UISelect(statekey, selectedValue); // user selects current highlight
     }
     if (keystroke === 'Escape' || keystroke === 'Tab') {
       event.preventDefault(); // prevent tab key from going to the next field
@@ -128,6 +137,7 @@ class NCAutoSuggest extends UNISYS.Component {
       const highlightedNode = matches[newHighlightedLine];
       UDATA.LocalCall('AUTOSUGGEST_HILITE_NODE', { nodeId: highlightedNode.id });
     }
+    console.log('newHighlitedLine', matches, newHighlightedLine);
   }
 
   render() {
@@ -137,7 +147,7 @@ class NCAutoSuggest extends UNISYS.Component {
       matches && matches.length > 0
         ? matches.map((n, i) => (
             <div
-              key={n.label}
+              key={`${n.label}${i}`}
               value={n.label}
               className={higlightedLine === i ? 'highlighted' : ''}
               onClick={() => this.m_UISelect(statekey, n.label)}
