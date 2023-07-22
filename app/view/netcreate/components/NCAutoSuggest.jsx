@@ -57,9 +57,16 @@ class NCAutoSuggest extends UNISYS.Component {
     this.m_UIUpdate = this.m_UIUpdate.bind(this);
     this.m_UISelect = this.m_UISelect.bind(this);
     this.m_UIKeyDown = this.m_UIKeyDown.bind(this);
+    this.m_UIClickOutside = this.m_UIClickOutside.bind(this);
+
+    document.addEventListener('click', this.m_UIClickOutside);
 
     /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('click', this.m_UIClickOutside);
   }
 
   /**
@@ -87,10 +94,13 @@ class NCAutoSuggest extends UNISYS.Component {
   }
   /**
    * User has clicked an item in the matchlist, selecting one of the autosuggest items
+   * @param {Object} event
    * @param {string} key Usually either `source` or `target`
    * @param {string} value
    */
-  m_UISelect(key, value) {
+  m_UISelect(event, key, value) {
+    event.preventDefault(); // catch click to close matchlist
+    event.stopPropagation();
     const { onSelect } = this.props;
     const { matches } = this.state;
     const matchedNode = matches ? matches.find(n => n.label === value) : undefined;
@@ -117,12 +127,12 @@ class NCAutoSuggest extends UNISYS.Component {
         // there is highlight, so select that
         selectedValue = matches[higlightedLine].label;
       }
-      this.m_UISelect(statekey, selectedValue); // user selects current highlight
+      this.m_UISelect(event, statekey, selectedValue); // user selects current highlight
     }
     if (keystroke === 'Escape' || keystroke === 'Tab') {
       event.preventDefault(); // prevent tab key from going to the next field
       event.stopPropagation();
-      this.setState({ higlightedLine: -1 }); // close autosuggest
+      this.setState({ matches: [], higlightedLine: -1 }); // close autosuggest
     }
     if (keystroke === 'ArrowUp') newHighlightedLine--;
     if (keystroke === 'ArrowDown') newHighlightedLine++;
@@ -138,6 +148,12 @@ class NCAutoSuggest extends UNISYS.Component {
     }
   }
 
+  m_UIClickOutside(event) {
+    if (!event.defaultPrevented) {
+      this.setState({ matches: [], higlightedLine: -1 }); // close autosuggest
+    }
+  }
+
   render() {
     const { matches, higlightedLine, isValidNode } = this.state;
     const { statekey, value, onSelect } = this.props;
@@ -148,7 +164,7 @@ class NCAutoSuggest extends UNISYS.Component {
               key={`${n.label}${i}`}
               value={n.label}
               className={higlightedLine === i ? 'highlighted' : ''}
-              onClick={() => this.m_UISelect(statekey, n.label)}
+              onClick={event => this.m_UISelect(event, statekey, n.label)}
             >
               {n.label}
             </div>
@@ -169,7 +185,11 @@ class NCAutoSuggest extends UNISYS.Component {
           autoComplete="off" // turn off Chrome's default autocomplete, which conflicts
         />
         <br />
-        {matchList && <div className="matchlist">{matchList}</div>}
+        {matchList && (
+          <div id="matchlist" className="matchlist">
+            {matchList}
+          </div>
+        )}
       </div>
     );
   }
