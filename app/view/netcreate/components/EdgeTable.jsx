@@ -404,7 +404,8 @@ class EdgeTable extends UNISYS.Component {
   /*/
   lookupNodeLabel(nodeId) {
     const node = this.state.nodes.find(n => n.id === nodeId);
-    if (node === undefined) throw new Error('EdgeTable: Could not find node', nodeId);
+    if (node === undefined) return '...';
+    // if (node === undefined) throw new Error('EdgeTable: Could not find node', nodeId);
     return node.label;
   }
 
@@ -683,14 +684,16 @@ class EdgeTable extends UNISYS.Component {
                     {isLocked ? 'View' : 'Edit'}
                   </Button>
                 </td>
-                <td hidden={!DBG}>{edge.source}</td>
+                {/* Cast to string for edge.target where target is undefined */}
+                <td hidden={!DBG}>{String(edge.source)}</td>
                 <td>
                   <a href="#" onClick={e => this.selectNode(edge.source, e)}>
                     {edge.sourceLabel}
                   </a>
                 </td>
                 <td hidden={edgeDefs.type.hidden}>{edge.type}</td>
-                <td hidden={!DBG}>{edge.target}</td>
+                {/* Cast to string for edge.target where target is undefined */}
+                <td hidden={!DBG}>{String(edge.target)}</td>
                 <td>
                   <a href="#" onClick={e => this.selectNode(edge.target, e)}>
                     {edge.targetLabel}
