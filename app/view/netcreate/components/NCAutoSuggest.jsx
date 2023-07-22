@@ -113,7 +113,6 @@ class NCAutoSuggest extends UNISYS.Component {
     let newHighlightedLine = higlightedLine;
     if (keystroke === 'Enter') {
       let selectedValue = value;
-      console.log('UIKeydown', higlightedLine, ' matches', matches);
       if (higlightedLine > -1) {
         // there is highlight, so select that
         selectedValue = matches[higlightedLine].label;
@@ -137,7 +136,6 @@ class NCAutoSuggest extends UNISYS.Component {
       const highlightedNode = matches[newHighlightedLine];
       UDATA.LocalCall('AUTOSUGGEST_HILITE_NODE', { nodeId: highlightedNode.id });
     }
-    console.log('newHighlitedLine', matches, newHighlightedLine);
   }
 
   render() {
