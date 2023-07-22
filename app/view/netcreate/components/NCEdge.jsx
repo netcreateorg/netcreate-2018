@@ -68,25 +68,25 @@ class NCEdge extends UNISYS.Component {
     }; // initialized on componentDidMount and clearSelection
 
     // STATE MANAGEMENT
-    this.resetState = this.resetState.bind(this);
-    this.updateSession = this.updateSession.bind(this);
-    this.isLoggedIn = this.isLoggedIn.bind(this);
-    this.setPermissions = this.setPermissions.bind(this);
-    this.updatePermissions = this.updatePermissions.bind(this);
+    this.ResetState = this.ResetState.bind(this);
+    this.UpdateSession = this.UpdateSession.bind(this);
+    this.IsLoggedIn = this.IsLoggedIn.bind(this);
+    this.SetPermissions = this.SetPermissions.bind(this);
+    this.UpdatePermissions = this.UpdatePermissions.bind(this);
 
     // EVENT HANDLERS
-    this.checkUnload = this.checkUnload.bind(this);
-    this.doUnload = this.doUnload.bind(this);
-    this.clearSelection = this.clearSelection.bind(this);
-    this.updateSelection = this.updateSelection.bind(this);
-    this.reqLoadEdge = this.reqLoadEdge.bind(this);
+    this.CheckUnload = this.CheckUnload.bind(this);
+    this.DoUnload = this.DoUnload.bind(this);
+    this.ClearSelection = this.ClearSelection.bind(this);
+    this.UpdateSelection = this.UpdateSelection.bind(this);
+    this.ReqLoadEdge = this.ReqLoadEdge.bind(this);
     // DATA LOADING
-    this.loadEdge = this.loadEdge.bind(this);
-    this.loadAttributes = this.loadAttributes.bind(this);
-    this.lockEdge = this.lockEdge.bind(this);
+    this.LoadEdge = this.LoadEdge.bind(this);
+    this.LoadAttributes = this.LoadAttributes.bind(this);
+    this.LockEdge = this.LockEdge.bind(this);
     this.UnlockEdge = this.UnlockEdge.bind(this);
-    this.isEdgeLocked = this.isEdgeLocked.bind(this);
-    this.editEdge = this.editEdge.bind(this);
+    this.IsEdgeLocked = this.IsEdgeLocked.bind(this);
+    this.EditEdge = this.EditEdge.bind(this);
     this.UpdateDerivedValues = this.UpdateDerivedValues.bind(this);
     this.ValidateSourceTarget = this.ValidateSourceTarget.bind(this);
     this.OfferToCreateNewNode = this.OfferToCreateNewNode.bind(this);
@@ -97,18 +97,18 @@ class NCEdge extends UNISYS.Component {
     // DATA SAVING
     this.SaveEdge = this.SaveEdge.bind(this);
     // HELPER METHODS
-    this.setBackgroundColor = this.setBackgroundColor.bind(this);
+    this.SetBackgroundColor = this.SetBackgroundColor.bind(this);
     this.SetSourceTargetNodeColor = this.SetSourceTargetNodeColor.bind(this);
     this.SwapSourceAndTarget = this.SwapSourceAndTarget.bind(this);
     // UI MANIPULATION METHODS
     this.EnableEditMode = this.EnableEditMode.bind(this);
     // UI EVENT HANDLERS
-    this.uiSelectTab = this.uiSelectTab.bind(this);
-    this.uiRequestEditEdge = this.uiRequestEditEdge.bind(this);
-    this.uiDeselectEdge = this.uiDeselectEdge.bind(this);
-    this.uiCancelEditMode = this.uiCancelEditMode.bind(this);
-    this.uiDisableEditMode = this.uiDisableEditMode.bind(this);
-    this.uiInputUpdate = this.uiInputUpdate.bind(this);
+    this.UISelectTab = this.UISelectTab.bind(this);
+    this.UIRequestEditEdge = this.UIRequestEditEdge.bind(this);
+    this.UIDeselectEdge = this.UIDeselectEdge.bind(this);
+    this.UICancelEditMode = this.UICancelEditMode.bind(this);
+    this.UIDisableEditMode = this.UIDisableEditMode.bind(this);
+    this.UIInputUpdate = this.UIInputUpdate.bind(this);
     this.UIEnableSourceTargetSelect = this.UIEnableSourceTargetSelect.bind(this);
     this.UISourceTargetInputUpdate = this.UISourceTargetInputUpdate.bind(this);
     this.UISourceTargetInputSelect = this.UISourceTargetInputSelect.bind(this);
@@ -123,40 +123,40 @@ class NCEdge extends UNISYS.Component {
 
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     /// REGISTER LISTENERS
-    UDATA.OnAppStateChange('SESSION', this.updateSession);
-    UDATA.OnAppStateChange('SELECTION', this.updateSelection);
-    UDATA.HandleMessage('EDGE_OPEN', this.reqLoadEdge);
-    UDATA.HandleMessage('EDGE_DESELECT', this.clearSelection);
-    UDATA.HandleMessage('EDIT_PERMISSIONS_UPDATE', this.setPermissions);
-    UDATA.HandleMessage('EDGE_EDIT', this.editEdge); // EdgeTable request
+    UDATA.OnAppStateChange('SESSION', this.UpdateSession);
+    UDATA.OnAppStateChange('SELECTION', this.UpdateSelection);
+    UDATA.HandleMessage('EDGE_OPEN', this.ReqLoadEdge);
+    UDATA.HandleMessage('EDGE_DESELECT', this.ClearSelection);
+    UDATA.HandleMessage('EDIT_PERMISSIONS_UPDATE', this.SetPermissions);
+    UDATA.HandleMessage('EDGE_EDIT', this.EditEdge); // EdgeTable request
     UDATA.HandleMessage('SELECT_SOURCETARGET', this.SetSourceTarget);
   }
 
   componentDidMount() {
-    this.resetState(); // Initialize State
+    this.ResetState(); // Initialize State
 
     const { edge } = this.props;
-    this.loadEdge(edge);
+    this.LoadEdge(edge);
 
-    window.addEventListener('beforeunload', this.checkUnload);
-    window.addEventListener('unload', this.doUnload);
+    window.addEventListener('beforeunload', this.CheckUnload);
+    window.addEventListener('unload', this.DoUnload);
   }
   componentWillUnmount() {
-    UDATA.AppStateChangeOff('SESSION', this.updateSession);
-    UDATA.AppStateChangeOff('SELECTION', this.updateSelection);
-    UDATA.UnhandleMessage('EDGE_OPEN', this.reqLoadEdge);
-    UDATA.UnhandleMessage('EDGE_DESELECT', this.clearSelection);
-    UDATA.UnhandleMessage('EDIT_PERMISSIONS_UPDATE', this.setPermissions);
-    UDATA.UnhandleMessage('EDGE_EDIT', this.editEdge);
+    UDATA.AppStateChangeOff('SESSION', this.UpdateSession);
+    UDATA.AppStateChangeOff('SELECTION', this.UpdateSelection);
+    UDATA.UnhandleMessage('EDGE_OPEN', this.ReqLoadEdge);
+    UDATA.UnhandleMessage('EDGE_DESELECT', this.ClearSelection);
+    UDATA.UnhandleMessage('EDIT_PERMISSIONS_UPDATE', this.SetPermissions);
+    UDATA.UnhandleMessage('EDGE_EDIT', this.EditEdge);
     UDATA.UnhandleMessage('SELECT_SOURCETARGET', this.SetSourceTarget);
-    window.removeEventListener('beforeunload', this.checkUnload);
-    window.removeEventListener('unload', this.doUnload);
+    window.removeEventListener('beforeunload', this.CheckUnload);
+    window.removeEventListener('unload', this.DoUnload);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// STATE MANAGEMENT
   ///
-  resetState() {
+  ResetState() {
     this.setState({
       // EDGE DEFS 'core state data'
       id: null,
@@ -198,7 +198,7 @@ class NCEdge extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// SYSTEM/NETWORK EVENT HANDLERS
   ///
-  checkUnload(event) {
+  CheckUnload(event) {
     event.preventDefault();
     if (this.state.uViewMode === NCUI.VIEWMODE.EDIT) {
       (event || window.event).returnValue = null;
@@ -207,7 +207,7 @@ class NCEdge extends UNISYS.Component {
     }
     return event;
   }
-  doUnload(event) {
+  DoUnload(event) {
     if (this.state.uViewMode === NCUI.VIEWMODE.EDIT) {
       UDATA.NetCall('SRV_DBUNLOCKEDGE', { edgeID: this.state.id });
       UDATA.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.EDGE });
@@ -222,8 +222,8 @@ class NCEdge extends UNISYS.Component {
    * its handleChange() when active typing is occuring, and also during
    * SessionShell.componentWillMount()
    */
-  updateSession(decoded) {
-    this.setState({ isLoggedIn: decoded.isValid }, () => this.updatePermissions());
+  UpdateSession(decoded) {
+    this.setState({ isLoggedIn: decoded.isValid }, () => this.UpdatePermissions());
   }
   /**
    * Checks current SESSION state to see if user is logged in.
@@ -232,13 +232,13 @@ class NCEdge extends UNISYS.Component {
    * NOTE updates state.
    * @returns {boolean} True if user is logged in
    */
-  isLoggedIn() {
+  IsLoggedIn() {
     const SESSION = UDATA.AppState('SESSION');
     const isLoggedIn = SESSION.isValid;
     this.setState({ isLoggedIn });
     return isLoggedIn;
   }
-  setPermissions(data) {
+  SetPermissions(data) {
     const { id } = this.state;
     const edgeIsLocked = data.lockedEdges.includes(id);
     this.setState(
@@ -247,12 +247,12 @@ class NCEdge extends UNISYS.Component {
         uIsLockedByTemplate: data.templateBeingEdited,
         uIsLockedByImport: data.importActive
       },
-      () => this.updatePermissions()
+      () => this.UpdatePermissions()
     );
   }
-  updatePermissions() {
+  UpdatePermissions() {
     const { uIsLockedByDB, uIsLockedByTemplate, uIsLockedByImport } = this.state;
-    const isLoggedIn = this.isLoggedIn();
+    const isLoggedIn = this.IsLoggedIn();
     const TEMPLATE = UDATA.AppState('TEMPLATE');
     let uEditLockMessage = '';
     let uEditBtnDisable = false;
@@ -272,10 +272,10 @@ class NCEdge extends UNISYS.Component {
     }
     this.setState({ uEditBtnDisable, uEditBtnHide, uEditLockMessage });
   }
-  clearSelection() {
-    this.resetState();
+  ClearSelection() {
+    this.ResetState();
   }
-  updateSelection(data) {
+  UpdateSelection(data) {
     const { sourceTargetSelect } = this.state;
     const selectedNode = data.nodes[0]; // select the first node
     if (sourceTargetSelect === 'source') {
@@ -292,15 +292,15 @@ class NCEdge extends UNISYS.Component {
       // ignore the selection
     }
   }
-  reqLoadEdge(data) {
+  ReqLoadEdge(data) {
     // handler for UDATA call, interprets the net `data`
-    this.loadEdge(data.edge);
+    this.LoadEdge(data.edge);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// DATA LOADING
   ///
-  loadEdge(edge) {
+  LoadEdge(edge) {
     const { uViewMode } = this.state;
 
     // If we're editing, ignore the select!
@@ -308,12 +308,12 @@ class NCEdge extends UNISYS.Component {
 
     // If no edge was selected, deselect
     if (!edge) {
-      this.clearSelection();
+      this.ClearSelection();
       return;
     }
 
     // Load the edge
-    const attributes = this.loadAttributes(edge);
+    const attributes = this.LoadAttributes(edge);
     this.setState(
       {
         id: edge.id,
@@ -337,7 +337,7 @@ class NCEdge extends UNISYS.Component {
    * @param {Object} edge
    * @returns {Object} { ...attr-key: attr-value }
    */
-  loadAttributes(edge) {
+  LoadAttributes(edge) {
     const EDGEDEFS = UDATA.AppState('TEMPLATE').edgeDefs;
     const attributes = {};
     Object.keys(EDGEDEFS).forEach(k => {
@@ -356,7 +356,7 @@ class NCEdge extends UNISYS.Component {
    * @param {function} cb callback function
    * @returns {boolean} true if lock was successful
    */
-  lockEdge(cb) {
+  LockEdge(cb) {
     const { id } = this.state;
     let lockSuccess = false;
     UDATA.NetCall('SRV_DBLOCKEDGE', { edgeID: id }).then(data => {
@@ -393,7 +393,7 @@ class NCEdge extends UNISYS.Component {
       if (typeof cb === 'function') cb(unlockSuccess);
     });
   }
-  isEdgeLocked(cb) {
+  IsEdgeLocked(cb) {
     const { id } = this.state;
     let edgeIsLocked = false;
     UDATA.NetCall('SRV_DBISEDGELOCKED', { edgeID: id }).then(data => {
@@ -415,8 +415,8 @@ class NCEdge extends UNISYS.Component {
    * If `lockEdge` is not successful, then that means the edge was
    * already locked, so we can't edit.
    */
-  editEdge() {
-    this.lockEdge(lockSuccess => {
+  EditEdge() {
+    this.LockEdge(lockSuccess => {
       this.setState({ uIsLockedByDB: !lockSuccess }, () => {
         if (lockSuccess) this.EnableEditMode();
       });
@@ -443,14 +443,14 @@ class NCEdge extends UNISYS.Component {
         dTargetNode
       },
       () => {
-        this.setBackgroundColor();
+        this.SetBackgroundColor();
         this.SetSourceTargetNodeColor();
         // setTimeout(() => {
         this.setState({ animateHeight: 'fullheight' }); // animate transition
         // }, 500);
-        this.isEdgeLocked(edgeIsLocked => {
+        this.IsEdgeLocked(edgeIsLocked => {
           this.setState({ uIsLockedByDB: edgeIsLocked }, () =>
-            this.updatePermissions()
+            this.UpdatePermissions()
           );
         });
       }
@@ -627,7 +627,7 @@ class NCEdge extends UNISYS.Component {
    * Currently the background color is determined by the template edge type
    * color mapping.  This will eventually be replaced with a color manager.
    */
-  setBackgroundColor() {
+  SetBackgroundColor() {
     const { attributes } = this.state;
     const type = attributes && attributes.type;
     const COLORMAP = UDATA.AppState('COLORMAP');
@@ -696,21 +696,21 @@ class NCEdge extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UI EVENT HANDLERS
   ///
-  uiSelectTab(event) {
+  UISelectTab(event) {
     event.stopPropagation();
     this.setState({ uSelectedTab: event.target.value });
   }
 
-  uiRequestEditEdge(event) {
+  UIRequestEditEdge(event) {
     event.stopPropagation();
-    this.editEdge();
+    this.EditEdge();
   }
 
-  uiDeselectEdge() {
+  UIDeselectEdge() {
     UDATA.LocalCall('EDGE_DESELECT');
   }
 
-  uiCancelEditMode() {
+  UICancelEditMode() {
     const { previousState } = this.state;
     // restore previous state
     this.setState(
@@ -723,11 +723,11 @@ class NCEdge extends UNISYS.Component {
       },
       () => {
         this.UpdateDerivedValues();
-        this.uiDisableEditMode();
+        this.UIDisableEditMode();
       }
     );
   }
-  uiDisableEditMode() {
+  UIDisableEditMode() {
     this.UnlockEdge(() => {
       this.setState({
         uViewMode: NCUI.VIEWMODE.VIEW,
@@ -742,7 +742,7 @@ class NCEdge extends UNISYS.Component {
     });
   }
 
-  uiInputUpdate(key, value) {
+  UIInputUpdate(key, value) {
     if (BUILTIN_FIELDS.includes(key)) {
       const data = {};
       data[key] = value;
@@ -750,7 +750,7 @@ class NCEdge extends UNISYS.Component {
     } else {
       const { attributes } = this.state;
       attributes[key] = value;
-      this.setState({ attributes }, () => this.setBackgroundColor());
+      this.setState({ attributes }, () => this.SetBackgroundColor());
     }
   }
 
@@ -807,7 +807,7 @@ class NCEdge extends UNISYS.Component {
         <div
           className="view"
           style={{ backgroundColor: bgcolor }}
-          onClick={this.uiDeselectEdge}
+          onClick={this.UIDeselectEdge}
         >
           {/* BUILT-IN - - - - - - - - - - - - - - - - - */}
           <div className="formview">
@@ -828,7 +828,7 @@ class NCEdge extends UNISYS.Component {
           </div>
           {/* TABS - - - - - - - - - - - - - - - - - - - */}
           <div className="tabcontainer">
-            {NCUI.RenderTabSelectors(TABS, this.state, this.uiSelectTab)}
+            {NCUI.RenderTabSelectors(TABS, this.state, this.UISelectTab)}
             <div className="tabview">
               {uSelectedTab === TABS.ATTRIBUTES &&
                 NCUI.RenderAttributesTabView(this.state, defs)}
@@ -841,7 +841,7 @@ class NCEdge extends UNISYS.Component {
             {!uEditBtnHide && uSelectedTab !== TABS.EDGES && (
               <button
                 id="editbtn"
-                onClick={this.uiRequestEditEdge}
+                onClick={this.UIRequestEditEdge}
                 disabled={uEditBtnDisable}
               >
                 Edit
@@ -921,17 +921,17 @@ class NCEdge extends UNISYS.Component {
             </div>
             {/* TABS - - - - - - - - - - - - - - - - - - - */}
             <div className="tabcontainer">
-              {NCUI.RenderTabSelectors(TABS, this.state, this.uiSelectTab)}
+              {NCUI.RenderTabSelectors(TABS, this.state, this.UISelectTab)}
               <div className="tabview">
                 {uSelectedTab === TABS.ATTRIBUTES &&
-                  NCUI.RenderAttributesTabEdit(this.state, defs, this.uiInputUpdate)}
+                  NCUI.RenderAttributesTabEdit(this.state, defs, this.UIInputUpdate)}
                 {uSelectedTab === TABS.PROVENANCE &&
                   NCUI.RenderProvenanceTab(this.state, defs)}
               </div>
             </div>
             {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
             <div className="controlbar">
-              <button className="cancelbtn" onClick={this.uiCancelEditMode}>
+              <button className="cancelbtn" onClick={this.UICancelEditMode}>
                 Cancel
               </button>
               <button onClick={this.SaveEdge} disabled={saveIsDisabled}>
