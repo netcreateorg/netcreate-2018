@@ -2,7 +2,8 @@
 
   nc-ui
 
-  General purpose UI components and snippets.
+  General purpose re-usable UI components and snippets.
+
   Used by:
   * NCNode
   * NCEdge
@@ -67,7 +68,6 @@ function m_UINumberInputUpdate(event, cb) {
  * @param {function} cb Callback function
  */
 function m_UISelectInputUpdate(event, cb) {
-  console.log('uiselect', event)
   const key = event.target.id;
   const value = event.target.value;
   if (typeof cb === 'function') cb(key, value);
@@ -121,7 +121,7 @@ function RenderAttributesTabEdit(state, defs, onchange) {
     const value = attributes[k] || ''; // catch `undefined` or React will complain about changing from uncontrolled to controlled
     switch (type) {
       case 'string':
-        items.push(m_RenderStringInput(k, value, onchange));
+        items.push(RenderStringInput(k, value, onchange));
         break;
       case 'number':
         items.push(m_RenderNumberInput(k, value, onchange));
@@ -174,7 +174,7 @@ function RenderStringValue(key, value) {
  * @param {function} cb
  * @returns
  */
-function m_RenderStringInput(key, value, cb) {
+function RenderStringInput(key, value, cb) {
   return (
     <input
       id={key}
@@ -182,6 +182,7 @@ function m_RenderStringInput(key, value, cb) {
       value={value}
       type="string"
       onChange={event => m_UIStringInputUpdate(event, cb)}
+      autoComplete="off" // turn off Chrome's default autocomplete, which conflicts
     />
   );
 }
@@ -242,5 +243,6 @@ module.exports = {
   RenderAttributesTabEdit,
   RenderProvenanceTab,
   RenderLabel,
-  RenderStringValue
+  RenderStringValue,
+  RenderStringInput
 };
