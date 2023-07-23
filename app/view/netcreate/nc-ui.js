@@ -104,16 +104,23 @@ function RenderTabSelectors(TABS, state, onclick) {
 }
 
 function RenderAttributesTabView(state, defs) {
-  const { attributes } = state;
+  const { attributes, degrees } = state;
   const items = [];
   Object.keys(attributes).forEach(k => {
     items.push(RenderLabel(k, defs[k].displayLabel));
     items.push(RenderStringValue(k, attributes[k]));
   });
+
+  // degrees hack -- `degrees` is a built-in field, but is displayed in attributes
+  if (defs['degrees']) { // only if defined, e.g. for nodeDefs
+    items.push(RenderLabel('degrees', defs['degrees'].displayLabel));
+    items.push(RenderStringValue('degrees', degrees));
+  }
+
   return <div className="formview">{items}</div>;
 }
 function RenderAttributesTabEdit(state, defs, onchange) {
-  const { attributes } = state;
+  const { attributes, degrees } = state;
   const items = [];
   Object.keys(attributes).forEach(k => {
     items.push(RenderLabel(k, defs[k].displayLabel));
@@ -133,6 +140,14 @@ function RenderAttributesTabEdit(state, defs, onchange) {
         items.push(RenderStringValue(k, value, onchange)); // display unsupported type
     }
   });
+
+
+  // degrees hack -- `degrees` is a built-in field, but is displayed in attributes
+  if (defs['degrees']) { // only if defined, e.g. for nodeDefs
+    items.push(RenderLabel('degrees', defs['degrees'].displayLabel));
+    items.push(RenderStringValue('degrees', degrees));
+  }
+
   return <div className="formview">{items}</div>;
 }
 

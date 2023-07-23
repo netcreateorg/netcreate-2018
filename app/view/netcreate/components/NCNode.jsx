@@ -177,6 +177,7 @@ class NCNode extends UNISYS.Component {
       // NODE DEFS
       id: null,
       label: '',
+      degrees: null,
       attributes: [],
       provenance: [],
       created: undefined,
@@ -314,6 +315,7 @@ class NCNode extends UNISYS.Component {
       {
         id: node.id,
         label: node.label,
+        degrees: node.degrees,
         attributes: attributes,
         provenance: node.provenance,
         created: node.created,
