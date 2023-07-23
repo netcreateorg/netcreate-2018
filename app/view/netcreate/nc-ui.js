@@ -164,8 +164,6 @@ function RenderProvenanceTabView(state, defs) {
       {RenderStringValue('updatedlabel', updated)}
       {RenderLabel('revisionlabel', defs.revision.displayLabel)}
       {RenderStringValue('revisionlabel', revision)}
-      {/* {RenderLabel('degreeslabel', defs.degrees.displayLabel)}
-      {RenderStringValue('degreeslabel', degrees)} */}
     </div>
   );
 }
@@ -183,8 +181,6 @@ function RenderProvenanceTabEdit(state, defs, onchange) {
       {RenderStringValue('updatedlabel', updated)}
       {RenderLabel('revisionlabel', defs.revision.displayLabel)}
       {RenderStringValue('revisionlabel', revision)}
-      {/* {RenderLabel('degreeslabel', defs.degrees.displayLabel)}
-      {RenderStringValue('degreeslabel', degrees)} */}
     </div>
   );
 }
