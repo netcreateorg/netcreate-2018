@@ -759,6 +759,15 @@ DB.PKT_RequestUnlockNode = function (pkt) {
   return m_MakeLockError(`nodeID ${nodeID} was not locked so can't unlock`);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DB.PKT_IsNodeLocked = function (pkt) {
+  let { nodeID } = pkt.Data();
+  const uaddr = pkt.s_uaddr;
+  let errcode = m_IsInvalidNode(nodeID);
+  if (errcode) return errcode;
+  const isLocked = m_locked_nodes.has(nodeID);
+  return { nodeID, locked: isLocked };
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_IsInvalidNode(nodeID) {
   if (!nodeID) return m_MakeLockError(`undefined nodeID`);
   nodeID = Number.parseInt(nodeID, 10);
@@ -803,6 +812,15 @@ DB.PKT_RequestUnlockEdge = function (pkt) {
   }
   // this is an error because nodeID wasn't in the lock table
   return m_MakeLockError(`edgeID ${edgeID} was not locked so can't unlock`);
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DB.PKT_IsEdgeLocked = function (pkt) {
+  let { edgeID } = pkt.Data();
+  const uaddr = pkt.s_uaddr;
+  let errcode = m_IsInvalidEdge(edgeID);
+  if (errcode) return errcode;
+  const isLocked = m_locked_edges.has(edgeID);
+  return { edgeID, locked: isLocked };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_IsInvalidEdge(edgeID) {
@@ -1255,7 +1273,8 @@ DB.RegenerateDefaultTemplate = () => {
 /**
  * Returns object with flags indicating whether the template is being edited,
  * data is being imported, or node or edge are being edited
- * @returns {templateBeingEdited:boolean, importActive:boolean, nodeOrEdgeBeingEdited:boolean}
+ * @returns {templateBeingEdited:boolean, importActive:boolean, nodeOrEdgeBeingEdited:boolean,
+ *           lockedNodes:array, lockedEdges:array }
  */
 DB.GetEditStatus = () => {
   // If there are any 'template' open editors, then templateBeingEdited is true
@@ -1267,7 +1286,11 @@ DB.GetEditStatus = () => {
     m_open_editors.length > 0 &&
     (m_open_editors.includes(EDITORTYPE.NODE) ||
       m_open_editors.includes(EDITORTYPE.EDGE));
-  return { templateBeingEdited, importActive, nodeOrEdgeBeingEdited };
+  return {
+    templateBeingEdited, importActive, nodeOrEdgeBeingEdited,
+    lockedNodes: [...m_locked_nodes.keys()],
+    lockedEdges: [...m_locked_edges.keys()]
+  };
 };
 /**
  * Register a template, import, node or edge as being actively edited.

@@ -29,13 +29,15 @@ var DBG = false;
 
 const SETTINGS = require('settings');
 const isLocalHost =
-  SETTINGS.EJSProp('client').ip === '127.0.0.1' || location.href.includes('admin=true');
+  SETTINGS.EJSProp('client').ip === '127.0.0.1' ||
+  location.href.includes('admin=true');
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import FILTER from './filter/FilterEnums';
 const React = require('react');
 const ReactStrap = require('reactstrap');
+const { BUILTIN_FIELDS_NODE } = require('system/util/enum');
 const { Button } = ReactStrap;
 const MarkdownNote = require('./MarkdownNote');
 const UNISYS = require('unisys/client');
@@ -138,7 +140,8 @@ class NodeTable extends UNISYS.Component {
     var time = d.toTimeString().substr(0, 5);
     var dateTime = date + ' at ' + time;
     var titleString = 'v' + nodeEdge.meta.revision;
-    if (nodeEdge._nlog) titleString += ' by ' + nodeEdge._nlog[nodeEdge._nlog.length - 1];
+    if (nodeEdge._nlog)
+      titleString += ' by ' + nodeEdge._nlog[nodeEdge._nlog.length - 1];
     var tag = <span title={titleString}> {dateTime} </span>;
 
     return tag;
@@ -335,21 +338,12 @@ class NodeTable extends UNISYS.Component {
         return this.sortByID(nodes);
       case 'edgeCount':
         return this.sortByEdgeCount(nodes);
-      case 'type':
-        return this.sortByKey(nodes, 'type', type);
-      case 'notes':
-        return this.sortByKey(nodes, 'notes', type);
-      case 'info':
-        return this.sortByKey(nodes, 'info', type);
-      case 'provenance':
-        return this.sortByKey(nodes, 'provenance', type);
-      case 'comments':
-        return this.sortByKey(nodes, 'comments', type);
-      case 'updated':
-        return this.sortByUpdated(nodes);
+      // case 'updated':
+      //   return this.sortByUpdated(nodes);
       case 'label':
-      default:
         return this.sortByLabel(nodes);
+      default:
+        return this.sortByKey(nodes, sortkey, type);
     }
   }
 
@@ -442,6 +436,9 @@ class NodeTable extends UNISYS.Component {
                   xtbody { overflow: auto; }
                   .btn-sm { font-size: 0.6rem; padding: 0.1rem 0.2rem }
                   `;
+    const attributes = Object.keys(nodeDefs).filter(
+      k => !BUILTIN_FIELDS_NODE.includes(k)
+    );
     return (
       <div
         onMouseLeave={() => this.onHighlightRow(undefined)}
@@ -469,7 +466,10 @@ class NodeTable extends UNISYS.Component {
                 <div style={{ color: '#f3f3ff' }}>_Edit_</div>
               </th>
               <th width="4%" hidden={!DBG}>
-                <Button size="sm" onClick={() => this.setSortKey('id', nodeDefs.id.type)}>
+                <Button
+                  size="sm"
+                  onClick={() => this.setSortKey('id', nodeDefs.id.type)}
+                >
                   ID
                 </Button>
               </th>
@@ -489,38 +489,17 @@ class NodeTable extends UNISYS.Component {
                   {nodeDefs.label.displayLabel} {this.sortSymbol('label')}
                 </Button>
               </th>
-              <th width="10%" hidden={nodeDefs.type.hidden}>
-                <Button
-                  size="sm"
-                  onClick={() => this.setSortKey('type', nodeDefs.type.type)}
-                >
-                  {nodeDefs.type.displayLabel} {this.sortSymbol('type')}
-                </Button>
-              </th>
-              <th width="4%" hidden={nodeDefs.info.hidden}>
-                <Button
-                  size="sm"
-                  onClick={() => this.setSortKey('info', nodeDefs.info.type)}
-                >
-                  {nodeDefs.info.displayLabel} {this.sortSymbol('info')}
-                </Button>
-              </th>
-              <th width="25%" hidden={nodeDefs.notes.hidden}>
-                <Button
-                  size="sm"
-                  onClick={() => this.setSortKey('notes', nodeDefs.notes.type)}
-                >
-                  {nodeDefs.notes.displayLabel} {this.sortSymbol('notes')}
-                </Button>
-              </th>
-              <th width="9%" hidden={nodeDefs.provenance.hidden}>
-                <Button
-                  size="sm"
-                  onClick={() => this.setSortKey('provenance', nodeDefs.provenance.type)}
-                >
-                  {nodeDefs.provenance.displayLabel} {this.sortSymbol('provenance')}
-                </Button>
-              </th>
+              {attributes.map(a => (
+                <th hidden={nodeDefs[a].hidden} key={a}>
+                  <Button
+                    size="sm"
+                    onClick={() => this.setSortKey(a, nodeDefs[a].type)}
+                  >
+                    {nodeDefs[a].displayLabel} {this.sortSymbol(a)}
+                  </Button>
+                </th>
+              ))}
+              {/*
               <th width="10%" hidden={!isLocalHost}>
                 <Button
                   size="sm"
@@ -529,14 +508,7 @@ class NodeTable extends UNISYS.Component {
                   Updated {this.sortSymbol('updated')}
                 </Button>
               </th>
-              <th width="20%" hidden={nodeDefs.comments.hidden}>
-                <Button
-                  size="sm"
-                  onClick={() => this.setSortKey('comments', nodeDefs.comments.type)} // date might be
-                >
-                  {nodeDefs.comments.displayLabel} {this.sortSymbol('comments')}
-                </Button>
-              </th>
+              */}
             </tr>
           </thead>
           <tbody style={{ maxHeight: tableHeight, fontSize: '12px' }}>
@@ -550,7 +522,12 @@ class NodeTable extends UNISYS.Component {
                 onMouseOver={() => this.onHighlightRow(node.id)}
               >
                 <td>
-                  <Button size="sm" outline value={node.id} onClick={this.onButtonClick}>
+                  <Button
+                    size="sm"
+                    outline
+                    value={node.id}
+                    onClick={this.onButtonClick}
+                  >
                     {isLocked ? 'View' : 'Edit'}
                   </Button>
                 </td>
@@ -561,14 +538,12 @@ class NodeTable extends UNISYS.Component {
                     {node.label}
                   </a>
                 </td>
-                <td hidden={nodeDefs.type.hidden}>{node.type}</td>
-                <td hidden={nodeDefs.info.hidden}>{node.info}</td>
-                <td hidden={nodeDefs.notes.hidden}>
-                  {node.notes ? <MarkdownNote text={node.notes} /> : ''}
-                </td>
-                <td hidden={nodeDefs.provenance.hidden} style={{ fontSize: '9px' }}>
-                  {node.provenance}
-                </td>
+                {attributes.map(a => (
+                  <td hidden={nodeDefs[a].hidden} key={`${node.id}${a}`}>
+                    {node[a]}
+                  </td>
+                ))}
+                {/*
                 <td hidden={!isLocalHost} style={{ fontSize: '9px' }}>
                   {this.displayUpdated(node)}
                 </td>
@@ -578,6 +553,7 @@ class NodeTable extends UNISYS.Component {
                 >
                   {node.comments}
                 </td>
+                */}
               </tr>
             ))}
           </tbody>

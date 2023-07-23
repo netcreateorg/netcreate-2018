@@ -1040,7 +1040,7 @@ class NodeSelector extends UNISYS.Component {
       }
         return (
         <div>
-          <FormGroup className="text-right" style={{marginTop:'-20px',paddingRight:'5px'}}>
+          <FormGroup className="text-right" style={{marginTop:'10px',paddingRight:'5px'}}>
             <Button outline size="sm"
               disabled={disableEdit}
               hidden={isLocked || isBeingEdited}

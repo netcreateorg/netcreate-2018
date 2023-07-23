@@ -2,6 +2,8 @@
 
     NCGraphRenderer
 
+    This uses D3 Version 4.0.
+
     This is a pure data renderer based on d3-simplenetgraph.
     It does not rely on any outside data sources/dependencies or UNISYS calls.
 
@@ -13,19 +15,58 @@
     NCGraph calls NCGraphRenderer.SetData whenever it receives an updated data object.
     This triggers NCGraphRenderer to redraw itself.
 
-    The data is:
-      data = { nodes, edges }
-      nodes = [ ...{id, label, selected,
-                    size, color, opacity, strokeColor, strokeWidth, help}],
-      edges = [ ...{id, sourceId, targetId, size, color, opacity}]
 
-    This uses D3 Version 4.0.
 
+    VDATA
+    -----
+    The data for display is generally referred to as VDATA, for visual
+    rendering data.
+
+      VDATA = { nodes:Object, edges:Object }
+      nodes = [ ...{ id :number,
+                     label :string,
+                     selected :boolean,
+                     selectedSecondary :boolean,  // for selected source/target node
+                     size :number,
+                     color :string(css),
+                     opacity :number(0-1),
+                     strokeColor :string(css),
+                     strokeWidth :number,
+                     textColor :string(css),
+                     help :string
+                   }],
+      edges = [ ...{ id :number,
+                     sourceId :number,
+                     targetId :number,
+                     size: number,
+                     color: string(css),
+                     opacity: number(0-1)
+                   }]
+
+
+    Using NCGraphRenderer
+    ---------------------
+    Embed NCGraphRender in a parent component.  See NCGraph for an example of use.
+    1. const graph = NCGraphRender(this.dom) -- Root element to attach the SVG graph to
+    2. graph.SetData(VDATA) -- Define data to draw
+       graph.UpdateGraph()   -- Force a redraw using the loaded data set
+
+    External Controls
+    * graph.ZoomReset()
+    * graph.ZoomIn()
+    * graph.ZoomOut()
+
+
+    Zoom/Pan
+    --------
     Zooming/panning is handled via D3's zoom() function.  Basically it
     involves creating a `g` element that wraps the node and link elements
     and applying transforms on that wrapper.
 
-    This is based on:
+
+    Provenance
+    ----------
+    d3-simplenetgraph was based on:
     *  rdpoor's commented version of mbostock's original code
        https://gist.github.com/rdpoor/3a66b3e082ffeaeb5e6e79961192f7d8
     *  danilo's v4 update
@@ -136,12 +177,13 @@ class NCGraphRenderer {
     // this.UpdateDefaultValues(); // needs TEMPLATE
 
     // Set up Zoom
-    this.zoom = d3.zoom().on('zoom', this.HandleZoom);
+    this.zoom = d3.zoom().on('zoom', this.m_HandleZoom);
 
     /*/ Create svg element which will contain our D3 DOM elements.
-      Add default click handler so when clicking empty space, deselect all.
-      NOTE: the svg element is actualy d3.selection object, not an svg obj.
-  /*/ this.d3svg = d3
+        Add default click handler so when clicking empty space, deselect all.
+        NOTE: the svg element is actualy d3.selection object, not an svg obj.
+    /*/
+    this.d3svg = d3
       .select(rootElement)
       .append('svg')
       .attr('id', 'netgraph')
@@ -149,7 +191,9 @@ class NCGraphRenderer {
       .attr('height', '100%') // then set center dynamically below
       .on('click', (e, event) => {
         // Deselect
-        UDATA.LocalCall('SOURCE_SELECT', { nodeLabels: [] });
+        UDATA.LocalCall('D3_SELECT_NODE', { nodeLabels: [] });
+        // DEPRECATED for now 7/2023 -- use D3_SELECT_NODE instead
+        // UDATA.LocalCall('SOURCE_SELECT', { nodeLabels: [] });
       })
       .on('mouseover', d => {
         UDATA.LocalCall('USER_HILITE_NODE', { nodeId: undefined });
@@ -176,25 +220,27 @@ class NCGraphRenderer {
 
     this.ClearSVG = this.ClearSVG.bind(this);
     this.SetData = this.SetData.bind(this);
-    this.Initialize = this.Initialize.bind(this);
+    this.m_Initialize = this.m_Initialize.bind(this);
     this.UpdateGraph = this.UpdateGraph.bind(this);
-    this.UpdateForces = this.UpdateForces.bind(this);
-    this.Tick = this.Tick.bind(this);
+    this.m_UpdateForces = this.m_UpdateForces.bind(this);
+    this.m_Tick = this.m_Tick.bind(this);
     this.ZoomReset = this.ZoomReset.bind(this);
     this.ZoomIn = this.ZoomIn.bind(this);
     this.ZoomOut = this.ZoomOut.bind(this);
     this.ZoomPanReset = this.ZoomPanReset.bind(this);
-    this.HandleZoom = this.HandleZoom.bind(this);
-    this.Transition = this.Transition.bind(this);
-    this.Dragstarted = this.Dragstarted.bind(this);
-    this.Dragged = this.Dragged.bind(this);
-    this.Dragended = this.Dragended.bind(this);
+    this.m_HandleZoom = this.m_HandleZoom.bind(this);
+    this.m_Transition = this.m_Transition.bind(this);
+    this.m_Dragstarted = this.m_Dragstarted.bind(this);
+    this.m_Dragged = this.m_Dragged.bind(this);
+    this.m_Dragended = this.m_Dragended.bind(this);
   }
 
   /// CLASS PUBLIC METHODS //////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Deregister() {
     if (DBG) console.log(PR, 'NCGraphRenderer.DESTRUCT!!!');
+    // Take care of any de-registration of listeners...
+    // ...there aren't any at the moment...
   }
 
   /// CLASS PRIVATE METHODS /////////////////////////////////////////////////////
@@ -235,8 +281,8 @@ class NCGraphRenderer {
       this.data.edges = newData.edges.map(d => Object.assign({}, d));
 
       // FIXME: REVIEW: is this not necessary?  Just check initialize once?
-      if (!options.skipForceUpdate) this.Initialize();
-      if (!options.skipForceUpdate) this.UpdateForces();
+      if (!options.skipForceUpdate) this.m_Initialize();
+      if (!options.skipForceUpdate) this.m_UpdateForces();
       this.UpdateGraph(options.skipForceUpdate);
 
       // updates ignored until this is run restarts the simulation
@@ -249,7 +295,7 @@ class NCGraphRenderer {
 
   /*/ This sets up the force properties for the simulation and tick handler.
   /*/
-  Initialize() {
+  m_Initialize() {
     // Create the force layout.  After a call to force.start(), the tick
     // method will be called repeatedly until the layout "gels" in a stable
     // configuration.
@@ -261,7 +307,7 @@ class NCGraphRenderer {
       .force('forceX', d3.forceX())
       .force('forceY', d3.forceY())
 
-      .on('tick', this.Tick);
+      .on('tick', this.m_Tick);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Call UpdateGraph() after new data has been loaded. This creates link and node
@@ -312,16 +358,18 @@ class NCGraphRenderer {
         d3
           .drag()
           .on('start', d => {
-            this.Dragstarted(d, this);
+            this.m_Dragstarted(d, this);
           })
-          .on('drag', this.Dragged)
+          .on('drag', this.m_Dragged)
           .on('end', d => {
-            this.Dragended(d, this);
+            this.m_Dragended(d, this);
           })
       )
       .on('click', d => {
         if (DBG) console.log('clicked on', d.label, d.id);
-        UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [d.id] });
+        UDATA.LocalCall('D3_SELECT_NODE', { nodeIDs: [d.id] });
+        // DEPRECATED for now 7/2023 -- use D3_SELECT_NODE instead
+        // UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [d.id] });
         d3.event.stopPropagation();
       })
       .on('mouseover', d => {
@@ -423,7 +471,7 @@ class NCGraphRenderer {
     nodeElements
       .merge(nodeElements)
       .selectAll('text')
-      .attr('fill', d => d.strokeColor)
+      .attr('fill', d => d.textColor)
       // .attr('stroke', d => d.strokeColor) // stroke overlaps on text
       // .attr('stroke-width', '0.5px') // stroke overlaps on text
       .attr('font-weight', d => {
@@ -459,6 +507,7 @@ class NCGraphRenderer {
       .classed('edge', true)
       .style('stroke', e => e.color)
       .style('stroke-width', e => e.width)
+      .style('stroke-linecap', 'round')
       // Edge selection disabled.
       // .on("click",   (d) => {
       //   if (DBG) console.log('clicked on',d.label,d.id)
@@ -472,6 +521,7 @@ class NCGraphRenderer {
       // .classed("selected", e => e.selected) // is this used?
       .style('stroke', e => e.color)
       .style('stroke-width', e => e.width)
+      .style('stroke-linecap', 'round')
       .transition()
       .duration(500)
       .style('opacity', e => e.opacity);
@@ -486,8 +536,8 @@ class NCGraphRenderer {
     }
 
     // SELECTION ARROW
-    // Theoretically can show more than one
     this.d3svg.selectAll('#selectorArrow').remove();
+    this.d3svg.selectAll('#secondarySelectorArrow').remove();
 
     // SINGLE ARROW APPROACH
     // nodeElements
@@ -553,13 +603,34 @@ class NCGraphRenderer {
       .attr('to', d => `600 ${d.size + 5} 0`) // different rotation end
       .attr('dur', '6s')
       .attr('repeatCount', 'indefinite')
+
+    // SECONDARY SELECTOR ARROW
+    nodeElements
+      .merge(nodeElements)
+      .filter(d => d.selectedSecondary)
+      .append('g')
+      .attr('id', 'secondarySelectorArrow')
+      .attr('transform', d => `translate(${- d.size - 5},0)`)
+      .append('polygon')
+      .attr('points', '0,0 -10,5 -10,-5 ')
+      .attr('fill', 'blue')
+      // .attr('fill', d => d.strokeColor)
+      .append('animateTransform')
+      .attr('attributeName', 'transform')
+      .attr('attributeType', 'XML')
+      .attr('type', 'rotate')
+      .attr('from', d => `0 ${d.size + 5} 0`)
+      .attr('to', d => `360 ${d.size + 5} 0`)
+      .attr('dur', '2s')
+      .attr('repeatCount', 'indefinite')
+
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Apply new force properties
-    Call this on construct and if forceProperties have changed.
+      Call this on construct and if forceProperties have changed.
   /*/
-  UpdateForces() {
+  m_UpdateForces() {
     this.simulation
       .force(
         'link',
@@ -627,7 +698,7 @@ class NCGraphRenderer {
     DOM.  See the notes under link_update.enter() above for one technique for
     setting the ordering in the DOM.
   /*/
-  Tick() {
+  m_Tick() {
     // Drawing the nodes: Update the location of each node group element
     // from the x, y fields of the corresponding node object.
     this.zoomWrapper.selectAll('.node').attr('transform', d => {
@@ -664,12 +735,12 @@ class NCGraphRenderer {
 
   ZoomIn(data) {
     if (DBG) console.log(PR, 'ZOOM_IN got state NCDATA', data);
-    this.Transition(1.2);
+    this.m_Transition(1.2);
   }
 
   ZoomOut(data) {
     if (DBG) console.log(PR, 'ZOOM_OUT got state NCDATA', data);
-    this.Transition(0.8);
+    this.m_Transition(0.8);
   }
 
   // Pan to 0,0 and zoom scale to 1
@@ -682,13 +753,13 @@ class NCGraphRenderer {
 
   /*/ This primarily handles mousewheel zooms
   /*/
-  HandleZoom() {
+  m_HandleZoom() {
     if (DBG) console.log(PR, 'HandleZoom');
     d3.select('.zoomer').attr('transform', d3.event.transform);
   }
   /*/ This handles zoom button zooms.
   /*/
-  Transition(zoomLevel) {
+  m_Transition(zoomLevel) {
     if (DBG) console.log(PR, 'Transition');
     this.d3svg
       .transition()
@@ -700,16 +771,17 @@ class NCGraphRenderer {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/
   /*/
-  Dragstarted(d, self) {
+  m_Dragstarted(d, self) {
     if (DBG) console.log(PR, 'Dragstarted', d.x, d.y);
-    if (!d3.event.active) self.simulation.alphaTarget(0.3).restart();
+    // if (!d3.event.active) self.simulation.alphaTarget(0.3).restart(); // orig value results in a lot of movement after selection
+    if (!d3.event.active) self.simulation.alphaTarget(0.01).restart(); // minimize shift after selection
     d.fx = d.x;
     d.fy = d.y;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/
   /*/
-  Dragged(d) {
+  m_Dragged(d) {
     if (DBG) console.log(PR, 'Dragged');
     d.fx = d3.event.x;
     d.fy = d3.event.y;
@@ -717,7 +789,7 @@ class NCGraphRenderer {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/
   /*/
-  Dragended(d, self) {
+  m_Dragended(d, self) {
     if (DBG) console.log(PR, 'Dragended');
     if (!d3.event.active) self.simulation.alphaTarget(0.0001);
     d.fx = null;
@@ -734,3 +806,15 @@ class NCGraphRenderer {
 /// EXPORT MODULE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = NCGraphRenderer;
+/* Exports should be
+
+Deregister,
+ClearSVG,
+SetData,
+UpdateGraph,
+ZoomReset
+ZoomIn
+ZoomOut
+ZoomPanReset
+
+*/

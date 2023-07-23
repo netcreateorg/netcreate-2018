@@ -590,12 +590,14 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDNCD
   // let all_no_op = true; // all filters are no_op
   let keepEdge = true;
   const source = FILTEREDNCDATA.nodes.find(e => {
+    if (edge.source === undefined) return false;
     // on init, edge.source is just an id.  only with d3 processing does it
     // get transformed into a node object.  so we have to check the type.
     const sourceId = (typeof edge.source === 'number') ? edge.source : edge.source.id;
     return e.id === sourceId;
   });
   const target = FILTEREDNCDATA.nodes.find(e => {
+    if (edge.target === undefined) return false;
     // on init, edge.target is just an id.  only with d3 processing does it
     // get transformed into a node object.  so we have to check the type.
     const targetId = (typeof edge.target === 'number') ? edge.target : edge.target.id;

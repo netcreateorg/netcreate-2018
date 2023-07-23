@@ -42,6 +42,23 @@ MOD.Hook("INITIALIZE", () => {
 
 }); // end UNISYS_INIT
 
+/// PUBLIC METHODS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * Looks up the edge color defined in the passed TEMPLATE
+ * Fall back to default if type is not defined
+ * @param {Object} edge
+ * @param {Object} TEMPLATE
+ * @returns {string} e.g. '#FF00FF' as defined by TEMPLATE type.option
+ *                   or `undefined` if no color type is defined
+ */
+MOD.LookupEdgeColor = (edge, TEMPLATE) => {
+  const type = edge.type;
+  const typeOption = TEMPLATE.edgeDefs.type.options.find(o => o.label === type);
+  return typeOption ? typeOption.color : TEMPLATE.edgeDefs.type.options[0].color;
+}
+
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -82,7 +99,7 @@ function m_RenderEdges(data) {
     // 2. Update Color Weight Map
     if (colorsAreDefined) {
       const colorWeightMap = edgeColorWeightMap.get(edgeKey) || new Map(); // key = color, value = weight
-      const color = m_LookupEdgeColor(e, TEMPLATE);
+      const color = MOD.LookupEdgeColor(e, TEMPLATE);
       const colorWeight = colorWeightMap.get(color) || 0; // default to weight 0 if color was not previously defined
       colorWeightMap.set(color, colorWeight + eWeight);
       edgeColorWeightMap.set(edgeKey, colorWeightMap);
@@ -131,21 +148,6 @@ function m_GetWeightiestColor(edge, edgeColorWeightMap) {
   const colors = [...colorWeightMap.keys()];
   colors.sort((a, b) => colorWeightMap.get(b) - colorWeightMap.get(a)); // descending
   return colors[0];
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Looks up the edge color defined in the passed TEMPLATE
- * Fall back to default if type is not defined
- * @param {Object} edge
- * @param {Object} TEMPLATE
- * @returns {string} e.g. '#FF00FF' as defined by TEMPLATE type.option
- *                   or `undefined` if no color type is defined
- */
-function m_LookupEdgeColor(edge, TEMPLATE) {
-  const type = edge.type;
-  const typeOption = TEMPLATE.edgeDefs.type.options.find(o => o.label === type);
-  return typeOption ? typeOption.color : TEMPLATE.edgeDefs.type.options[0].color;
 }
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////

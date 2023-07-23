@@ -494,6 +494,23 @@ MOD.Hook('INITIALIZE', () => {
     UDATA.SetAppState('NCDATA', NCDATA);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  UDATA.HandleMessage('NODE_CREATE', data => {
+    // provenance
+    const session = UDATA.AppState("SESSION");
+    const timestamp = new Date().toLocaleDateString('en-US');
+    const provenance_str = `Added by ${session.token} on ${timestamp}`;
+
+    return DATASTORE.PromiseNewNodeID()
+      .then(newNodeID => {
+        const node = { id: newNodeID, label: data.label, provenance: provenance_str };
+        return UDATA.LocalCall('DB_UPDATE', { node }).then(() => {
+          NCDATA.nodes.push(node);
+          UDATA.SetAppState('NCDATA', NCDATA);
+          return node;
+        });
+      });
+  });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ NODE_DELETE is called by NodeSelector via datastore.js and
       Server.js when an node should be removed
   /*/
@@ -572,10 +589,48 @@ MOD.Hook('INITIALIZE', () => {
 
     // Write to database!
     // IMPORTANT: We have to update the db BEFORE calling SetAppState
-    // because SetAppState will cause d3 to convert edge source/targets
+    // because SetAppseState will cause d3 to convert edge source/targets
     // from ids back to node objects.
     UDATA.LocalCall('DBUPDATE_ALL', NCDATA);
     UDATA.SetAppState('NCDATA', NCDATA);
+  });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  UDATA.HandleMessage('FIND_NODE_BY_PROP', data => {
+    const searchParameters = {};
+    searchParameters[data.key] = data.searchString;
+    return { nodes: m_FindMatchingNodeByProp(searchParameters) };
+  });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  UDATA.HandleMessage('FIND_MATCHING_NODES', data => {
+    return { nodes: m_FindMatchingNodesByLabel(data.searchString) };
+  });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
+  /**
+   * When creating a new edge, we first
+   * 1. Add a bare bones edge object with a new ID to the local state.edges
+   * 2. Pass it to render, so that a new EdgeEditor will be created.
+   * 3. In EdgeEditor, we create a dummy edge object
+   * @param {Object} data
+   * @param {string} data.nodeId
+   */
+  UDATA.HandleMessage('EDGE_CREATE', data => {
+    // call server to retrieve an unused edge ID
+    return DATASTORE.PromiseNewEdgeID()
+      .then(newEdgeID => {
+        // Add it to local state for now
+        const edge = {
+          id: newEdgeID,
+          source: data.nodeId,
+          target: undefined,
+          attributes: {}
+        };
+        return UDATA.LocalCall('DB_UPDATE', { edge }).then(() => {
+          console.log('...DB_UPDATE node is now', edge)
+          NCDATA.edges.push(edge);
+          UDATA.SetAppState('NCDATA', NCDATA);
+          return edge;
+        });
+      });
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ EDGE_TYPES_UPDATE is called by templateEditor-mgr after user has changed the
@@ -635,7 +690,7 @@ MOD.Hook('INITIALIZE', () => {
     }
     // if there was one edge
     if (updatedEdges.length === 1) {
-      console.log('nc-logic.EDGE_UPDATE: updating existing edge', updatedEdges);
+      if (DBG) console.log('nc-logic.EDGE_UPDATE: updating existing edge', updatedEdges);
     }
     // if there were more edges than expected
     if (updatedEdges.length > 1) {

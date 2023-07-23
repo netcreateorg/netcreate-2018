@@ -1,0 +1,40 @@
+.ncsearch {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-auto-columns: 100px;
+  grid-auto-flow: column;
+  column-gap: 10px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.ncsearch button {
+  background-color: #fff6;
+  border-radius: 5px;
+  border-color: #0006;
+  border-width: 1px;
+  border-style: solid;
+  color: #333;
+}
+.ncsearch button:disabled {
+  background-color: #fff3;
+  border-color: #0003;
+  color: #3333;
+  cursor: not-allowed;
+}
+.ncsearch input {
+  width: 100%;
+  padding: 0 5px;
+  font-size: 16px;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+}
+
+/* override help */
+.ncsearch .helptop {
+  position: absolute;
+  bottom: 120%;
+  padding: 0 5px;
+  color: #666;
+  background-color: transparent;
+  font-size: 12px;
+}
