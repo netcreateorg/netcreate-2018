@@ -238,10 +238,12 @@
 .nccomponent .controlbar {
   display: flex;
   justify-content: flex-end;
+  align-items: top;
   padding: 10px 0 0 0;
 }
 
 .nccomponent .controlbar.deletenode {
+  justify-content: space-between;
   background-color: #0003;
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
@@ -249,8 +251,9 @@
   padding: 10px;
 }
 .nccomponent .controlbar .deleteinput {
-  width: 4em;
+  width: 7em;
+  margin: 0px;
 }
 .nccomponent .controlbar .deleteinput.invalid {
-  border: 1px solid red;
+  border: 5px double red;
 }

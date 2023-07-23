@@ -48,6 +48,9 @@ const EDGEMGR = require('../edge-mgr'); // handles edge synthesis
 const { EDITORTYPE } = require('system/util/enum');
 const NCUI = require('../nc-ui');
 const NCEdge = require('./NCEdge');
+const SETTINGS = require('settings');
+
+const isAdmin = SETTINGS.IsAdmin();
 
 let UDATA;
 const BUILTIN_FIELDS = [
@@ -163,6 +166,7 @@ class NCNode extends UNISYS.Component {
     this.setState({
       // SYSTEM STATE
       // isLoggedIn: false, // don't clear session state!
+      // isAdmin: false,
       previousState: {},
       // UI State
       editBtnDisable: false,
@@ -662,19 +666,28 @@ class NCNode extends UNISYS.Component {
           {editLockMessage && (
             <div className="message warning">{editLockMessage}</div>
           )}
-          <div className="controlbar deletenode">
-            <div className="message">
-              Re-link edges to this Node ID (leave blank to delete edge)
+          {isAdmin && (
+            <div className="controlbar deletenode">
+              <div className="message">
+                Re-link edges to this Node ID (leave blank to delete edge)
+              </div>
+              <div>
+                <input
+                  type="number"
+                  id="replacementNodeID"
+                  className={`deleteinput ${
+                    uIsValidReplacementNodeID ? '' : 'invalid'
+                  }`}
+                  value={uReplacementNodeId || ''}
+                  onChange={this.UIReplacementNodeIdUpdate}
+                />
+                {!uIsValidReplacementNodeID && (
+                  <div className="message warning">Invalid Node ID!</div>
+                )}
+              </div>
+              <button onClick={this.DeleteNode}>Delete</button>
             </div>
-            <input
-              type="number"
-              id="replacementNodeID"
-              className={`deleteinput ${uIsValidReplacementNodeID ? '' : 'invalid'}`}
-              value={uReplacementNodeId || ''}
-              onChange={this.UIReplacementNodeIdUpdate}
-            />
-            <button onClick={this.DeleteNode}>Delete</button>
-          </div>
+          )}
         </div>
       </div>
     );
