@@ -175,14 +175,17 @@ function RenderStringValue(key, value) {
  * @returns
  */
 function RenderStringInput(key, value, cb) {
+  const rows = String(value).length > 35 ? 3 : 1;
   return (
-    <input
+    <textarea
       id={key}
       key={`${key}input`}
-      value={value}
       type="string"
+      value={value}
       onChange={event => m_UIStringInputUpdate(event, cb)}
       autoComplete="off" // turn off Chrome's default autocomplete, which conflicts
+      className={rows > 1 ? `long` : ''}
+      rows={rows}
     />
   );
 }

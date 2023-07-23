@@ -51,6 +51,21 @@
   outline: #f00;
   border-color: #f00;
 }
+.nccomponent textarea {
+  width: 100%;
+  border-radius: 2px;
+  border-color: #0006;
+  border-width: 1px;
+  border-style: solid;
+  background-color: #fff8;
+  margin-bottom: 5px;
+  padding: 0 5px;
+  resize: none;
+}
+.nccomponent textarea.long {
+  padding: 0 5px;
+  resize: vertical;
+}
 .nccomponent select {
   width: 100%;
   border-radius: 5px;
