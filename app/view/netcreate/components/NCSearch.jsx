@@ -95,7 +95,9 @@ class NCSearch extends UNISYS.Component {
     const data = {};
     data.label = value;
     UDATA.LocalCall('NODE_CREATE', data).then(node => {
-      UDATA.LocalCall('D3_SELECT_NODE', { nodeIDs: [node.id] });
+      UDATA.LocalCall('D3_SELECT_NODE', { nodeIDs: [node.id] }).then(() => {
+        UDATA.LocalCall('NODE_EDIT', { nodeID: node.id });
+      });
     });
   }
 
