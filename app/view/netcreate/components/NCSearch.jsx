@@ -34,16 +34,37 @@ class NCSearch extends UNISYS.Component {
     super(props);
 
     this.state = {
-      value: '',
-      disabled: false
+      isLoggedIn: false,
+      value: ''
     }; // initialized on componentDidMount and clearSelection
 
+    this.UpdateSession = this.UpdateSession.bind(this);
     this.UIOnChange = this.UIOnChange.bind(this);
     this.UIOnSelect = this.UIOnSelect.bind(this);
     this.UINewNode = this.UINewNode.bind(this);
 
     /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
+    /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    /// REGISTER LISTENERS
+    UDATA.OnAppStateChange('SESSION', this.UpdateSession);
+  }
+
+  componentWillUnmount() {
+    UDATA.AppStateChangeOff('SESSION', this.UpdateSession);
+  }
+
+  /**
+   * Handle change in SESSION data
+   * SESSION is called by SessionShell when the ID changes
+   * set system-wide. data: { classId, projId, hashedId, groupId, isValid }
+   * Called both by componentWillMount() and AppStateChange handler.
+   * The 'SESSION' state change is triggered in two places in SessionShell during
+   * its handleChange() when active typing is occuring, and also during
+   * SessionShell.componentWillMount()
+   */
+  UpdateSession(decoded) {
+    this.setState({ isLoggedIn: decoded.isValid });
   }
 
   UIOnChange(key, value) {
@@ -82,7 +103,8 @@ class NCSearch extends UNISYS.Component {
   /// MAIN RENDER
   ///
   render() {
-    const { value, disabled } = this.state;
+    const { value, isLoggedIn } = this.state;
+    const newNodeBtnDisabled = !isLoggedIn || value === '';
     const key = 'search'; // used for source/target, placeholder for search
     return (
       <div className="ncsearch">
@@ -92,7 +114,7 @@ class NCSearch extends UNISYS.Component {
           onChange={this.UIOnChange}
           onSelect={this.UIOnSelect}
         />
-        <button disabled={value === ''} onClick={this.UINewNode}>
+        <button disabled={newNodeBtnDisabled} onClick={this.UINewNode}>
           New Node
         </button>
       </div>

@@ -225,7 +225,7 @@ class NCNode extends UNISYS.Component {
    * SessionShell.componentWillMount()
    */
   updateSession(decoded) {
-    this.setState({ isLoggedIn: decoded.isValid });
+    this.setState({ isLoggedIn: decoded.isValid }, () => this.updatePermissions());
   }
   /*
       Called by NCDATA AppState updates
