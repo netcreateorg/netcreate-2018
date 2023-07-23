@@ -163,6 +163,7 @@ class NCNode extends UNISYS.Component {
   /// STATE MANAGEMENT
   ///
   ResetState() {
+    const TEMPLATE = this.AppState('TEMPLATE');
     this.setState({
       // SYSTEM STATE
       // isLoggedIn: false, // don't clear session state!
@@ -179,6 +180,7 @@ class NCNode extends UNISYS.Component {
       isLockedByTemplate: false,
       isLockedByImport: false,
       editLockMessage: '',
+      uHideDeleteNodeButton: TEMPLATE.hideDeleteNodeButton,
       uReplacementNodeId: '',
       uIsValidReplacementNodeID: true,
       // NODE DEFS
@@ -625,6 +627,7 @@ class NCNode extends UNISYS.Component {
       editBtnDisable,
       editBtnHide,
       editLockMessage,
+      uHideDeleteNodeButton,
       uReplacementNodeId,
       uIsValidReplacementNodeID,
       id,
@@ -666,7 +669,7 @@ class NCNode extends UNISYS.Component {
           {editLockMessage && (
             <div className="message warning">{editLockMessage}</div>
           )}
-          {isAdmin && !editBtnDisable && (
+          {isAdmin && !editBtnDisable && !uHideDeleteNodeButton && (
             <div className="controlbar deletenode">
               <div className="message">
                 Re-link edges to this Node ID (leave blank to delete edge)
