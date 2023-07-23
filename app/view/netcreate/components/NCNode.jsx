@@ -104,12 +104,15 @@ class NCNode extends UNISYS.Component {
     this.LockNode = this.LockNode.bind(this);
     this.UnlockNode = this.UnlockNode.bind(this);
     this.IsNodeLocked = this.IsNodeLocked.bind(this);
+    // DATA SAVING
     this.SaveNode = this.SaveNode.bind(this);
+    this.DeleteNode = this.DeleteNode.bind(this);
     // HELPER METHODS
     this.SetBackgroundColor = this.SetBackgroundColor.bind(this);
     // UI HANDLERS
     this.UISelectTab = this.UISelectTab.bind(this);
     this.UIRequestEditNode = this.UIRequestEditNode.bind(this);
+    this.UIReplacementNodeIdUpdate = this.UIReplacementNodeIdUpdate.bind(this);
     this.UIAddEdge = this.UIAddEdge.bind(this);
     this.EnableEditMode = this.EnableEditMode.bind(this);
     this.UICancelEditMode = this.UICancelEditMode.bind(this);
@@ -172,6 +175,8 @@ class NCNode extends UNISYS.Component {
       isLockedByTemplate: false,
       isLockedByImport: false,
       editLockMessage: '',
+      uReplacementNodeId: '',
+      uIsValidReplacementNodeID: true,
       // NODE DEFS
       id: null,
       label: '',
@@ -260,6 +265,7 @@ class NCNode extends UNISYS.Component {
     this.ResetState();
   }
   UpdateSelection(data) {
+    if (!data.nodes) return; // SELECTION cleared?
     const node = data.nodes[0]; // select the first node
     this.LoadNode(node);
   }
@@ -450,6 +456,20 @@ class NCNode extends UNISYS.Component {
       });
     });
   }
+  DeleteNode() {
+    const { id, uReplacementNodeId } = this.state;
+
+    // Re-link edges or delete edges?
+    // `NaN` is not valid JSON, so we need to pass -1
+    const replacementNodeID =
+      uReplacementNodeId === '' ? -1 : parseInt(uReplacementNodeId); // '' = Delete edges by default
+
+    this.ResetState();
+    this.AppCall('DB_UPDATE', {
+      nodeID: id,
+      replacementNodeID: replacementNodeID
+    });
+  }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// HELPER METHODS
@@ -474,7 +494,6 @@ class NCNode extends UNISYS.Component {
     this.setState({ uSelectedTab });
     if (event.target.value !== TABS.EDGES) UDATA.LocalCall('EDGE_DESELECT');
   }
-
   /**
    * If `lockNode` is not successful, then that means the node was
    * already locked, so we can't edit.
@@ -484,6 +503,24 @@ class NCNode extends UNISYS.Component {
       this.setState({ isLockedByDB: !lockSuccess }, () => {
         if (lockSuccess) this.EnableEditMode();
       });
+    });
+  }
+
+  UIReplacementNodeIdUpdate(event) {
+    const replacementNodeId = parseInt(event.target.value);
+    let isValid = false;
+    // Allow `` because we use a a blank field to indicate delete node without relinking edges.
+    if (
+      event.target.value === '' ||
+      UDATA.AppState('NCDATA').nodes.find(node => {
+        return node.id === replacementNodeId;
+      })
+    ) {
+      isValid = true;
+    }
+    this.setState({
+      uReplacementNodeId: replacementNodeId,
+      uIsValidReplacementNodeID: isValid
     });
   }
 
@@ -584,6 +621,9 @@ class NCNode extends UNISYS.Component {
       editBtnDisable,
       editBtnHide,
       editLockMessage,
+      uReplacementNodeId,
+      uIsValidReplacementNodeID,
+      id,
       label
     } = this.state;
     const defs = UDATA.AppState('TEMPLATE').nodeDefs;
@@ -592,7 +632,10 @@ class NCNode extends UNISYS.Component {
       <div className="nccomponent">
         <div className="view" style={{ background: bgcolor }}>
           {/* BUILT-IN - - - - - - - - - - - - - - - - - */}
-          <div className="nodelabel">{NCUI.RenderLabel('label', label)}</div>
+          <div className="titlebar">
+            <div className="nodelabel">{NCUI.RenderLabel('label', label)}</div>
+            <div className="nodenumber">#{id}</div>
+          </div>
           {/* TABS - - - - - - - - - - - - - - - - - - - */}
           <div className="tabcontainer">
             {NCUI.RenderTabSelectors(TABS, this.state, this.UISelectTab)}
@@ -619,6 +662,19 @@ class NCNode extends UNISYS.Component {
           {editLockMessage && (
             <div className="message warning">{editLockMessage}</div>
           )}
+          <div className="controlbar deletenode">
+            <div className="message">
+              Re-link edges to this Node ID (leave blank to delete edge)
+            </div>
+            <input
+              type="number"
+              id="replacementNodeID"
+              className={`deleteinput ${uIsValidReplacementNodeID ? '' : 'invalid'}`}
+              value={uReplacementNodeId || ''}
+              onChange={this.UIReplacementNodeIdUpdate}
+            />
+            <button onClick={this.DeleteNode}>Delete</button>
+          </div>
         </div>
       </div>
     );

@@ -224,8 +224,33 @@
   opacity: 0.7;
 }
 
+.nccomponent .titlebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.nccomponent .titlebar .nodenumber {
+  font-size: 12px;
+  color: #0005;
+  padding-right: 2px;
+}
+
 .nccomponent .controlbar {
   display: flex;
   justify-content: flex-end;
   padding: 10px 0 0 0;
+}
+
+.nccomponent .controlbar.deletenode {
+  background-color: #0003;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  margin-top: 10px;
+  padding: 10px;
+}
+.nccomponent .controlbar .deleteinput {
+  width: 4em;
+}
+.nccomponent .controlbar .deleteinput.invalid {
+  border: 1px solid red;
 }
