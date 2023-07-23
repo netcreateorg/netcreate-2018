@@ -45,7 +45,7 @@ const PR = 'NCNode';
 const React = require('react');
 const UNISYS = require('unisys/client');
 const EDGEMGR = require('../edge-mgr'); // handles edge synthesis
-const { EDITORTYPE } = require('system/util/enum');
+const { EDITORTYPE, BUILTIN_FIELDS_NODE } = require('system/util/enum');
 const NCUI = require('../nc-ui');
 const NCEdge = require('./NCEdge');
 const SETTINGS = require('settings');
@@ -53,15 +53,6 @@ const SETTINGS = require('settings');
 const isAdmin = SETTINGS.IsAdmin();
 
 let UDATA;
-const BUILTIN_FIELDS = [
-  'id',
-  'label',
-  'provenance',
-  'degrees',
-  'created',
-  'updated',
-  'revision'
-];
 const VIEWMODE = {
   EDIT: 'edit',
   VIEW: 'view'
@@ -376,7 +367,7 @@ class NCNode extends UNISYS.Component {
     const NODEDEFS = UDATA.AppState('TEMPLATE').nodeDefs;
     const attributes = {};
     Object.keys(NODEDEFS).forEach(k => {
-      if (BUILTIN_FIELDS.includes(k)) return; // skip built-in fields
+      if (BUILTIN_FIELDS_NODE.includes(k)) return; // skip built-in fields
       const attr_def = NODEDEFS[k];
       if (attr_def.hidden) return; // skip hidden fields
       attributes[k] = node[k];
@@ -578,7 +569,7 @@ class NCNode extends UNISYS.Component {
     });
   }
   UIInputUpdate(key, value) {
-    if (BUILTIN_FIELDS.includes(key)) {
+    if (BUILTIN_FIELDS_NODE.includes(key)) {
       const data = {};
       data[key] = value;
       this.setState(data);

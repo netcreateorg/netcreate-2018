@@ -39,6 +39,7 @@ const isLocalHost =
 import FILTER from './filter/FilterEnums';
 const React = require('react');
 const ReactStrap = require('reactstrap');
+const { BUILTIN_FIELDS_EDGE } = require('system/util/enum');
 const { Button } = ReactStrap;
 const MarkdownNote = require('./MarkdownNote');
 
@@ -370,25 +371,10 @@ class EdgeTable extends UNISYS.Component {
         return this.sortBySourceLabel(edges);
       case 'target':
         return this.sortByTargetLabel(edges);
-      case 'Info':
-        return this.sortByKey(edges, 'info', type);
-      case 'Weight':
-        return this.sortByKey(edges, 'weight', type);
-      case 'provenance':
-        return this.sortByKey(edges, 'provenance', type);
-      case 'comments':
-        return this.sortByKey(edges, 'comments', type);
-      case 'Notes':
-        return this.sortByKey(edges, 'notes', type);
-      case 'Category':
-        return this.sortByKey(edges, 'category', type);
-      case 'Citations':
-        return this.sortByKey(edges, 'citation', type);
-      case 'Updated':
-        return this.sortByUpdated(edges);
-      case 'Relationship':
+      // case 'Updated':
+      //   return this.sortByUpdated(edges);
       default:
-        return this.sortByKey(edges, 'type', type);
+        return this.sortByKey(edges, sortkey, type);
     }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -508,14 +494,12 @@ class EdgeTable extends UNISYS.Component {
   /*/
   render() {
     let { edgeDefs, isLocked } = this.state;
-
     if (edgeDefs.category === undefined) {
       // for backwards compatability
       edgeDefs.category = {};
       edgeDefs.category.label = '';
       edgeDefs.category.hidden = true;
     }
-
     const { tableHeight } = this.props;
     const styles = `thead, tbody { font-size: 0.8em }
                       .table {
@@ -532,6 +516,9 @@ class EdgeTable extends UNISYS.Component {
                       xtbody { overflow: auto; }
                       .btn-sm { font-size: 0.6rem; padding: 0.1rem 0.2rem }
                       `;
+    const attributes = Object.keys(edgeDefs).filter(
+      k => !BUILTIN_FIELDS_EDGE.includes(k)
+    );
     return (
       <div
         style={{
@@ -578,14 +565,14 @@ class EdgeTable extends UNISYS.Component {
                   {edgeDefs.source.displayLabel} {this.sortSymbol('source')}
                 </Button>
               </th>
-              <th hidden={edgeDefs.type.hidden} width="10%">
+              {/* <th hidden={edgeDefs.type.hidden} width="10%">
                 <Button
                   size="sm"
                   onClick={() => this.setSortKey('Relationship', edgeDefs.type.type)}
                 >
                   {edgeDefs.type.displayLabel} {this.sortSymbol('Relationship')}
                 </Button>
-              </th>
+              </th> */}
               <th hidden={!DBG}>Target ID</th>
               <th width="10%">
                 <Button
@@ -595,56 +582,17 @@ class EdgeTable extends UNISYS.Component {
                   {edgeDefs.target.displayLabel} {this.sortSymbol('target')}
                 </Button>
               </th>
-              <th width="8%" hidden={edgeDefs.category.hidden}>
-                <Button
-                  size="sm"
-                  onClick={() => this.setSortKey('Category', edgeDefs.category.type)}
-                >
-                  {edgeDefs.category.displayLabel} {this.sortSymbol('Category')}
-                </Button>
-              </th>
-              <th width="10%" hidden={edgeDefs.citation.hidden}>
-                <Button
-                  size="sm"
-                  onClick={() => this.setSortKey('Citations', edgeDefs.citation.type)}
-                >
-                  {edgeDefs.citation.displayLabel} {this.sortSymbol('Citations')}
-                </Button>
-              </th>
-              <th width="20%" hidden={edgeDefs.notes.hidden}>
-                <Button
-                  size="sm"
-                  onClick={() => this.setSortKey('Notes', edgeDefs.notes.type)}
-                >
-                  {edgeDefs.notes.displayLabel} {this.sortSymbol('Notes')}
-                </Button>
-              </th>
-              <th width="10%" hidden={edgeDefs.info.hidden}>
-                <Button
-                  size="sm"
-                  onClick={() => this.setSortKey('Info', edgeDefs.info.type)}
-                >
-                  {edgeDefs.info.displayLabel} {this.sortSymbol('Info')}
-                </Button>
-              </th>
-              <th width="4%" hidden={edgeDefs.weight.hidden}>
-                <Button
-                  size="sm"
-                  onClick={() => this.setSortKey('Weight', edgeDefs.weight.type)}
-                >
-                  {edgeDefs.weight.displayLabel} {this.sortSymbol('Weight')}
-                </Button>
-              </th>
-              <th width="7%" hidden={edgeDefs.provenance.hidden}>
-                <Button
-                  size="sm"
-                  onClick={() =>
-                    this.setSortKey('provenance', edgeDefs.provenance.type)
-                  }
-                >
-                  {edgeDefs.provenance.displayLabel} {this.sortSymbol('provenance')}
-                </Button>
-              </th>
+              {attributes.map(a => (
+                <th hidden={edgeDefs[a].hidden} key={a}>
+                  <Button
+                    size="sm"
+                    onClick={() => this.setSortKey(a, edgeDefs[a].type)}
+                  >
+                    {edgeDefs[a].displayLabel} {this.sortSymbol(a)}
+                  </Button>
+                </th>
+              ))}
+              {/*
               <th width="7%" hidden={!isLocalHost}>
                 <Button
                   size="sm"
@@ -661,6 +609,7 @@ class EdgeTable extends UNISYS.Component {
                   {edgeDefs.comments.displayLabel} {this.sortSymbol('comments')}
                 </Button>
               </th>
+              */}
             </tr>
           </thead>
           <tbody style={{ maxHeight: tableHeight, fontSize: '12px' }}>
@@ -691,7 +640,7 @@ class EdgeTable extends UNISYS.Component {
                     {edge.sourceLabel}
                   </a>
                 </td>
-                <td hidden={edgeDefs.type.hidden}>{edge.type}</td>
+                {/* <td hidden={edgeDefs.type.hidden}>{edge.type}</td> */}
                 {/* Cast to string for edge.target where target is undefined */}
                 <td hidden={!DBG}>{String(edge.target)}</td>
                 <td>
@@ -699,16 +648,12 @@ class EdgeTable extends UNISYS.Component {
                     {edge.targetLabel}
                   </a>
                 </td>
-                <td hidden={edgeDefs.category.hidden}>{edge.category}</td>
-                <td hidden={edgeDefs.citation.hidden}>{edge.citation}</td>
-                <td hidden={edgeDefs.notes.hidden}>
-                  {edge.notes ? <MarkdownNote text={edge.notes} /> : ''}
-                </td>
-                <td hidden={edgeDefs.info.hidden}>{edge.info}</td>
-                <td hidden={edgeDefs.weight.hidden}>{edge.weight}</td>
-                <td hidden={edgeDefs.provenance.hidden} style={{ fontSize: '9px' }}>
-                  {edge.provenance}
-                </td>
+                {attributes.map(a => (
+                  <td hidden={edgeDefs[a].hidden} key={`${edge.id}${a}`}>
+                    {edge[a]}
+                  </td>
+                ))}
+                {/*
                 <td hidden={!isLocalHost} style={{ fontSize: '9px' }}>
                   {this.displayUpdated(edge)}
                 </td>
@@ -718,6 +663,7 @@ class EdgeTable extends UNISYS.Component {
                 >
                   {edge.comments}
                 </td>
+                */}
               </tr>
             ))}
           </tbody>

@@ -29,22 +29,12 @@ const PR = 'NCEdge';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const UNISYS = require('unisys/client');
-const { EDITORTYPE } = require('system/util/enum');
+const { EDITORTYPE, BUILTIN_FIELDS_EDGE } = require('system/util/enum');
 const NCUI = require('../nc-ui');
 const NCAutoSuggest = require('./NCAutoSuggest');
 const NCDialog = require('./NCDialog');
 
 let UDATA;
-const BUILTIN_FIELDS = [
-  'id',
-  'source',
-  'target',
-  'provenance',
-  'degrees',
-  'created',
-  'updated',
-  'revision'
-];
 const TABS = {
   // Also used as labels
   ATTRIBUTES: 'ATTRIBUTES',
@@ -341,7 +331,7 @@ class NCEdge extends UNISYS.Component {
     const EDGEDEFS = UDATA.AppState('TEMPLATE').edgeDefs;
     const attributes = {};
     Object.keys(EDGEDEFS).forEach(k => {
-      if (BUILTIN_FIELDS.includes(k)) return; // skip built-in fields
+      if (BUILTIN_FIELDS_EDGE.includes(k)) return; // skip built-in fields
       const attr_def = EDGEDEFS[k];
       if (attr_def.hidden) return; // skip hidden fields
       attributes[k] = edge[k];
@@ -743,7 +733,7 @@ class NCEdge extends UNISYS.Component {
   }
 
   UIInputUpdate(key, value) {
-    if (BUILTIN_FIELDS.includes(key)) {
+    if (BUILTIN_FIELDS_EDGE.includes(key)) {
       const data = {};
       data[key] = value;
       this.setState(data);
