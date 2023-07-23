@@ -113,7 +113,7 @@ function RenderAttributesTabView(state, defs) {
   return <div className="formview">{items}</div>;
 }
 function RenderAttributesTabEdit(state, defs, onchange) {
-  const { id, attributes } = state;
+  const { attributes } = state;
   const items = [];
   Object.keys(attributes).forEach(k => {
     items.push(RenderLabel(k, defs[k].displayLabel));
@@ -136,13 +136,32 @@ function RenderAttributesTabEdit(state, defs, onchange) {
   return <div className="formview">{items}</div>;
 }
 
-function RenderProvenanceTab(state, defs) {
+function RenderProvenanceTabView(state, defs) {
   const { provenance, degrees, created, updated, revision } = state;
   // FIXME: These will be dynamically generated with the new Provenance template
   return (
     <div className="provenance formview">
       {RenderLabel('provenancelabel', defs.provenance.displayLabel)}
       {RenderStringValue('provenancelabel', provenance)}
+      {RenderLabel('createdlabel', defs.created.displayLabel)}
+      {RenderStringValue('createdlabel', created)}
+      {RenderLabel('updatedlabel', defs.updated.displayLabel)}
+      {RenderStringValue('updatedlabel', updated)}
+      {RenderLabel('revisionlabel', defs.revision.displayLabel)}
+      {RenderStringValue('revisionlabel', revision)}
+      {/* {RenderLabel('degreeslabel', defs.degrees.displayLabel)}
+      {RenderStringValue('degreeslabel', degrees)} */}
+    </div>
+  );
+}
+
+function RenderProvenanceTabEdit(state, defs, onchange) {
+  const { provenance, degrees, created, updated, revision } = state;
+  // FIXME: These will be dynamically generated with the new Provenance template
+  return (
+    <div className="provenance formview">
+      {RenderLabel('provenancelabel', defs.provenance.displayLabel)}
+      {RenderStringInput('provenance', provenance, onchange)}
       {RenderLabel('createdlabel', defs.created.displayLabel)}
       {RenderStringValue('createdlabel', created)}
       {RenderLabel('updatedlabel', defs.updated.displayLabel)}
@@ -244,7 +263,8 @@ module.exports = {
   RenderTabSelectors,
   RenderAttributesTabView,
   RenderAttributesTabEdit,
-  RenderProvenanceTab,
+  RenderProvenanceTabView,
+  RenderProvenanceTabEdit,
   RenderLabel,
   RenderStringValue,
   RenderStringInput

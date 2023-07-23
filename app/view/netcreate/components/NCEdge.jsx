@@ -823,7 +823,7 @@ class NCEdge extends UNISYS.Component {
               {uSelectedTab === TABS.ATTRIBUTES &&
                 NCUI.RenderAttributesTabView(this.state, defs)}
               {uSelectedTab === TABS.PROVENANCE &&
-                NCUI.RenderProvenanceTab(this.state, defs)}
+                NCUI.RenderProvenanceTabView(this.state, defs)}
             </div>
           </div>
           {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
@@ -916,7 +916,7 @@ class NCEdge extends UNISYS.Component {
                 {uSelectedTab === TABS.ATTRIBUTES &&
                   NCUI.RenderAttributesTabEdit(this.state, defs, this.UIInputUpdate)}
                 {uSelectedTab === TABS.PROVENANCE &&
-                  NCUI.RenderProvenanceTab(this.state, defs)}
+                  NCUI.RenderProvenanceTabEdit(this.state, defs)}
               </div>
             </div>
             {/* CONTROL BAR - - - - - - - - - - - - - - - - */}

@@ -642,7 +642,7 @@ class NCNode extends UNISYS.Component {
                 NCUI.RenderAttributesTabView(this.state, defs)}
               {uSelectedTab === TABS.EDGES && this.RenderEdgesTab()}
               {uSelectedTab === TABS.PROVENANCE &&
-                NCUI.RenderProvenanceTab(this.state, defs)}
+                NCUI.RenderProvenanceTabView(this.state, defs)}
             </div>
           </div>
           {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
@@ -728,7 +728,7 @@ class NCNode extends UNISYS.Component {
                   NCUI.RenderAttributesTabEdit(this.state, defs, this.UIInputUpdate)}
                 {uSelectedTab === TABS.EDGES && this.RenderEdgesTab()}
                 {uSelectedTab === TABS.PROVENANCE &&
-                  NCUI.RenderProvenanceTab(this.state, defs)}
+                  NCUI.RenderProvenanceTabEdit(this.state, defs, this.UIInputUpdate)}
               </div>
             </div>
             {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
