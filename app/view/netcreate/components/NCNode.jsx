@@ -666,7 +666,7 @@ class NCNode extends UNISYS.Component {
           {editLockMessage && (
             <div className="message warning">{editLockMessage}</div>
           )}
-          {isAdmin && (
+          {isAdmin && !editBtnDisable && (
             <div className="controlbar deletenode">
               <div className="message">
                 Re-link edges to this Node ID (leave blank to delete edge)
