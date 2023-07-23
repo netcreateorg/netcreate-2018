@@ -138,7 +138,8 @@ class NodeTable extends UNISYS.Component {
     var time = d.toTimeString().substr(0, 5);
     var dateTime = date + ' at ' + time;
     var titleString = 'v' + nodeEdge.meta.revision;
-    if (nodeEdge._nlog) titleString += ' by ' + nodeEdge._nlog[nodeEdge._nlog.length - 1];
+    if (nodeEdge._nlog)
+      titleString += ' by ' + nodeEdge._nlog[nodeEdge._nlog.length - 1];
     var tag = <span title={titleString}> {dateTime} </span>;
 
     return tag;
@@ -469,7 +470,10 @@ class NodeTable extends UNISYS.Component {
                 <div style={{ color: '#f3f3ff' }}>_Edit_</div>
               </th>
               <th width="4%" hidden={!DBG}>
-                <Button size="sm" onClick={() => this.setSortKey('id', nodeDefs.id.type)}>
+                <Button
+                  size="sm"
+                  onClick={() => this.setSortKey('id', nodeDefs.id.type)}
+                >
                   ID
                 </Button>
               </th>
@@ -550,7 +554,12 @@ class NodeTable extends UNISYS.Component {
                 onMouseOver={() => this.onHighlightRow(node.id)}
               >
                 <td>
-                  <Button size="sm" outline value={node.id} onClick={this.onButtonClick}>
+                  <Button
+                    size="sm"
+                    outline
+                    value={node.id}
+                    onClick={this.onButtonClick}
+                  >
                     {isLocked ? 'View' : 'Edit'}
                   </Button>
                 </td>
