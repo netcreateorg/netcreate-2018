@@ -1,6 +1,7 @@
 # NetCreate ignored directories
-/runtime/netcreate.loki
-/runtime/logs
+/runtime
+# /runtime/netcreate.loki
+# /runtime/logs
 
 # Also ignore build system directories
 .npmignore
