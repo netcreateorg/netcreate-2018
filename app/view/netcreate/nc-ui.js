@@ -102,7 +102,7 @@ function RenderAttributesTabView(state, defs) {
   const { attributes, degrees } = state;
   const items = [];
   Object.keys(attributes).forEach(k => {
-    items.push(RenderLabel(k, defs[k].displayLabel));
+    items.push(RenderLabel(k, defs[k].displayLabel, defs[k].help));
     items.push(RenderStringValue(k, attributes[k]));
   });
 
@@ -184,10 +184,13 @@ function RenderProvenanceTabEdit(state, defs, onchange) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// FORM RENDERERS
 ///
-function RenderLabel(key, label) {
+function RenderLabel(key, label, helpText) {
   return (
-    <label htmlFor={key} key={`${key}label`}>
+    <label htmlFor={key} key={`${key}label`} className="tooltipAnchor">
       {label}
+      {helpText !== undefined ? (
+        <span className="tooltiptext shiftAndDarken">{helpText}</span>
+      ) : null}
     </label>
   );
 }
