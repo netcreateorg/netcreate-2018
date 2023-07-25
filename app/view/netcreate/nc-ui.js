@@ -122,9 +122,10 @@ function RenderAttributesTabEdit(state, defs, onchange) {
     items.push(RenderLabel(k, defs[k].displayLabel));
     const type = defs[k].type;
     const value = attributes[k] || ''; // catch `undefined` or React will complain about changing from uncontrolled to controlled
+    const helpText = defs[k].help;
     switch (type) {
       case 'string':
-        items.push(RenderStringInput(k, value, onchange));
+        items.push(RenderStringInput(k, value, onchange, helpText));
         break;
       case 'number':
         items.push(m_RenderNumberInput(k, value, onchange));
@@ -207,19 +208,22 @@ function RenderStringValue(key, value) {
  * @param {function} cb
  * @returns
  */
-function RenderStringInput(key, value, cb) {
+function RenderStringInput(key, value, cb, helpText) {
   const rows = String(value).length > 35 ? 3 : 1;
   return (
-    <textarea
-      id={key}
-      key={`${key}input`}
-      type="string"
-      value={value}
-      onChange={event => m_UIStringInputUpdate(event, cb)}
-      autoComplete="off" // turn off Chrome's default autocomplete, which conflicts
-      className={rows > 1 ? `long` : ''}
-      rows={rows}
-    />
+    <div key={`${key}div`}>
+      {helpText}
+      <textarea
+        id={key}
+        key={`${key}input`}
+        type="string"
+        value={value}
+        onChange={event => m_UIStringInputUpdate(event, cb)}
+        autoComplete="off" // turn off Chrome's default autocomplete, which conflicts
+        className={rows > 1 ? `long` : ''}
+        rows={rows}
+      />
+    </div>
   );
 }
 /**
@@ -231,15 +235,18 @@ function RenderStringInput(key, value, cb) {
  * @param {function} cb
  * @returns
  */
-function m_RenderNumberInput(key, value, cb) {
+function m_RenderNumberInput(key, value, cb, helpText) {
   return (
-    <input
-      id={key}
-      key={`${key}input`}
-      value={value}
-      type="number"
-      onChange={event => m_UINumberInputUpdate(event, cb)}
-    />
+    <div key={`${key}div`}>
+      {helpText}
+      <input
+        id={key}
+        key={`${key}input`}
+        value={value}
+        type="number"
+        onChange={event => m_UINumberInputUpdate(event, cb)}
+      />
+    </div>
   );
 }
 /**
@@ -251,21 +258,24 @@ function m_RenderNumberInput(key, value, cb) {
  * @param {function} cb
  * @returns
  */
-function m_RenderOptionsInput(key, value, defs, cb) {
+function m_RenderOptionsInput(key, value, defs, cb, helpText) {
   const options = defs[key].options;
   return (
-    <select
-      id={key}
-      key={`${key}select`}
-      value={value}
-      onChange={event => m_UISelectInputUpdate(event, cb)}
-    >
-      {options.map(o => (
-        <option key={o.label} value={o.label}>
-          {o.label}
-        </option>
-      ))}
-    </select>
+    <div key={`${key}div`}>
+      {helpText}
+      <select
+        id={key}
+        key={`${key}select`}
+        value={value}
+        onChange={event => m_UISelectInputUpdate(event, cb)}
+      >
+        {options.map(o => (
+          <option key={o.label} value={o.label}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </div>
   );
 }
 
