@@ -64,12 +64,6 @@
   visibility: visible;
 }
 
-.tooltipAnchor:hover .shiftAndDarken {
-  visibility: visible;
-  margin-left: 5px;
-  opacity: 1;
-}
-
 /* The Modal (background) */
 .modal {
   display: none; /* Hidden by default */

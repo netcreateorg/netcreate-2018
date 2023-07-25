@@ -186,11 +186,8 @@ function RenderProvenanceTabEdit(state, defs, onchange) {
 ///
 function RenderLabel(key, label, helpText) {
   return (
-    <label htmlFor={key} key={`${key}label`} className="tooltipAnchor">
+    <label htmlFor={key} key={`${key}label`} title={helpText}>
       {label}
-      {helpText !== undefined ? (
-        <span className="tooltiptext shiftAndDarken">{helpText}</span>
-      ) : null}
     </label>
   );
 }
