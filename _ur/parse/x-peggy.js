@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const peggy = require('peggy');
-const fs = require('fs');
+const fs = require('node:fs');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -16,6 +16,7 @@ let parser;
 const F_GRAMMAR = './graph-parser.peg';
 const F_DATA = './graph-data.txt';
 const F_TEST = './graph-test.txt';
+const TERM = require('../_lib/prompts').makeTerminalOut(' XPEGGY', 'TagGray');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * This function takes a multi-line string and performs the following operations:
@@ -79,11 +80,11 @@ function ProcessGrammar(input) {
           const { column: endCol } = location.end;
 
           if (lastLine !== startLine) {
-            // console.log('');
+            // TERM('');
             table.push({});
             lastLine = startLine;
           }
-          // console.log(`rule:${rule} type:${type} L${startLine} `);
+          // TERM(`rule:${rule} type:${type} L${startLine} `);
           const ch = lines[startLine - 1][startCol - 1];
           const dbg = {
             match: '',
@@ -105,22 +106,30 @@ function ProcessGrammar(input) {
       const { start } = err.location;
       const { offset, line, column } = start;
       const cursor = '^'.padStart(column - 1);
-      console.log(lines[line - 1]);
-      console.log(cursor, `line:${line} col:${column}`);
+      TERM(lines[line - 1]);
+      TERM(cursor, `line:${line} col:${column}`);
     }
     process.exit();
   }
   return out;
 }
 
-/// DO THE WORK ///////////////////////////////////////////////////////////////
+/// TEST //////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-console.log('\nRaw Input:\n---');
-data = fs.readFileSync(F_DATA, 'utf8');
-console.log(data);
-console.log('\nNormalized Input:\n---');
-// data = fs.readFileSync(F_TEST, 'utf8');
-let text = normalizeForPEG(data);
-console.log(text);
-console.log('---');
-console.log('result:', ProcessGrammar(text));
+function Test() {
+  TERM('\nRaw Input:\n---');
+  data = fs.readFileSync(F_DATA, 'utf8');
+  TERM(data);
+  TERM('\nNormalized Input:\n---');
+  // data = fs.readFileSync(F_TEST, 'utf8');
+  let text = normalizeForPEG(data);
+  let result = ProcessGrammar(text);
+  TERM(text);
+  TERM('---');
+  TERM('result:', result);
+  process.send(result);
+}
+
+process.on('message', message => {
+  if (message === 'test') Test();
+});

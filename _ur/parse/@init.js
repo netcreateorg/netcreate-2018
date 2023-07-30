@@ -4,29 +4,35 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-const { fork } = require('child_process');
+const { fork } = require('node:child_process');
 
 /// STATE /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let OUT = 'ExecPeg';
-let PEGGY;
+let proc_PEGGY;
+const TERM = require('../_lib/prompts').makeTerminalOut('-@init', 'TagGray');
 
 /// RUN NODE COMMAND /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ExecPeg() {
+function InitializePeggy() {
   try {
-    PEGGY = fork('./x-peggy.js');
+    proc_PEGGY = fork('./x-peggy.js');
   } catch (err) {
-    console.log(err.toString());
+    TERM(err.toString());
   }
-  PEGGY.on('message', msg => {
-    console.log('peggy:', msg);
+  proc_PEGGY.on('message', msg => {
+    TERM('peggy:', msg);
+    if (typeof msg !== 'string') msg = JSON.stringify(msg);
+    process.send(msg);
   });
-  PEGGY.on('error', err => {
+  proc_PEGGY.on('error', err => {
     console.error('peggy:error:', err);
   });
+  process.send('PeggyInitialized as fork of x-peggy.js');
 }
 
 /// FIRST RUN /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-ExecPeg();
+(async () => {
+  InitializePeggy();
+  process.on('message', msg => proc_PEGGY.send(msg));
+})();

@@ -10,6 +10,7 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NDIR = require('node-dir');
 const FSE = require('fs-extra');
+const PATH = require('path');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -92,15 +93,17 @@ function m_PromiseReadDir(dirpath) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a dirpath, return all files. optional match extension */
 async function Files(dirpath, opt = {}) {
-  let paths = await m_PromiseReadDir(dirpath);
-  if (paths.files.length && paths.files.length > 0) TERM('Files: success');
-  else TERM('Files: fail');
-  return paths.files;
+  let result = await m_PromiseReadDir(dirpath);
+  if (DBG) {
+    if (result.files.length && paths.files.length > 0) TERM('Files: success');
+    else TERM('Files: fail');
+  }
+  return result.files.map(p => PATH.basename(p));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 async function Subdirs(dirpath) {
-  const { dirs } = await m_PromiseReadDir(dirpath);
-  return dirs;
+  const result = await m_PromiseReadDir(dirpath);
+  return result.dirs;
 }
 
 /// FILE READING //////////////////////////////////////////////////////////////
@@ -133,6 +136,13 @@ async function WriteJSON(filepath, obj) {
   if (typeof obj !== 'string') obj = JSON.stringify(obj, null, 2);
   await WriteFile(filepath, obj);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+async function Test() {
+  const files = await Files(__dirname);
+  if (files.length && files.length > 0) TERM('FM.Files: success');
+  else TERM('Files: fail');
+  TERM(`found ${files.length} files`);
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -147,5 +157,7 @@ module.exports = {
   //
   ReadFile,
   ReadJSON,
-  WriteJSON
+  WriteJSON,
+  //
+  Test
 };
