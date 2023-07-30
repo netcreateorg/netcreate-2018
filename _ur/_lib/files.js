@@ -15,6 +15,7 @@ const PATH = require('path');
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const TERM = require('./prompts').makeTerminalOut(' FILES', 'TagGreen');
+const ERR_UR = 444;
 const DBG = false;
 
 /// SYNCHRONOUS FILE METHODS //////////////////////////////////////////////////
