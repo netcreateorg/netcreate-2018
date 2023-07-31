@@ -5,6 +5,8 @@ const text = require('./text');
 const proxymise = require('./proxymise');
 const ipc = require('./ipc');
 const validate = require('./validate');
+const errormgr = require('./error-mgr');
+const uproc = require('./ur-proc');
 
 module.exports = {
   appserv, // express appserver
@@ -13,5 +15,7 @@ module.exports = {
   text, // text utilities
   proxymise, // fluid interface
   ipc, // lifecycle and communication
+  errormgr, // errormgr
+  uproc, // ur process helper
   validate // object validators
 };
