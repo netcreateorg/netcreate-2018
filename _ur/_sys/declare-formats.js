@@ -15,18 +15,28 @@
 /// These are supported known file types, added as we expand our system to
 /// support them. Here are some placeholders
 const MEDIA_TYPES = {
-  PNG: {},
-  GIF: {},
-  TXT: {},
-  MD: {},
-  SVG: {}
+  PNG: {}, // buffer
+  GIF: {}, // buffer
+  JPG: {}, // buffer
+  WEBP: {}, // buffer
+  TXT: {}, // lines (text)
+  MD: {}, // lines (markdown)
+  SVG: {} // lines (xml)
 };
 
-/// DATA STREAMS //////////////////////////////////////////////////////////////
+/// EVENT STREAMS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// The stream types are the kinds of data we expect to pass around.
-/// There is a MAIN TYPE which can contain various optional subtypes.
-const STREAM_TYPES = {
+const EVENT_TYPES = {
+  DOM_EVENT: {},
+  CUSTOM_EVENT: {}
+};
+
+/// APPDATA DOCUMENTS /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// The stream types are the kinds of data we expect to pass around in our
+/// applications. There is a MAIN TYPE which can contain various optional
+/// subtypes.
+const APPDATA_TYPES = {
   // PTRACK-style data from STEP projects
   PTRK: {},
   // URSYS system channels
@@ -37,13 +47,12 @@ const STREAM_TYPES = {
     DOBJ: {}, // simulation or pure data objects
     LOG: {} // log data
   },
-  // file formats
+  // appplication file formats
   DOC: {
     // ursys tagged section interchange format
     UEXF: {
       GRAPH: {} // netgraph data
-    },
-    ...MEDIA_TYPES
+    }
   },
   // netcreate-specific data
   NC: {}
@@ -52,5 +61,7 @@ const STREAM_TYPES = {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  STREAM_TYPES
+  APPDATA_TYPES,
+  MEDIA_TYPES,
+  EVENT_TYPES
 };

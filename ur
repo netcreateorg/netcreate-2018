@@ -29,25 +29,7 @@ const child = {
   on: () => {}
 };
 const options = {};
-LOG('testing UR_Fork');
+LOG('ur parent process started');
 const proc_graph = UR_Fork('graph');
 const proc_parse = UR_Fork('parse', proc_graph);
-
-// m_ForkMe('graph');
-// m_ForkMe('parse');
-
-// create ingester
-// const proc_graph = fork('@test', { cwd: './_ur/graph/' });
-// proc_graph.on('message', message => {
-//   LOG('graph@test message:', message);
-//   APPSERV.WriteAppOut(message);
-// });
-// // create peg grapher
-// const proc_peggy = fork('@init', { cwd: './_ur/parse/' });
-// proc_peggy.on('message', message => {
-//   LOG('peggy@init message:', message);
-//   APPSERV.WriteAppOut(message);
-// });
-
-// // initiate the test
-// proc_graph.send('test');
+LOG('parent process ended');

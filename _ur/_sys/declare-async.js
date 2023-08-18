@@ -47,9 +47,13 @@ const APP_LIFECYCLE = {
 /// CHILD STATUS EVENTS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// These are events emitted by a UR-format command module The key ones are
-/// MESSAGE and STOP or EXIT
+/// MESSAGE and STOP or EXIT.
 const UR_EVENTS = {
+  // dataex module events appear in {dataex,data} message object
   DATAEX: [
+    // UrModule initial handshake
+    '_CONFIG_REQ', // Receive UrModule setup data
+    '_CONFIG_ACK', // on configuration, return config data to UrModule instance
     // upstream module messages to downstream module
     'DATA', // data: chunk from upstream module
     'RESPONSE', // control: response from upstream module
@@ -61,6 +65,7 @@ const UR_EVENTS = {
     'error', // status: process-terminating error, w status
     'stop', // status: process stoppeed
     'exit', // status: process terminated w/ errcode
+    'result', // data: result of operation
     'request' // control: request upstream RESPONSE
   ]
 };

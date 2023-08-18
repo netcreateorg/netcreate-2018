@@ -16,7 +16,7 @@ let parser;
 const F_GRAMMAR = './graph-parser.peg';
 const F_DATA = './graph-data.txt';
 const F_TEST = './graph-test.txt';
-const TERM = require('../_sys/prompts').makeTerminalOut(' XPEGGY', 'TagGray');
+const LOG = require('../_sys/prompts').makeTerminalOut(' PEGGY', 'TagPurple');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * This function takes a multi-line string and performs the following operations:
@@ -80,11 +80,11 @@ function ProcessGrammar(input) {
           const { column: endCol } = location.end;
 
           if (lastLine !== startLine) {
-            // TERM('');
+            // LOG('');
             table.push({});
             lastLine = startLine;
           }
-          // TERM(`rule:${rule} type:${type} L${startLine} `);
+          // LOG(`rule:${rule} type:${type} L${startLine} `);
           const ch = lines[startLine - 1][startCol - 1];
           const dbg = {
             match: '',
@@ -106,8 +106,8 @@ function ProcessGrammar(input) {
       const { start } = err.location;
       const { offset, line, column } = start;
       const cursor = '^'.padStart(column - 1);
-      TERM(lines[line - 1]);
-      TERM(cursor, `line:${line} col:${column}`);
+      LOG(lines[line - 1]);
+      LOG(cursor, `line:${line} col:${column}`);
     }
     process.exit();
   }
@@ -116,20 +116,25 @@ function ProcessGrammar(input) {
 
 /// TEST //////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Test() {
-  TERM('\nRaw Input:\n---');
+function TestDataExchange() {
+  LOG('.. reading raw input');
   data = fs.readFileSync(F_DATA, 'utf8');
-  TERM(data);
-  TERM('\nNormalized Input:\n---');
-  // data = fs.readFileSync(F_TEST, 'utf8');
+  LOG('.. normalizing input');
+  data = fs.readFileSync(F_TEST, 'utf8');
   let text = normalizeForPEG(data);
   let result = ProcessGrammar(text);
-  TERM(text);
-  TERM('---');
-  TERM('result:', result);
-  process.send(result);
+  LOG('.. parsing input');
+  process.send({ dataex: 'result', format: 'doc/dexf.graph', data: result });
 }
 
-process.on('message', message => {
-  if (message === 'test') Test();
+/// DATAEX CONTROL LOGIC //////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** run control logic test **/
+process.on('message', controlMsg => {
+  const { dataex, data } = controlMsg;
+  LOG('received DATAEX:', controlMsg);
+  if (dataex === '_CONFIG_REQ') {
+    process.send({ dataex: '_CONFIG_ACK', data: { name: 'parse/@init' } });
+    TestDataExchange();
+  }
 });

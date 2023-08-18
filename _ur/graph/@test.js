@@ -16,7 +16,7 @@ const { PreprocessDataText } = require('../_sys/text');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const TERM = require('../_sys/prompts').makeTerminalOut(' DATA', 'TagPurple');
+const LOG = require('../_sys/prompts').makeTerminalOut(' GRAPH', 'TagPurple');
 
 /// METHODS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,30 +32,39 @@ function ParseGraphData(filename) {
 
 /// RUNTIME ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// const rl = readline.createInterface({ input, output });
+function Run() {
+  const filename = 'test-ncgraphdata.txt';
+  LOG(`.. loading ${filename}...`);
+  const graph = new Graph({ multi: true });
+  let out = '';
+  const results = ParseGraphData(filename);
+  results.forEach(entry => {
+    const { node: source, edges: targets } = entry;
+    if (source) {
+      out += `\nSOURCE ${source} `;
+      if (!graph.hasNode(source)) graph.addNode(source, { type: 'message' });
+    }
+    if (targets)
+      targets.forEach(target => {
+        out += ` -> ${target}`;
+        if (!graph.hasNode(target)) graph.addNode(target, { type: 'consumer' });
+        graph.addEdge(source, target);
+      });
+  });
+  LOG(`.. parsed ${results.length} entries from ${filename}`);
+}
 
-const graph = new Graph({ multi: true });
-
-let out = '';
-const results = ParseGraphData('test-ncgraphdata.txt');
-results.forEach(entry => {
-  const { node: source, edges: targets } = entry;
-  if (source) {
-    out += `\nSOURCE ${source} `;
-    if (!graph.hasNode(source)) graph.addNode(source, { type: 'message' });
+/// DATAEX CONTROL LOGIC //////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** run control logic test **/
+process.on('message', controlMsg => {
+  const { dataex, data } = controlMsg;
+  LOG('received DATAEX:', controlMsg);
+  if (dataex === '_CONFIG_REQ') {
+    process.send({ dataex: '_CONFIG_ACK', data: { name: 'graph/@init' } });
+    Run();
   }
-  if (targets)
-    targets.forEach(target => {
-      out += ` -> ${target}`;
-      if (!graph.hasNode(target)) graph.addNode(target, { type: 'consumer' });
-      graph.addEdge(source, target);
-    });
 });
-
-// Iterating over nodes
-// graph.forEachNode(node => {
-//   console.log(node);
-// });
 
 /// EXPORT MODULE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

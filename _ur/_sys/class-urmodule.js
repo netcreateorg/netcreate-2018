@@ -5,12 +5,12 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const { EventEmitter } = require('node:events');
-const { DATAEX } = require('./declare-async').UR_EVENTS;
-const { UR_Fork } = require('./ur-proc');
+const stream = require('node:stream');
+const { URDEX } = require('./declare-async').UR_EVENTS;
+const { ChildProcess } = require('node:child_process');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 const LOG = require('./prompts').makeTerminalOut(' URMOD', 'TagYellow');
 const DBG = true;
 
@@ -20,55 +20,121 @@ const DBG = true;
  *  chaining stream-style operations as well as providing an API interface
  */
 class UrModule {
+  //
+  id = undefined;
+  modObj = undefined; // the wrapped module
+  modName = ''; // descriptive name (optional)
+  modType = ''; // modType of module object implementation
   modIn = undefined; // instance of UrModule
   modOut = undefined; // instance of UrModule
-  type = '';
+  //
+  protocol = undefined;
   inputBuffer = [];
   outputBuffer = [];
-  buffSize = 100;
-  type_enum = ['event', 'fork', 'stream'];
   error = '';
+  //
+  static modtype_enum = ['null', 'event', 'fork', 'stream', 'urnet'];
+  static buffer_size = 100;
+  static id_counter = 100;
 
   /** constructor
+   *  this class wraps the provided object with a standardized interface,
+   *  supporting the types defined in this.modtype_enum. It performs a runtime
+   *  check to determine the modType of the provided object.
    *  @param {object} obj an eventEmitter, process, or stream
    *  @param {object} modIn instance of UrModule
    *  @param {object} modOut instance of UrModule
    */
-  constructor(obj, modIn, modOut) {
-    if (obj instanceof EventEmitter) {
-      this.type = 'event';
-    } else if (obj.send && obj.on) {
-      this.type = 'fork';
-    } else if (obj.write && obj.on) {
-      this.type = 'stream';
+  constructor(mobj, modIn, modOut) {
+    this.protocol = undefined;
+    this.modType = UrModule.modtype_enum[0];
+    this.id = UrModule.id_counter++;
+    this.manageFork = this.manageFork.bind(this);
+    //
+    LOG(`UrModule[${u_modname(this)}] constructing`);
+    //
+    if (mobj instanceof ChildProcess) {
+      this.modType = 'fork';
+      this.modObj = mobj;
+      this.manageFork(mobj);
+    } else if (u_is_stream(mobj)) {
+      // placeholder test for stream
+      this.modType = 'stream';
+    } else if (mobj.HandleMessage && mobj.Call) {
+      // placeholder test for ur messager
+      this.modType = 'urnet';
+    } else if (mobj instanceof EventEmitter) {
+      // placeholder test for eventEmitters
+      this.modType = 'event';
     } else {
       this.error = 'UrModule(): not an eventEmitter, process, or stream';
+      console.log(this.error);
       throw new Error(this.error);
     }
-    this.connect(modIn, modOut);
+    this.linkModules(modIn, modOut);
   }
 
-  /** initializes datalink for connected modules */
-  connect(modIn, modOut) {
-    if (modIn !== undefined && modIn instanceof UrModule) {
-      this.modIn = modIn;
-      this.activateInput();
-    } else {
-      this.error = 'UrModule.connect(): invalid modIn';
+  /** set the name of the module */
+  setName(name) {
+    if (typeof name !== 'string')
+      throw new Error('UrModule.setName(): name must be a string');
+    this.modName = name;
+  }
+
+  /** set up the handler for a child process that is compatible with
+   *  the UrModule interface.
+   */
+  manageFork() {
+    if (this.modObj === undefined)
+      throw new Error('manageFork(): modObj undefined');
+    // (1) set up message handler
+    this.modObj.on('message', msg => {
+      LOG(`[${u_modname(this)}] DATAEX:`, msg);
+
+      const { dataex, data } = msg;
+      if (dataex === '_CONFIG_ACK') {
+        const { protocol } = data;
+        if (typeof protocol === 'string') {
+          this.protocol = protocol;
+          // activate connections set on startup
+          this.activateInput();
+          this.activateOutput();
+        }
+      }
+    });
+    // initiate configuration
+    this.modObj.send({ dataex: '_CONFIG_REQ', data: {} });
+  }
+
+  /** initializes datalink for connected modules. it's called
+   *  by the constructor implictly.
+   */
+  linkModules(modIn, modOut) {
+    if (this.modIn !== undefined || this.modOut !== undefined) {
+      this.error = 'UrModule.linkModules(): already linked';
       throw new Error(this.error);
     }
-    if (modOut !== undefined && modOut instanceof UrModule) {
-      this.modOut = modOut;
-      this.activateOutput();
-    } else {
-      this.error = 'UrModule.connect(): invalid modOut';
-      throw new Error(this.error);
+    if (modIn !== undefined) {
+      if (modIn instanceof UrModule) {
+        this.modIn = modIn;
+      } else {
+        this.error = 'UrModule.connect(): invalid modIn';
+        throw new Error(this.error);
+      }
+    }
+    if (modOut !== undefined) {
+      if (modOut instanceof UrModule) {
+        this.modOut = modOut;
+      } else {
+        this.error = 'UrModule.connect(): invalid modOut';
+        throw new Error(this.error);
+      }
     }
   }
 
   /** the input modules are a data source, so we expect to
    *  receive data messages as well as handshake information.
-   *  Uses DATAEX protocol: expects 'DATA' message
+   *  Uses URDEX protocol: expects 'DATA' message
    */
   activateInput() {
     this.modIn.on('message', msg => {
@@ -89,7 +155,7 @@ class UrModule {
   /** the output modules will communicate their status back
    *  to this module, providing events to signal what's going
    *  on.
-   *  Uses DATAEX protocol
+   *  Uses URDEX protocol
    */
   activateOutput() {
     LOG('connecting to output module');
@@ -109,13 +175,20 @@ class UrModule {
     });
   }
 
+  /** URDEX PROTOCOL *********************************************************/
+
+  /** used to buffer input data as it is received, but not processed. Each
+   *  chunk of data is of whatever modType is to be expected from the upstream
+   *  module.
+   *  @param {object} data the data to be buffered
+   */
   bufferInput(data = {}) {
     this.inputBuffer.push(data);
     if (this.inputBuffer.length > this.buffSize) {
       error = 'overflow';
     }
   }
-
+  /** retrieve buffered data one chunk at a time */
   getInputData() {
     if (this.inputBuffer.length === 0) {
       error = 'underflow';
@@ -125,6 +198,16 @@ class UrModule {
     return this.inputBuffer.shift();
   }
 }
+
+/// UTILITY FUNCTIONS /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const u_is_stream = obj =>
+  obj instanceof stream.Readable ||
+  obj instanceof stream.Writable ||
+  obj instanceof stream.Duplex ||
+  obj instanceof stream.Transform;
+
+const u_modname = instance => instance.modName || instance.id;
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

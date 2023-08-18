@@ -6,6 +6,8 @@
   a forked module or an imported module that implements our version of
   streaming data communcations
 
+  UR_Fork() - returns an UrModule instance of type 'fork'
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const { fork } = require('child_process');
@@ -39,7 +41,6 @@ async function UR_Fork(modname, ...args) {
   let { modpath, entry } = m_ParseModulePathString(modname, fn);
   let forkPath = `${URDIR}/${modpath}`;
   const entryFiles = await m_ReadModuleEntryFiles(modpath);
-  console.log('entryFiles', entryFiles);
   if (entry) {
     if (!entryFiles.includes(entry))
       DIE(fn, `error: %{entry} is not in ${URDIR}/${modpath}`);
@@ -55,7 +56,9 @@ async function UR_Fork(modname, ...args) {
   entry = entryFiles[0];
   if (DBG) LOG(`launching '${modpath}/${entry}'`);
   child = fork(entry, { cwd: `${URDIR}/${modpath}/` });
-  return child;
+  const mod = new UrModule(child);
+  mod.setName(`${modpath}/${entry}`);
+  return mod;
 }
 
 /// SUPPORT FUNCTIONS /////////////////////////////////////////////////////////
@@ -107,7 +110,7 @@ function m_ParseArgumentVariations(args) {
     default:
       DIE(fn, `error: too many arguments`);
   }
-  LOG(fn, 'parsed args', parsed);
+  // LOG(fn, 'parsed args', parsed);
   return parsed;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -153,10 +156,10 @@ async function m_ReadModuleEntryFiles(modname) {
     DIE(fn, 'error:', modname, `not found in ${URDIR} directory`);
   }
   const files = await FILES.Files(modulePath);
-  console.log('files', files);
   const entryFiles = files.filter(file => file.startsWith(LAUNCH_PREFIX));
   return entryFiles;
 }
+
 /// UTILITY FUNCTIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const u_isUrStream = obj => typeof obj.on === 'function';
@@ -176,27 +179,6 @@ const u_argType = arg => {
   //
   return test;
 };
-
-/// RUNTIME TESTS /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// m_ForkMe('graph');
-// m_ForkMe('parse');
-
-// create ingester
-// const proc_graph = fork('@test', { cwd: './_ur/graph/' });
-// proc_graph.on('message', message => {
-//   LOG('graph@test message:', message);
-//   APPSERV.WriteAppOut(message);
-// });
-// // create peg grapher
-// const proc_peggy = fork('@init', { cwd: './_ur/parse/' });
-// proc_peggy.on('message', message => {
-//   LOG('peggy@init message:', message);
-//   APPSERV.WriteAppOut(message);
-// });
-
-// // initiate the test
-// proc_graph.send('test');
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
