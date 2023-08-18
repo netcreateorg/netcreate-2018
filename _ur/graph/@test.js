@@ -23,8 +23,8 @@ const TERM = require('../_lib/prompts').makeTerminalOut(' DATA', 'TagPurple');
 const GRAMMAR = fs.readFileSync('parser.peg', 'utf8');
 const PARSER = Peggy.generate(GRAMMAR, { trace: false });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ParseGraphData(datafile) {
-  let data = fs.readFileSync(datafile, 'utf8');
+function ParseGraphData(filename) {
+  let data = fs.readFileSync(filename, 'utf8');
   data = PreprocessDataText(data);
   let result = PARSER.parse(data);
   return result;
@@ -53,9 +53,9 @@ results.forEach(entry => {
 });
 
 // Iterating over nodes
-graph.forEachNode(node => {
-  console.log(node);
-});
+// graph.forEachNode(node => {
+//   console.log(node);
+// });
 
 /// EXPORT MODULE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -49,15 +49,41 @@ const APP_LIFECYCLE = {
 /// These are events emitted by a UR-format command module The key ones are
 /// MESSAGE and STOP or EXIT
 const UR_EVENTS = {
-  FORK: [
-    'initialize', // module data structure init
-    'start', // start normal execution run
-    'run', // system starts running
-    'update', // system is running (periodic call w/ time)
-    'message', // data produced by the child
-    'stop', // system wants to stop current rons
-    'exit' // system has ended
+  DATAEX: [
+    // upstream module messages to downstream module
+    'DATA', // data: chunk from upstream module
+    'RESPONSE', // control: response from upstream module
+    // downstream module messages to upstream module
+    'initialize', // status: downstream module init
+    'start', // status:about to start
+    'run', // status: has started running
+    'status', // status: periodic update
+    'error', // status: process-terminating error, w status
+    'stop', // status: process stoppeed
+    'exit', // status: process terminated w/ errcode
+    'request' // control: request upstream RESPONSE
   ]
+};
+
+/// NODEJS EVENT EMITTER //////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// these
+const EMITTER = {
+  addListener: (event, listener) => {},
+  emit: (event, [...args]) => {},
+  eventNames: () => {},
+  getMaxListeners: () => {},
+  listenerCount: eventName => {},
+  listeners: eventName => {},
+  off: (eventName, listener) => {},
+  on: (eventName, listener) => {},
+  once: (eventName, listener) => {},
+  prependListener: (eventName, listener) => {},
+  prependOnceListener: (eventName, listener) => {},
+  removeAllListeners: ([eventName]) => {},
+  removeListener: (eventName, listener) => {},
+  setMaxListeners: n => {},
+  rawListeners: eventName => {}
 };
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

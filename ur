@@ -30,7 +30,8 @@ const child = {
 };
 const options = {};
 LOG('testing UR_Fork');
-UR_Fork('graph', child, child, {});
+const proc_graph = UR_Fork('graph');
+const proc_parse = UR_Fork('parse', proc_graph);
 
 // m_ForkMe('graph');
 // m_ForkMe('parse');

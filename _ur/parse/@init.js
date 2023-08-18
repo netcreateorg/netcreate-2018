@@ -33,6 +33,6 @@ function InitializePeggy() {
 /// FIRST RUN /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 (async () => {
-  InitializePeggy();
-  process.on('message', msg => proc_PEGGY.send(msg));
+  // InitializePeggy();
+  // process.on('message', msg => proc_PEGGY.send(msg));
 })();

@@ -12,6 +12,7 @@ const { fork } = require('child_process');
 const path = require('path');
 const FILES = require('./files');
 const { DIE } = require('./error-mgr');
+const { ProtoProc } = require('./ur-module-mgr');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -20,13 +21,13 @@ const LOG = require('./prompts').makeTerminalOut(' UPROC', 'TagCyan');
 const DBG = true;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const LAUNCH_PREFIX = '@';
-const URDIR = '_ur';
+const URDIR = path.join(__dirname, '..');
 
 /// WIP FUNCTIONS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 async function m_GetLaunchFiles(modname) {
   const fn = 'FindLaunchFile';
-  const modulePath = path.join(__dirname, URDIR, modname);
+  const modulePath = path.join(URDIR, modname);
   if (!FILES.DirExists(modulePath))
     DIE(fn, 'error:', modname, `not found in ${URDIR} directory`);
   const files = await FILES.Files(modulePath);
@@ -34,9 +35,8 @@ async function m_GetLaunchFiles(modname) {
   return launchFiles;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_CheckModName(modname, fn = 'm_CheckModName') {
+function m_ExtractModulePaths(modname, fn = 'm_ExtractModulePaths') {
   let modpath, entry;
-
   // required argument
   if (typeof modname !== 'string')
     DIE(fn, 'error: arg1 must be a string path not', typeof modname);
@@ -59,12 +59,13 @@ function m_CheckModName(modname, fn = 'm_CheckModName') {
   return { modpath, entry };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_ValidateOptions(obj) {
-  return true;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// utility functions
 const u_isUrStream = obj => typeof obj.on === 'function';
-const u_isOptions = obj => m_ValidateOptions(obj);
+const u_isOptions = obj => {
+  if (typeof obj !== 'object') return false;
+  if (typeof obj.on === 'function') return false;
+  return true;
+};
 const u_argType = arg => {
   let test = {
     stream: undefined,
@@ -125,6 +126,7 @@ function m_ParseForkArgs(args) {
     default:
       DIE(fn, `error: too many arguments`);
   }
+  LOG(fn, 'parsed args', parsed);
   return parsed;
 }
 
@@ -134,18 +136,43 @@ function m_ParseForkArgs(args) {
  *  @param {string} modname "moduleDir/@entryFile"
  *  @param input input file or stream
  *  @param output output file or stream
+ *  @returns {object} input, output, options props if found
  */
 async function UR_Fork(modname, ...args) {
-  const fn = 'UR_Fork';
-  let { modpath, entry } = m_CheckModName(modname, fn);
+  const fn = `UR_Fork ${modname}:`;
+  //
   const { input, output, options } = m_ParseForkArgs(args);
+  // stuff goes here to setup the connections
+  //
+  let { modpath, entry } = m_ExtractModulePaths(modname, fn);
+  let forkPath = `${URDIR}/${modpath}`;
+  //
+  let child;
+  //
+  const launchFiles = await m_GetLaunchFiles(modpath);
+  if (entry) {
+    if (!launchFiles.includes(entry))
+      DIE(fn, `error: %{entry} is not in ${URDIR}/${modpath}`);
+    /* SUCCESS */
+    if (DBG) LOG(`launching '${forkPath}/${entry}'`);
+    child = fork(entry, { cwd: forkPath });
+    return child;
+  }
+  if (launchFiles.length === 0)
+    DIE(fm, `error: no @entry modules found in ${URDIR}/${modpath}`);
+
+  /* SUCCESS */
+  entry = launchFiles[0];
+  if (DBG) LOG(`launching '${modpath}/${entry}'`);
+  child = fork(entry, { cwd: `${URDIR}/${modpath}/` });
+  return child;
 }
 
 /// PROTOTYPE API METHODS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 async function m_ForkMe(modname) {
   const fn = 'ForkMe';
-  let { modpath, entry } = m_CheckModName(modname, fn);
+  let { modpath, entry } = await m_ExtractModulePaths(modname, fn);
   const u_fork = () => fork(entry, { cwd: `./${URDIR}/${modname}/` });
   // required argument
   if (typeof modname !== 'string')
