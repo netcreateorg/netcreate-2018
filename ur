@@ -25,11 +25,9 @@ const DBG = true;
 /// RUNTIME ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** TEST **/
-const child = {
-  on: () => {}
-};
-const options = {};
-LOG('ur parent process started');
-const proc_graph = UR_Fork('graph');
-const proc_parse = UR_Fork('parse', proc_graph);
-LOG('parent process ended');
+(async () => {
+  LOG('ur parent process started');
+  const proc_graph = await UR_Fork('graph');
+  const proc_parse = await UR_Fork('parse', { input: proc_graph });
+  LOG('parent process ended');
+})();

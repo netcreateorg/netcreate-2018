@@ -33,11 +33,11 @@ const URDIR = path.join(__dirname, '..');
  *  @param output output file or stream
  *  @returns {object} input, output, options props if found
  */
-async function UR_Fork(modname, ...args) {
+async function UR_Fork(modname, opt = {}) {
   const fn = `UR_Fork ${modname}:`;
   let child; // hold ur module instance
   //
-  const { input, output, options } = m_ParseArgumentVariations(args);
+  const { input, output } = m_ParseOptions(opt);
   let { modpath, entry } = m_ParseModulePathString(modname, fn);
   let forkPath = `${URDIR}/${modpath}`;
   const entryFiles = await m_ReadModuleEntryFiles(modpath);
@@ -56,9 +56,8 @@ async function UR_Fork(modname, ...args) {
   entry = entryFiles[0];
   if (DBG) LOG(`launching '${modpath}/${entry}'`);
   child = fork(entry, { cwd: `${URDIR}/${modpath}/` });
-  const mod = new UrModule(child);
-  mod.setName(`${modpath}/${entry}`);
-  return mod;
+  const urmod = new UrModule(child, { name: `${modpath}/${entry}` });
+  return urmod;
 }
 
 /// SUPPORT FUNCTIONS /////////////////////////////////////////////////////////
@@ -67,7 +66,31 @@ async function UR_Fork(modname, ...args) {
  *  possibilities the order is input stream, output stream, options. throws
  *  error and exits process on error
  *  @param {array} args 0,1,2,3 arguments to parse
- *  @returns {object} input, output, options props if found
+ *  @returns {object} input, output if defined
+ */
+function m_ParseOptions(opt) {
+  const fn = 'm_ParseOptions';
+  const { input, output } = opt;
+  if (input) {
+    console.log('input', input);
+    if (!(input instanceof UrModule))
+      throw new Error(`${fn}: input must be UrModule instance or undefined`);
+  }
+  if (output) {
+    if (!(output instanceof UrModule))
+      throw new Error(`${fn}: output must be UrModule instance or undefined`);
+  }
+  return {
+    input,
+    output
+  };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** (unused)
+ *  parses variable number of arguments for (input,output,options,...extra)
+ *  replace by m_ParseOptions() then variable args was replaced with options
+ *  object to simplify logic, but retained because it's an interesting bit of
+ *  code for this style of call.
  */
 function m_ParseArgumentVariations(args) {
   const fn = 'm_ParseArgumentVariations';
@@ -110,8 +133,6 @@ function m_ParseArgumentVariations(args) {
     default:
       DIE(fn, `error: too many arguments`);
   }
-  // LOG(fn, 'parsed args', parsed);
-  return parsed;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Used by UR_Fork: given a module path string, parse into a module path

@@ -45,11 +45,13 @@ class UrModule {
    *  @param {object} modIn instance of UrModule
    *  @param {object} modOut instance of UrModule
    */
-  constructor(mobj, modIn, modOut) {
+  constructor(mobj, opt = {}) {
     this.protocol = undefined;
     this.modType = UrModule.modtype_enum[0];
     this.id = UrModule.id_counter++;
     this.manageFork = this.manageFork.bind(this);
+    const { input, output, name } = opt;
+    if (typeof name === 'string') this.setName(name);
     //
     LOG(`UrModule[${u_modname(this)}] constructing`);
     //
@@ -71,7 +73,7 @@ class UrModule {
       console.log(this.error);
       throw new Error(this.error);
     }
-    this.linkModules(modIn, modOut);
+    this.linkModules(input, output);
   }
 
   /** set the name of the module */
