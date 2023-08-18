@@ -12,11 +12,11 @@ const fs = require('node:fs');
 //
 const Graph = require('graphology');
 const Peggy = require('peggy');
-const { PreprocessDataText } = require('../_lib/text');
+const { PreprocessDataText } = require('../_sys/text');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const TERM = require('../_lib/prompts').makeTerminalOut(' DATA', 'TagPurple');
+const TERM = require('../_sys/prompts').makeTerminalOut(' DATA', 'TagPurple');
 
 /// METHODS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

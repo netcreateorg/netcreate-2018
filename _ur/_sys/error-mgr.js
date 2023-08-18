@@ -22,7 +22,7 @@ const DIE = (...args) => {
       return true;
     })
     .join('\n');
-  ERROUT(`\x1b[93m${args.join()}\x1b[0m`);
+  ERROUT(`\x1b[93m${args.join(' ')}\x1b[0m`);
   ERROUT(myErrs);
   process.exit(ERR_UR);
 };

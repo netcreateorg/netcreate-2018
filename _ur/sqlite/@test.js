@@ -12,12 +12,12 @@
 
 const assert = require('node:assert/strict');
 const sqlite3 = require('sqlite3').verbose();
-const files = require('../_lib/files');
+const files = require('../_sys/files');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DB = new sqlite3.Database(':memory:'); // use 'auth.sqlite3' for file
-const TERM = require('../_lib/prompts').makeTerminalOut(' SQL', 'TagYellow');
+const TERM = require('../_sys/prompts').makeTerminalOut(' SQL', 'TagYellow');
 const DBG = true; // Runs Tests if true
 
 /// INITIALIZE DATABASE ///////////////////////////////////////////////////////

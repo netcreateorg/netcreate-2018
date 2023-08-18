@@ -11,14 +11,14 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-const APPSERV = require('./_ur/_lib/appserv');
-const IPC = require('./_ur/_lib/ipc');
-const FILES = require('./_ur/_lib/files');
-const { UR_Fork } = require('./_ur/_lib/ur-proc');
+const APPSERV = require('./_ur/_sys/appserver');
+const IPC = require('./_ur/_sys/ipc');
+const FILES = require('./_ur/_sys/files');
+const { UR_Fork } = require('./_ur/_sys/ur-proc');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const LOG = require('./_ur/_lib/prompts').makeTerminalOut('UR', 'TagBlue');
+const LOG = require('./_ur/_sys/prompts').makeTerminalOut('UR', 'TagBlue');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = true;
 

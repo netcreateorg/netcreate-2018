@@ -16,7 +16,7 @@ let parser;
 const F_GRAMMAR = './graph-parser.peg';
 const F_DATA = './graph-data.txt';
 const F_TEST = './graph-test.txt';
-const TERM = require('../_lib/prompts').makeTerminalOut(' XPEGGY', 'TagGray');
+const TERM = require('../_sys/prompts').makeTerminalOut(' XPEGGY', 'TagGray');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * This function takes a multi-line string and performs the following operations:

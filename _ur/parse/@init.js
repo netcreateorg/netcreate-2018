@@ -9,7 +9,7 @@ const { fork } = require('node:child_process');
 /// STATE /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let proc_PEGGY;
-const TERM = require('../_lib/prompts').makeTerminalOut('-@init', 'TagGray');
+const TERM = require('../_sys/prompts').makeTerminalOut('-@init', 'TagGray');
 
 /// RUN NODE COMMAND /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

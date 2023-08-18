@@ -5,11 +5,12 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const { EventEmitter } = require('node:events');
-const { UR_EVENTS } = require('./declare-async');
+const { DATAEX } = require('./declare-async').UR_EVENTS;
+const { UR_Fork } = require('./ur-proc');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const EVENTS = UR_EVENTS.DATAEX;
+
 const LOG = require('./prompts').makeTerminalOut(' URMOD', 'TagYellow');
 const DBG = true;
 
@@ -19,63 +20,76 @@ const DBG = true;
  *  chaining stream-style operations as well as providing an API interface
  */
 class UrModule {
-  modIn = undefined;
-  modOut = undefined;
+  modIn = undefined; // instance of UrModule
+  modOut = undefined; // instance of UrModule
+  type = '';
   inputBuffer = [];
   outputBuffer = [];
-  MAX_BUFFER = 100;
+  buffSize = 100;
+  type_enum = ['event', 'fork', 'stream'];
   error = '';
 
-  constructor(modIn, modOut) {
-    this.modIn = modIn;
-    this.modOut = modOut;
-
-    this.connectToInput();
-    this.activateOutput();
+  /** constructor
+   *  @param {object} obj an eventEmitter, process, or stream
+   *  @param {object} modIn instance of UrModule
+   *  @param {object} modOut instance of UrModule
+   */
+  constructor(obj, modIn, modOut) {
+    if (obj instanceof EventEmitter) {
+      this.type = 'event';
+    } else if (obj.send && obj.on) {
+      this.type = 'fork';
+    } else if (obj.write && obj.on) {
+      this.type = 'stream';
+    } else {
+      this.error = 'UrModule(): not an eventEmitter, process, or stream';
+      throw new Error(this.error);
+    }
+    this.connect(modIn, modOut);
   }
 
-  bufferInput(data = {}) {
-    this.inputBuffer.push(data);
-    if (this.inputBuffer.length > this.MAX_BUFFER) {
-      error = 'overflow';
+  /** initializes datalink for connected modules */
+  connect(modIn, modOut) {
+    if (modIn !== undefined && modIn instanceof UrModule) {
+      this.modIn = modIn;
+      this.activateInput();
+    } else {
+      this.error = 'UrModule.connect(): invalid modIn';
+      throw new Error(this.error);
     }
-  }
-
-  getInputData() {
-    if (this.inputBuffer.length === 0) {
-      error = 'underflow';
-      return undefined;
+    if (modOut !== undefined && modOut instanceof UrModule) {
+      this.modOut = modOut;
+      this.activateOutput();
+    } else {
+      this.error = 'UrModule.connect(): invalid modOut';
+      throw new Error(this.error);
     }
-    error = '';
-    return this.inputBuffer.shift();
   }
 
   /** the input modules are a data source, so we expect to
-   *  receive data messages as well as handshake information
+   *  receive data messages as well as handshake information.
+   *  Uses DATAEX protocol: expects 'DATA' message
    */
   activateInput() {
-    LOG('connecting to input module');
     this.modIn.on('message', msg => {
       const { dataex, data } = msg;
-
       // handler of data and control messages from upstream module
       switch (dataex) {
-        case 'data':
+        case 'DATA':
           this.bufferInput(data);
           break;
-        case 'exit':
-          break;
         default:
-          LOG('unknown input dataex:', dataex);
+          LOG('unhandled input dataex:', dataex);
           break;
       }
     });
+    LOG('awaiting input');
   }
 
   /** the output modules will communicate their status back
    *  to this module, providing events to signal what's going
-   *  on. Unlike input modules, we don't expect data to be
-   *  returned to us.
+   *  on.
+   *  Uses DATAEX protocol
    */
   activateOutput() {
     LOG('connecting to output module');
@@ -93,6 +107,22 @@ class UrModule {
           break;
       }
     });
+  }
+
+  bufferInput(data = {}) {
+    this.inputBuffer.push(data);
+    if (this.inputBuffer.length > this.buffSize) {
+      error = 'overflow';
+    }
+  }
+
+  getInputData() {
+    if (this.inputBuffer.length === 0) {
+      error = 'underflow';
+      return undefined;
+    }
+    error = '';
+    return this.inputBuffer.shift();
   }
 }
 
