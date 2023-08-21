@@ -50,7 +50,7 @@ const APPDATA_TYPES = {
   // appplication file formats
   DOC: {
     // ursys tagged section interchange format
-    UEXF: {
+    DEXF: {
       GRAPH: {} // netgraph data
     }
   },
