@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const peggy = require('peggy');
-const fs = require('fs');
+const fs = require('node:fs');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -13,9 +13,10 @@ let grammar;
 let data;
 let parser;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const F_GRAMMAR = '_ur/graph-parser.peg';
-const F_DATA = '_ur/graph-data.txt';
-const F_TEST = '_ur/graph-test.txt';
+const F_GRAMMAR = './graph-parser.peg';
+const F_DATA = './graph-data.txt';
+const F_TEST = './graph-test.txt';
+const LOG = require('../_sys/prompts').makeTerminalOut(' PEGGY', 'TagPurple');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * This function takes a multi-line string and performs the following operations:
@@ -79,11 +80,11 @@ function ProcessGrammar(input) {
           const { column: endCol } = location.end;
 
           if (lastLine !== startLine) {
-            // console.log('');
+            // LOG('');
             table.push({});
             lastLine = startLine;
           }
-          // console.log(`rule:${rule} type:${type} L${startLine} `);
+          // LOG(`rule:${rule} type:${type} L${startLine} `);
           const ch = lines[startLine - 1][startCol - 1];
           const dbg = {
             match: '',
@@ -105,22 +106,35 @@ function ProcessGrammar(input) {
       const { start } = err.location;
       const { offset, line, column } = start;
       const cursor = '^'.padStart(column - 1);
-      console.log(lines[line - 1]);
-      console.log(cursor, `line:${line} col:${column}`);
+      LOG(lines[line - 1]);
+      LOG(cursor, `line:${line} col:${column}`);
     }
     process.exit();
   }
   return out;
 }
 
-/// DO THE WORK ///////////////////////////////////////////////////////////////
+/// TEST //////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-console.log('\nRaw Input:\n---');
-data = fs.readFileSync(F_DATA, 'utf8');
-console.log(data);
-console.log('\nNormalized Input:\n---');
-// data = fs.readFileSync(F_TEST, 'utf8');
-let text = normalizeForPEG(data);
-console.log(text);
-console.log('---');
-console.log('result:', ProcessGrammar(text));
+function TestDataExchange() {
+  LOG('.. reading raw input');
+  data = fs.readFileSync(F_DATA, 'utf8');
+  LOG('.. normalizing input');
+  data = fs.readFileSync(F_TEST, 'utf8');
+  let text = normalizeForPEG(data);
+  let result = ProcessGrammar(text);
+  LOG('.. parsing input');
+  process.send({ dataex: 'result', format: 'doc/dexf.graph', data: result });
+}
+
+/// DATAEX CONTROL LOGIC //////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** run control logic test **/
+process.on('message', controlMsg => {
+  const { dataex, data } = controlMsg;
+  LOG('received DATAEX:', controlMsg);
+  if (dataex === '_CONFIG_REQ') {
+    process.send({ dataex: '_CONFIG_ACK', data: { name: 'parse/@init' } });
+    TestDataExchange();
+  }
+});

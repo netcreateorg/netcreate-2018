@@ -12,30 +12,30 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// These are loaded in init to make sure they are available globally!
 /// You do not need to copy these extensions to your own module files
-require("babel-polyfill"); // enables regenerators for async/await
+require('babel-polyfill'); // enables regenerators for async/await
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const React = require("react");
-const ReactDOM = require("react-dom");
-const { HashRouter } = require("react-router-dom");
+const React = require('react');
+const ReactDOM = require('react-dom');
+const { HashRouter } = require('react-router-dom');
 
 /// SYSTEM MODULES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// demo: require system modules; this will likely be removed
-const UNISYS = require("unisys/client");
-const AppShell = require("init-appshell");
+const UNISYS = require('unisys/client');
+const AppShell = require('init-appshell');
 
 /// UNISYS LIFECYCLE LOADER ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ When the DOM is loaded, initialize UNISYS
 /*/
-document.addEventListener("DOMContentLoaded", () => {
-  console.group("init.jsx bootstrap");
+document.addEventListener('DOMContentLoaded', () => {
+  console.group('init.jsx bootstrap');
   console.log(
-    "%cINIT %cDOMContentLoaded. Starting UNISYS Lifecycle!",
-    "color:blue",
-    "color:auto"
+    '%cINIT %cDOMContentLoaded. Starting UNISYS Lifecycle!',
+    'color:blue',
+    'color:auto'
   );
   m_SetLifecycleScope();
   (async () => {
@@ -45,9 +45,9 @@ document.addEventListener("DOMContentLoaded", () => {
     await UNISYS.SetupDOM(); // DOM_READY
     await UNISYS.SetupRun(); // RESET, START, APP_READY, RUN
     console.log(
-      "%cINIT %cUNISYS Lifecycle Initialization Complete",
-      "color:blue",
-      "color:auto"
+      '%cINIT %cUNISYS Lifecycle Initialization Complete',
+      'color:blue',
+      'color:auto'
     );
     console.groupEnd();
   })();
@@ -60,11 +60,11 @@ document.addEventListener("DOMContentLoaded", () => {
     with a custom event message coming from client-network.m_ResetHearbeatTimer
     This is so we can display an error to the user explaining the disconnect
 /*/
-document.addEventListener("UNISYSDisconnect", (event) => {
+document.addEventListener('UNISYSDisconnect', event => {
   console.log(
-    "%cDISCONNECT %cUNISYSDisconnect. Closing UNISYS Lifecycle!",
-    "color:blue",
-    "color:auto"
+    '%cDISCONNECT %cUNISYSDisconnect. Closing UNISYS Lifecycle!',
+    'color:blue',
+    'color:auto'
   );
   // This call will fail if the server is disconnected.
   UNISYS.Log('Server disconnected with error', event);
@@ -74,9 +74,9 @@ document.addEventListener("UNISYSDisconnect", (event) => {
   (async () => {
     await UNISYS.ServerDisconnect(); // UNISYS has dropped server
     console.log(
-      "%cDISCONNECT %cUNISYSDisconnect Complete",
-      "color:blue",
-      "color:auto"
+      '%cDISCONNECT %cUNISYSDisconnect Complete',
+      'color:blue',
+      'color:auto'
     );
   })();
 });
@@ -89,9 +89,9 @@ document.addEventListener("UNISYSDisconnect", (event) => {
   let routes = AppShell.Routes;
   // check #, and remove any trailing parameters in slashes
   // we want the first one
-  let hashbits = window.location.hash.split("/");
+  let hashbits = window.location.hash.split('/');
   let hash = hashbits[0];
-  let loc = "/" + hash.substring(1);
+  let loc = '/' + hash.substring(1);
   let matches = routes.filter(route => {
     return route.path === loc;
   });
@@ -102,7 +102,7 @@ document.addEventListener("UNISYSDisconnect", (event) => {
       console.warn(
         `WARNING: root view '${loc}' has no UMOD property, so can not set UNISYS scope`
       );
-    let modscope = component.UMOD || "<undefined>/init.jsx";
+    let modscope = component.UMOD || '<undefined>/init.jsx';
     UNISYS.SetScope(modscope);
   } else {
     console.warn(`m_SetLifecycleScope() could not match scope ${loc}`);
@@ -113,26 +113,26 @@ document.addEventListener("UNISYSDisconnect", (event) => {
     and the routed view in AppShell.Routes
 /*/ function m_RenderApp() {
   if (DBG)
-    console.log("%cINIT %cReactDOM.render() begin", "color:blue", "color:auto");
+    console.log('%cINIT %cReactDOM.render() begin', 'color:blue', 'color:auto');
   return new Promise((resolve, reject) => {
     try {
       ReactDOM.render(
         <HashRouter hashType="slash">
           <AppShell />
         </HashRouter>,
-        document.querySelector("#app-container"),
+        document.querySelector('#app-container'),
         () => {
           console.log(
-            "%cINIT %cReactDOM.render() complete",
-            "color:blue",
-            "color:auto"
+            '%cINIT %cReactDOM.render() complete',
+            'color:blue',
+            'color:auto'
           );
           resolve();
         }
       );
     } catch (e) {
       console.error(
-        "m_RenderApp() Lifecycle Error. Check phase execution order effect on data validity.\n",
+        'm_RenderApp() Lifecycle Error. Check phase execution order effect on data validity.\n',
         e
       );
       debugger;

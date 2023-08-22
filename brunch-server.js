@@ -154,12 +154,12 @@ module.exports = (config, callback) => {
         stdout = stdout.trim();
         if (stdout !== 'i386') {
           console.log(PR, `ARCHITECTURE: ${stdout}`);
-          console.log(PR, '.. Expected i386, operation may be unstable');
+          console.log(PR, '.. Expected i386. Operation may be unstable!');
           console.log(
             PR,
-            '.. For arm64 on mac, consider using Rosetta-compatible shell by running'
+            '.. For arm64 on mac, launch a Rosetta-compatible shell by running'
           );
-          console.log(PR, `.. 'arch x86_64 /bin/zsh'`);
+          console.log(PR, `.. 'arch -x86_64 /bin/zsh'`);
         } else {
           console.log(PR, `ARCHITECTURE: ${stdout}`);
         }

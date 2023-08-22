@@ -11,67 +11,23 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-const { fork } = require('child_process');
-const chockidar = require('chokidar');
-const express = require('express');
+const APPSERV = require('./_ur/_sys/appserver');
+const IPC = require('./_ur/_sys/ipc');
+const FILES = require('./_ur/_sys/files');
+const { UR_Fork } = require('./_ur/_sys/ur-proc');
 
-/// STATE /////////////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let OUT = 'ExecPeg';
-let PEGGY;
+const LOG = require('./_ur/_sys/prompts').makeTerminalOut('UR', 'TagBlue');
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = true;
 
-/// RUN NODE COMMAND /////////////////////////////////////////////////////////
+/// RUNTIME ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ExecPeg() {
-  try {
-    PEGGY = fork('_ur/x-peggy.js');
-  } catch (err) {
-    console.log(err.toString());
-  }
-  PEGGY.on('message', msg => {
-    console.log('peggy:', msg);
-  });
-  PEGGY.on('error', err => {
-    console.error('peggy:error:', err);
-  });
-}
-
-/// WEBSERVER STUFF ///////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function StartAppServer() {
-  const app = express();
-  app.get('/', (req, res) => {
-    res.send(`<pre>${OUT}</pre>`);
-  });
-  const server = app.listen(3000, () => {
-    console.log('Example app listening on port 3000!');
-  });
-  // close express app on process exit
-  process.on('exit', () => {
-    console.log('exiting express app');
-    server.close();
-  });
-  // close express app on ctrl-c event
-  process.on('SIGINT', () => {
-    console.log('exiting express app');
-    server.close(err => {
-      if (err) {
-        console.error(err);
-        process.exit(1);
-      }
-      process.exit();
-    });
-  });
-}
-
-/// FIRST RUN /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-ExecPeg();
-StartAppServer();
-
-/// WATCH FOR CHANGES /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const watcher = chockidar.watch('./ncgo-*');
-watcher.on('change', path => {
-  ExecPeg();
-});
+/** TEST **/
+(async () => {
+  LOG('ur parent process started');
+  const proc_graph = await UR_Fork('graph');
+  const proc_parse = await UR_Fork('parse', { input: proc_graph });
+  LOG('parent process ended');
+})();
