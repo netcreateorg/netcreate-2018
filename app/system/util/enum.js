@@ -1,4 +1,3 @@
-
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Enumerators
@@ -12,7 +11,7 @@ ENUM.EDITORTYPE = {
   TEMPLATE: 'template',
   IMPORTER: 'importer',
   NODE: 'node', // parameter sent with packet, listed here for coverage
-  EDGE: 'edge'  // parameter sent with packet, listed here for coverage
+  EDGE: 'edge' // parameter sent with packet, listed here for coverage
 };
 
 // BUILT-IN FIELDS
@@ -35,6 +34,5 @@ ENUM.BUILTIN_FIELDS_EDGE = [
   'updated',
   'revision'
 ];
-
 
 module.exports = ENUM;

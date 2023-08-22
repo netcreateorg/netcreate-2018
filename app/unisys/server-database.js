@@ -191,7 +191,9 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
       SCHEMA.hideDeleteNodeButton.default,
     allowLoggedInUserToImport: SCHEMA.allowLoggedInUserToImport.default, // new parameter not in old json template
     duplicateWarning:
-      (jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.duplicateWarning) ||
+      (jt.nodePrompts &&
+        jt.nodePrompts.label &&
+        jt.nodePrompts.label.duplicateWarning) ||
       SCHEMA.duplicateWarning.default,
     nodeIsLockedMessage:
       (jt.nodePrompts &&
@@ -356,7 +358,8 @@ function m_LoadTOMLTemplate(templateFilePath) {
       const json = TOML.parse(data);
       // Ensure key fields are present, else default to schema
       const SCHEMA = TEMPLATE_SCHEMA.TEMPLATE.properties;
-      json.duplicateWarning = json.duplicateWarning || SCHEMA.duplicateWarning.default;
+      json.duplicateWarning =
+        json.duplicateWarning || SCHEMA.duplicateWarning.default;
       json.nodeIsLockedMessage =
         json.nodeIsLockedMessage || SCHEMA.nodeIsLockedMessage.default;
       json.edgeIsLockedMessage =
@@ -463,7 +466,8 @@ function m_MigrateTemplate() {
   if (TEMPLATE.filterFocus === undefined)
     TEMPLATE.filterFocus = TEMPLATE_SCHEMA.TEMPLATE.properties.filterFocus.default;
   if (TEMPLATE.filterFadeHelp === undefined)
-    TEMPLATE.filterFadeHelp = TEMPLATE_SCHEMA.TEMPLATE.properties.filterFadeHelp.default;
+    TEMPLATE.filterFadeHelp =
+      TEMPLATE_SCHEMA.TEMPLATE.properties.filterFadeHelp.default;
   if (TEMPLATE.filterReduceHelp === undefined)
     TEMPLATE.filterReduceHelp =
       TEMPLATE_SCHEMA.TEMPLATE.properties.filterReduceHelp.default;
@@ -502,7 +506,10 @@ function m_ValidateTemplate() {
       throw 'Missing `nodeDefs.label` label=' + nodeDefs.label;
     if (nodeDefs.type === undefined)
       throw 'Missing `nodeDefs.type` type= ' + nodeDefs.type;
-    if (nodeDefs.type.options === undefined || !Array.isArray(nodeDefs.type.options)) {
+    if (
+      nodeDefs.type.options === undefined ||
+      !Array.isArray(nodeDefs.type.options)
+    ) {
       throw 'Missing or bad `nodeDefs.type.options` options=' + nodeDefs.type.options;
     }
     if (nodeDefs.notes === undefined)
@@ -522,7 +529,10 @@ function m_ValidateTemplate() {
       throw 'Missing `edgeDefs.source` source=' + edgeDefs.source;
     if (edgeDefs.type === undefined)
       throw 'Missing `edgeDefs.type` type= ' + edgeDefs.type;
-    if (edgeDefs.type.options === undefined || !Array.isArray(edgeDefs.type.options)) {
+    if (
+      edgeDefs.type.options === undefined ||
+      !Array.isArray(edgeDefs.type.options)
+    ) {
       throw 'Missing or bad `edgeDefs.type.options` options=' + edgeDefs.type.options;
     }
     if (edgeDefs.target === undefined)
@@ -558,7 +568,8 @@ DB.PKT_GetDatabase = function (pkt) {
   if (DBG)
     console.log(
       PR,
-      `PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${edges.length
+      `PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${
+        edges.length
       } edges)`
     );
   m_MigrateNodes(nodes);
@@ -773,12 +784,15 @@ function m_IsInvalidNode(nodeID) {
   nodeID = Number.parseInt(nodeID, 10);
   if (isNaN(nodeID)) return m_MakeLockError(`nodeID was not a number`);
   if (nodeID < 0) return m_MakeLockError(`nodeID ${nodeID} must be positive integer`);
-  if (nodeID > m_max_nodeID) return m_MakeLockError(`nodeID ${nodeID} is out of range`);
+  if (nodeID > m_max_nodeID)
+    return m_MakeLockError(`nodeID ${nodeID} is out of range`);
   // find if the node exists
   let matches = NODES.find({ id: nodeID });
   if (matches.length === 0) return m_MakeLockError(`nodeID ${nodeID} not found`);
   if (matches.length > 1)
-    return m_MakeLockError(`nodeID ${nodeID} matches multiple entries...critical error!`);
+    return m_MakeLockError(
+      `nodeID ${nodeID} matches multiple entries...critical error!`
+    );
   // no retval is no error!
   return undefined;
 }
@@ -828,12 +842,15 @@ function m_IsInvalidEdge(edgeID) {
   edgeID = Number.parseInt(edgeID, 10);
   if (isNaN(edgeID)) return m_MakeLockError(`edgeID was not a number`);
   if (edgeID < 0) return m_MakeLockError(`edgeID ${edgeID} must be positive integer`);
-  if (edgeID > m_max_edgeID) return m_MakeLockError(`edgeID ${edgeID} is out of range`);
+  if (edgeID > m_max_edgeID)
+    return m_MakeLockError(`edgeID ${edgeID} is out of range`);
   // find if the node exists
   let matches = EDGES.find({ id: edgeID });
   if (matches.length === 0) return m_MakeLockError(`edgeID ${edgeID} not found`);
   if (matches.length > 1)
-    return m_MakeLockError(`edgeID ${edgeID} matches multiple entries...critical error!`);
+    return m_MakeLockError(
+      `edgeID ${edgeID} matches multiple entries...critical error!`
+    );
   // no retval is no error!
   return undefined;
 }
@@ -876,7 +893,10 @@ DB.PKT_Update = function (pkt) {
     if (matches.length === 0) {
       // if there was no node, then this is an insert new operation
       if (DBG)
-        console.log(PR, `PKT_Update ${pkt.Info()} INSERT nodeID ${JSON.stringify(node)}`);
+        console.log(
+          PR,
+          `PKT_Update ${pkt.Info()} INSERT nodeID ${JSON.stringify(node)}`
+        );
 
       // Handle different id types
       if (isNaN(node.id)) {
@@ -892,7 +912,8 @@ DB.PKT_Update = function (pkt) {
       if (!updatedNode)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
+            node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'insert', node: updatedNode };
@@ -902,7 +923,9 @@ DB.PKT_Update = function (pkt) {
         if (DBG)
           console.log(
             PR,
-            `PKT_Update ${pkt.Info()} UPDATE nodeID ${node.id} ${JSON.stringify(node)}`
+            `PKT_Update ${pkt.Info()} UPDATE nodeID ${node.id} ${JSON.stringify(
+              node
+            )}`
           );
         LOGGER.Write(pkt.Info(), `update node`, node.id, JSON.stringify(node));
         DB.AppendNodeLog(n, pkt); // log GroupId to node stored in database
@@ -913,12 +936,14 @@ DB.PKT_Update = function (pkt) {
       if (!updatedNode)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
+            node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'update', node: updatedNode };
     } else {
-      if (DBG) console.log(PR, `WARNING: multiple nodeID ${node.id} x${matches.length}`);
+      if (DBG)
+        console.log(PR, `WARNING: multiple nodeID ${node.id} x${matches.length}`);
       LOGGER.Write(pkt.Info(), `ERROR`, node.id, 'duplicate node id');
       retval = { op: 'error-multinodeid' };
     }
@@ -953,7 +978,8 @@ DB.PKT_Update = function (pkt) {
       if (!updatedEdge)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
+            node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'insert', edge: updatedEdge };
@@ -963,9 +989,9 @@ DB.PKT_Update = function (pkt) {
         if (DBG)
           console.log(
             PR,
-            `PKT_Update ${pkt.SourceGroupID()} UPDATE edgeID ${edge.id} ${JSON.stringify(
-              edge
-            )}`
+            `PKT_Update ${pkt.SourceGroupID()} UPDATE edgeID ${
+              edge.id
+            } ${JSON.stringify(edge)}`
           );
         LOGGER.Write(pkt.Info(), `update edge`, edge.id, JSON.stringify(edge));
         DB.AppendEdgeLog(e, pkt); // log GroupId to edge stored in database
@@ -976,7 +1002,8 @@ DB.PKT_Update = function (pkt) {
       if (!updatedEdge)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
+            node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'update', edge: updatedEdge };
@@ -1003,7 +1030,10 @@ DB.PKT_Update = function (pkt) {
     });
 
     // handle linked nodes
-    replacementNodeID = m_CleanID(`${pkt.Info()} replacementNodeID`, replacementNodeID);
+    replacementNodeID = m_CleanID(
+      `${pkt.Info()} replacementNodeID`,
+      replacementNodeID
+    );
     if (replacementNodeID !== -1) {
       // re-link edges to replacementNodeID...
       EDGES.findAndUpdate({ source: nodeID }, e => {
@@ -1163,7 +1193,8 @@ DB.GetTemplateTOMLFileName = () => {
     Loads the template after saving!
 /*/
 DB.WriteTemplateTOML = pkt => {
-  if (pkt.data === undefined) throw 'DB.WriteTemplateTOML pkt received with no `data`';
+  if (pkt.data === undefined)
+    throw 'DB.WriteTemplateTOML pkt received with no `data`';
   const templateFilePath = pkt.data.path || m_GetTemplateTOMLFilePath();
   FS.ensureDirSync(PATH.dirname(templateFilePath));
   // Does the template exist?  If so, rename the old version with curren timestamp.
@@ -1287,7 +1318,9 @@ DB.GetEditStatus = () => {
     (m_open_editors.includes(EDITORTYPE.NODE) ||
       m_open_editors.includes(EDITORTYPE.EDGE));
   return {
-    templateBeingEdited, importActive, nodeOrEdgeBeingEdited,
+    templateBeingEdited,
+    importActive,
+    nodeOrEdgeBeingEdited,
     lockedNodes: [...m_locked_nodes.keys()],
     lockedEdges: [...m_locked_edges.keys()]
   };
@@ -1402,7 +1435,10 @@ function m_GetValidDBFilePath(dataset) {
   // validate dataset name
   let regex = /^([A-z0-9-_+./])*$/; // Allow _ - + . /, so nested pathways are allowed
   if (!regex.test(dataset)) {
-    console.error(PR, `Trying to initialize database with bad dataset name: ${dataset}`);
+    console.error(
+      PR,
+      `Trying to initialize database with bad dataset name: ${dataset}`
+    );
   }
 
   return RUNTIMEPATH + dataset + '.loki';

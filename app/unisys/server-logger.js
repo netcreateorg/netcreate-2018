@@ -54,7 +54,9 @@ FSE.ensureDir(dir, function (err) {
   var logname = str_TimeDatedFilename('log') + '.txt';
   var pathname = dir + '/' + logname;
   fs_log = FSE.createWriteStream(pathname);
-  LogLine(`NETCREATE APPSERVER SESSION LOG for ${str_DateStamp()} ${str_TimeStamp()}`);
+  LogLine(
+    `NETCREATE APPSERVER SESSION LOG for ${str_DateStamp()} ${str_TimeStamp()}`
+  );
   LogLine('---');
 });
 

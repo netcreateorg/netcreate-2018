@@ -22,35 +22,33 @@
 const DBG = { send: false, transact: false };
 
 var m_id_counter = 0;
-var m_id_prefix = "PKT";
+var m_id_prefix = 'PKT';
 var m_transactions = {};
 var m_netsocket = null;
 var m_group_id = null;
 
-const M_INIT = "init";
-const M_ONLINE = "online";
-const M_STANDALONE = "offline";
-const M_CLOSED = "closed";
-const M_ERROR = "error";
+const M_INIT = 'init';
+const M_ONLINE = 'online';
+const M_STANDALONE = 'offline';
+const M_CLOSED = 'closed';
+const M_ERROR = 'error';
 var m_mode = M_INIT;
 
 // constants
-const PROMPTS = require("../system/util/prompts");
-const PR = PROMPTS.Pad("PKT");
-const ERR = ":ERR:";
-const ERR_NOT_NETMESG = ERR + PR + "obj does not seem to be a NetMessage";
-const ERR_BAD_PROP = ERR + PR + "property argument must be a string";
-const ERR_ERR_BAD_CSTR = ERR + PR + "constructor args are string, object";
-const ERR_BAD_SOCKET = ERR + PR + "sender object must implement send()";
-const ERR_DUPE_TRANS =
-  ERR + PR + "this packet transaction is already registered!";
-const ERR_NO_GLOB_UADDR =
-  ERR + PR + "packet sending attempted before UADDR is set!";
-const ERR_UNKNOWN_TYPE = ERR + PR + "packet type is unknown:";
-const ERR_NOT_PACKET = ERR + PR + "passed object is not a NetMessage";
-const ERR_UNKNOWN_RMODE = ERR + PR + "packet routine mode is unknown:";
-const KNOWN_TYPES = ["msend", "msig", "mcall", "state"];
-const ROUTING_MODE = ["req", "res"];
+const PROMPTS = require('../system/util/prompts');
+const PR = PROMPTS.Pad('PKT');
+const ERR = ':ERR:';
+const ERR_NOT_NETMESG = ERR + PR + 'obj does not seem to be a NetMessage';
+const ERR_BAD_PROP = ERR + PR + 'property argument must be a string';
+const ERR_ERR_BAD_CSTR = ERR + PR + 'constructor args are string, object';
+const ERR_BAD_SOCKET = ERR + PR + 'sender object must implement send()';
+const ERR_DUPE_TRANS = ERR + PR + 'this packet transaction is already registered!';
+const ERR_NO_GLOB_UADDR = ERR + PR + 'packet sending attempted before UADDR is set!';
+const ERR_UNKNOWN_TYPE = ERR + PR + 'packet type is unknown:';
+const ERR_NOT_PACKET = ERR + PR + 'passed object is not a NetMessage';
+const ERR_UNKNOWN_RMODE = ERR + PR + 'packet routine mode is unknown:';
+const KNOWN_TYPES = ['msend', 'msig', 'mcall', 'state'];
+const ROUTING_MODE = ['req', 'res'];
 
 /// UNISYS NETMESSAGE CLASS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -61,9 +59,9 @@ class NetMessage {
   constructor(msg, data, type) {
     // OPTION 1
     // create NetMessage from (generic object)
-    if (typeof msg === "object" && data === undefined) {
+    if (typeof msg === 'object' && data === undefined) {
       // make sure it has a msg and data obj
-      if (typeof msg.msg !== "string" || typeof msg.data !== "object") {
+      if (typeof msg.msg !== 'string' || typeof msg.data !== 'object') {
         throw ERR_NOT_NETMESG;
       }
       // merge properties into this new class instance and return it
@@ -73,7 +71,7 @@ class NetMessage {
     }
     // OPTION 2
     // create NetMessage from JSON-encoded string
-    if (typeof msg === "string" && data === undefined) {
+    if (typeof msg === 'string' && data === undefined) {
       let obj = JSON.parse(msg);
       Object.assign(this, obj);
       m_SeqIncrement(this);
@@ -82,8 +80,8 @@ class NetMessage {
     // OPTION 3
     // create new NetMessage from scratch (mesg,data)
     // unique id for every NetMessage
-    if (typeof type === "string") m_CheckType(type);
-    if (typeof msg !== "string" || typeof data !== "object") {
+    if (typeof type === 'string') m_CheckType(type);
+    if (typeof msg !== 'string' || typeof data !== 'object') {
       throw ERR_ERR_BAD_CSTR;
     }
     // allow calls with null data by setting to empty object
@@ -93,7 +91,7 @@ class NetMessage {
     this.id = this.MakeNewID();
     this.rmode = ROUTING_MODE[0]; // is default 't_req' (trans request)
     this.type = type || KNOWN_TYPES[0]; // is default 'msend' (no return)
-    this.memo = "";
+    this.memo = '';
     // transaction support
     this.seqnum = 0; // positive when part of transaction
     this.seqlog = []; // transaction log
@@ -141,18 +139,18 @@ class NetMessage {
   /*/
   Data(prop) {
     if (!prop) return this.data;
-    if (typeof prop === "string") return this.data[prop];
+    if (typeof prop === 'string') return this.data[prop];
     throw ERR_BAD_PROP;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ convenience method to set data object entirely
   /*/
   SetData(propOrVal, val) {
-    if (typeof propOrVal === "object") {
+    if (typeof propOrVal === 'object') {
       this.data = propOrVal;
       return;
     }
-    if (typeof propOrVal === "string") {
+    if (typeof propOrVal === 'string') {
       this.data[propOrVal] = val;
       return;
     }
@@ -169,7 +167,7 @@ class NetMessage {
   /*/ convenience function return true if server message
   /*/
   IsServerMessage() {
-    return this.msg.startsWith("SRV_");
+    return this.msg.startsWith('SRV_');
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ getter/setter for the memo description field
@@ -208,7 +206,7 @@ class NetMessage {
     // is this packet originating from server to a remote?
     if (
       this.s_uaddr === NetMessage.DefaultServerUADDR() &&
-      !this.msg.startsWith("SVR_")
+      !this.msg.startsWith('SVR_')
     ) {
       return this.s_uaddr;
     }
@@ -217,7 +215,7 @@ class NetMessage {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   CopySourceAddress(pkt) {
-    if (pkt.constructor.name !== "NetMessage") throw Error(ERR_NOT_PACKET);
+    if (pkt.constructor.name !== 'NetMessage') throw Error(ERR_NOT_PACKET);
     this.s_uaddr = pkt.SourceAddress();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -225,7 +223,7 @@ class NetMessage {
   /*/
   Info(key) {
     switch (key) {
-      case "src": /* falls-through */
+      case 'src': /* falls-through */
       default:
         return this.SourceGroupID()
           ? `${this.SourceAddress()} [${this.SourceGroupID()}]`
@@ -235,7 +233,7 @@ class NetMessage {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   MakeNewID() {
     let idStr = (++m_id_counter).toString();
-    this.id = m_id_prefix + idStr.padStart(5, "0");
+    this.id = m_id_prefix + idStr.padStart(5, '0');
     return this.id;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -245,28 +243,21 @@ class NetMessage {
   SocketSend(socket = m_netsocket) {
     if (m_mode === M_ONLINE || m_mode === M_INIT) {
       this.s_group = NetMessage.GlobalGroupID();
-      let dst = socket.UADDR || "unregistered socket";
-      if (!socket) throw Error("SocketSend(sock) requires a valid socket");
+      let dst = socket.UADDR || 'unregistered socket';
+      if (!socket) throw Error('SocketSend(sock) requires a valid socket');
       if (DBG.send) {
         let status = `sending '${this.Message()}' to ${dst}`;
         console.log(PR, status);
       }
       // for server-side ws library, send supports a function callback
       // for WebSocket, this is ignored
-      socket.send(this.JSON(),(err) => {
+      socket.send(this.JSON(), err => {
         if (err) console.error(`\nsocket ${socket.UADDR} reports error ${err}\n`);
       });
     } else if (m_mode !== M_STANDALONE) {
-      console.log(
-        PR,
-        "SocketSend: Can't send because NetMessage mode is",
-        m_mode
-      );
+      console.log(PR, "SocketSend: Can't send because NetMessage mode is", m_mode);
     } else {
-      console.warn(
-        PR,
-        "STANDALONE MODE: SocketSend() suppressed!"
-      );
+      console.warn(PR, 'STANDALONE MODE: SocketSend() suppressed!');
     }
     // FYI: global m_netsocket is not defined on server, since packets arrive on multiple sockets
   }
@@ -275,24 +266,24 @@ class NetMessage {
   /*/
   QueueTransaction(socket = m_netsocket) {
     if (m_mode === M_STANDALONE) {
-      console.warn(PR, "STANDALONE MODE: QueueTransaction() suppressed!");
+      console.warn(PR, 'STANDALONE MODE: QueueTransaction() suppressed!');
       return Promise.resolve();
     }
     // global m_netsocket is not defined on server, since packets arrive on multiple sockets
-    if (!socket) throw Error("QueueTransaction(sock) requires a valid socket");
+    if (!socket) throw Error('QueueTransaction(sock) requires a valid socket');
     // save our current UADDR
     this.seqlog.push(NetMessage.UADDR);
     let dbg = DBG.transact && !this.IsServerMessage();
     let p = new Promise((resolve, reject) => {
       var hash = m_GetHashKey(this);
       if (m_transactions[hash]) {
-        reject(Error(ERR_DUPE_TRANS + ":" + hash));
+        reject(Error(ERR_DUPE_TRANS + ':' + hash));
       } else {
         // save the resolve function in transactions table;
         // promise will resolve on remote invocation with data
-        m_transactions[hash] = function(data) {
+        m_transactions[hash] = function (data) {
           if (dbg) {
-            console.log(PR, "resolving promise with", JSON.stringify(data));
+            console.log(PR, 'resolving promise with', JSON.stringify(data));
           }
           resolve(data);
         };
@@ -312,10 +303,10 @@ class NetMessage {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   IsRequest() {
-    return this.rmode === "req";
+    return this.rmode === 'req';
   }
   IsOwnResponse() {
-    return this.rmode === "res";
+    return this.rmode === 'res';
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -333,12 +324,12 @@ class NetMessage {
   /*/
   ReturnTransaction(socket = m_netsocket) {
     // global m_netsocket is not defined on server, since packets arrive on multiple sockets
-    if (!socket) throw Error("ReturnTransaction(sock) requires a valid socket");
+    if (!socket) throw Error('ReturnTransaction(sock) requires a valid socket');
     // note: seqnum is already incremented by the constructor if this was
     // a received packet
     // add this to the sequence log
     this.seqlog.push(NetMessage.UADDR);
-    this.rmode = m_CheckRMode("res");
+    this.rmode = m_CheckRMode('res');
     this.SocketSend(socket);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -350,8 +341,8 @@ class NetMessage {
     let dbg = DBG.transact && !this.IsServerMessage();
     var hash = m_GetHashKey(this);
     var resolverFunc = m_transactions[hash];
-    if (dbg) console.log(PR, "CompleteTransaction", hash);
-    if (typeof resolverFunc !== "function") {
+    if (dbg) console.log(PR, 'CompleteTransaction', hash);
+    if (typeof resolverFunc !== 'function') {
       throw Error(
         `transaction [${hash}] resolverFunction is type ${typeof resolverFunc}`
       );
@@ -368,13 +359,13 @@ class NetMessage {
     This class operates both under the server and the client.
     This is a client feature.
 /*/
-NetMessage.GlobalSetup = function(config) {
+NetMessage.GlobalSetup = function (config) {
   let { netsocket, uaddr } = config;
   if (uaddr) NetMessage.UADDR = uaddr;
   // NOTE: m_netsocket is set only on clients since on server, there are multiple sockets
   if (netsocket) {
-    if (typeof netsocket.send !== "function") throw ERR_BAD_SOCKET;
-    console.log(PR, "GlobalSetup: netsocket set, mode online");
+    if (typeof netsocket.send !== 'function') throw ERR_BAD_SOCKET;
+    console.log(PR, 'GlobalSetup: netsocket set, mode online');
     m_netsocket = netsocket;
     m_mode = M_ONLINE;
   }
@@ -383,9 +374,9 @@ NetMessage.GlobalSetup = function(config) {
 /*/ cleanup any allocated storage. This class operates both under the
     server and the client. This is a client feature.
 /*/
-NetMessage.GlobalCleanup = function() {
+NetMessage.GlobalCleanup = function () {
   if (m_netsocket) {
-    console.log(PR, "GlobalCleanup: deallocating netsocket, mode closed");
+    console.log(PR, 'GlobalCleanup: deallocating netsocket, mode closed');
     m_netsocket = null;
     m_mode = M_CLOSED;
   }
@@ -394,10 +385,10 @@ NetMessage.GlobalCleanup = function() {
 /*/ cleanup any allocated storage internally. This class operates both under the
     server and the client. This is a client feature.
 /*/
-NetMessage.GlobalOfflineMode = function(data) {
+NetMessage.GlobalOfflineMode = function (data) {
   m_mode = M_STANDALONE;
   if (m_netsocket) {
-    console.warn(PR, "STANDALONE MODE: NetMessage disabling network");
+    console.warn(PR, 'STANDALONE MODE: NetMessage disabling network');
     m_netsocket = null;
     // The disconnect is detected by client-network.js.
     // If the disconnect is due to a missing ping heartbeat from the server
@@ -406,35 +397,35 @@ NetMessage.GlobalOfflineMode = function(data) {
     // If there's no data.message, then this request came from
     // either a standalone connect, a server "close" event,
     // or a server "error" event.
-    let event = new CustomEvent("UNISYSDisconnect", {
+    let event = new CustomEvent('UNISYSDisconnect', {
       detail: {
-        message: data ? data.message : "Server Disconnected"
+        message: data ? data.message : 'Server Disconnected'
       }
     });
-    console.log("dispatching event to", document, event);
+    console.log('dispatching event to', document, event);
     document.dispatchEvent(event);
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ return the address (socket_id) assigned to this app instance
 /*/
-NetMessage.SocketUADDR = function() {
+NetMessage.SocketUADDR = function () {
   return NetMessage.UADDR;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return a default server UADDR
 /*/
-NetMessage.DefaultServerUADDR = function() {
-  return "SVR_01";
+NetMessage.DefaultServerUADDR = function () {
+  return 'SVR_01';
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return current SessionID string
 /*/
-NetMessage.GlobalGroupID = function() {
+NetMessage.GlobalGroupID = function () {
   return m_group_id;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-NetMessage.GlobalSetGroupID = function(token) {
+NetMessage.GlobalSetGroupID = function (token) {
   m_group_id = token;
 };
 
@@ -460,7 +451,7 @@ function m_GetHashKey(pkt) {
 /*/
 function m_CheckType(type) {
   if (type === undefined) {
-    throw new Error("must pass a type string, not " + type);
+    throw new Error('must pass a type string, not ' + type);
   }
   if (!KNOWN_TYPES.includes(type)) throw `${ERR_UNKNOWN_TYPE} '${type}'`;
   return type;
@@ -470,7 +461,7 @@ function m_CheckType(type) {
 /*/
 function m_CheckRMode(mode) {
   if (mode === undefined) {
-    throw new Error("must pass a mode string, not " + mode);
+    throw new Error('must pass a mode string, not ' + mode);
   }
   if (!ROUTING_MODE.includes(mode)) throw `${ERR_UNKNOWN_RMODE} '${mode}'`;
   return mode;

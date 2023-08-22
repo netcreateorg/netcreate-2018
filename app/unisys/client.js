@@ -22,18 +22,18 @@ const DBG = {
 
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UniData = require("unisys/client-datalink-class");
-const UniModule = require("unisys/client-module-class");
-const UniComponent = require("unisys/client-react-component");
+const UniData = require('unisys/client-datalink-class');
+const UniModule = require('unisys/client-module-class');
+const UniComponent = require('unisys/client-react-component');
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const SETTINGS = require("settings");
-const LIFECYCLE = require("unisys/client-lifecycle");
-const STATE = require("unisys/client-state");
-const NETWORK = require("unisys/client-network");
-const PROMPTS = require("system/util/prompts");
-const PR = PROMPTS.Pad("UNISYS");
+const SETTINGS = require('settings');
+const LIFECYCLE = require('unisys/client-lifecycle');
+const STATE = require('unisys/client-state');
+const NETWORK = require('unisys/client-network');
+const PROMPTS = require('system/util/prompts');
+const PR = PROMPTS.Pad('UNISYS');
 
 /// INITIALIZE MAIN MODULE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -50,10 +50,7 @@ var UDATA = new UniData(UNISYS);
 /// UNISYS CONNECTOR //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: Make new module with UNISYS convenience methods
-/*/ UNISYS.NewDataLink = (
-  module,
-  optName
-) => {
+/*/ UNISYS.NewDataLink = (module, optName) => {
   return new UniData(module, optName);
 };
 
@@ -61,7 +58,7 @@ var UDATA = new UniData(UNISYS);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UNISYS.RegisterMessagesPromise = (messages = []) => {
   if (NETWORK.IsStandaloneMode()) {
-    console.warn(PR,"STANDALONE MODE: RegisterMessagesPromise() suppressed!");
+    console.warn(PR, 'STANDALONE MODE: RegisterMessagesPromise() suppressed!');
     return Promise.resolve();
   }
   if (messages.length) {
@@ -74,7 +71,7 @@ UNISYS.RegisterMessagesPromise = (messages = []) => {
     messages = UniData.MessageNames();
   }
   return new Promise((resolve, reject) => {
-    UDATA.Call("SRV_REG_HANDLERS", { messages }).then(data => {
+    UDATA.Call('SRV_REG_HANDLERS', { messages }).then(data => {
       resolve(data);
     });
   });
@@ -85,8 +82,8 @@ UNISYS.RegisterMessagesPromise = (messages = []) => {
 /*/ API: LIFECYCLE Hook() functions
 /*/
 UNISYS.Hook = (phase, f) => {
-  if (typeof phase !== "string") throw Error("arg1 is phase as string");
-  if (typeof f !== "function") throw Error("arg2 is function callback");
+  if (typeof phase !== 'string') throw Error('arg1 is phase as string');
+  if (typeof f !== 'function') throw Error('arg2 is function callback');
   LIFECYCLE.Hook(phase, f, UNISYS.ModuleID()); // pass phase and hook function
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -129,14 +126,14 @@ UNISYS.InScope = module_id => {
 UNISYS.EnterApp = () => {
   return new Promise(async (resolve, reject) => {
     try {
-      await LIFECYCLE.Execute("TEST_CONF"); // TESTCONFIG hook
-      await LIFECYCLE.Execute("INITIALIZE"); // INITIALIZE hook
-      await LIFECYCLE.Execute("LOADASSETS"); // LOADASSETS hook
-      await LIFECYCLE.Execute("CONFIGURE"); // CONFIGURE support modules
+      await LIFECYCLE.Execute('TEST_CONF'); // TESTCONFIG hook
+      await LIFECYCLE.Execute('INITIALIZE'); // INITIALIZE hook
+      await LIFECYCLE.Execute('LOADASSETS'); // LOADASSETS hook
+      await LIFECYCLE.Execute('CONFIGURE'); // CONFIGURE support modules
       resolve();
     } catch (e) {
       console.error(
-        "EnterApp() Lifecycle Error. Check phase execution order effect on data validity.\n",
+        'EnterApp() Lifecycle Error. Check phase execution order effect on data validity.\n',
         e
       );
       debugger;
@@ -150,11 +147,11 @@ UNISYS.EnterApp = () => {
 UNISYS.SetupDOM = () => {
   return new Promise(async (resolve, reject) => {
     try {
-      await LIFECYCLE.Execute("DOM_READY"); // GUI layout has finished composing
+      await LIFECYCLE.Execute('DOM_READY'); // GUI layout has finished composing
       resolve();
     } catch (e) {
       console.error(
-        "SetupDOM() Lifecycle Error. Check phase execution order effect on data validity.\n",
+        'SetupDOM() Lifecycle Error. Check phase execution order effect on data validity.\n',
         e
       );
       debugger;
@@ -170,7 +167,7 @@ UNISYS.JoinNet = () => {
       NETWORK.Connect(UDATA, { success: resolve, failure: reject });
     } catch (e) {
       console.error(
-        "EnterNet() Lifecycle Error. Check phase execution order effect on data validity.\n",
+        'EnterNet() Lifecycle Error. Check phase execution order effect on data validity.\n',
         e
       );
       debugger;
@@ -183,14 +180,14 @@ UNISYS.JoinNet = () => {
 UNISYS.SetupRun = () => {
   return new Promise(async (resolve, reject) => {
     try {
-      await LIFECYCLE.Execute("RESET"); // RESET runtime datastructures
-      await LIFECYCLE.Execute("START"); // START running
-      await LIFECYCLE.Execute("APP_READY"); // tell network APP_READY
-      await LIFECYCLE.Execute("RUN"); // tell network APP_READY
+      await LIFECYCLE.Execute('RESET'); // RESET runtime datastructures
+      await LIFECYCLE.Execute('START'); // START running
+      await LIFECYCLE.Execute('APP_READY'); // tell network APP_READY
+      await LIFECYCLE.Execute('RUN'); // tell network APP_READY
       resolve();
     } catch (e) {
       console.error(
-        "SetupRun() Lifecycle Error. Check phase execution order effect on data validity.\n",
+        'SetupRun() Lifecycle Error. Check phase execution order effect on data validity.\n',
         e
       );
       debugger;
@@ -203,7 +200,7 @@ UNISYS.SetupRun = () => {
 UNISYS.Run = () => {
   return new Promise(async (resolve, reject) => {
     try {
-      await LIFECYCLE.Execute("UPDATE");
+      await LIFECYCLE.Execute('UPDATE');
       resolve();
     } catch (e) {
       console.error(e);
@@ -216,7 +213,7 @@ UNISYS.Run = () => {
 /*/
 UNISYS.BeforePause = () => {
   return new Promise(async (resolve, reject) => {
-    await LIFECYCLE.Execute("PREPAUSE");
+    await LIFECYCLE.Execute('PREPAUSE');
     resolve();
   });
 };
@@ -226,7 +223,7 @@ UNISYS.BeforePause = () => {
 /*/
 UNISYS.Paused = () => {
   return new Promise(async (resolve, reject) => {
-    await LIFECYCLE.Execute("PAUSE");
+    await LIFECYCLE.Execute('PAUSE');
     resolve();
   });
 };
@@ -236,7 +233,7 @@ UNISYS.Paused = () => {
 /*/
 UNISYS.PostPause = () => {
   return new Promise(async (resolve, reject) => {
-    await LIFECYCLE.Execute("POSTPAUSE");
+    await LIFECYCLE.Execute('POSTPAUSE');
     resolve();
   });
 };
@@ -246,7 +243,7 @@ UNISYS.PostPause = () => {
 /*/
 UNISYS.CleanupRun = () => {
   return new Promise(async (resolve, reject) => {
-    await LIFECYCLE.Execute("STOP");
+    await LIFECYCLE.Execute('STOP');
     resolve();
   });
 };
@@ -256,7 +253,7 @@ UNISYS.CleanupRun = () => {
 /*/
 UNISYS.ServerDisconnect = () => {
   return new Promise(async (resolve, reject) => {
-    await LIFECYCLE.Execute("DISCONNECT");
+    await LIFECYCLE.Execute('DISCONNECT');
     resolve();
   });
 };
@@ -266,8 +263,8 @@ UNISYS.ServerDisconnect = () => {
 /*/
 UNISYS.ExitApp = () => {
   return new Promise(async (resolve, reject) => {
-    await LIFECYCLE.Execute("UNLOADASSETS");
-    await LIFECYCLE.Execute("SHUTDOWN");
+    await LIFECYCLE.Execute('UNLOADASSETS');
+    await LIFECYCLE.Execute('SHUTDOWN');
     resolve();
   });
 };
@@ -282,17 +279,17 @@ UNISYS.SocketUADDR = () => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UNISYS.IsStandaloneMode = () => {
   return NETWORK.IsStandaloneMode();
-}
+};
 
 /// DATA LOGGING //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ send a logging message
 /*/
 UNISYS.Log = (event, ...items) => {
-  if (typeof event !== "string") {
+  if (typeof event !== 'string') {
     console.error("UNISYS.Log( 'eventString', value, value, value... )");
   }
-  UDATA.NetSignal("SRV_LOG_EVENT", { event, items });
+  UDATA.NetSignal('SRV_LOG_EVENT', { event, items });
 };
 
 /// REACT INTEGRATION /////////////////////////////////////////////////////////

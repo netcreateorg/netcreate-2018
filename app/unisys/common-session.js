@@ -107,8 +107,7 @@ SESUTIL.MakeToken = function (classId, projId, groupId, dataset) {
     throw Error(`classId arg1 '${classId}' must be string`);
   if (typeof projId !== 'string')
     throw Error(`projId arg2 '${projId}' must be string`);
-  if (classId.length < 1)
-    throw Error(`classId arg1 length should be 1 or more`);
+  if (classId.length < 1) throw Error(`classId arg1 length should be 1 or more`);
   if (projId.length < 1) throw Error(`projId arg2 length should be 1 or more`);
   if (!Number.isInteger(groupId))
     throw Error(`groupId arg3 '${groupId}' must be integer`);
@@ -133,10 +132,7 @@ SESUTIL.MakeToken = function (classId, projId, groupId, dataset) {
 // If it is, the DecodeToken call needs to add a 'dataset' parameter or it will
 // fail.
 SESUTIL.SetGroupID = function (token) {
-  console.error(
-    'SetGroupID calling decodeToken NC_CONFIG IS',
-    window.NC_CONFIG
-  );
+  console.error('SetGroupID calling decodeToken NC_CONFIG IS', window.NC_CONFIG);
   let good = SESUTIL.DecodeToken(token).isValid;
   if (good) m_current_groupid = token;
   return good;

@@ -14,24 +14,21 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-
 /// REACT LIBRARIES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    const React = require('react');
-    const { Alert, Collapse } = require('reactstrap');
-    const { Navbar, NavbarToggler } = require('reactstrap');
-    const { NavbarBrand, Nav, NavItem, NavLink } = require('reactstrap');
-    const { UncontrolledDropdown, DropdownToggle } = require('reactstrap');
-    const { DropdownMenu, DropdownItem } = require('reactstrap');
-    const { Switch, withRouter } = require('react-router-dom');
-    // workaround name collision in ReactRouterNavLink with ReactStrap
-    const RRNavLink = require('react-router-dom').NavLink;
-    //
-    const { renderRoutes } = require('react-router-config');
-    //
-    const UNISYS = require('unisys/client');
-
-
+const React = require('react');
+const { Alert, Collapse } = require('reactstrap');
+const { Navbar, NavbarToggler } = require('reactstrap');
+const { NavbarBrand, Nav, NavItem, NavLink } = require('reactstrap');
+const { UncontrolledDropdown, DropdownToggle } = require('reactstrap');
+const { DropdownMenu, DropdownItem } = require('reactstrap');
+const { Switch, withRouter } = require('react-router-dom');
+// workaround name collision in ReactRouterNavLink with ReactStrap
+const RRNavLink = require('react-router-dom').NavLink;
+//
+const { renderRoutes } = require('react-router-config');
+//
+const UNISYS = require('unisys/client');
 
 /** (1) ROUTED COMPONENTS ****************************************************\
   Used by render()'s <Switch> to load a React component (what we call a
@@ -46,60 +43,63 @@
   --- COMPONENT BELOW ---
   <RequiredComponent>  |     div       this is a child of a flexbox
 \*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-    const SETTINGS          = require('settings');
-    const AppDefault        = require('view/AppDefault');
-    const NetCreate         = require('view/netcreate/NetCreate');
-    const DevUnisys         = require('view/dev-unisys/DevUnisys');
-    const DevDB             = require('view/dev-db/DevDB');
-    const DevReact          = require('view/dev-react/DevReact');
-    const DevSession        = require('view/dev-session/DevSession');
+const SETTINGS = require('settings');
+const AppDefault = require('view/AppDefault');
+const NetCreate = require('view/netcreate/NetCreate');
+const DevUnisys = require('view/dev-unisys/DevUnisys');
+const DevDB = require('view/dev-db/DevDB');
+const DevReact = require('view/dev-react/DevReact');
+const DevSession = require('view/dev-session/DevSession');
 //  const Prototype         = require('view/prototype/Prototype');
 //  const D3Test            = require('view/d3test/D3Test');
 
-    const Routes = [
-      {
-        path: '/',
-        exact : true,
-        component: NetCreate
-      },
-      {
-        path: '/edit',
-        component: NetCreate
-      },
-      {
-        path: '/dev-unisys',
-        component: DevUnisys
-      },
-      {
-        path: '/dev-db',
-        component: DevDB
-      },
-      {
-        path: '/dev-react',
-        component: DevReact
-      },
-      {
-        path: '/dev-session',
-        component: DevSession
-      },
-      {
-        path: '/simple',
-        component: (props) => {return HTML(props)}
-      },
-      {
-        path: '/vocabulary',
-        component: (props) => {return HTML(props)}
-      },
-      {
-        path: '*',
-        restricted: false,
-        component: NoMatch
-      }
-    ];
+const Routes = [
+  {
+    path: '/',
+    exact: true,
+    component: NetCreate
+  },
+  {
+    path: '/edit',
+    component: NetCreate
+  },
+  {
+    path: '/dev-unisys',
+    component: DevUnisys
+  },
+  {
+    path: '/dev-db',
+    component: DevDB
+  },
+  {
+    path: '/dev-react',
+    component: DevReact
+  },
+  {
+    path: '/dev-session',
+    component: DevSession
+  },
+  {
+    path: '/simple',
+    component: props => {
+      return HTML(props);
+    }
+  },
+  {
+    path: '/vocabulary',
+    component: props => {
+      return HTML(props);
+    }
+  },
+  {
+    path: '*',
+    restricted: false,
+    component: NoMatch
+  }
+];
 
-    // Joshua added to disable Extras
-    const isLocalHost  = (SETTINGS.EJSProp('client').ip === '127.0.0.1');
-
+// Joshua added to disable Extras
+const isLocalHost = SETTINGS.EJSProp('client').ip === '127.0.0.1';
 
 /** (2) ROUTED FUNCTIONS *****************************************************\
   Used by render()'s <Switch> to load a plain html page that is
@@ -115,27 +115,35 @@
                                        width:100%
   init-appshell.HTML() |       iframe  flex:1 0 auto, border:0
 \*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-  function HTML ( props ) {
-    SETTINGS.ForceReloadOnNavigation();
-    let loc = props.location.pathname.substring(1);
-    loc  = '/htmldemos/'+loc+'/'+loc+'.html';
-    return (
-      <div style={{display:'flex', flexFlow:'column nowrap',
-           width:'100%', height:'100%'}}>
-        <iframe style={{flex:'1 0 auto',border:'0'}} src={loc} />
-      </div>
-    );
+function HTML(props) {
+  SETTINGS.ForceReloadOnNavigation();
+  let loc = props.location.pathname.substring(1);
+  loc = '/htmldemos/' + loc + '/' + loc + '.html';
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexFlow: 'column nowrap',
+        width: '100%',
+        height: '100%'
+      }}
+    >
+      <iframe style={{ flex: '1 0 auto', border: '0' }} src={loc} />
+    </div>
+  );
 }
 
 /** (3) NO ROUTE *************************************************************\
   Used by render()'s <Switch> when there are no matching routes
 \*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-  function NoMatch ( props ) {
-    let hash = props.location.pathname.substring(1);
-    return (
-      <Alert color="warning">No Match for route <tt>#{hash}</tt></Alert>
-    );
-  }
+function NoMatch(props) {
+  let hash = props.location.pathname.substring(1);
+  return (
+    <Alert color="warning">
+      No Match for route <tt>#{hash}</tt>
+    </Alert>
+  );
+}
 
 /** APPLICATION NAVBAR + SWITCHED ROUTER VIEW ********************************\
 
@@ -148,48 +156,62 @@
 
 \*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 class AppShell extends UNISYS.Component {
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ constructor
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ constructor
 /*/ constructor(props) {
-      super(props);
-      this.toggle = this.toggle.bind(this);
-      this.state = {
-        isOpen: false
-      };
-      // bind handler
-      this.redirect = this.redirect.bind(this);
-      // add UNISYS message for redirects
-      this.HandleMessage('SHELL_REDIRECT',this.redirect);
-    }
+    super(props);
+    this.toggle = this.toggle.bind(this);
+    this.state = {
+      isOpen: false
+    };
+    // bind handler
+    this.redirect = this.redirect.bind(this);
+    // add UNISYS message for redirects
+    this.HandleMessage('SHELL_REDIRECT', this.redirect);
+  }
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Handle changes in state of his toggle switch
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Handle changes in state of his toggle switch
 /*/ toggle() {
-      this.setState({
-        isOpen: !this.state.isOpen
-      });
-    }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Called by SHELL_REDIRECT unisys message
+    this.setState({
+      isOpen: !this.state.isOpen
+    });
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Called by SHELL_REDIRECT unisys message
 /*/ redirect(data) {
-      let { redirect } = data;
-      this.props.history.push(redirect);
-    }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Draw top navbar w/ menus. Add route information
+    let { redirect } = data;
+    this.props.history.push(redirect);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/ Draw top navbar w/ menus. Add route information
   To add a new HTML, add the link to both the <Nav> and <Switch> staments.
   To add a new VIEW, load the component
 /*/ render() {
-      /// return component with matching routed view
-      return (
-        <div style={{display:'flex', flexFlow:'column nowrap', width:'100%', height:'100vh'}}>
-          <Navbar fixed="top" light expand="md" style={{ backgroundColor:'#f0f0f0', padding:'4px 10px'}}>
-            <NavbarBrand href="#" style={{padding:'0'}}><img src='images/netcreate-logo.svg' height='26px'/></NavbarBrand>
-            <NavbarToggler onClick={this.toggle} />
-              <Collapse isOpen={this.state.isOpen} navbar>
-              {/*/ (1) add navigation links here /*/}
-              <Nav className="ml-auto" navbar hidden={!isLocalHost}>
-              { /* extra menu items
+    /// return component with matching routed view
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexFlow: 'column nowrap',
+          width: '100%',
+          height: '100vh'
+        }}
+      >
+        <Navbar
+          fixed="top"
+          light
+          expand="md"
+          style={{ backgroundColor: '#f0f0f0', padding: '4px 10px' }}
+        >
+          <NavbarBrand href="#" style={{ padding: '0' }}>
+            <img src="images/netcreate-logo.svg" height="26px" />
+          </NavbarBrand>
+          <NavbarToggler onClick={this.toggle} />
+          <Collapse isOpen={this.state.isOpen} navbar>
+            {/*/ (1) add navigation links here /*/}
+            <Nav className="ml-auto" navbar hidden={!isLocalHost}>
+              {/* extra menu items
                   <NavItem>
                     <NavLink to="/d3forcedemo" tag={RRNavLink} replace>D3 ForceDemo</NavLink>
                   </NavItem>
@@ -218,18 +240,18 @@ class AppShell extends UNISYS.Component {
                       </DropdownItem>
                     </DropdownMenu>
                   </UncontrolledDropdown>
-              */ }
-                </Nav>
-              </Collapse>
-          </Navbar>
-          <div style={{height:'3.5em'}}>{/*/ add space underneath the fixed navbar /*/}</div>
-          <Switch>
-            {renderRoutes(Routes)}
-          </Switch>
+              */}
+            </Nav>
+          </Collapse>
+        </Navbar>
+        <div style={{ height: '3.5em' }}>
+          {/*/ add space underneath the fixed navbar /*/}
         </div>
-      );
-    } // render()
-  } // AppShell()
+        <Switch>{renderRoutes(Routes)}</Switch>
+      </div>
+    );
+  } // render()
+} // AppShell()
 
 /// EXPORT ROUTE INFO /////////////////////////////////////////////////////////
 AppShell.Routes = Routes;

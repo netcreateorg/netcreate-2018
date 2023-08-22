@@ -6,45 +6,44 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const DBG = window.NC_DBG && window.NC_DBG.lifecycle;
-const BAD_PATH =
-  "module_path must be a string derived from the module's module.id";
+const BAD_PATH = "module_path must be a string derived from the module's module.id";
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PATH = require("system/util/path");
+const PATH = require('system/util/path');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var PHASE_HOOKS = new Map(); // functions that might right a Promise
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PHASES = [
-  "TEST_CONF", // setup tests
-  "INITIALIZE", // module data structure init
-  "LOADASSETS", // load any external data, make connections
-  "CONFIGURE", // configure runtime data structures
-  "DOM_READY", // when viewsystem has completely composed
-  "RESET", // reset runtime data structures
-  "START", // start normal execution run
-  "APP_READY", // synchronize to UNISYS network server
-  "RUN", // system starts running
-  "UPDATE", // system is running (periodic call w/ time)
-  "PREPAUSE", // system wants to pause run
-  "PAUSE", // system has paused (periodic call w/ time)
-  "POSTPAUSE", // system wants to resume running
-  "STOP", // system wants to stop current run
-  "DISCONNECT", // unisys server has gone offline
-  "RECONNECT", // unisys server has reconnected
-  "UNLOADASSETS", // system releases any connections
-  "SHUTDOWN" // system wants to shut down
+  'TEST_CONF', // setup tests
+  'INITIALIZE', // module data structure init
+  'LOADASSETS', // load any external data, make connections
+  'CONFIGURE', // configure runtime data structures
+  'DOM_READY', // when viewsystem has completely composed
+  'RESET', // reset runtime data structures
+  'START', // start normal execution run
+  'APP_READY', // synchronize to UNISYS network server
+  'RUN', // system starts running
+  'UPDATE', // system is running (periodic call w/ time)
+  'PREPAUSE', // system wants to pause run
+  'PAUSE', // system has paused (periodic call w/ time)
+  'POSTPAUSE', // system wants to resume running
+  'STOP', // system wants to stop current run
+  'DISCONNECT', // unisys server has gone offline
+  'RECONNECT', // unisys server has reconnected
+  'UNLOADASSETS', // system releases any connections
+  'SHUTDOWN' // system wants to shut down
 ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var PHASE = PHASES[0] + "_PENDING"; // current phase
+var PHASE = PHASES[0] + '_PENDING'; // current phase
 
 /// MODULE DEFINITION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var MOD = {
-  name: "LifeCycle",
-  scope: "system/booting" // overwritten by UNISYS.SystemInitialize()
+  name: 'LifeCycle',
+  scope: 'system/booting' // overwritten by UNISYS.SystemInitialize()
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ UTILITY: compare the destination scope with the acceptable scope (the
@@ -53,16 +52,14 @@ var MOD = {
 /*/
 function m_ExecuteScopedPhase(phase, o) {
   // check for special unisys or system directory
-  if (o.scope.indexOf("system") === 0) return o.f();
-  if (o.scope.indexOf("unisys") === 0) return o.f();
+  if (o.scope.indexOf('system') === 0) return o.f();
+  if (o.scope.indexOf('unisys') === 0) return o.f();
   // check for subdirectory
   if (o.scope.includes(MOD.scope, 0)) return o.f();
   // else do nothing
   if (DBG)
     console.info(
-      `LIFECYCLE: skipping [${phase}] for ${o.scope} because scope is ${
-        MOD.scope
-      }`
+      `LIFECYCLE: skipping [${phase}] for ${o.scope} because scope is ${MOD.scope}`
     );
   return undefined;
 }
@@ -75,16 +72,16 @@ function m_ExecuteScopedPhase(phase, o) {
 /*/
 MOD.Hook = (phase, f, scope) => {
   // make sure scope is included
-  if (typeof scope !== "string")
+  if (typeof scope !== 'string')
     throw Error(`<arg3> scope is required (set to module.id)`);
   // does this phase exist?
-  if (typeof phase !== "string")
+  if (typeof phase !== 'string')
     throw Error("<arg1> must be PHASENAME (e.g. 'LOADASSETS')");
   if (!PHASES.includes(phase))
-    throw Error(phase, "is not a recognized lifecycle phase");
+    throw Error(phase, 'is not a recognized lifecycle phase');
   // did we also get a promise?
   if (!(f instanceof Function))
-    throw Error("<arg2> must be a function optionally returning Promise");
+    throw Error('<arg2> must be a function optionally returning Promise');
 
   // get the list of promises associated with this phase
   // and add the new promise
@@ -116,7 +113,7 @@ MOD.Execute = async phase => {
   }
 
   // phase housekeeping
-  PHASE = phase + "_PENDING";
+  PHASE = phase + '_PENDING';
 
   // now execute handlers and promises
   let icount = 0;
@@ -161,7 +158,7 @@ MOD.Execute = async phase => {
     application path, which are defined under the view directory.
 /*/
 MOD.SetScope = module_path => {
-  if (typeof module_path !== "string") throw Error(BAD_PATH);
+  if (typeof module_path !== 'string') throw Error(BAD_PATH);
   if (DBG) console.log(`setting lifecycle scope to ${module_path}`);
   // strip out filename, if one exists
   MOD.scope = PATH.Dirname(module_path);

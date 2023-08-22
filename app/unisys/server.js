@@ -20,7 +20,6 @@ const PR = PROMPTS.Pad('SRV');
 /// MODULE VARS ///////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-
 /// API CREATE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var UNISYS = {};
@@ -38,7 +37,6 @@ UNISYS.InitializeNetwork = override => {
     ready to run. These are server-implemented reserved messages.
 /*/
 UNISYS.RegisterHandlers = () => {
-
   UNET.HandleMessage('SRV_REFLECT', function (pkt) {
     pkt.Data().serverSays = 'REFLECTING';
     pkt.Data().stack.push('SRV_01');
@@ -83,7 +81,8 @@ UNISYS.RegisterHandlers = () => {
    * Reports on whether template, import, or node/edge are being edited
    * @return { templateBeingEdited: boolean, importActive: boolean, nodeOrEdgeBeingEdited: boolean }
    */
-  UNET.HandleMessage('SRV_GET_EDIT_STATUS', pkt => { // server-database
+  UNET.HandleMessage('SRV_GET_EDIT_STATUS', pkt => {
+    // server-database
     if (DBG) console.log(PR, sprint_message(pkt));
     const data = UDB.GetEditStatus(pkt);
     return data;
@@ -92,7 +91,8 @@ UNISYS.RegisterHandlers = () => {
    * Requested by Node / Edge Editor when user wants to edit node / edge
    * @return { templateBeingEdited: boolean, importActive: boolean, nodeOrEdgeBeingEdited: boolean }
    */
-  UNET.HandleMessage('SRV_REQ_EDIT_LOCK', pkt => { // server-database
+  UNET.HandleMessage('SRV_REQ_EDIT_LOCK', pkt => {
+    // server-database
     if (DBG) console.log(PR, sprint_message(pkt));
     const data = UDB.RequestEditLock(pkt);
     // Broadcast Lock State
@@ -102,7 +102,8 @@ UNISYS.RegisterHandlers = () => {
   /**
    * @return { templateBeingEdited: boolean, importActive: boolean, nodeOrEdgeBeingEdited: boolean }
    */
-  UNET.HandleMessage('SRV_RELEASE_EDIT_LOCK', pkt => { // server-database
+  UNET.HandleMessage('SRV_RELEASE_EDIT_LOCK', pkt => {
+    // server-database
     if (DBG) console.log(PR, sprint_message(pkt));
     const data = UDB.ReleaseEditLock(pkt);
     // Broadcast Lock State
@@ -110,15 +111,16 @@ UNISYS.RegisterHandlers = () => {
     return data;
   });
 
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// TEMPLATE EDITING
-  UNET.HandleMessage('SRV_TEMPLATE_REGENERATE_DEFAULT', pkt => { // server-database
+  UNET.HandleMessage('SRV_TEMPLATE_REGENERATE_DEFAULT', pkt => {
+    // server-database
     if (DBG) console.log(PR, sprint_message(pkt));
     return UDB.RegenerateDefaultTemplate();
   });
 
-  UNET.HandleMessage('SRV_TEMPLATESAVE', pkt => { // server-database
+  UNET.HandleMessage('SRV_TEMPLATESAVE', pkt => {
+    // server-database
     if (DBG) console.log(PR, sprint_message(pkt));
     UNET.NetCall('NET_TEMPLATE_UPDATE', pkt.data.template); // Broadcast template to other computers on the net
     return UDB.WriteTemplateTOML(pkt);
@@ -126,7 +128,7 @@ UNISYS.RegisterHandlers = () => {
 
   UNET.HandleMessage('SRV_GET_TEMPLATETOML_FILENAME', () => {
     return UDB.GetTemplateTOMLFileName();
-  })
+  });
 
   /// Update all EXISTING nodes/edges after a Template edit
   UNET.HandleMessage('SRV_DBUPDATE_ALL', function (pkt) {
@@ -242,7 +244,6 @@ UNISYS.RegisterHandlers = () => {
 UNISYS.StartNetwork = () => {
   UNET.StartNetwork();
 };
-
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
