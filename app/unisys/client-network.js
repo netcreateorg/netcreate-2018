@@ -110,7 +110,6 @@ NETWORK.Connect = function (datalink, opt) {
         // this occurs if there is not a cached page
         console.warn(WARN, 'ERROR opening command socket', event);
         throw Error('error with command socket');
-        break;
       case appCache.IDLE: /* falls-through */
       case appCache.CHECKING: /* falls-through */
       case appCache.DOWNLOADING: /* falls-through */
@@ -126,7 +125,6 @@ NETWORK.Connect = function (datalink, opt) {
       default:
         m_status = M_NOCONNECT;
         throw Error('unknown appcache status. dumping', appCache);
-        break;
     }
   });
   // handle incoming messages

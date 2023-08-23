@@ -80,13 +80,12 @@
         NOTE: Default is hand-set to 0 for now, but this should be in a / the template
     */
 
-
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import FILTER from './components/filter/FilterEnums';
-const UNISYS = require("unisys/client");
-const clone = require("rfdc")();
-const UTILS = require("./nc-utils");
+const UNISYS = require('unisys/client');
+const clone = require('rfdc')();
+const UTILS = require('./nc-utils');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -94,8 +93,8 @@ var MOD = UNISYS.NewModule(module.id);
 var UDATA = UNISYS.NewDataLink(MOD);
 
 /// APP STATE/DATA STRUCTURES /////////////////////////////////////////////////
-const PROMPTS = require("system/util/prompts");
-const NCLOGIC = require("./nc-logic");
+const PROMPTS = require('system/util/prompts');
+const NCLOGIC = require('./nc-logic');
 
 var TEMPLATE = null; // template definition for prompts
 var FILTERDEFS_RESTORE; // pristine FILTERDEFS for clearing
@@ -107,19 +106,18 @@ let RemovedNodes = []; // nodes removed via COLLAPSE filter action
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DATASET = window.NC_CONFIG.dataset || "netcreate";
+const DATASET = window.NC_CONFIG.dataset || 'netcreate';
 const TEMPLATE_URL = `templates/${DATASET}.json`;
 
 const DBG = false;
-const PR = "filter-mgr: ";
+const PR = 'filter-mgr: ';
 
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ lifecycle INITIALIZE handler
 /*/
-MOD.Hook("INITIALIZE", () => {
-
-  UDATA.OnAppStateChange("FILTERDEFS", data => {
+MOD.Hook('INITIALIZE', () => {
+  UDATA.OnAppStateChange('FILTERDEFS', data => {
     if (DBG) console.log(PR + 'OnAppStateChange: FILTERDEFS', data);
     // The filter defs have been updated, so apply the filters.
     m_UpdateFilters();
@@ -128,28 +126,28 @@ MOD.Hook("INITIALIZE", () => {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ FILTER_DEFINE is called by StringFilter when user has updated filter.
   /*/
-  UDATA.HandleMessage("FILTER_DEFINE", data => {
+  UDATA.HandleMessage('FILTER_DEFINE', data => {
     m_FilterDefine(data);
-  })
+  });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ FILTER_CLEAR is called by FiltersPanel when user clicks "Clear Filters" button
   /*/
-  UDATA.HandleMessage("FILTER_CLEAR", () => {
+  UDATA.HandleMessage('FILTER_CLEAR', () => {
     m_ClearFilters();
   });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ FILTERS_UPDATE is called by FiltersPanel switches between filters and highlights
   /*/
-  UDATA.HandleMessage("FILTERS_UPDATE", data => {
-    const FILTERDEFS = UDATA.AppState("FILTERDEFS");
+  UDATA.HandleMessage('FILTERS_UPDATE', data => {
+    const FILTERDEFS = UDATA.AppState('FILTERDEFS');
     FILTERDEFS.filterAction = data.filterAction;
     // if the Focus panel is being selected, grab update the selection so that
     // the selected node is immediately focused on (otherwise the system ignores
     // the currently selecte dnode and you have to click on it again)
     if (data.filterAction === FILTER.ACTION.FOCUS) {
-      const SELECT = UDATA.AppState("SELECTION");
+      const SELECT = UDATA.AppState('SELECTION');
       const selectedNode = SELECT.nodes ? SELECT.nodes[0] : undefined;
       if (selectedNode) {
         FILTERDEFS.focus = {
@@ -159,18 +157,18 @@ MOD.Hook("INITIALIZE", () => {
         };
       }
     }
-    UDATA.SetAppState("FILTERDEFS", FILTERDEFS);
+    UDATA.SetAppState('FILTERDEFS', FILTERDEFS);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Listen for NCDATA updates so we know to trigger change?
   /*/
-  UDATA.OnAppStateChange('NCDATA', (data) => {
+  UDATA.OnAppStateChange('NCDATA', data => {
     m_UpdateFilters();
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ Listen for TEMPLATE updates so we know to trigger change?
   /*/
-  UDATA.OnAppStateChange("TEMPLATE", data => {
+  UDATA.OnAppStateChange('TEMPLATE', data => {
     // this is critical -- graph will not draw if this is
     // not called from nc-logic.LOADASSETS
     m_ImportFilters();
@@ -180,16 +178,14 @@ MOD.Hook("INITIALIZE", () => {
   /*/ 2023-06 Interim Approach -- eventually should convert to new selection mgr
       Listen for SELECTION changes for setting Focus
   /*/
-  UDATA.OnAppStateChange("SELECTION", data => {
+  UDATA.OnAppStateChange('SELECTION', data => {
     // Only if Focus is active
-    const FILTERDEFS = UDATA.AppState("FILTERDEFS");
+    const FILTERDEFS = UDATA.AppState('FILTERDEFS');
     if (FILTERDEFS.filterAction === FILTER.ACTION.FOCUS) {
       m_SetFocus(data);
     }
   });
-
 }); // end UNISYS_INIT
-
 
 /// IMPORT FILTER DEFINITIONS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -198,7 +194,7 @@ MOD.Hook("INITIALIZE", () => {
  * Loads filters from template file
  */
 function m_ImportFilters() {
-  TEMPLATE = UDATA.AppState("TEMPLATE");
+  TEMPLATE = UDATA.AppState('TEMPLATE');
   const nodeDefs = TEMPLATE.nodeDefs;
   const edgeDefs = TEMPLATE.edgeDefs;
   NODE_DEFAULT_TRANSPARENCY = TEMPLATE.nodeDefaultTransparency;
@@ -206,14 +202,14 @@ function m_ImportFilters() {
 
   let fdefs = {
     nodes: {
-      group: "nodes", // this needs to be passed to StringFilter
-      label: "Node Filters",
+      group: 'nodes', // this needs to be passed to StringFilter
+      label: 'Node Filters',
       filters: m_ImportPrompts(nodeDefs),
       transparency: 0.2 // Default transparency form for Highlight should be 0.2, not template default which is usu 1.0
     },
     edges: {
-      group: "edges", // this needs to be passed to StringFilter
-      label: "Edge Filters",
+      group: 'edges', // this needs to be passed to StringFilter
+      label: 'Edge Filters',
       filters: m_ImportPrompts(edgeDefs),
       transparency: 0.03 // Default transparency form for Highlight should be 0.03, not template default which is usu 0.3
     },
@@ -224,7 +220,7 @@ function m_ImportFilters() {
     }
   };
 
-  UDATA.SetAppState("FILTERDEFS", fdefs);
+  UDATA.SetAppState('FILTERDEFS', fdefs);
 
   // Save off a copy for clearing the form.
   FILTERDEFS_RESTORE = clone(fdefs);
@@ -257,7 +253,8 @@ function m_ImportPrompts(prompts) {
       default:
         // edge template item "edgeIsLockedMessage" will trigger this message
         // filters will not be created for entries with no `type` defined.
-        if (DBG) console.warn(PR + `Unknown node prompt type ${prompt.type} for ${prompt}`);
+        if (DBG)
+          console.warn(PR + `Unknown node prompt type ${prompt.type} for ${prompt}`);
         break;
     }
     if (operator === undefined) continue; // don't add filter if operator is hidden
@@ -275,9 +272,9 @@ function m_ImportPrompts(prompts) {
     if (prompt.type === FILTER.TYPES.SELECT) {
       let options = [];
       prompt.options.forEach(opt => {
-        if (opt.label === "") return;
+        if (opt.label === '') return;
         options.push(opt.label);
-      })
+      });
       filter.options = options;
     }
 
@@ -289,17 +286,15 @@ function m_ImportPrompts(prompts) {
 /// UDATA HANDLERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-
 /**
  * Define an individual filter
  * @param {Object} data {group, filter}
  */
 function m_FilterDefine(data) {
-  const FILTERDEFS = UDATA.AppState("FILTERDEFS");
+  const FILTERDEFS = UDATA.AppState('FILTERDEFS');
   FILTERDEFS.filterAction = data.filterAction || FILTERDEFS.filterAction; // if 'transparency' then filterAction is not passed, so default to existing
-  if (data.group === "nodes") {
-
-    if (data.type === "transparency") {
+  if (data.group === 'nodes') {
+    if (data.type === 'transparency') {
       FILTERDEFS.nodes.transparency = data.transparency;
     } else {
       let nodeFilters = FILTERDEFS.nodes.filters;
@@ -307,9 +302,8 @@ function m_FilterDefine(data) {
       nodeFilters.splice(index, 1, data.filter);
       FILTERDEFS.nodes.filters = nodeFilters;
     }
-  } else if (data.group === "edges") {
-
-    if (data.type === "transparency") {
+  } else if (data.group === 'edges') {
+    if (data.type === 'transparency') {
       FILTERDEFS.edges.transparency = data.transparency;
     } else {
       let edgeFilters = FILTERDEFS.edges.filters;
@@ -317,12 +311,12 @@ function m_FilterDefine(data) {
       edgeFilters.splice(index, 1, data.filter);
       FILTERDEFS.edges.filters = edgeFilters;
     }
-  } else if (data.group === "focus") {
+  } else if (data.group === 'focus') {
     FILTERDEFS.focus.range = data.filter.value;
   } else {
     throw `FILTER_DEFINE called with unknown group: ${data.group}`;
   }
-  UDATA.SetAppState("FILTERDEFS", FILTERDEFS);
+  UDATA.SetAppState('FILTERDEFS', FILTERDEFS);
 }
 
 /**
@@ -330,8 +324,8 @@ function m_FilterDefine(data) {
  * @param {Object} data A UDATA pkt {defs}
  */
 function m_FiltersApply() {
-  const FILTEREDNCDATA = UDATA.AppState("NCDATA");
-  const FILTERDEFS = UDATA.AppState("FILTERDEFS");
+  const FILTEREDNCDATA = UDATA.AppState('NCDATA');
+  const FILTERDEFS = UDATA.AppState('FILTERDEFS');
 
   // skip if FILTERDEFS has not been defined yet
   if (Object.keys(FILTERDEFS).length < 1) return;
@@ -344,7 +338,7 @@ function m_FiltersApply() {
     e.sourceLabel = source ? source.label : 'deleted';
     e.targetLabel = target ? target.label : 'deleted';
     return e;
-  })
+  });
 
   m_FiltersApplyToNodes(FILTERDEFS, FILTEREDNCDATA);
   m_FiltersApplyToEdges(FILTERDEFS, FILTEREDNCDATA);
@@ -359,19 +353,18 @@ function m_FiltersApply() {
   UTILS.RecalculateAllNodeDegrees(FILTEREDNCDATA);
 
   // Update FILTEREDNCDATA
-  UDATA.SetAppState("FILTEREDNCDATA", FILTEREDNCDATA);
+  UDATA.SetAppState('FILTEREDNCDATA', FILTEREDNCDATA);
   // edge-mgr handles this call and updates VDATA, which is rendered by d3-simplenetgraph
-
 }
 
 function m_ClearFilters() {
   // Reload fdata
   const FILTERDEFS = clone(FILTERDEFS_RESTORE);
-  UDATA.SetAppState("FILTERDEFS", FILTERDEFS);
+  UDATA.SetAppState('FILTERDEFS', FILTERDEFS);
 }
 
 function m_UpdateFilterSummary() {
-  const FILTERDEFS = UDATA.AppState("FILTERDEFS");
+  const FILTERDEFS = UDATA.AppState('FILTERDEFS');
 
   // skip if FILTERDEFS has not been defined yet
   if (Object.keys(FILTERDEFS).length < 1) return;
@@ -383,8 +376,10 @@ function m_UpdateFilterSummary() {
   const nodeSummary = m_FiltersToString(FILTERDEFS.nodes.filters);
   const edgeSummary = m_FiltersToString(FILTERDEFS.edges.filters);
   let summary = '';
-  if (nodeSummary || edgeSummary) summary =
-    `${typeSummary} ${nodeSummary ? 'NODES: ' : ''}${nodeSummary} ${edgeSummary ? 'EDGES: ' : ''}${edgeSummary}`;
+  if (nodeSummary || edgeSummary)
+    summary = `${typeSummary} ${nodeSummary ? 'NODES: ' : ''}${nodeSummary} ${
+      edgeSummary ? 'EDGES: ' : ''
+    }${edgeSummary}`;
 
   UDATA.LocalCall('FILTER_SUMMARY_UPDATE', { filtersSummary: summary });
 }
@@ -395,11 +390,14 @@ function m_UpdateFilters() {
 }
 
 function m_FiltersToString(filters) {
-  let summary = ''
+  let summary = '';
   filters.forEach(filter => {
-    if ((filter.operator === undefined) ||
-      (filter.value === undefined) ||
-      (filter.value === '')) return;
+    if (
+      filter.operator === undefined ||
+      filter.value === undefined ||
+      filter.value === ''
+    )
+      return;
     summary += filter.keylabel + ' ';
     summary += m_OperatorToString(filter.operator) + ' ';
     summary += '"' + filter.value + '"; ';
@@ -416,9 +414,9 @@ function m_OperatorToString(operator) {
 
 function m_MatchString(pin, haystack, contains = true) {
   pin = NCLOGIC.EscapeRegexChars(pin.trim());
-  const regex = new RegExp(/*'^'+*/ pin, "i");
+  const regex = new RegExp(/*'^'+*/ pin, 'i');
   let matches;
-  if (pin === "") {
+  if (pin === '') {
     // empty string matches everything
     matches = true;
   } else if (contains) {
@@ -431,7 +429,7 @@ function m_MatchString(pin, haystack, contains = true) {
 
 function m_MatchNumber(operator, filterVal, objVal) {
   let matches;
-  if (filterVal === "") {
+  if (filterVal === '') {
     matches = true;
   } else {
     switch (operator) {
@@ -461,7 +459,6 @@ function m_MatchNumber(operator, filterVal, objVal) {
   return matches;
 }
 
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ NODE FILTERS
 /*/
@@ -476,7 +473,8 @@ function m_FiltersApplyToNodes(FILTERDEFS, FILTEREDNCDATA) {
   RemovedNodes = [];
 
   // if current filter is focus, calculate bacon_values
-  if (FILTERDEFS.filterAction === FILTER.ACTION.FOCUS) m_FocusPrep(FILTERDEFS, FILTEREDNCDATA);
+  if (FILTERDEFS.filterAction === FILTER.ACTION.FOCUS)
+    m_FocusPrep(FILTERDEFS, FILTEREDNCDATA);
 
   FILTEREDNCDATA.nodes = FILTEREDNCDATA.nodes.filter(node => {
     return m_NodeIsFiltered(node, FILTERDEFS);
@@ -520,7 +518,10 @@ function m_NodeIsFiltered(node, FILTERDEFS) {
     return false;
   } else if (filterAction === FILTER.ACTION.FOCUS) {
     // Remove nodes outside of range
-    if (source !== undefined && (node.bacon_value === undefined || node.bacon_value > range)) {
+    if (
+      source !== undefined &&
+      (node.bacon_value === undefined || node.bacon_value > range)
+    ) {
       RemovedNodes.push(node.id);
       return false;
     }
@@ -542,9 +543,11 @@ function m_NodeIsFiltered(node, FILTERDEFS) {
 }
 
 function m_IsNodeMatchedByFilter(node, filter) {
-  if ((filter.key === undefined) ||
-    (filter.operator === undefined) ||
-    (filter.value === undefined)) {
+  if (
+    filter.key === undefined ||
+    filter.operator === undefined ||
+    filter.value === undefined
+  ) {
     return false; // nothing to filter
   }
 
@@ -565,11 +568,10 @@ function m_IsNodeMatchedByFilter(node, filter) {
       break;
     default:
       // Else assume it's a number
-      return m_MatchNumber(filter.operator, filter.value, nodeValue)
+      return m_MatchNumber(filter.operator, filter.value, nodeValue);
       break;
   }
 }
-
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ EDGE FILTERS
@@ -580,7 +582,13 @@ function m_FiltersApplyToEdges(FILTERDEFS, FILTEREDNCDATA) {
   const { filters, transparency } = FILTERDEFS.edges;
   if (!FILTEREDNCDATA.edges) return; // no data
   FILTEREDNCDATA.edges = FILTEREDNCDATA.edges.filter(edge => {
-    return m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDNCDATA);
+    return m_EdgeIsFiltered(
+      edge,
+      filters,
+      transparency,
+      filterAction,
+      FILTEREDNCDATA
+    );
   });
 }
 
@@ -593,14 +601,14 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDNCD
     if (edge.source === undefined) return false;
     // on init, edge.source is just an id.  only with d3 processing does it
     // get transformed into a node object.  so we have to check the type.
-    const sourceId = (typeof edge.source === 'number') ? edge.source : edge.source.id;
+    const sourceId = typeof edge.source === 'number' ? edge.source : edge.source.id;
     return e.id === sourceId;
   });
   const target = FILTEREDNCDATA.nodes.find(e => {
     if (edge.target === undefined) return false;
     // on init, edge.target is just an id.  only with d3 processing does it
     // get transformed into a node object.  so we have to check the type.
-    const targetId = (typeof edge.target === 'number') ? edge.target : edge.target.id;
+    const targetId = typeof edge.target === 'number' ? edge.target : edge.target.id;
     return e.id === targetId;
   });
 
@@ -612,10 +620,10 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDNCD
   if (source === undefined || target === undefined) return false;
 
   // 2. If source or target have been removed via collapse or focus, remove the edge
-  if (RemovedNodes.includes(source.id) || RemovedNodes.includes(target.id)) return false;
+  if (RemovedNodes.includes(source.id) || RemovedNodes.includes(target.id))
+    return false;
   // 3. if source or target is transparent, then we are transparent too
-  if (source.filteredTransparency < 1.0 ||
-    target.filteredTransparency < 1.0) {
+  if (source.filteredTransparency < 1.0 || target.filteredTransparency < 1.0) {
     // regardless of filter definition...
     // ...if filterAction is FILTER
     // always hide edge if it's attached to a filtered node
@@ -672,9 +680,11 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDNCD
 }
 
 function m_IsEdgeMatchedByFilter(edge, filter) {
-  if ((filter.key === undefined) ||
-    (filter.operator === undefined) ||
-    (filter.value === undefined)) {
+  if (
+    filter.key === undefined ||
+    filter.operator === undefined ||
+    filter.value === undefined
+  ) {
     return false; // nothing to filter
   }
 
@@ -703,7 +713,7 @@ function m_IsEdgeMatchedByFilter(edge, filter) {
       break;
     default:
       // Else assume it's a number
-      return m_MatchNumber(filter.operator, filter.value, edgeValue)
+      return m_MatchNumber(filter.operator, filter.value, edgeValue);
       break;
   }
 }
@@ -727,10 +737,9 @@ function m_FindConnectedNodeIds(puredata, nodeId) {
   puredata.edges.forEach(edge => {
     if (edge.source === nodeId) returnMatches.set(edge.target, nodeId); // nodeId in returnMatches is not necessary
     if (edge.target === nodeId) returnMatches.set(edge.source, nodeId);
-  })
+  });
   return returnMatches;
 }
-
 
 /**
  * Recursively walks down the network starting from the sourceNodes
@@ -758,7 +767,8 @@ function m_SetBaconValue(bacon_value, max_bacon_value, puredata, sourceNodes) {
     });
 
     // recursive call
-    if (newNodes.length > 0 && bacon_value + 1 <= max_bacon_value) m_SetBaconValue(bacon_value + 1, max_bacon_value, puredata, newNodes);
+    if (newNodes.length > 0 && bacon_value + 1 <= max_bacon_value)
+      m_SetBaconValue(bacon_value + 1, max_bacon_value, puredata, newNodes);
   });
 }
 
@@ -777,7 +787,7 @@ function m_FocusPrep(FILTERDEFS, puredata) {
   puredata.nodes = puredata.nodes.map(node => {
     node.bacon_value = undefined;
     return node;
-  })
+  });
   if (range < 1) {
     return; // show all if range=0
   }
@@ -798,13 +808,13 @@ function m_SetFocus(data) {
   const selectedNodeLabel = selectedNode ? selectedNode.label : '';
 
   // Set FILTERDEFS
-  const FILTERDEFS = UDATA.AppState("FILTERDEFS");
+  const FILTERDEFS = UDATA.AppState('FILTERDEFS');
   FILTERDEFS.focus = {
     source: selectedNodeId,
     sourceLabel: selectedNodeLabel,
     range: FILTERDEFS.focus.range
   };
-  UDATA.SetAppState("FILTERDEFS", FILTERDEFS);
+  UDATA.SetAppState('FILTERDEFS', FILTERDEFS);
 
   // Actual filtering is done by m_FiltersApply call after FILTERDEFS change
 }

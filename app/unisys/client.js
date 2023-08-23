@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger */
 if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
@@ -123,40 +124,34 @@ UNISYS.InScope = module_id => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: application startup
 /*/
-UNISYS.EnterApp = () => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      await LIFECYCLE.Execute('TEST_CONF'); // TESTCONFIG hook
-      await LIFECYCLE.Execute('INITIALIZE'); // INITIALIZE hook
-      await LIFECYCLE.Execute('LOADASSETS'); // LOADASSETS hook
-      await LIFECYCLE.Execute('CONFIGURE'); // CONFIGURE support modules
-      resolve();
-    } catch (e) {
-      console.error(
-        'EnterApp() Lifecycle Error. Check phase execution order effect on data validity.\n',
-        e
-      );
-      debugger;
-    }
-  });
+UNISYS.EnterApp = async () => {
+  try {
+    await LIFECYCLE.Execute('TEST_CONF'); // TESTCONFIG hook
+    await LIFECYCLE.Execute('INITIALIZE'); // INITIALIZE hook
+    await LIFECYCLE.Execute('LOADASSETS'); // LOADASSETS hook
+    await LIFECYCLE.Execute('CONFIGURE'); // CONFIGURE support modules
+  } catch (e) {
+    console.error(
+      'EnterApp() Lifecycle Error. Check phase execution order effect on data validity.\n',
+      e
+    );
+    debugger;
+  }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: call this when the view system's DOM has stabilized and is ready
     for manipulation by other code
 /*/
-UNISYS.SetupDOM = () => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      await LIFECYCLE.Execute('DOM_READY'); // GUI layout has finished composing
-      resolve();
-    } catch (e) {
-      console.error(
-        'SetupDOM() Lifecycle Error. Check phase execution order effect on data validity.\n',
-        e
-      );
-      debugger;
-    }
-  });
+UNISYS.SetupDOM = async () => {
+  try {
+    await LIFECYCLE.Execute('DOM_READY'); // GUI layout has finished composing
+  } catch (e) {
+    console.error(
+      'SetupDOM() Lifecycle Error. Check phase execution order effect on data validity.\n',
+      e
+    );
+    debugger;
+  }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: network startup
@@ -177,96 +172,74 @@ UNISYS.JoinNet = () => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: configure system before run
 /*/
-UNISYS.SetupRun = () => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      await LIFECYCLE.Execute('RESET'); // RESET runtime datastructures
-      await LIFECYCLE.Execute('START'); // START running
-      await LIFECYCLE.Execute('APP_READY'); // tell network APP_READY
-      await LIFECYCLE.Execute('RUN'); // tell network APP_READY
-      resolve();
-    } catch (e) {
-      console.error(
-        'SetupRun() Lifecycle Error. Check phase execution order effect on data validity.\n',
-        e
-      );
-      debugger;
-    }
-  });
+UNISYS.SetupRun = async () => {
+  try {
+    await LIFECYCLE.Execute('RESET'); // RESET runtime datastructures
+    await LIFECYCLE.Execute('START'); // START running
+    await LIFECYCLE.Execute('APP_READY'); // tell network APP_READY
+    await LIFECYCLE.Execute('RUN'); // tell network APP_READY
+  } catch (e) {
+    console.error(
+      'SetupRun() Lifecycle Error. Check phase execution order effect on data validity.\n',
+      e
+    );
+    debugger;
+  }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: handle periodic updates for a simulation-driven timestep
 /*/
-UNISYS.Run = () => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      await LIFECYCLE.Execute('UPDATE');
-      resolve();
-    } catch (e) {
-      console.error(e);
-    }
-  });
+UNISYS.Run = async () => {
+  r;
+  try {
+    await LIFECYCLE.Execute('UPDATE');
+  } catch (e) {
+    console.error(e);
+  }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: do the Shutdown lifecycle
     NOTE ASYNC ARROW FUNCTION (necessary?)
 /*/
-UNISYS.BeforePause = () => {
-  return new Promise(async (resolve, reject) => {
-    await LIFECYCLE.Execute('PREPAUSE');
-    resolve();
-  });
+UNISYS.BeforePause = async () => {
+  await LIFECYCLE.Execute('PREPAUSE');
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: do the Shutdown lifecycle
     NOTE ASYNC ARROW FUNCTION (necessary?)
 /*/
-UNISYS.Paused = () => {
-  return new Promise(async (resolve, reject) => {
-    await LIFECYCLE.Execute('PAUSE');
-    resolve();
-  });
+UNISYS.Paused = async () => {
+  await LIFECYCLE.Execute('PAUSE');
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: do the Shutdown lifecycle
     NOTE ASYNC ARROW FUNCTION (necessary?)
 /*/
-UNISYS.PostPause = () => {
-  return new Promise(async (resolve, reject) => {
-    await LIFECYCLE.Execute('POSTPAUSE');
-    resolve();
-  });
+UNISYS.PostPause = async () => {
+  await LIFECYCLE.Execute('POSTPAUSE');
+  resolve();
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: do the Shutdown lifecycle
     NOTE ASYNC ARROW FUNCTION (necessary?)
 /*/
-UNISYS.CleanupRun = () => {
-  return new Promise(async (resolve, reject) => {
-    await LIFECYCLE.Execute('STOP');
-    resolve();
-  });
+UNISYS.CleanupRun = async () => {
+  await LIFECYCLE.Execute('STOP');
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: application offline
     NOTE ASYNC ARROW FUNCTION (necessary?)
 /*/
-UNISYS.ServerDisconnect = () => {
-  return new Promise(async (resolve, reject) => {
-    await LIFECYCLE.Execute('DISCONNECT');
-    resolve();
-  });
+UNISYS.ServerDisconnect = async () => {
+  await LIFECYCLE.Execute('DISCONNECT');
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ API: application shutdown
     NOTE ASYNC ARROW FUNCTION (necessary?)
 /*/
-UNISYS.ExitApp = () => {
-  return new Promise(async (resolve, reject) => {
-    await LIFECYCLE.Execute('UNLOADASSETS');
-    await LIFECYCLE.Execute('SHUTDOWN');
-    resolve();
-  });
+UNISYS.ExitApp = async () => {
+  await LIFECYCLE.Execute('UNLOADASSETS');
+  await LIFECYCLE.Execute('SHUTDOWN');
 };
 
 /// NETWORK INFORMATION ///////////////////////////////////////////////////////

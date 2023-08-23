@@ -45,36 +45,6 @@ var REFLECT = {};
   throw Error(
     `REFLECT.InspectModule() needs to be rewritten for brunch-style modules.`
   );
-  var rm = require.s.contexts._.defined;
-  var mlist = [];
-  var base = '1401/';
-  if (str === undefined) str = base;
-  str = typeof str === 'string' ? str : base;
-
-  Object.keys(rm).forEach(function (key) {
-    var name = key.toString();
-    if (name.indexOf(str) >= 0) {
-      mlist.push(key);
-    }
-  });
-
-  var out = '\n';
-  for (var i = 0; i < mlist.length; i++) {
-    var objName = mlist[i];
-    out += objName + '\n';
-    if (str !== base) {
-      out += '-----\n';
-      var mod = rm[objName];
-      out += m_DumpObj(mod);
-      out += '\n';
-    }
-  }
-  if (mlist.length) {
-    console.log(out);
-    return mlist.length + ' modules listed';
-  } else {
-    return 'module ' + str.bracket() + ' not found';
-  }
 };
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ InspectObject() accepts an object and a label, and prints a list of

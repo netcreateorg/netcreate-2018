@@ -44,7 +44,7 @@ let m_passed = [];
     return true;
   }
   if (typeof testname !== 'string') throw 'arg1 must be a testname';
-  if (!TESTS.hasOwnProperty(testname)) throw `"${testname}" is not a valid testname`;
+  if (!TESTS[testname]) throw `"${testname}" is not a valid testname`;
   if (DBG) console.log(PR, 'TM', testname, flag || '');
   if (flag === undefined) {
     if (!TEST_GO) console.error(`${PR} Test Switch read before testing started`);
@@ -87,7 +87,7 @@ TM.MetaString = function () {
   m_InitShell();
   // initialize tests
   if (DBG) console.log(`${PR} %cPass %c${subtest}`, 'color:green', 'color:black');
-  if (PASSED.hasOwnProperty(subtest)) {
+  if (PASSED[subtest]) {
     if (PASSED[subtest]) ++PASSED[subtest];
     else PASSED[subtest] = 1;
   } else {
@@ -99,7 +99,7 @@ TM.MetaString = function () {
 /*/ TM.Fail = function (subtest) {
   m_InitShell();
   if (DBG) console.error(`${PR} %cFail ${subtest}`, 'color:red;font-weight:bold');
-  if (PASSED.hasOwnProperty(subtest)) {
+  if (PASSED[subtest]) {
     // 'null' for 'condition succeed' tests
     // '0' for 'no error detected' tests
     let flag = PASSED[subtest];
@@ -131,7 +131,7 @@ TM.MetaString = function () {
   if (DBG) console.log(PR, 'Passed');
   let passed = true;
   args.forEach(subtest => {
-    if (!PASSED.hasOwnProperty(subtest)) throw `"${subtest}" is not valid subtest`;
+    if (!PASSED[subtest]) throw `"${subtest}" is not valid subtest`;
     passed = passed && PASSED[subtest];
   });
   return passed;

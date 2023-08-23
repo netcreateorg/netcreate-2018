@@ -1,3 +1,5 @@
+/* eslint-disable no-debugger */
+/* eslint-disable no-alert */
 if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
@@ -15,7 +17,7 @@ const REFLECT = require('system/util/reflection');
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let UnisysComponent = class extends React.Component {
+class UnisysComponent extends React.Component {
   constructor() {
     super();
     this.UMODULE = new UMODULE(module.id);
@@ -140,7 +142,7 @@ let UnisysComponent = class extends React.Component {
   Hook(p, f) {
     f_unsupported('is not available for UNISYS.Component');
   }
-}; // UnisysComponent
+} // UnisysComponent
 
 function f_deprecated(repl) {
   let out = `${REFLECT.FunctionName(2)} is deprecated.`;
