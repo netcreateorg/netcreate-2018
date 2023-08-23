@@ -26,10 +26,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UNISYS = require("unisys/client");
+const UNISYS = require('unisys/client');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,7 +38,7 @@ var UDATA = UNISYS.NewDataLink(MOD);
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
-const PR = "ui-mgr: ";
+const PR = 'ui-mgr: ';
 
 // /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 // /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -51,7 +50,6 @@ const PR = "ui-mgr: ";
 //   UDATA.HandleMessage('TABLE_HILITE_NODE', m_TableHiliteNode);
 // }); // end UNISYS_INIT
 
-
 // /// MODULE METHODS ////////////////////////////////////////////////////////////
 // /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // function m_UserHighlightNode(data) {
@@ -60,7 +58,6 @@ const PR = "ui-mgr: ";
 //   HILITE.userHighlightNodeId = data.nodeId;
 //   UDATA.SetAppState('HILITE', HILITE);
 // }
-
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

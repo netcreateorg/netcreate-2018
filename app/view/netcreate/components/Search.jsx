@@ -27,62 +27,62 @@ var DBG = false;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const React          = require('react');
-const ReactStrap     = require('reactstrap');
-const { Col,
-        FormGroup,
-        Label }      = ReactStrap;
-const AutoComplete   = require('./AutoComplete');
+const React = require('react');
+const ReactStrap = require('reactstrap');
+const { Col, FormGroup, Label } = ReactStrap;
+const AutoComplete = require('./AutoComplete');
 
-const UNISYS         = require('unisys/client');
+const UNISYS = require('unisys/client');
 
-const thisIdentifier = 'search';   // SELECTION identifier
+const thisIdentifier = 'search'; // SELECTION identifier
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
 class Search extends UNISYS.Component {
-
-    constructor (props) {
-      super(props);
-      this.state = {
-        searchString:  ''
-      };
-      this.OnStart(()=>{
-        // always wrap UNISYS calls in a lifescycle hook otherwise you may try to execute a call
-        // before it has been declared in another module
-        if (DBG) console.log('Search.OnStart: Setting active autocomplete id to',thisIdentifier);
-        this.AppCall('AUTOCOMPLETE_SELECT',{id:thisIdentifier, value:this.state.searchString});
+  constructor(props) {
+    super(props);
+    this.state = {
+      searchString: ''
+    };
+    this.OnStart(() => {
+      // always wrap UNISYS calls in a lifescycle hook otherwise you may try to execute a call
+      // before it has been declared in another module
+      if (DBG)
+        console.log(
+          'Search.OnStart: Setting active autocomplete id to',
+          thisIdentifier
+        );
+      this.AppCall('AUTOCOMPLETE_SELECT', {
+        id: thisIdentifier,
+        value: this.state.searchString
       });
-    } // constructor
+    });
+  } // constructor
 
+  /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-
-/// UI EVENT HANDLERS /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// REACT LIFECYCLE ///////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ componentWillMount () {
-    }
-/*/ REACT calls this to receive the component layout and data sources
-/*/ render () {
-      return (
-        <FormGroup row>
-          <Col>
-            <AutoComplete
-              identifier={thisIdentifier}
-              disabledValue={this.state.searchString}
-              inactiveMode={'disabled'}
-            />
-            <Label className="small text-muted">Type to search or add a node:</Label>
-          </Col>
-        </FormGroup>
-      )
-    }
+  /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/
+/*/ componentWillMount() {}
+  /*/ REACT calls this to receive the component layout and data sources
+/*/ render() {
+    return (
+      <FormGroup row>
+        <Col>
+          <AutoComplete
+            identifier={thisIdentifier}
+            disabledValue={this.state.searchString}
+            inactiveMode={'disabled'}
+          />
+          <Label className="small text-muted">Type to search or add a node:</Label>
+        </Col>
+      </FormGroup>
+    );
+  }
 } // class Search
-
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

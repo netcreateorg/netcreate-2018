@@ -7,7 +7,6 @@
 
  */
 
-
 import MDReactComponent from 'markdown-react-js';
 const mdplugins = {
   emoji: require('markdown-it-emoji')
@@ -15,7 +14,6 @@ const mdplugins = {
 
 const React = require('react');
 const UNISYS = require('unisys/client');
-
 
 class MarkdownNote extends UNISYS.Component {
   constructor() {
@@ -30,7 +28,7 @@ class MarkdownNote extends UNISYS.Component {
     return <Tag {...props}>{children}</Tag>;
   }
 
-  shouldComponentUpdate(np,ns) {
+  shouldComponentUpdate(np, ns) {
     let bReturn = true;
     if (this.text === np.text) bReturn = false;
     else this.text = np.text;
@@ -48,7 +46,6 @@ class MarkdownNote extends UNISYS.Component {
       />
     );
   }
-
 }
 
 module.exports = MarkdownNote;

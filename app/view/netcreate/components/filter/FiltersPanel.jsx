@@ -210,7 +210,9 @@ class FiltersPanel extends UNISYS.Component {
         >
           <div>{FilterControlPanel}</div>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-evenly', padding: '5px' }}>
+        <div
+          style={{ display: 'flex', justifyContent: 'space-evenly', padding: '5px' }}
+        >
           <Button size="sm" onClick={this.OnClearBtnClick}>
             Clear Filters
           </Button>

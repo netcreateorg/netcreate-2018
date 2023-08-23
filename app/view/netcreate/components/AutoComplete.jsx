@@ -249,7 +249,8 @@ class AutoComplete extends UNISYS.Component {
         );
       return;
     }
-    let activeAutoCompleteId = this.AppState('ACTIVEAUTOCOMPLETE').activeAutoCompleteId;
+    let activeAutoCompleteId =
+      this.AppState('ACTIVEAUTOCOMPLETE').activeAutoCompleteId;
     if (
       this.props.identifier === activeAutoCompleteId ||
       activeAutoCompleteId === 'search'
@@ -261,7 +262,11 @@ class AutoComplete extends UNISYS.Component {
       // and the search field has the current AutoComplete focus.  Otherwise the state.value
       // is never updated.
       if (DBG)
-        console.log('...AutoComplete', this.props.identifier, ': ACTIVE got SELECTION');
+        console.log(
+          '...AutoComplete',
+          this.props.identifier,
+          ': ACTIVE got SELECTION'
+        );
       let nodes = data.nodes;
       if (
         nodes !== undefined &&
@@ -289,7 +294,12 @@ class AutoComplete extends UNISYS.Component {
   /*/
   onStateChange_AUTOCOMPLETE(data) {
     if (DBG)
-      console.log('...AutoComplete', this.props.identifier, ': Got AUTOCOMPLETE', data);
+      console.log(
+        '...AutoComplete',
+        this.props.identifier,
+        ': Got AUTOCOMPLETE',
+        data
+      );
     let mode = this.state.mode;
     if (data.activeAutoCompleteId === this.props.identifier) {
       mode = MODE_ACTIVE;
@@ -342,7 +352,8 @@ class AutoComplete extends UNISYS.Component {
         suggestions: data.suggestedNodes
       });
     } else {
-      if (DBG) console.log('AutoComplete.onSuggestionsFetchRequested: No suggestions.');
+      if (DBG)
+        console.log('AutoComplete.onSuggestionsFetchRequested: No suggestions.');
     }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

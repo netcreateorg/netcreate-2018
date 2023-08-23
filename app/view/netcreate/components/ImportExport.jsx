@@ -291,8 +291,8 @@ class ImportExport extends UNISYS.Component {
         >
           <p>
             <i>
-              You cannot import data while someone is editing a node, edge, or template,
-              or in standalone view.
+              You cannot import data while someone is editing a node, edge, or
+              template, or in standalone view.
             </i>
           </p>
           <p>
@@ -396,16 +396,17 @@ class ImportExport extends UNISYS.Component {
           <label className="small text-muted">
             Unlock ALL Template, Import, Node, and Edge Editing.
             <br />
-            When someone on the network is editing a template, importing data, or editing
-            a node or edge, everyone else on the network is prevented from editing a
-            template or importing data and editing nodes and edges.
+            When someone on the network is editing a template, importing data, or
+            editing a node or edge, everyone else on the network is prevented from
+            editing a template or importing data and editing nodes and edges.
             <br />
-            ADMINS: Use this force the server to release the lock on editing if you know
-            the lock was left on in error, e.g. you know that there is no one on the
-            network actively editing a template, importing, editing a node or an edge.
+            ADMINS: Use this force the server to release the lock on editing if you
+            know the lock was left on in error, e.g. you know that there is no one on
+            the network actively editing a template, importing, editing a node or an
+            edge.
             <p>
-              <b>WARNING</b>: Use this with utmost caution! If someone is actively editing
-              or importing, you can delete their work, or even worse,{' '}
+              <b>WARNING</b>: Use this with utmost caution! If someone is actively
+              editing or importing, you can delete their work, or even worse,{' '}
               <b>corrupt the database!</b>
             </p>
           </label>

@@ -9,7 +9,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-
 import React from 'react';
 const ReactStrap = require('reactstrap');
 const { Form, FormGroup, Input, Label } = ReactStrap;
@@ -17,13 +16,9 @@ const { Form, FormGroup, Input, Label } = ReactStrap;
 const UNISYS = require('unisys/client');
 var UDATA = null;
 
-
 /// CLASS /////////////////////////////////////////////////////////////////////
 class FocusFilter extends React.Component {
-
-  constructor({
-    focusRange
-  }) {
+  constructor({ focusRange }) {
     super();
     this.OnChangeValue = this.OnChangeValue.bind(this);
     this.TriggerChangeHandler = this.TriggerChangeHandler.bind(this);
@@ -43,7 +38,7 @@ class FocusFilter extends React.Component {
     // user would not be allowed to use backspace to delete the value before
     // entering a new number.  Replacing invalid numbers with a blank value
     // feels like a  more natural way of editing.
-    const focusRange = e.target.value < 1 ? "" : e.target.value;
+    const focusRange = e.target.value < 1 ? '' : e.target.value;
     this.setState({ focusRange }, this.TriggerChangeHandler);
   }
 
@@ -51,12 +46,13 @@ class FocusFilter extends React.Component {
     // even though we allow "" in the field, we always define the range to be 1
     // so that something will show
     const focusRange = this.state.focusRange < 1 ? 1 : this.state.focusRange;
-    if (UDATA) UDATA.LocalCall('FILTER_DEFINE', {
-      group: "focus",
-      filter: {
-        value: focusRange
-      }
-    }); // set a SINGLE filter
+    if (UDATA)
+      UDATA.LocalCall('FILTER_DEFINE', {
+        group: 'focus',
+        filter: {
+          value: focusRange
+        }
+      }); // set a SINGLE filter
   }
 
   OnSubmit(e) {
@@ -69,18 +65,33 @@ class FocusFilter extends React.Component {
     const { focusSourceLabel } = this.props;
     const { focusRange } = this.state;
     return (
-      <div className="filter-group" style={{margin:'5px 5px 5px 0',padding:'10px',backgroundColor:'rgba(0,0,0,0)'}}>
+      <div
+        className="filter-group"
+        style={{
+          margin: '5px 5px 5px 0',
+          padding: '10px',
+          backgroundColor: 'rgba(0,0,0,0)'
+        }}
+      >
         <Form inline className="filter-item" onSubmit={this.OnSubmit}>
           {/* FormGroup needs to unset flexFlow or fields will overflow
               https://getbootstrap.com/docs/4.5/utilities/flex/
           */}
           <FormGroup className="flex-nowrap">
-            <Label size="sm" className="small text-muted">Selected Node: {focusSourceLabel}</Label><br/>
+            <Label size="sm" className="small text-muted">
+              Selected Node: {focusSourceLabel}
+            </Label>
+            <br />
           </FormGroup>
           <FormGroup className="flex-nowrap">
-            <Label size="sm" className="small text-muted">Range <i>(&gt;0)</i>:&nbsp;</Label>
-            <Input type="number" min="1"
-              style={{ maxWidth: '12em', height: '1.5em', padding: '2px' }} bsSize="sm"
+            <Label size="sm" className="small text-muted">
+              Range <i>(&gt;0)</i>:&nbsp;
+            </Label>
+            <Input
+              type="number"
+              min="1"
+              style={{ maxWidth: '12em', height: '1.5em', padding: '2px' }}
+              bsSize="sm"
               onChange={this.OnChangeValue}
               value={focusRange}
             />

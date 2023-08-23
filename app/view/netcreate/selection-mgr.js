@@ -27,10 +27,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UNISYS = require("unisys/client");
+const UNISYS = require('unisys/client');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -40,14 +39,14 @@ var UDATA = UNISYS.NewDataLink(MOD);
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
-const PR = "selection-mgr: ";
+const PR = 'selection-mgr: ';
 
 const SELECTION_MODE = {
   NORMAL: 'normal', // graph is selectable
   EDGE_EDIT: 'edge_edit', // edge is being edited
   // NODE_EDIT is not necessary b/c the transparent screen prevents clicks
   SOURCETARGET: 'sourcetarget' // waiting for a source or target
-}
+};
 
 /// PRIVATE VARS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -57,7 +56,7 @@ let m_SelectionMode = SELECTION_MODE.NORMAL; // default
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ lifecycle INITIALIZE handler
 /*/
-MOD.Hook("INITIALIZE", () => {
+MOD.Hook('INITIALIZE', () => {
   UDATA.HandleMessage('SELECTMGR_SET_MODE', m_SetMode);
   UDATA.HandleMessage('D3_SELECT_NODE', m_D3SelectNode);
   UDATA.HandleMessage('SELECTMGR_SELECT_SECONDARY', m_SelectSecondary);
@@ -65,7 +64,6 @@ MOD.Hook("INITIALIZE", () => {
   // NODETABLE_SELECT_NODE
   // AUTOSUGGEST_SELECT_NODE?
 }); // end UNISYS_INIT
-
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -96,11 +94,12 @@ function m_D3SelectNode(data) {
     m_SendSelectionUpdate(node);
   } else if (m_SelectionMode === SELECTION_MODE.EDGE_EDIT) {
     // ignore selection during EDGE_EDIT if SOURCE/TARGET has not been selected yet
-    if (DBG) console.log(PR, 'm_D3SelectNode: ignoring selection during edge edit mode')
+    if (DBG)
+      console.log(PR, 'm_D3SelectNode: ignoring selection during edge edit mode');
   } else if (m_SelectionMode === SELECTION_MODE.SOURCETARGET) {
     m_SendSourceTargetSelectionUpdate(node);
   } else {
-    throw `Unknown SELECTION Mode ${m_SelectionMode}`
+    throw `Unknown SELECTION Mode ${m_SelectionMode}`;
   }
 }
 

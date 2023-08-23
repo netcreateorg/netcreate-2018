@@ -73,11 +73,11 @@ const PR = 'importexport-mgr: ';
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
-const UNISYS = require("unisys/client");
-const DATASTORE = require("system/datastore");
-const TOML = require("@iarna/toml");
-const clone = require("rfdc")();
-const UTILS = require("./nc-utils");
+const UNISYS = require('unisys/client');
+const DATASTORE = require('system/datastore');
+const TOML = require('@iarna/toml');
+const clone = require('rfdc')();
+const UTILS = require('./nc-utils');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -88,7 +88,7 @@ var UDATA = UNISYS.NewDataLink(MOD);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// For CSV Importing
 /// * new id keyword
-const NEW_ID_KEYWORD = "new"; // use id "new" to add a new record during import
+const NEW_ID_KEYWORD = 'new'; // use id "new" to add a new record during import
 /// We need to match:
 /// * To split lines, we need to split on LF that is NOT wrapped in quotes
 const REGEXMatchLFNotInQuotes = /\n(?=(?:[^"]*"[^"]*")*[^"]*$)/;
@@ -192,7 +192,7 @@ function m_renderNodeValues(node, keys) {
       return;
     }
     // -- Else, data missing/not defined, add empty string
-    RESULT.push("");
+    RESULT.push('');
   });
   return RESULT;
 }
@@ -266,8 +266,8 @@ function m_renderEdgeValues(edge, keys) {
       return;
     }
     // -- Else, data missing/not defined, add empty string
-    RESULT.push("");
-  })
+    RESULT.push('');
+  });
   return RESULT;
 }
 
@@ -287,7 +287,6 @@ function m_GenerateEdgesArray(edges, edgekeys) {
   edges.forEach(e => edgeArr.push(m_renderEdgeValues(e, edgekeys)));
   return edgeArr;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 /// EXPORT METHODS ////////////////////////////////////////////////////////////
@@ -337,24 +336,23 @@ MOD.ExportNodes = () => {
   nodesArr.unshift(nodeHeaders); // add headers
   ///    2.1.4 Expand Nodes to CSV
   const commaDelimitedNodes = nodesArr.map(n => n.join(','));
-  EXPORT += commaDelimitedNodes.join('\n')
-
+  EXPORT += commaDelimitedNodes.join('\n');
 
   /// 3. Save to File
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // const encodedURI = encodeURI(EXPORT);
   const link = document.createElement('a');
-  const blob = new Blob(["\ufeff", EXPORT]);
+  const blob = new Blob(['\ufeff', EXPORT]);
   const url = URL.createObjectURL(blob);
   link.href = url;
-  const DATASET = window.NC_CONFIG.dataset || "netcreate";
+  const DATASET = window.NC_CONFIG.dataset || 'netcreate';
   link.download = `${DATASET}_nodes.csv`;
   // link.setAttribute('href', encodedURI);
   // link.setAttribute('download', 'netcreate_export.csv');
   document.body.appendChild(link); // Required for FF
   link.click();
   document.body.removeChild(link);
-}
+};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// EXPORT EDGES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -378,7 +376,6 @@ MOD.ExportEdges = () => {
   const edgekeys = Object.keys(TEMPLATE.edgeDefs).filter(k => {
     return TEMPLATE.edgeDefs[k].hidden ? false : k;
   });
-
 
   // const edgesArr = m_GenerateEdgesArray(edges, edgekeys);
 
@@ -411,17 +408,17 @@ MOD.ExportEdges = () => {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // const encodedURI = encodeURI(EXPORT);
   const link = document.createElement('a');
-  const blob = new Blob(["\ufeff", EXPORT]);
+  const blob = new Blob(['\ufeff', EXPORT]);
   const url = URL.createObjectURL(blob);
   link.href = url;
-  const DATASET = window.NC_CONFIG.dataset || "netcreate";
+  const DATASET = window.NC_CONFIG.dataset || 'netcreate';
   link.download = `${DATASET}_edges.csv`;
   // link.setAttribute('href', encodedURI);
   // link.setAttribute('download', 'netcreate_export.csv');
   document.body.appendChild(link); // Required for FF
   link.click();
   document.body.removeChild(link);
-}
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 /// IMPORT METHODS ////////////////////////////////////////////////////////////
@@ -446,7 +443,7 @@ MOD.ResetImportData = () => {
   nodesToImport = [];
   edgesToImport = [];
   IMPORT_NCDATA = clone(UDATA.AppState('NCDATA'));
-}
+};
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// IMPORT HELPERS ////////////////////////////////////////////////////////////
@@ -458,9 +455,15 @@ MOD.ResetImportData = () => {
 function m_hasValidSourceTarget(edge, NCDATA, edgeImportErrors, row) {
   const source = NCDATA.nodes.find(n => n.id === Number(edge.source));
   const target = NCDATA.nodes.find(n => n.id === Number(edge.target));
-  if (source === undefined) edgeImportErrors.push(`Edge id ${edge.id}, row ${row} references unknown source node id ${edge.source}`);
-  if (target === undefined) edgeImportErrors.push(`Edge id ${edge.id}, row ${row} references unknown target node id ${edge.target}`);
-  return (source && target);
+  if (source === undefined)
+    edgeImportErrors.push(
+      `Edge id ${edge.id}, row ${row} references unknown source node id ${edge.source}`
+    );
+  if (target === undefined)
+    edgeImportErrors.push(
+      `Edge id ${edge.id}, row ${row} references unknown target node id ${edge.target}`
+    );
+  return source && target;
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -474,7 +477,7 @@ MOD.ResetNodeImportData = () => {
   nodeFile = undefined;
   nodesToImport = [];
   if (IMPORT_NCDATA) IMPORT_NCDATA.nodes = clone(UDATA.AppState('NCDATA').nodes);
-}
+};
 /**
  * Called by IMportExport if the user Cancels selecting a node file
  */
@@ -482,7 +485,7 @@ MOD.ResetEdgeImportData = () => {
   edgeFile = undefined;
   edgesToImport = [];
   if (IMPORT_NCDATA) IMPORT_NCDATA.edges = clone(UDATA.AppState('NCDATA').edges);
-}
+};
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NODE IMPORT ///////////////////////////////////////////////////////////////
@@ -511,9 +514,7 @@ async function m_NodefileCheckHeaders(data) {
   const lines = result.split(REGEXMatchLFNotInQuotes);
   // First line should list the headers
   // Remove headers, so 'lines' is just data
-  const headers = lines.shift()
-    .trim()
-    .split(',');
+  const headers = lines.shift().trim().split(',');
   // get keys
   const nodeKeys = m_flattenKeys(NODEKEYS);
   const fileKeys = m_flattenKeys(headers);
@@ -532,7 +533,7 @@ async function m_NodefileCheckHeaders(data) {
         <div>Missing keys: {missingKeys.join(', ')}</div>
         <div>Keys found in file: {fileKeys.join(', ')}</div>
       </div>
-    )
+    );
   }
   return { isValid, messageJsx, headers, lines };
 }
@@ -547,7 +548,9 @@ function m_NodefileLoadNodes(headers, lines) {
   // essentially a reverse look up map
   const TEMPLATE = UDATA.AppState('TEMPLATE');
   const INTERNAL_FIELDS_MAP = new Map();
-  Object.entries(TEMPLATE.nodeDefs).map(e => INTERNAL_FIELDS_MAP.set(e[1].exportLabel, e[0]));
+  Object.entries(TEMPLATE.nodeDefs).map(e =>
+    INTERNAL_FIELDS_MAP.set(e[1].exportLabel, e[0])
+  );
 
   // convert nodefileData to JSON
   // Load JSON
@@ -558,7 +561,7 @@ function m_NodefileLoadNodes(headers, lines) {
     const subcategories = new Map();
     const importFields = l.split(REGEXMatchCommasNotInQuotes); // ?=" needed to match commas in strings
     importFields.forEach((f, index) => {
-      const field = f.replace(/^"/, "").replace(/"$/, ""); // strip start and end quotes from strings
+      const field = f.replace(/^"/, '').replace(/"$/, ''); // strip start and end quotes from strings
       const key = headers[index];
       const keysplit = String(key).split(':');
       // Subcategory and subkey are DEPRECATED
@@ -566,7 +569,7 @@ function m_NodefileLoadNodes(headers, lines) {
       const subkey = keysplit[1]; // e.g. 'Node_type'
       if (subkey) {
         isValid = false;
-        messageJsx = (<div color="red">`subkey ${subkey} is deprecated!`</div>)
+        messageJsx = <div color="red">`subkey ${subkey} is deprecated!`</div>;
         console.error(PR, `subkey ${subkey} is deprecated!`);
         // DEPRECATED: Review if we decide to use this again.
         // // Using a sub category?  e.g. 'attributes:Node_type'
@@ -578,7 +581,14 @@ function m_NodefileLoadNodes(headers, lines) {
       } else {
         // not using a subcategory, just a regular field
         const exportLabel = headers[index];
-        if (exportLabel === undefined) console.error(PR, 'could not find exportLabel for index', index, 'in', headers);
+        if (exportLabel === undefined)
+          console.error(
+            PR,
+            'could not find exportLabel for index',
+            index,
+            'in',
+            headers
+          );
         const internalLabel = INTERNAL_FIELDS_MAP.get(exportLabel);
         // special handling for internal fields
         if (['id'].includes(internalLabel)) {
@@ -594,7 +604,7 @@ function m_NodefileLoadNodes(headers, lines) {
           node[internalLabel] = m_decode(field); // convert double quotes
         }
       }
-    })
+    });
     // DEPRECATED
     // collapse 'attributes' and 'meta' into objects
     // subcategories.forEach((val, key) => {
@@ -630,12 +640,18 @@ function m_NodefileValidateNodes(nodes) {
       if (isNaN(n.id)) {
         // A1.2 Invalid node id, usually a string
         isValid = false;
-        nodeImportErrors.push(`Node in row ${row} does not have a valid id.  Found: "${n.id}".`);
+        nodeImportErrors.push(
+          `Node in row ${row} does not have a valid id.  Found: "${n.id}".`
+        );
       } else {
-        const existingNodeIdx = IMPORT_NCDATA.nodes.findIndex(node => node.id === n.id);
+        const existingNodeIdx = IMPORT_NCDATA.nodes.findIndex(
+          node => node.id === n.id
+        );
         if (existingNodeIdx > -1) {
           // A1.3 Replace existing node
-          importMsgs.push(`Existing node id ${n.id} "${IMPORT_NCDATA.nodes[existingNodeIdx].label}" will be replaced by node "${n.label}" in row ${row} with matching id.`);
+          importMsgs.push(
+            `Existing node id ${n.id} "${IMPORT_NCDATA.nodes[existingNodeIdx].label}" will be replaced by node "${n.label}" in row ${row} with matching id.`
+          );
           IMPORT_NCDATA.nodes.splice(existingNodeIdx, 1, n);
           nodesReplaced++;
         } else {
@@ -649,14 +665,22 @@ function m_NodefileValidateNodes(nodes) {
   });
   if (isValid) {
     messageJsx = (
-      <ul>{importMsgs.map((e, i) => (<li key={i}>{e}</li>))}</ul>
+      <ul>
+        {importMsgs.map((e, i) => (
+          <li key={i}>{e}</li>
+        ))}
+      </ul>
     );
   } else {
     messageJsx = (
-      <ul style={{ color: 'red' }}>{nodeImportErrors.map((e, i) => (<li key={i}>{e}</li>))}</ul>
-    )
+      <ul style={{ color: 'red' }}>
+        {nodeImportErrors.map((e, i) => (
+          <li key={i}>{e}</li>
+        ))}
+      </ul>
+    );
   }
-  return { isValid, messageJsx, nodes, IMPORT_NCDATA }
+  return { isValid, messageJsx, nodes, IMPORT_NCDATA };
 }
 /**
  * Walks down the checkers/validators one by one and aborts/returns an error message if an
@@ -670,27 +694,33 @@ function m_NodefileValidateNodes(nodes) {
  * @param {File} data.nodefile - https://developer.mozilla.org/en-US/docs/Web/API/File
  * @return { isValid:boolean, messages:[], errors:[] }
  */
-MOD.NodefileValidate = async (data) => {
+MOD.NodefileValidate = async data => {
   // No nodefile passed, user probably clicked cancel
-  if (!data.nodefile) return { isValid: false }
+  if (!data.nodefile) return { isValid: false };
 
   if (!IMPORT_NCDATA) IMPORT_NCDATA = clone(UDATA.AppState('NCDATA'));
   const nodeFileName = data.nodefile.name;
 
   const headerResults = await m_NodefileCheckHeaders(data);
-  if (!headerResults.isValid) return Object.assign(headerResults, {
-    messageTitle: `Nodes import file "${nodeFileName}" will not be imported: Header Validation Failed!`
-  });
+  if (!headerResults.isValid)
+    return Object.assign(headerResults, {
+      messageTitle: `Nodes import file "${nodeFileName}" will not be imported: Header Validation Failed!`
+    });
 
-  const importResults = m_NodefileLoadNodes(headerResults.headers, headerResults.lines);
-  if (!importResults.isValid) return Object.assign(importResults, {
-    messageTitle: `Nodes import file "${nodeFileName}" will not be imported: Load File Failed!`
-  });
+  const importResults = m_NodefileLoadNodes(
+    headerResults.headers,
+    headerResults.lines
+  );
+  if (!importResults.isValid)
+    return Object.assign(importResults, {
+      messageTitle: `Nodes import file "${nodeFileName}" will not be imported: Load File Failed!`
+    });
 
   const nodeResults = m_NodefileValidateNodes(importResults.nodes, IMPORT_NCDATA);
-  if (!nodeResults.isValid) return Object.assign(nodeResults, {
-    messageTitle: `Nodes import file "${nodeFileName}" will not be imported: Data Validation Failed!`
-  });
+  if (!nodeResults.isValid)
+    return Object.assign(nodeResults, {
+      messageTitle: `Nodes import file "${nodeFileName}" will not be imported: Data Validation Failed!`
+    });
 
   // set module-wide vars
   nodesToImport = nodeResults.nodes;
@@ -699,7 +729,7 @@ MOD.NodefileValidate = async (data) => {
   return Object.assign(nodeResults, {
     messageTitle: `Nodes import file "${nodeFileName}": Validated!`
   });
-}
+};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// EDGE IMPORT ///////////////////////////////////////////////////////////////
 /**
@@ -727,9 +757,7 @@ async function m_EdgefileCheckHeaders(data) {
   const lines = result.split(REGEXMatchLFNotInQuotes);
   // First line should list the headers
   // Remove headers, so 'lines' is just data
-  const headers = lines.shift()
-    .trim()
-    .split(',');
+  const headers = lines.shift().trim().split(',');
   // get keys
   const edgeKeys = m_flattenKeys(EDGEKEYS);
   const fileKeys = m_flattenKeys(headers);
@@ -748,7 +776,7 @@ async function m_EdgefileCheckHeaders(data) {
         <div>Missing keys: {missingKeys.join(', ')}</div>
         <div>Keys found in file: {fileKeys.join(', ')}</div>
       </div>
-    )
+    );
   }
   return { isValid, messageJsx, headers, lines };
 }
@@ -763,7 +791,9 @@ function m_EdgefileLoadEdges(headers, lines) {
   // essentially a reverse look up map
   const TEMPLATE = UDATA.AppState('TEMPLATE');
   const INTERNAL_FIELDS_MAP = new Map();
-  Object.entries(TEMPLATE.edgeDefs).map(e => INTERNAL_FIELDS_MAP.set(e[1].exportLabel, e[0]));
+  Object.entries(TEMPLATE.edgeDefs).map(e =>
+    INTERNAL_FIELDS_MAP.set(e[1].exportLabel, e[0])
+  );
 
   // convert nodefileData to JSON
   // Load JSON
@@ -774,7 +804,7 @@ function m_EdgefileLoadEdges(headers, lines) {
     const subcategories = new Map();
     const importFields = l.split(REGEXMatchCommasNotInQuotes); // ?=" needed to match commas in strings
     importFields.forEach((f, index) => {
-      const field = f.replace(/^"/, "").replace(/"$/, ""); // strip start and end quotes from strings
+      const field = f.replace(/^"/, '').replace(/"$/, ''); // strip start and end quotes from strings
       const key = headers[index];
       const keysplit = String(key).split(':');
       // Subcategory and subkey are DEPRECATED
@@ -782,7 +812,7 @@ function m_EdgefileLoadEdges(headers, lines) {
       const subkey = keysplit[1]; // e.g. 'Node_type'
       if (subkey) {
         isValid = false;
-        messageJsx = (<div color="red">`subkey ${subkey} is deprecated!`</div>)
+        messageJsx = <div color="red">`subkey ${subkey} is deprecated!`</div>;
         console.error(PR, `subkey ${subkey} is deprecated!`);
         // DEPRECATED: Review if we decide to use this again.
         // // Using a sub category?  e.g. 'attributes:Node_type'
@@ -795,7 +825,14 @@ function m_EdgefileLoadEdges(headers, lines) {
         // not using a subcategory, just a regular field
         // meta field?
         const exportLabel = headers[index];
-        if (exportLabel === undefined) console.error(PR, 'could not find exportLabel for index', index, 'in', headers);
+        if (exportLabel === undefined)
+          console.error(
+            PR,
+            'could not find exportLabel for index',
+            index,
+            'in',
+            headers
+          );
         const internalLabel = INTERNAL_FIELDS_MAP.get(exportLabel);
         // special handling for internal fields
         if (['id', 'source', 'target'].includes(internalLabel)) {
@@ -811,7 +848,7 @@ function m_EdgefileLoadEdges(headers, lines) {
           edge[internalLabel] = m_decode(field); // convert double quotes
         }
       }
-    })
+    });
     // DEPRECATED
     // collapse 'attributes' and 'meta' into objects
     // subcategories.forEach((val, key) => {
@@ -839,7 +876,8 @@ function m_EdgefileValidateEdges(edges) {
     e.size = 1; // Set default edge size
 
     // Make sure each edge has a valid source and target
-    if (!m_hasValidSourceTarget(e, IMPORT_NCDATA, edgeImportErrors, row)) isValid = false;
+    if (!m_hasValidSourceTarget(e, IMPORT_NCDATA, edgeImportErrors, row))
+      isValid = false;
 
     if (String(e.id).toLowerCase() === NEW_ID_KEYWORD) {
       //  A1.1 "new" edge
@@ -851,12 +889,18 @@ function m_EdgefileValidateEdges(edges) {
       if (isNaN(e.id)) {
         // A1.2 Invalid edge id, usually a string
         isValid = false;
-        edgeImportErrors.push(`Edge in row ${row} does not have a valid id.  Found: "${e.id}".`);
+        edgeImportErrors.push(
+          `Edge in row ${row} does not have a valid id.  Found: "${e.id}".`
+        );
       } else {
-        const existingEdgeIdx = IMPORT_NCDATA.edges.findIndex(edge => edge.id === e.id);
+        const existingEdgeIdx = IMPORT_NCDATA.edges.findIndex(
+          edge => edge.id === e.id
+        );
         if (existingEdgeIdx > -1) {
           // A1.3 Replace existing node
-          importMsgs.push(`Existing edge id ${e.id} will be replaced by edge in row ${row} with matching id.`);
+          importMsgs.push(
+            `Existing edge id ${e.id} will be replaced by edge in row ${row} with matching id.`
+          );
           IMPORT_NCDATA.edges.splice(existingEdgeIdx, 1, e);
           edgesReplaced++;
         } else {
@@ -870,14 +914,22 @@ function m_EdgefileValidateEdges(edges) {
   });
   if (isValid) {
     messageJsx = (
-      <ul>{importMsgs.map((e, i) => (<li key={i}>{e}</li>))}</ul>
+      <ul>
+        {importMsgs.map((e, i) => (
+          <li key={i}>{e}</li>
+        ))}
+      </ul>
     );
   } else {
     messageJsx = (
-      <ul style={{ color: 'red' }}>{edgeImportErrors.map((e, i) => (<li key={i}>{e}</li>))}</ul>
-    )
+      <ul style={{ color: 'red' }}>
+        {edgeImportErrors.map((e, i) => (
+          <li key={i}>{e}</li>
+        ))}
+      </ul>
+    );
   }
-  return { isValid, messageJsx, edges, IMPORT_NCDATA }
+  return { isValid, messageJsx, edges, IMPORT_NCDATA };
 }
 /**
  * Walks down the checkers/validators one by one and aborts/returns an error message if an
@@ -891,27 +943,33 @@ function m_EdgefileValidateEdges(edges) {
  * @param {File} data.edgefile - https://developer.mozilla.org/en-US/docs/Web/API/File
  * @return { isValid:boolean, messages:[], errors:[] }
  */
-MOD.EdgefileValidate = async (data) => {
+MOD.EdgefileValidate = async data => {
   // No edgefile passed, user probably clicked cancel
-  if (!data.edgefile) return { isValid: false }
+  if (!data.edgefile) return { isValid: false };
 
   if (!IMPORT_NCDATA) IMPORT_NCDATA = clone(UDATA.AppState('NCDATA'));
   const edgeFileName = data.edgefile.name;
 
   const headerResults = await m_EdgefileCheckHeaders(data);
-  if (!headerResults.isValid) return Object.assign(headerResults, {
-    messageTitle: `Edges import file "${edgeFileName}" will not be imported: Header Validation Failed!`
-  });
+  if (!headerResults.isValid)
+    return Object.assign(headerResults, {
+      messageTitle: `Edges import file "${edgeFileName}" will not be imported: Header Validation Failed!`
+    });
 
-  const importResults = m_EdgefileLoadEdges(headerResults.headers, headerResults.lines);
-  if (!importResults.isValid) return Object.assign(importResults, {
-    messageTitle: `Edges mport file "${edgeFileName}" will not be imported: Load File Failed!`
-  });
+  const importResults = m_EdgefileLoadEdges(
+    headerResults.headers,
+    headerResults.lines
+  );
+  if (!importResults.isValid)
+    return Object.assign(importResults, {
+      messageTitle: `Edges mport file "${edgeFileName}" will not be imported: Load File Failed!`
+    });
 
   const edgeResults = m_EdgefileValidateEdges(importResults.edges, IMPORT_NCDATA);
-  if (!edgeResults.isValid) return Object.assign(edgeResults, {
-    messageTitle: `Edges import file "${edgeFileName}" will not be imported: Data Validation Failed!`
-  });
+  if (!edgeResults.isValid)
+    return Object.assign(edgeResults, {
+      messageTitle: `Edges import file "${edgeFileName}" will not be imported: Data Validation Failed!`
+    });
 
   // set module-wide vars
   edgesToImport = edgeResults.edges; // set module-wide var
@@ -919,7 +977,7 @@ MOD.EdgefileValidate = async (data) => {
   return Object.assign(edgeResults, {
     messageTitle: `Edges import file "${edgeFileName}": Validated!`
   });
-}
+};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// MAIN IMPORT ///////////////////////////////////////////////////////////////
 /**
@@ -930,18 +988,18 @@ MOD.EdgefileValidate = async (data) => {
 MOD.Import = async () => {
   // Write to database!
   const mergeData = { nodes: nodesToImport, edges: edgesToImport };
-  await UDATA.LocalCall("DB_MERGE", mergeData).then(res => {
+  await UDATA.LocalCall('DB_MERGE', mergeData).then(res => {
     // Reload NCDATA from the DB to get new Node and Edge Ids created during the merge
-    UDATA.LocalCall("RELOAD_DB");
+    UDATA.LocalCall('RELOAD_DB');
   });
   const importedFiles = [];
   if (nodeFile) importedFiles.push(nodeFile.name);
   if (edgeFile) importedFiles.push(edgeFile.name);
   const importedFileNames = importedFiles.join(', ');
   return {
-    messageJsx: (<div>{importedFileNames} Import Completed!</div>)
-  }
-}
+    messageJsx: <div>{importedFileNames} Import Completed!</div>
+  };
+};
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

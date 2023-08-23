@@ -38,13 +38,12 @@ class FilterGroupProperties extends React.Component {
   // to have future additional properties here, so this way the flow won't change (change functions call trigger change)
   TriggerChangeHandler() {
     // for debugging
-    if (false)
-      console.log(
-        'Filter group for ' +
-          this.state.group +
-          ' setting transparency to ' +
-          this.state.transparency
-      );
+    // console.log(
+    //   'Filter group for ' +
+    //     this.state.group +
+    //     ' setting transparency to ' +
+    //     this.state.transparency
+    // );
 
     // set the transparency globally for this group (nodes or edges)
     UDATA.LocalCall('FILTER_DEFINE', {

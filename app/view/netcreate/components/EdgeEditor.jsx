@@ -683,9 +683,15 @@ class EdgeEditor extends UNISYS.Component {
       }
     } else {
       if (typeof data.edgeID !== 'number')
-        console.warn('EdgeEditor.EDGE_EDIT called with bad data.nodeID:', data.edgeID);
+        console.warn(
+          'EdgeEditor.EDGE_EDIT called with bad data.nodeID:',
+          data.edgeID
+        );
       if (isBeingEdited)
-        console.warn('EdgeEditor.EDGE_EDIT denied because isBeingEdited', isBeingEdited);
+        console.warn(
+          'EdgeEditor.EDGE_EDIT denied because isBeingEdited',
+          isBeingEdited
+        );
     }
   } // handleEdgeEdit
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -849,8 +855,11 @@ class EdgeEditor extends UNISYS.Component {
           });
         } else if (data.locked) {
           if (DBG)
-            console.log(`SERVER SAYS: lock success! you can edit Edge ${data.edgeID}`);
-          if (DBG) console.log(`SERVER SAYS: unlock the edge after successful DBUPDATE`);
+            console.log(
+              `SERVER SAYS: lock success! you can edit Edge ${data.edgeID}`
+            );
+          if (DBG)
+            console.log(`SERVER SAYS: unlock the edge after successful DBUPDATE`);
           this.setState({
             isBeingEdited: true,
             isExpanded: true,
@@ -858,10 +867,12 @@ class EdgeEditor extends UNISYS.Component {
           });
           this.Signal('EDGEEDIT_LOCK', { edgeID: this.props.edgeID });
           // When a edge is being edited, lock the Template from being edited
-          UDATA.NetCall('SRV_REQ_EDIT_LOCK', { editor: EDITORTYPE.EDGE }).then(res => {
-            const disableEdit = res.isBeingEdited;
-            this.setState({ disableEdit });
-          });
+          UDATA.NetCall('SRV_REQ_EDIT_LOCK', { editor: EDITORTYPE.EDGE }).then(
+            res => {
+              const disableEdit = res.isBeingEdited;
+              this.setState({ disableEdit });
+            }
+          );
         }
       });
     }
@@ -900,7 +911,9 @@ class EdgeEditor extends UNISYS.Component {
       hasValidSource: false,
       placeholder: this.state.sourceNode.label
     });
-    this.AppCall('AUTOCOMPLETE_SELECT', { id: 'edge' + this.props.edgeID + 'source' });
+    this.AppCall('AUTOCOMPLETE_SELECT', {
+      id: 'edge' + this.props.edgeID + 'source'
+    });
     // Whenever we set the autocomplete to source, we have to update the label
     // Clear the AutoComplete field so that onBlur does not select the same node
     this.AppCall('SOURCE_SEARCH', { searchString: '' });
@@ -914,7 +927,9 @@ class EdgeEditor extends UNISYS.Component {
       hasValidTarget: false,
       placeholder: this.state.targetNode.label
     });
-    this.AppCall('AUTOCOMPLETE_SELECT', { id: 'edge' + this.props.edgeID + 'target' });
+    this.AppCall('AUTOCOMPLETE_SELECT', {
+      id: 'edge' + this.props.edgeID + 'target'
+    });
     // Whenever we set the autocomplete to target, we have to update the label
     // Clear the AutoComplete field so that onBlur does not select the same node
     this.AppCall('SOURCE_SEARCH', { searchString: '' });
@@ -1152,7 +1167,9 @@ class EdgeEditor extends UNISYS.Component {
               <Col sm={3} style={{ hyphens: 'auto' }} className="pr-0">
                 <Label for="source" className="tooltipAnchor small text-muted">
                   {edgeDefs.source.displayLabel}
-                  <span className="tooltiptext">{this.helpText(edgeDefs.source)}</span>
+                  <span className="tooltiptext">
+                    {this.helpText(edgeDefs.source)}
+                  </span>
                 </Label>
               </Col>
               <Col sm={9}>
@@ -1213,7 +1230,9 @@ class EdgeEditor extends UNISYS.Component {
               <Col sm={3} style={{ hyphens: 'auto' }} className="pr-0">
                 <Label for="nodeLabel" className="tooltipAnchor small text-muted">
                   {edgeDefs.target.displayLabel}
-                  <span className="tooltiptext">{this.helpText(edgeDefs.target)}</span>
+                  <span className="tooltiptext">
+                    {this.helpText(edgeDefs.target)}
+                  </span>
                 </Label>
               </Col>
               <Col sm={9}>
@@ -1266,7 +1285,9 @@ class EdgeEditor extends UNISYS.Component {
               <Col sm={3} style={{ hyphens: 'auto' }} className="pr-0">
                 <Label for="category" className="tooltipAnchor small text-muted">
                   {edgeDefs.category.displayLabel}
-                  <span className="tooltiptext">{this.helpText(edgeDefs.category)}</span>
+                  <span className="tooltiptext">
+                    {this.helpText(edgeDefs.category)}
+                  </span>
                 </Label>
               </Col>
               <Col sm={9}>
@@ -1283,7 +1304,9 @@ class EdgeEditor extends UNISYS.Component {
               <Col sm={3} style={{ hyphens: 'auto' }} className="pr-0">
                 <Label for="citation" className="tooltipAnchor small text-muted">
                   {edgeDefs.citation.displayLabel}
-                  <span className="tooltiptext">{this.helpText(edgeDefs.citation)}</span>
+                  <span className="tooltiptext">
+                    {this.helpText(edgeDefs.citation)}
+                  </span>
                 </Label>
               </Col>
               <Col sm={9}>
@@ -1337,7 +1360,9 @@ class EdgeEditor extends UNISYS.Component {
               <Col sm={3} style={{ hyphens: 'auto' }} className="pr-0">
                 <Label for="weight" className="tooltipAnchor small text-muted">
                   {edgeDefs.weight.displayLabel}
-                  <span className="tooltiptext">{this.helpText(edgeDefs.weight)}</span>
+                  <span className="tooltiptext">
+                    {this.helpText(edgeDefs.weight)}
+                  </span>
                 </Label>
               </Col>
               <Col sm={9}>
@@ -1375,7 +1400,9 @@ class EdgeEditor extends UNISYS.Component {
               <Col sm={3} style={{ hyphens: 'auto' }} className="pr-0">
                 <Label for="comments" className="tooltipAnchor small text-muted">
                   {edgeDefs.comments.displayLabel}
-                  <span className="tooltiptext">{this.helpText(edgeDefs.comments)}</span>
+                  <span className="tooltiptext">
+                    {this.helpText(edgeDefs.comments)}
+                  </span>
                 </Label>
               </Col>
               <Col sm={9}>
@@ -1462,11 +1489,16 @@ class EdgeEditor extends UNISYS.Component {
               </Button>
               <div
                 hidden={
-                  this.state.isLocked || this.state.isBeingEdited || parentNodeIsLocked
+                  this.state.isLocked ||
+                  this.state.isBeingEdited ||
+                  parentNodeIsLocked
                 }
                 style={{ display: 'inline' }}
               >
-                <p hidden={!this.state.dbIsLocked} className="small text-danger warning">
+                <p
+                  hidden={!this.state.dbIsLocked}
+                  className="small text-danger warning"
+                >
                   {edgeIsLockedMessage}
                 </p>
                 <p hidden={!disableEdit} className="small text-danger warning">
@@ -1517,17 +1549,19 @@ class EdgeEditor extends UNISYS.Component {
   componentWillUnmount() {
     if (DBG) console.log('EdgeEditor.componentWillUnMount!');
     if (this.state.isBeingEdited) {
-      this.NetCall('SRV_DBUNLOCKEDGE', { edgeID: this.state.formData.id }).then(data => {
-        if (data.NOP) {
-          if (DBG) console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
-        } else if (data.unlocked) {
-          if (DBG)
-            console.log(
-              `SERVER SAYS: unlock success! you have released Edge ${data.edgeID}`
-            );
-          this.setState({ dbIsLocked: false });
+      this.NetCall('SRV_DBUNLOCKEDGE', { edgeID: this.state.formData.id }).then(
+        data => {
+          if (data.NOP) {
+            if (DBG) console.log(`SERVER SAYS: ${data.NOP} ${data.INFO}`);
+          } else if (data.unlocked) {
+            if (DBG)
+              console.log(
+                `SERVER SAYS: unlock success! you have released Edge ${data.edgeID}`
+              );
+            this.setState({ dbIsLocked: false });
+          }
         }
-      });
+      );
       // Deregister as an open editor
       this.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.EDGE });
     }

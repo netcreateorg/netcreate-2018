@@ -208,7 +208,9 @@ class NCGraph extends UNISYS.Component {
             </span>
           </div>
         </div>
-        <div style={{ position: 'absolute', right: '10px', width: '50px', zIndex: 1001 }}>
+        <div
+          style={{ position: 'absolute', right: '10px', width: '50px', zIndex: 1001 }}
+        >
           <Button
             outline
             onClick={this.onZoomIn}

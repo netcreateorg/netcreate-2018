@@ -22,11 +22,10 @@
 
 var DBG = true;
 
-
 /// UNISYS INITIALIZE REQUIRES for REACT ROOT /////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS = require('unisys/client');
-var   UDATA  = null;
+var UDATA = null;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,7 +38,6 @@ const Help = require('./Help');
 const NodeTable = require('./NodeTable');
 const EdgeTable = require('./EdgeTable');
 
-
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export a class object for consumption by brunch/require
@@ -48,18 +46,15 @@ class SaveChangesDialog extends UNISYS.Component {
     super(props);
 
     this.state = {
-      nodeDefs: this.AppState('TEMPLATE').nodeDefs,
-    }
+      nodeDefs: this.AppState('TEMPLATE').nodeDefs
+    };
 
     this.handleEdit = this.handleEdit.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
 
     /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
-
   } // constructor
-
-
 
   /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -71,9 +66,8 @@ class SaveChangesDialog extends UNISYS.Component {
     UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [nodeID] });
   }
 
-  handleCancel () {
+  handleCancel() {
     event.preventDefault();
-
   }
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
@@ -96,15 +90,17 @@ class SaveChangesDialog extends UNISYS.Component {
   /*/
   render() {
     let { nodeDefs } = this.state;
+    const Modal = props => {};
+    const ModalBody = props => {};
     return (
       <Modal>
-        <ModalBody>You've made changes to the Node.  Are you sure you want to </ModalBody>
+        <ModalBody>
+          {"You've made changes to the Node. Are you sure you want to"}
+        </ModalBody>
       </Modal>
     );
   }
-
 } // class SaveChangesDialog
-
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

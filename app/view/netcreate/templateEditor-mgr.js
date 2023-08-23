@@ -36,9 +36,9 @@ const DBG = false;
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UNISYS = require("unisys/client");
-const TOML = require("@iarna/toml");
-const DATASTORE = require("system/datastore");
+const UNISYS = require('unisys/client');
+const TOML = require('@iarna/toml');
+const DATASTORE = require('system/datastore');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,7 +47,6 @@ var UDATA = UNISYS.NewDataLink(MOD);
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -75,7 +74,7 @@ MOD.ValidateTOMLFile = async data => {
   } catch (err) {
     return { isValid: false, error: err };
   }
-}
+};
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Update TEMPLATE AppState
@@ -123,14 +122,18 @@ MOD.UpdateTemplate = (templateSnippet, editScope) => {
       return true;
     });
     // 2. Update NCDATA with new types
-    UDATA.LocalCall("NODE_TYPES_UPDATE", { nodeTypesChanges: templateSnippet.options });
+    UDATA.LocalCall('NODE_TYPES_UPDATE', {
+      nodeTypesChanges: templateSnippet.options
+    });
     // 3. Remove Types marked for deletion
-    TEMPLATE.nodeDefs.type.options = TEMPLATE.nodeDefs.type.options.filter(o => !o.delete);
+    TEMPLATE.nodeDefs.type.options = TEMPLATE.nodeDefs.type.options.filter(
+      o => !o.delete
+    );
     // 4. Update types with replacement labels
     TEMPLATE.nodeDefs.type.options = TEMPLATE.nodeDefs.type.options.map(o => {
       if (o.replacement) {
         o.label = o.replacement;
-        o.replacement = "";
+        o.replacement = '';
       }
       return o;
     });
@@ -159,14 +162,18 @@ MOD.UpdateTemplate = (templateSnippet, editScope) => {
       return true;
     });
     // 2. Update NCDATA with new types
-    UDATA.LocalCall("EDGE_TYPES_UPDATE", { edgeTypesChanges: templateSnippet.options });
+    UDATA.LocalCall('EDGE_TYPES_UPDATE', {
+      edgeTypesChanges: templateSnippet.options
+    });
     // 3. Remove Types marked for deletion
-    TEMPLATE.edgeDefs.type.options = TEMPLATE.edgeDefs.type.options.filter(o => !o.delete);
+    TEMPLATE.edgeDefs.type.options = TEMPLATE.edgeDefs.type.options.filter(
+      o => !o.delete
+    );
     // 4. Update types with replacements
     TEMPLATE.edgeDefs.type.options = TEMPLATE.edgeDefs.type.options.map(o => {
       if (o.replacement) {
         o.label = o.replacement;
-        o.replacement = "";
+        o.replacement = '';
       }
       return o;
     });
@@ -174,7 +181,7 @@ MOD.UpdateTemplate = (templateSnippet, editScope) => {
   // This call is redundant.  SaveTemplateToFile will trigger a state update.
   // UDATA.SetAppState("TEMPLATE", TEMPLATE);
   return TEMPLATE;
-}
+};
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Save template file to disk
@@ -183,7 +190,7 @@ MOD.UpdateTemplate = (templateSnippet, editScope) => {
 /*/
 MOD.SaveTemplateToFile = template => {
   return DATASTORE.SaveTemplateFile(template);
-}
+};
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Download template to local file
@@ -195,7 +202,7 @@ MOD.DownloadTemplate = () => {
       const TEMPLATE = UDATA.AppState('TEMPLATE');
       const toml = TOML.stringify(TEMPLATE);
       const link = document.createElement('a');
-      const blob = new Blob(["\ufeff", toml]);
+      const blob = new Blob(['\ufeff', toml]);
       const url = URL.createObjectURL(blob);
       link.href = url;
       link.download = filename;
@@ -203,8 +210,7 @@ MOD.DownloadTemplate = () => {
       link.click();
       document.body.removeChild(link);
     });
-}
-
+};
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

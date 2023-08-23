@@ -277,7 +277,9 @@ class NCGraphRenderer {
       const svgNodes = this.zoomWrapper.selectAll('.node');
       const oldNodes = new Map(svgNodes.data().map(d => [d.id, d]));
 
-      this.data.nodes = newData.nodes.map(d => Object.assign(oldNodes.get(d.id) || {}, d));
+      this.data.nodes = newData.nodes.map(d =>
+        Object.assign(oldNodes.get(d.id) || {}, d)
+      );
       this.data.edges = newData.edges.map(d => Object.assign({}, d));
 
       // FIXME: REVIEW: is this not necessary?  Just check initialize once?
@@ -337,20 +339,23 @@ class NCGraphRenderer {
     // assigning each one an id using the key function.
 
     // nodeElements is a d3.selection object
-    let nodeElements = this.zoomWrapper.selectAll('.node').data(this.data.nodes, d => {
-      return d.id;
-    }); // fn returns the calculated key for the data object
+    let nodeElements = this.zoomWrapper
+      .selectAll('.node')
+      .data(this.data.nodes, d => {
+        return d.id;
+      }); // fn returns the calculated key for the data object
 
     // linkElements is a d3.selection object
-    let linkElements = this.zoomWrapper.selectAll('.edge').data(this.data.edges, d => {
-      return d.id;
-    }); // fn returns the calculated key for the data object
+    let linkElements = this.zoomWrapper
+      .selectAll('.edge')
+      .data(this.data.edges, d => {
+        return d.id;
+      }); // fn returns the calculated key for the data object
 
     // TELL D3 HOW TO HANDLE NEW NODE DATA
     // the d3.selection.enter() method sets the operational scope for
     // subsequent calls
-    let elementG = nodeElements.enter().append('g')
-      .classed('node', true);
+    let elementG = nodeElements.enter().append('g').classed('node', true);
 
     // enter node: append 'g' (group) element and click behavior
     elementG
@@ -564,7 +569,7 @@ class NCGraphRenderer {
       .filter(d => d.selected)
       .append('g')
       .attr('id', 'selectorArrow')
-      .attr('transform', d => `translate(${- d.size - 5},0)`)
+      .attr('transform', d => `translate(${-d.size - 5},0)`);
     this.selectorArrows
       .append('polygon')
       .attr('points', '0,0 -10,5 -10,-5 ')
@@ -576,7 +581,7 @@ class NCGraphRenderer {
       .attr('from', d => `0 ${d.size + 5} 0`)
       .attr('to', d => `360 ${d.size + 5} 0`)
       .attr('dur', '6s')
-      .attr('repeatCount', 'indefinite')
+      .attr('repeatCount', 'indefinite');
     this.selectorArrows
       .append('polygon')
       .attr('transform', d => `translate(${d.size + 5},0)`)
@@ -589,7 +594,7 @@ class NCGraphRenderer {
       .attr('from', d => `120 ${d.size + 5} 0`) // different rotation start
       .attr('to', d => `480 ${d.size + 5} 0`) // different rotation end
       .attr('dur', '6s')
-      .attr('repeatCount', 'indefinite')
+      .attr('repeatCount', 'indefinite');
     this.selectorArrows
       .append('polygon')
       .attr('transform', d => `translate(${d.size + 5},0)`)
@@ -602,7 +607,7 @@ class NCGraphRenderer {
       .attr('from', d => `240 ${d.size + 5} 0`) // different rotation start
       .attr('to', d => `600 ${d.size + 5} 0`) // different rotation end
       .attr('dur', '6s')
-      .attr('repeatCount', 'indefinite')
+      .attr('repeatCount', 'indefinite');
 
     // SECONDARY SELECTOR ARROW
     nodeElements
@@ -610,7 +615,7 @@ class NCGraphRenderer {
       .filter(d => d.selectedSecondary)
       .append('g')
       .attr('id', 'secondarySelectorArrow')
-      .attr('transform', d => `translate(${- d.size - 5},0)`)
+      .attr('transform', d => `translate(${-d.size - 5},0)`)
       .append('polygon')
       .attr('points', '0,0 -10,5 -10,-5 ')
       .attr('fill', 'blue')
@@ -622,8 +627,7 @@ class NCGraphRenderer {
       .attr('from', d => `0 ${d.size + 5} 0`)
       .attr('to', d => `360 ${d.size + 5} 0`)
       .attr('dur', '2s')
-      .attr('repeatCount', 'indefinite')
-
+      .attr('repeatCount', 'indefinite');
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -647,7 +651,8 @@ class NCGraphRenderer {
           .forceManyBody()
           // the larger the node, the harder it pushes
           .strength(
-            d => d.size *
+            d =>
+              d.size *
               M_FORCEPROPERTIES.charge.strength *
               M_FORCEPROPERTIES.charge.enabled
           )
@@ -677,14 +682,18 @@ class NCGraphRenderer {
         'forceX',
         d3
           .forceX()
-          .strength(M_FORCEPROPERTIES.forceX.strength * M_FORCEPROPERTIES.forceX.enabled)
+          .strength(
+            M_FORCEPROPERTIES.forceX.strength * M_FORCEPROPERTIES.forceX.enabled
+          )
           .x(m_width * M_FORCEPROPERTIES.forceX.x)
       )
       .force(
         'forceY',
         d3
           .forceY()
-          .strength(M_FORCEPROPERTIES.forceY.strength * M_FORCEPROPERTIES.forceY.enabled)
+          .strength(
+            M_FORCEPROPERTIES.forceY.strength * M_FORCEPROPERTIES.forceY.enabled
+          )
           .y(m_height * M_FORCEPROPERTIES.forceY.y)
       );
   }
@@ -729,8 +738,7 @@ class NCGraphRenderer {
   ZoomReset(data) {
     if (DBG) console.log(PR, 'ZOOM_RESET got state NCDATA', data);
     // NOTE: The transition/duration call means _HandleZoom will be called multiple times
-    this.d3svg.transition().duration(200)
-      .call(this.zoom.scaleTo, 1);
+    this.d3svg.transition().duration(200).call(this.zoom.scaleTo, 1);
   }
 
   ZoomIn(data) {

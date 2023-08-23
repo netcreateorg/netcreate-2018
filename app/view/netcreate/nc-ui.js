@@ -17,7 +17,6 @@ const UNISYS = require('unisys/client');
 const MOD = UNISYS.NewModule(module.id);
 const UDATA = UNISYS.NewDataLink(MOD);
 
-
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const VIEWMODE = {
@@ -25,12 +24,8 @@ const VIEWMODE = {
   VIEW: 'view'
 };
 
-
 /// METHODS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
-
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// INPUT FORM CHANGE HANDLERS
@@ -73,7 +68,6 @@ function m_UISelectInputUpdate(event, cb) {
   if (typeof cb === 'function') cb(key, value);
 }
 
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// LAYOUT RENDERERS
 ///
@@ -81,7 +75,8 @@ function RenderTabSelectors(TABS, state, onclick) {
   const { uSelectedTab, uViewMode } = state;
   const columnsDef = `repeat(${Object.keys(TABS).length}, 1fr)`;
   return (
-    <div className="tabselectors"
+    <div
+      className="tabselectors"
       style={{ color: 'red', gridTemplateColumns: columnsDef }}
     >
       {Object.keys(TABS).map(k => {
@@ -112,7 +107,8 @@ function RenderAttributesTabView(state, defs) {
   });
 
   // degrees hack -- `degrees` is a built-in field, but is displayed in attributes
-  if (defs['degrees']) { // only if defined, e.g. for nodeDefs
+  if (defs['degrees']) {
+    // only if defined, e.g. for nodeDefs
     items.push(RenderLabel('degrees', defs['degrees'].displayLabel));
     items.push(RenderStringValue('degrees', degrees));
   }
@@ -141,9 +137,9 @@ function RenderAttributesTabEdit(state, defs, onchange) {
     }
   });
 
-
   // degrees hack -- `degrees` is a built-in field, but is displayed in attributes
-  if (defs['degrees']) { // only if defined, e.g. for nodeDefs
+  if (defs['degrees']) {
+    // only if defined, e.g. for nodeDefs
     items.push(RenderLabel('degrees', defs['degrees'].displayLabel));
     items.push(RenderStringValue('degrees', degrees));
   }
@@ -185,15 +181,22 @@ function RenderProvenanceTabEdit(state, defs, onchange) {
   );
 }
 
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// FORM RENDERERS
 ///
 function RenderLabel(key, label) {
-  return <label htmlFor={key} key={`${key}label`}>{label}</label>
+  return (
+    <label htmlFor={key} key={`${key}label`}>
+      {label}
+    </label>
+  );
 }
 function RenderStringValue(key, value) {
-  return <div id={key} key={`${key}value`} className="viewvalue">{value}</div>
+  return (
+    <div id={key} key={`${key}value`} className="viewvalue">
+      {value}
+    </div>
+  );
 }
 /**
  * There are two levels of callbacks necessary here.
@@ -265,7 +268,6 @@ function m_RenderOptionsInput(key, value, defs, cb) {
     </select>
   );
 }
-
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

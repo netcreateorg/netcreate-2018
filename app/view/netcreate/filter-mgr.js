@@ -556,20 +556,15 @@ function m_IsNodeMatchedByFilter(node, filter) {
   switch (filter.operator) {
     case FILTER.OPERATORS.CONTAINS.key:
       return m_MatchString(filter.value, nodeValue, true);
-      break;
     case FILTER.OPERATORS.NOT_CONTAINS.key:
       return m_MatchString(filter.value, nodeValue, false);
-      break;
     case FILTER.OPERATORS.IS_EMPTY.key:
       return nodeValue === undefined || nodeValue === '';
-      break;
     case FILTER.OPERATORS.IS_NOT_EMPTY.key:
       return nodeValue !== undefined && nodeValue !== '';
-      break;
     default:
       // Else assume it's a number
       return m_MatchNumber(filter.operator, filter.value, nodeValue);
-      break;
   }
 }
 
@@ -701,20 +696,15 @@ function m_IsEdgeMatchedByFilter(edge, filter) {
   switch (filter.operator) {
     case FILTER.OPERATORS.CONTAINS.key:
       return m_MatchString(filter.value, edgeValue, true);
-      break;
     case FILTER.OPERATORS.NOT_CONTAINS.key:
       return m_MatchString(filter.value, edgeValue, false);
-      break;
     case FILTER.OPERATORS.IS_EMPTY.key:
       return edgeValue === undefined || edgeValue === '';
-      break;
     case FILTER.OPERATORS.IS_NOT_EMPTY.key:
       return edgeValue !== undefined && edgeValue !== '';
-      break;
     default:
       // Else assume it's a number
       return m_MatchNumber(filter.operator, filter.value, edgeValue);
-      break;
   }
 }
 

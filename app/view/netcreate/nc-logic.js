@@ -1,3 +1,4 @@
+/* eslint-disable no-alert */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   nc-logic
@@ -226,7 +227,10 @@ MOD.Hook('LOADASSETS', () => {
       });
     }
     // don't use cache, but instead try loading standalone files
-    console.warn(PR, "STANDALONE MODE: 'LOADASSETS' is using files (USE_CACHE=false)");
+    console.warn(
+      PR,
+      "STANDALONE MODE: 'LOADASSETS' is using files (USE_CACHE=false)"
+    );
     // added by Joshua to check for alternative datasets in the folder
     let urlParams = new URLSearchParams(window.location.search);
     let dataset = urlParams.get('dataset');
@@ -374,7 +378,8 @@ MOD.Hook('INITIALIZE', () => {
 
     if (nodeID) {
       node = m_FindNodeById(nodeID); // Node IDs should be integers, not strings
-      if (DBG) console.log(PR, 'SOURCE_SELECT found by nodeID', nodeID, 'node:', node);
+      if (DBG)
+        console.log(PR, 'SOURCE_SELECT found by nodeID', nodeID, 'node:', node);
     } else if (nodeLabel) {
       node = m_FindMatchingNodesByLabel(nodeLabel).shift();
       if (DBG)
@@ -394,7 +399,7 @@ MOD.Hook('INITIALIZE', () => {
       };
       newHilite = {
         autosuggestHiliteNodeId: undefined
-      }
+      };
     } else {
       // Load existing node and edges
       let edges = [];
@@ -402,7 +407,9 @@ MOD.Hook('INITIALIZE', () => {
         // if no edges are defined, skip, otherwise chokes on NCDATA.edges.filter
         if (nodeID) {
           edges = edges.concat(
-            NCDATA.edges.filter(edge => edge.source === nodeID || edge.target === nodeID)
+            NCDATA.edges.filter(
+              edge => edge.source === nodeID || edge.target === nodeID
+            )
           );
         } else {
           console.error(
@@ -425,7 +432,7 @@ MOD.Hook('INITIALIZE', () => {
       };
       newHilite = {
         autosuggestHiliteNodeId: undefined
-      }
+      };
     }
 
     // Set the SELECTION state so that listeners such as NodeSelectors update themselves
@@ -496,19 +503,18 @@ MOD.Hook('INITIALIZE', () => {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   UDATA.HandleMessage('NODE_CREATE', data => {
     // provenance
-    const session = UDATA.AppState("SESSION");
+    const session = UDATA.AppState('SESSION');
     const timestamp = new Date().toLocaleDateString('en-US');
     const provenance_str = `Added by ${session.token} on ${timestamp}`;
 
-    return DATASTORE.PromiseNewNodeID()
-      .then(newNodeID => {
-        const node = { id: newNodeID, label: data.label, provenance: provenance_str };
-        return UDATA.LocalCall('DB_UPDATE', { node }).then(() => {
-          NCDATA.nodes.push(node);
-          UDATA.SetAppState('NCDATA', NCDATA);
-          return node;
-        });
+    return DATASTORE.PromiseNewNodeID().then(newNodeID => {
+      const node = { id: newNodeID, label: data.label, provenance: provenance_str };
+      return UDATA.LocalCall('DB_UPDATE', { node }).then(() => {
+        NCDATA.nodes.push(node);
+        UDATA.SetAppState('NCDATA', NCDATA);
+        return node;
       });
+    });
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ NODE_DELETE is called by NodeSelector via datastore.js and
@@ -615,22 +621,21 @@ MOD.Hook('INITIALIZE', () => {
    */
   UDATA.HandleMessage('EDGE_CREATE', data => {
     // call server to retrieve an unused edge ID
-    return DATASTORE.PromiseNewEdgeID()
-      .then(newEdgeID => {
-        // Add it to local state for now
-        const edge = {
-          id: newEdgeID,
-          source: data.nodeId,
-          target: undefined,
-          attributes: {}
-        };
-        return UDATA.LocalCall('DB_UPDATE', { edge }).then(() => {
-          console.log('...DB_UPDATE node is now', edge)
-          NCDATA.edges.push(edge);
-          UDATA.SetAppState('NCDATA', NCDATA);
-          return edge;
-        });
+    return DATASTORE.PromiseNewEdgeID().then(newEdgeID => {
+      // Add it to local state for now
+      const edge = {
+        id: newEdgeID,
+        source: data.nodeId,
+        target: undefined,
+        attributes: {}
+      };
+      return UDATA.LocalCall('DB_UPDATE', { edge }).then(() => {
+        console.log('...DB_UPDATE node is now', edge);
+        NCDATA.edges.push(edge);
+        UDATA.SetAppState('NCDATA', NCDATA);
+        return edge;
       });
+    });
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   /*/ EDGE_TYPES_UPDATE is called by templateEditor-mgr after user has changed the
@@ -690,7 +695,8 @@ MOD.Hook('INITIALIZE', () => {
     }
     // if there was one edge
     if (updatedEdges.length === 1) {
-      if (DBG) console.log('nc-logic.EDGE_UPDATE: updating existing edge', updatedEdges);
+      if (DBG)
+        console.log('nc-logic.EDGE_UPDATE: updating existing edge', updatedEdges);
     }
     // if there were more edges than expected
     if (updatedEdges.length > 1) {
@@ -850,7 +856,8 @@ function m_FindMatchingObjsByProp(obj_list, match_me = {}) {
 /*/
 function m_SetMatchingObjsByProp(obj_list, match_me = {}, yes = {}, no = {}) {
   // operate on arrays only
-  if (!Array.isArray(obj_list)) throw Error('SetMatchingObjsByPropp arg1 must be array');
+  if (!Array.isArray(obj_list))
+    throw Error('SetMatchingObjsByPropp arg1 must be array');
 
   let returnMatches = [];
   obj_list.forEach(node => {
@@ -1159,12 +1166,10 @@ function m_MarkSelectedEdges(edges, node) {
     This will regenerate the `_default.template.toml` file from
     the current `template-schema.js` spec.  This is only necessary to do
     if you've edited the `template.schema.js`` file.
-/*/ JSCLI.AddFunction(
-  function ncRegenerateDefaultTemplate() {
-    UDATA.Call('SRV_TEMPLATE_REGENERATE_DEFAULT');
-    console.log('_default.template.toml regenerated from `template-schema.js`');
-  }
-);
+/*/ JSCLI.AddFunction(function ncRegenerateDefaultTemplate() {
+  UDATA.Call('SRV_TEMPLATE_REGENERATE_DEFAULT');
+  console.log('_default.template.toml regenerated from `template-schema.js`');
+});
 /*/ Command: RESET THE DATABASE from default data
 /*/
 JSCLI.AddFunction(function ncPushDatabase(jsonFile) {
@@ -1198,12 +1203,10 @@ JSCLI.AddFunction(function ncPushDatabase(jsonFile) {
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Command: EMPTY THE DATABASE from default data
-/*/ JSCLI.AddFunction(
-  function ncEmptyDatabase() {
-    window.ncPushDatabase('nada.json');
-    return 'FYI: pushing empty database from assets/data/nada.json...reloading';
-  }
-);
+/*/ JSCLI.AddFunction(function ncEmptyDatabase() {
+  window.ncPushDatabase('nada.json');
+  return 'FYI: pushing empty database from assets/data/nada.json...reloading';
+});
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Command: Unlock the database.  Used to recover from error conditions where
     a node or edge is inadvertently left locked.
