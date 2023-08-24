@@ -58,7 +58,7 @@ DSTOR.Hook('INITIALIZE', () => {
 
   UDATA.OnAppStateChange('SESSION', function (decodedData) {
     let { isValid, token } = decodedData;
-    console.log('Handling SESSION', isValid);
+    console.log(PR, 'Handling SESSION', isValid || '[NO LOGIN TOKEN]');
     if (isValid) DSTOR.SetSessionGroupID(decodedData);
   });
 });
