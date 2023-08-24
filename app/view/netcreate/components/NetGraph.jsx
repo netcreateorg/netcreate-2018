@@ -34,10 +34,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-var DBG = false;
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const ReactDOM = require('react-dom');
 const ReactStrap = require('reactstrap');
@@ -45,6 +41,10 @@ const { Button } = ReactStrap;
 const D3NetGraph = require('./d3-simplenetgraph');
 const UNISYS = require('unisys/client');
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+var DBG = false;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let UDATA = null;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
@@ -74,19 +74,15 @@ class NetGraph extends UNISYS.Component {
 
   /// CLASS PRIVATE METHODS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ onZoomReset() {
+  onZoomReset() {
     this.AppCall('ZOOM_RESET', {});
   }
-  /*/
-/*/ onZoomIn() {
+  onZoomIn() {
     this.AppCall('ZOOM_IN', {});
   }
-  /*/
-/*/ onZoomOut() {
+  onZoomOut() {
     this.AppCall('ZOOM_OUT', {});
   }
-
   updateLegend() {
     // Update Legends
     const TEMPLATE = this.AppState('TEMPLATE');
@@ -99,8 +95,7 @@ class NetGraph extends UNISYS.Component {
 
   /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ constructGraph() {
+  constructGraph() {
     // first destroy any existing SVG graph elements
     const netgraph = document.getElementById('netgraph');
     if (netgraph) netgraph.remove();
@@ -122,19 +117,16 @@ class NetGraph extends UNISYS.Component {
 
   /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ componentDidMount() {
+  componentDidMount() {
     this.constructGraph();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ componentWillUnMount() {
+  componentWillUnMount() {
     this.AppStateChangeOff('TEMPLATE', this.updateLegend);
     UDATA.UnhandleMessage('CONSTRUCT_GRAPH', this.constructGraph);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ shouldComponentUpdate() {
+  shouldComponentUpdate() {
     // This prevents React from updating the component,
     // allowing D3 to handle the simulation animation updates
     // This is also necessary for D3 to handle the
@@ -142,8 +134,7 @@ class NetGraph extends UNISYS.Component {
     return false;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ render() {
+  render() {
     const { nodeTypes, edgeTypes } = this.state;
     return (
       <div style={{ height: '100%' }}>

@@ -1,117 +1,117 @@
 /* eslint-disable complexity */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    ## OVERVIEW
+  ## OVERVIEW
 
-    NodeSelector is a form for searching for, viewing, selecting, and editing
-    Node information.
+  NodeSelector is a form for searching for, viewing, selecting, and editing
+  Node information.
 
-    NodeSelector does not modify any data.  It passes all events (text updates,
-    highlights, and suggestion selections) up to nc-logic. it
-    should process the events and update the data accordingly.  The
-    updated data is then rendered by NodeSelector.
+  NodeSelector does not modify any data.  It passes all events (text updates,
+  highlights, and suggestion selections) up to nc-logic. it
+  should process the events and update the data accordingly.  The
+  updated data is then rendered by NodeSelector.
 
-    ## USAGE
+  ## USAGE
 
-      <NodeSelector/>
+    <NodeSelector/>
 
-    ## TECHNICAL DESCRIPTION
+  ## TECHNICAL DESCRIPTION
 
-    NodeSelector handles three basic functions:
+  NodeSelector handles three basic functions:
 
-    1. Display the current SELECTION.nodes[0]
-    2. Support input of node fields
-    3. Send updated node field data to SOURCE_UPDATE
+  1. Display the current SELECTION.nodes[0]
+  2. Support input of node fields
+  3. Send updated node field data to SOURCE_UPDATE
 
-    As the user edits the form, we locally save the changes and send it to UNISYS
-    when the user clicks "SAVE"
+  As the user edits the form, we locally save the changes and send it to UNISYS
+  when the user clicks "SAVE"
 
-    The currently selected/editing node is set via SELECTION.nodes.
+  The currently selected/editing node is set via SELECTION.nodes.
 
-    Updates are sent to UNISYS via SOURCE_UPDATE.
+  Updates are sent to UNISYS via SOURCE_UPDATE.
 
-    The AutoComplete search field is handled a little differently from the other
-    input fields because it is independent of NodeSelector.  In order to keep
-    NodeSelector's internal representation of form data up-to-date, we rely on
-    the SELECTION updates' searchLabel field to update the label.
+  The AutoComplete search field is handled a little differently from the other
+  input fields because it is independent of NodeSelector.  In order to keep
+  NodeSelector's internal representation of form data up-to-date, we rely on
+  the SELECTION updates' searchLabel field to update the label.
 
-    There are different levels of write-access:
+  There are different levels of write-access:
 
-      isLocked        Nodes can be selected for viewing, but editing
-                      cannot be enabled.
+    isLocked        Nodes can be selected for viewing, but editing
+                    cannot be enabled.
 
-      isStandalone    Nodes can be selected for viewing, but editing
-                      cannot be enabled.
+    isStandalone    Nodes can be selected for viewing, but editing
+                    cannot be enabled.
 
-      disableEdit     Template is being edited, disable "Edit Node" button
+    disableEdit     Template is being edited, disable "Edit Node" button
 
-      isBeingEdited   The form fields are active and text can be changed.
-
-
-    Delete Button
-    The Delete button is only displayed for an admin user.  Right now we are detecting
-    this by displaying it only when the user is on `localhost`,
+    isBeingEdited   The form fields are active and text can be changed.
 
 
-    ## STATES
-
-      formData        Node data that is shown in the form
-
-      isLocked        If true (defauilt), nodes can be displayed, but
-                      "Add New Node" and "Edit Node" buttons are hidden.
-                      The state is unlocked when the user logs in.
-
-      isEditable      If true, form fields are enabled for editing
-                      If false, form is readonly
-
-      dbIsLocked
-                      If someone else has selected the node for editing,
-                      this flag will cause the dbIsLockedMessage
-                      to be displayed.  This is only checked when
-                      the user clicks "Edit".
+  Delete Button
+  The Delete button is only displayed for an admin user.  Right now we are detecting
+  this by displaying it only when the user is on `localhost`,
 
 
-    ## TESTING
+  ## STATES
 
-    Edit Existing Node
+    formData        Node data that is shown in the form
 
-      1. Type 'ah'
-            * Nodes on graph should hilite
-            * Suggestions should be displayed
-            * "Add New Node" should be shown.
-      2. Highlight 'Ah Sing'
-            * Ah Sing node detail should be shown
-      3. Unhighlight all selections (move mouse out)
-            * NodeDetail should disappear
-      4. Click 'Ah Sing'
-            * 'Ah Sing's details should load in form
-            * "Edit Node" button should be shown.
-      5. Click "Edit Node"
-            * "Save" should be shown
-            * All fields should be enabled
-      6. Edit 'Ah Sing' to 'Ah Sing A'
-            * Form should not change
-            * Hilited graph node should go away
-      7. Edit fields (add text)
-      8. Click "Save"
-            * Form should clear
-      9. Check 'Ah Sing' contents to make sure changes were saved
+    isLocked        If true (defauilt), nodes can be displayed, but
+                    "Add New Node" and "Edit Node" buttons are hidden.
+                    The state is unlocked when the user logs in.
 
-    Create New Node
+    isEditable      If true, form fields are enabled for editing
+                    If false, form is readonly
 
-      1. Type 'ah'
-            * Nodes on graph should hilite
-            * Suggestions should be displayed
-            * "Add New Node" should be shown.
-      2. Click 'Add New Node'
-            * Fields should be enabled
-            * A new ID should be added
-            * "Save" button should appear
-      3. Edit fields
-      4. Click "Save"
-            * New node should appear in graph
-            * The node should have the label you added 'ah'
-      5. Select the node to verify the contents
+    dbIsLocked
+                    If someone else has selected the node for editing,
+                    this flag will cause the dbIsLockedMessage
+                    to be displayed.  This is only checked when
+                    the user clicks "Edit".
+
+
+  ## TESTING
+
+  Edit Existing Node
+
+    1. Type 'ah'
+          * Nodes on graph should hilite
+          * Suggestions should be displayed
+          * "Add New Node" should be shown.
+    2. Highlight 'Ah Sing'
+          * Ah Sing node detail should be shown
+    3. Unhighlight all selections (move mouse out)
+          * NodeDetail should disappear
+    4. Click 'Ah Sing'
+          * 'Ah Sing's details should load in form
+          * "Edit Node" button should be shown.
+    5. Click "Edit Node"
+          * "Save" should be shown
+          * All fields should be enabled
+    6. Edit 'Ah Sing' to 'Ah Sing A'
+          * Form should not change
+          * Hilited graph node should go away
+    7. Edit fields (add text)
+    8. Click "Save"
+          * Form should clear
+    9. Check 'Ah Sing' contents to make sure changes were saved
+
+  Create New Node
+
+    1. Type 'ah'
+          * Nodes on graph should hilite
+          * Suggestions should be displayed
+          * "Add New Node" should be shown.
+    2. Click 'Add New Node'
+          * Fields should be enabled
+          * A new ID should be added
+          * "Save" button should appear
+    3. Edit fields
+    4. Click "Save"
+          * New node should appear in graph
+          * The node should have the label you added 'ah'
+    5. Select the node to verify the contents
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -119,12 +119,6 @@ import { mdReact } from 'markdown-react-js';
 const mdplugins = {
   emoji: require('markdown-it-emoji')
 };
-
-const DBG = false;
-const PR = 'NodeSelector';
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const ReactStrap = require('reactstrap');
 const { Button, Col, Form, FormGroup, FormFeedback, FormText, Label, Input } =
@@ -138,10 +132,14 @@ const DATASTORE = require('system/datastore');
 const SETTINGS = require('settings');
 const { EDITORTYPE } = require('system/util/enum');
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+const PR = 'NodeSelector';
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const thisIdentifier = 'nodeSelector'; // SELECTION identifier
-
 const isAdmin = SETTINGS.IsAdmin();
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var UDATA = null;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////

@@ -4,27 +4,25 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const STACKTRACE = require('stacktrace-js');
 const PATH = require('./path');
 
-/// INITIALIZE MAIN MODULE ////////////////////////////////////////////////////
+/// MODULE DECLARATION ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var REFLECT = {};
-
-/// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Returns the name of the constructor for the current class
-    https://stackoverflow.com/questions/22777181/typescript-get-to-get-class-name-at-runtime
-/*/ REFLECT.ExtractClassName = function (obj) {
+/** Returns the name of the constructor for the current class
+ *  https://stackoverflow.com/questions/22777181/typescript-get-to-get-class-name-at-runtime
+ */
+REFLECT.ExtractClassName = function (obj) {
   var funcNameRegex = /function (.{1,})\(/;
   var results = funcNameRegex.exec(obj.constructor.toString());
   return results && results.length > 1 ? results[1] : '';
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Returns the name of the calling function
-/*/ REFLECT.FunctionName = function (depth = 1) {
+/** Returns the name of the calling function
+ */
+REFLECT.FunctionName = function (depth = 1) {
   let stack = STACKTRACE.getSync();
   let frame = stack[depth];
   let fn = frame.functionName;
@@ -38,21 +36,22 @@ var REFLECT = {};
   }
 };
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ InspectModule() prints a list of public properties and methods for each
-    require module that contains the passed string. It returns a string, so
-    you will have to console.log() to see the output.
-/*/ REFLECT.InspectModule = function (str) {
+/** InspectModule() prints a list of public properties and methods for each
+ *  require module that contains the passed string. It returns a string,
+ *  so you will have to console.log() to see the output.
+ */
+REFLECT.InspectModule = function (str) {
   throw Error(
     `REFLECT.InspectModule() needs to be rewritten for brunch-style modules.`
   );
 };
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ InspectObject() accepts an object and a label, and prints a list of
-    all the methods and properties in it. It returns a string, so you will
-    have to console.log() to see the output.
-/*/ REFLECT.InspectObject = function (obj, depth) {
+/** InspectObject() accepts an object and a label, and prints a list of
+ *  all the methods and properties in it. It returns a string, so you will
+ *  have to console.log() to see the output.
+ */
+REFLECT.InspectObject = function (obj, depth) {
   if (!obj) return 'Must pass an object or 1401 watched object key string';
-
   var out = '';
   // handle command line calls
   switch (typeof obj) {
@@ -62,7 +61,6 @@ var REFLECT = {};
     default:
       return 'must pass object or function, not ' + typeof obj;
   }
-
   // handle recursive scan
   depth = depth || 0;
   var label = obj.constructor.name || '(anonymous object)';
@@ -82,11 +80,12 @@ var REFLECT = {};
   return obj;
 };
 
-/** SUPPORTING FUNCTIONS ****************************************************/
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Support function for InspectModule() and InspectObject()
-    Also checks m_watching array
-/*/ function m_DumpObj(obj, depth) {
+/// SUPPORTING FUNCTIONS //////////////////////////////////////////////////////
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Support function for InspectModule() and InspectObject()
+ *  Also checks m_watching array
+ */
+function m_DumpObj(obj, depth) {
   var indent = '';
   for (var i = 0; i < depth; i++) indent += '\t';
 
@@ -110,8 +109,8 @@ var REFLECT = {};
   return str;
 }
 
-/** GLOBAL HOOKS *************************************************************/
-
+/// GLOBAL HOOKS //////////////////////////////////////////////////////////////
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if (typeof window === 'object') {
   window.InspectModule = REFLECT.InspectModule;
   window.InspectObject = REFLECT.InspectObject;

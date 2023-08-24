@@ -1,7 +1,7 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    Session Utilities
-    collection of session-related data structures
+  Session Utilities
+  collection of session-related data structures
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger */
 if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
@@ -28,8 +29,7 @@ const AppShell = require('init-appshell');
 
 /// UNISYS LIFECYCLE LOADER ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ When the DOM is loaded, initialize UNISYS
-/*/
+/// When the DOM is loaded, initialize UNISYS
 document.addEventListener('DOMContentLoaded', () => {
   console.group('init.jsx bootstrap');
   console.log(
@@ -55,11 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /// UNISYS LIFECYCLE CLOSE EVENT //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ this custom event accesses post-run lifecycles defined for 'DOMContentLoaded'
-    `event` is originated by `comment-netmessage-class.GlobalOfflineMode
-    with a custom event message coming from client-network.m_ResetHearbeatTimer
-    This is so we can display an error to the user explaining the disconnect
-/*/
+/** this custom event accesses post-run lifecycles defined for 'DOMContentLoaded'
+ *  `event` is originated by `comment-netmessage-class.GlobalOfflineMode
+ *  with a custom event message coming from client-network.m_ResetHearbeatTimer
+ *  This is so we can display an error to the user explaining the disconnect
+ */
 document.addEventListener('UNISYSDisconnect', event => {
   console.log(
     '%cDISCONNECT %cUNISYSDisconnect. Closing UNISYS Lifecycle!',
@@ -83,8 +83,9 @@ document.addEventListener('UNISYSDisconnect', event => {
 
 /// LIFECYCLE HELPERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ helper to infer view module scope before module is routed lated (!)
-/*/ function m_SetLifecycleScope() {
+/** helper to infer view module scope before module is routed lated (!)
+ */
+function m_SetLifecycleScope() {
   // set scope for UNISYS execution
   let routes = AppShell.Routes;
   // check #, and remove any trailing parameters in slashes
@@ -109,9 +110,10 @@ document.addEventListener('UNISYSDisconnect', event => {
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Wraps ReactDOM.render() in a Promise. Execution continues in <AppShell>
-    and the routed view in AppShell.Routes
-/*/ function m_RenderApp() {
+/** Wraps ReactDOM.render() in a Promise. Execution continues in <AppShell>
+ *  and the routed view in AppShell.Routes
+ */
+function m_RenderApp() {
   if (DBG)
     console.log('%cINIT %cReactDOM.render() begin', 'color:blue', 'color:auto');
   return new Promise((resolve, reject) => {

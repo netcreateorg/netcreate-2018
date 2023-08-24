@@ -1,26 +1,28 @@
 if (window.NC_DBG) console.log(`inc ${module.id}`);
-/// SYSTEM INTEGRATION ////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
+
 const UNISYS = require('unisys/client');
 const REFLECT = require('system/util/reflection');
 /// MAGIC: DevDBLogic will add UNISYS Lifecycle Hooks on require()
 const LOGIC = require('./devsession-logic');
 const { Switch, Route, Redirect, Link } = require('react-router-dom');
-
-var DBG = false;
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const ReactStrap = require('reactstrap');
 const PROMPTS = require('system/util/prompts');
-const PR = PROMPTS.Pad('DevSession');
 const SESSION = require('unisys/common-session');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+var DBG = false;
+const PR = PROMPTS.Pad('DevSession');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ This is the root component for the view
-/*/ class DevSession extends UNISYS.Component {
+/** This is the root component for the view
+ */
+class DevSession extends UNISYS.Component {
   constructor(props) {
     super(props);
     UNISYS.ForceReloadOnNavigation();
@@ -41,8 +43,7 @@ const SESSION = require('unisys/common-session');
     // NOW set up handlers...
     this.OnAppStateChange('VIEW', this.UnisysStateChange);
   } // constructor
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UNISYS state change handler - registered by UNISYS.OnStateChange()
   /// state is coming from UNISYS
   UnisysStateChange(state) {
@@ -51,8 +52,7 @@ const SESSION = require('unisys/common-session');
     // update local react state, which should force an update
     this.setState(state);
   }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// COMPONENT state change handler - registered in render()
   /// state is coming FROM component, which is updating already
   handleTextChange(event) {
@@ -63,14 +63,14 @@ const SESSION = require('unisys/common-session');
     if (DBG) console.log(`REACT -> state`, state, `to ${this.udata.UID()}`);
     this.SetAppState('VIEW', state, this.uni_id);
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// COMPONENT this interface has composed
   componentDidMount() {
     // start the application phase
     let className = REFLECT.ExtractClassName(this);
     if (DBG) console.log(`${className} componentDidMount`);
   } // componentDidMount
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   SessionEdit({ match, location }) {
     console.log(`SessionEdit edit/${match.params.token}`);
     let token = match.params.token;
@@ -102,11 +102,11 @@ const SESSION = require('unisys/common-session');
       );
     }
   }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Try to route the following
-      http://localhost:3000/#dev-unisys/use/student/UNIT_KEY/USER_KEY/
-  /*/ render() {
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Try to route the following
+   *  http://localhost:3000/#dev-unisys/use/student/UNIT_KEY/USER_KEY/
+   */
+  render() {
     return (
       <div id="fdshell" style={{ padding: '10px' }}>
         <h2>SESSIONS DEV TESTING</h2>

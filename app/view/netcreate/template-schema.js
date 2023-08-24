@@ -33,35 +33,30 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+const clone = require('rfdc')();
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 const PR = 'template-schema';
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const clone = require('rfdc')();
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const MOD = {};
-
-/// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * Node Type Schema
- * This is a subset of the full template schema.
+/** Node Type Schema
+ *  This is a subset of the full template schema.
  *
- * We pull it out separately so that Node Types can be edited by themselves
- * without having to scroll through the whole template.
+ *  We pull it out separately so that Node Types can be edited by themselves
+ *  without having to scroll through the whole template.
  *
- * When editing the main Template, this is loaded as a subset of the main schema.
- * When editing node types, this is loaded by MOD.GetTypeEditorSchema to
- * provide additional UI elements to manage deleting and renaming
- * existing field types
+ *  When editing the main Template, this is loaded as a subset of the main schema.
+ *  When editing node types, this is loaded by MOD.GetTypeEditorSchema to
+ *  provide additional UI elements to manage deleting and renaming
+ *  existing field types
  *
- * Default "No Type Selected" has a label of ""
- * Templates should always have one default.
- *
+ *  Default "No Type Selected" has a label of ""
+ *  Templates should always have one default.
  */
 MOD.NODETYPEOPTIONS = {
   type: 'array',
@@ -92,20 +87,17 @@ MOD.NODETYPEOPTIONS = {
     }
   }
 };
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * Edge Type Schema
- * This is a subset of the full template schema.
+/** Edge Type Schema
+ *  This is a subset of the full template schema.
  *
- * We pull it out separately so that Edge Types can be edited by themselves
- * without having to scroll through the whole template.
+ *  We pull it out separately so that Edge Types can be edited by themselves
+ *  without having to scroll through the whole template.
  *
- * When editing the main Template, this is loaded as a subset of the main schema.
- * When editing edge types, this is loaded by MOD.GetTypeEditorSchema to
- * provide additional UI elements to manage deleting and renaming
- * existing field types
+ *  When editing the main Template, this is loaded as a subset of the main schema.
+ *  When editing edge types, this is loaded by MOD.GetTypeEditorSchema to
+ *  provide additional UI elements to manage deleting and renaming
+ *  existing field types
  */
 MOD.EDGETYPEOPTIONS = {
   type: 'array',
@@ -137,15 +129,13 @@ MOD.EDGETYPEOPTIONS = {
     }
   }
 };
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/*/ Main NetCreate Schema Template
-    This references the NODETYPEOPTIONS and EGETYPEOPTIONS above to define
-    options.
-    Be sure to update `server-database.m_MigrateTemplate()` with any additions to
-    the schema to maintain backward compatibility.
-/*/
+/** Main NetCreate Schema Template
+ *  This references the NODETYPEOPTIONS and EGETYPEOPTIONS above to define
+ *  options.
+ *  Be sure to update `server-database.m_MigrateTemplate()` with any additions to
+ *  the schema to maintain backward compatibility.
+ */
 MOD.TEMPLATE = {
   title: 'NetCreate Template',
   type: 'object',
@@ -1260,17 +1250,14 @@ MOD.TEMPLATE = {
 
 /// SCHEMA METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Extra schema definition for the Type Editor UI
-
-    This introduces a wrapper around the Node or Edge Type Schema to provide
-    extra UI elements for managing Type changes that the normal Template
-    editor does not have:
-    * Adds a checkbox to mark a type for deletion
-    * Adds a field to map a deleted type to another type
-
-    Used by the "Edit Node Types" and "Edit Edge Types" buttons.
+/** API METHOD for Extra schema definition for the Type Editor UI
+ *  This introduces a wrapper around the Node or Edge Type Schema to provide
+ *  extra UI elements for managing Type changes that the normal Template
+ *  editor does not have:
+ *  - Adds a checkbox to mark a type for deletion
+ *  - Adds a field to map a deleted type to another type
+ *
+ *  Used by the "Edit Node Types" and "Edit Edge Types" buttons.
 /*/
 MOD.GetTypeEditorSchema = schemaTypeOptions => {
   const typeOptions = clone(schemaTypeOptions);
@@ -1314,16 +1301,15 @@ MOD.GetTypeEditorSchema = schemaTypeOptions => {
     }
   };
 };
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ ParseTemplateSchema generates and resturns the default template json
-    Use this to create a pristine defaul template json
+/** API METHOD
+ *  ParseTemplateSchema generates and resturns the default template json
+ *  Use this to create a pristine defaul template json
 /*/
 MOD.ParseTemplateSchema = () => {
   let currNodeOrEdge;
-
   // optionsDefinition is eithert MOD.NODETYPEOPTIONS or MOD.EDGETYPEOPTIONS
-  function ParseOptions(optionsDefinition) {
+  function u_ParseOptions(optionsDefinition) {
     const json = {};
     const options = optionsDefinition.items.properties;
     Object.keys(options).forEach(key => {
@@ -1331,15 +1317,13 @@ MOD.ParseTemplateSchema = () => {
     });
     return [json];
   }
-
-  function ParseProperty(prop) {
+  function u_ParseProperty(prop) {
     if (prop.type === 'string') return prop.default || ''; // fall back to '' if default is not defined
     if (prop.type === 'number') return prop.default || 0; // fall back to 0 if no default
     if (prop.type === 'boolean') return prop.default || false; // fall back to false if no default
     return '';
   }
-
-  function ParseProperties(properties, currJson) {
+  function u_ParseProperties(properties, currJson) {
     Object.keys(properties).forEach(templatePropertyKey => {
       if (templatePropertyKey === 'nodeDefs') currNodeOrEdge = 'nodes';
       if (templatePropertyKey === 'edgeDefs') currNodeOrEdge = 'edges';
@@ -1348,31 +1332,32 @@ MOD.ParseTemplateSchema = () => {
 
       const prop = properties[templatePropertyKey];
       if (prop.properties) {
-        currJson[templatePropertyKey] = ParseProperties(prop.properties, {});
+        currJson[templatePropertyKey] = u_ParseProperties(prop.properties, {});
       } else if (templatePropertyKey === 'options') {
         // Special handling for nodeDef and edgeDef `type` options as these are not defined in the main
         // schema, but are instead separated
         if (currNodeOrEdge === 'nodes') {
-          currJson.options = ParseOptions(MOD.NODETYPEOPTIONS);
+          currJson.options = u_ParseOptions(MOD.NODETYPEOPTIONS);
         } else if (currNodeOrEdge === 'edges') {
-          currJson.options = ParseOptions(MOD.EDGETYPEOPTIONS);
+          currJson.options = u_ParseOptions(MOD.EDGETYPEOPTIONS);
         } else {
           throw `${PR}.ParseTemplateSchema encountered unknown 'options' in ${JSON.stringify(
             properties
           )} at ${templatePropertyKey}`;
         }
       } else {
-        currJson[templatePropertyKey] = ParseProperty(prop);
+        currJson[templatePropertyKey] = u_ParseProperty(prop);
       }
     });
     return currJson;
   }
-
   let json = {};
-  ParseProperties(MOD.TEMPLATE.properties, json);
+  u_ParseProperties(MOD.TEMPLATE.properties, json);
   return json;
 };
 
+/// RUNTIME INITIALIZATION ////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 MOD.ParseTemplateSchema();
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////

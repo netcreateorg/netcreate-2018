@@ -1,20 +1,23 @@
-/*
-    Optimized Markdwon React Component
+/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    This is based on Joshua's implementation of Markdown React in NodeTable and EdgeTable.
+  Optimized Markdwon React Component
 
-    This component wrap the MDReactComponent and only updates when the text changes.
+  This is based on Joshua's implementation of Markdown React in NodeTable
+  and EdgeTable.
 
- */
+  Wraps the MDReactComponent and only updates when the text changes.
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import MDReactComponent from 'markdown-react-js';
 const mdplugins = {
   emoji: require('markdown-it-emoji')
 };
-
 const React = require('react');
 const UNISYS = require('unisys/client');
 
+/// COMPONENT DECLARATION /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class MarkdownNote extends UNISYS.Component {
   constructor() {
     super();
@@ -48,4 +51,6 @@ class MarkdownNote extends UNISYS.Component {
   }
 }
 
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = MarkdownNote;

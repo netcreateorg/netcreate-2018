@@ -1,47 +1,42 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    Prototype Simple NetCreate Node Editor
+  Prototype Simple NetCreate Node Editor
 
-    Built for Version 2.0 ITEST.
+  Built for Version 2.0 ITEST.
 
-    Provides a viewer and editor for the currently selected node.
+  Provides a viewer and editor for the currently selected node.
 
-    USAGE
+  USAGE
 
-      <NCNode />
+    <NCNode />
 
-    Main changes for 2.0:
-    * Node data is made up of built-in parameters (e.g. label, provenance),
-      and arbitrary custom parameters defined via the template.  This Node
-      editor can support wide variety of data.
+  Main changes for 2.0:
+  * Node data is made up of built-in parameters (e.g. label, provenance),
+    and arbitrary custom parameters defined via the template.  This Node
+    editor can support wide variety of data.
 
-    DATA UPDATES
-    * Updates are triggered mostly by:
-      1.  SELECTION state updates when nodes and edges change
-      2.  PERMISSION state updates when locks are set and released.
+  DATA UPDATES
+  * Updates are triggered mostly by:
+    1.  SELECTION state updates when nodes and edges change
+    2.  PERMISSION state updates when locks are set and released.
 
-    Data is currently in a transitional state.
-    Currently all properties are saved in a flat list.
-    Eventually we might want to differentiate between
-    built-in properties (e.g. id, created), and template-defined custom
-    `attributes`.  There is an awkward translation between these two
-    representations during data load, update, and save.
+  Data is currently in a transitional state.
+  Currently all properties are saved in a flat list.
+  Eventually we might want to differentiate between
+  built-in properties (e.g. id, created), and template-defined custom
+  `attributes`.  There is an awkward translation between these two
+  representations during data load, update, and save.
 
 
-    PERMISSIONS
-    Editting is restricted by:
-    * User must be logged in
-    * Template is not being edited
-    * Data is not being imported
-    * Someone else is not editing the node (and has placed a lock on it)
+  PERMISSIONS
+  Editting is restricted by:
+  * User must be logged in
+  * Template is not being edited
+  * Data is not being imported
+  * Someone else is not editing the node (and has placed a lock on it)
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = false;
-const PR = 'NCNode';
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const UNISYS = require('unisys/client');
 const EDGEMGR = require('../edge-mgr'); // handles edge synthesis
@@ -50,9 +45,13 @@ const NCUI = require('../nc-ui');
 const NCEdge = require('./NCEdge');
 const SETTINGS = require('settings');
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+const PR = 'NCNode';
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const isAdmin = SETTINGS.IsAdmin();
-
-let UDATA;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const VIEWMODE = {
   EDIT: 'edit',
   VIEW: 'view'
@@ -65,6 +64,8 @@ const TABS = {
 };
 const EDGE_NOT_SET_LABEL = '...';
 const ARROW_RIGHT = `\u2794`;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let UDATA;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

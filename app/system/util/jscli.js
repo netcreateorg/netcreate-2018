@@ -1,19 +1,19 @@
 if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    JS CLI
+  JS CLI
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = true;
-const SHOW_DOM = true;
-
-/// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SETTINGS = require('settings');
 const UNISYS = require('unisys/client');
 const PROMPTS = require('system/util/prompts');
 const PR = PROMPTS.Pad('JSCLI');
+
+/// CONSTANTS & DECLARATIONS ////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = true;
+const SHOW_DOM = true;
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -42,8 +42,9 @@ JSCLI.HelpString = () => {
   return out;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ initialize registered functions
-/*/ JSCLI.Hook('RESET', () => {
+/** initialize registered functions
+ */
+JSCLI.Hook('RESET', () => {
   JSCLI.AddFunction(function ncHelp() {
     return JSCLI.HelpString();
   });

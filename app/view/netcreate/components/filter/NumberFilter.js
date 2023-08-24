@@ -25,7 +25,8 @@
           id,       // numeric id used for unique React key
           type,     // filter type, e.g "string" vs "number"
           key,      // node field key from the template
-          keylabel, // human friendly display name for the key.  This can be customized in the template.
+          keylabel, // human friendly display name for the key.
+                       This can be customized in the template.
           operator, // the comparison function, e.g. 'contains' or '>'
           value     // the search value to be used for matching
         },
@@ -44,10 +45,12 @@ import FILTER from './FilterEnums';
 import React from 'react';
 const ReactStrap = require('reactstrap');
 const { Form, FormGroup, Input, Label } = ReactStrap;
-
 const UNISYS = require('unisys/client');
-var UDATA = null;
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+var UDATA = null;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const OPERATORS = [
   FILTER.OPERATORS.NO_OP,
   FILTER.OPERATORS.GT,
@@ -58,7 +61,8 @@ const OPERATORS = [
   FILTER.OPERATORS.NOT_EQ
 ];
 
-/// CLASS /////////////////////////////////////////////////////////////////////
+/// CLASS DECLARATION /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class NumberFilter extends React.Component {
   constructor({
     group,

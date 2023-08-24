@@ -40,10 +40,12 @@ import FILTER from './FilterEnums';
 import React from 'react';
 const ReactStrap = require('reactstrap');
 const { Form, FormGroup, Input, Label } = ReactStrap;
-
 const UNISYS = require('unisys/client');
-var UDATA = null;
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+var UDATA = null;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const OPERATORS = [
   FILTER.OPERATORS.NO_OP,
   FILTER.OPERATORS.CONTAINS,
@@ -52,7 +54,8 @@ const OPERATORS = [
   FILTER.OPERATORS.IS_NOT_EMPTY
 ];
 
-/// CLASS /////////////////////////////////////////////////////////////////////
+/// CLASS DECLARATION /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class StringFilter extends React.Component {
   constructor({
     group,

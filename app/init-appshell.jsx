@@ -30,19 +30,20 @@ const { renderRoutes } = require('react-router-config');
 //
 const UNISYS = require('unisys/client');
 
-/** (1) ROUTED COMPONENTS ****************************************************\
-  Used by render()'s <Switch> to load a React component (what we call a
-  'view' in the NetCreate app). The component should return its elements
-  wrapped in a div with the suggested flexbox pr
+/// 1. MAIN VIEWS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Used by render()'s <Switch> to load a React component (what we call a
+    'view' in the NetCreate app). The component should return its elements
+    wrapped in a div with the suggested flexbox pr
 
-  index.html           | body          min-height: 100%
-  index.html           | div#app
-  init-appshell        |   div         display:flex, flex-flow:column nowrap,
-                                       width:100%, height:100vh
-  init-appshell        |     Navbar    position:fixed
-  --- COMPONENT BELOW ---
-  <RequiredComponent>  |     div       this is a child of a flexbox
-\*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+    index.html           | body          min-height: 100%
+    index.html           | div#app
+    init-appshell        |   div         display:flex, flex-flow:column nowrap,
+                                        width:100%, height:100vh
+    init-appshell        |     Navbar    position:fixed
+    --- COMPONENT BELOW ---
+    <RequiredComponent>  |     div       this is a child of a flexbox
+/*/
 const SETTINGS = require('settings');
 const AppDefault = require('view/AppDefault');
 const NetCreate = require('view/netcreate/NetCreate');
@@ -50,9 +51,7 @@ const DevUnisys = require('view/dev-unisys/DevUnisys');
 const DevDB = require('view/dev-db/DevDB');
 const DevReact = require('view/dev-react/DevReact');
 const DevSession = require('view/dev-session/DevSession');
-//  const Prototype         = require('view/prototype/Prototype');
-//  const D3Test            = require('view/d3test/D3Test');
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const Routes = [
   {
     path: '/',
@@ -97,24 +96,26 @@ const Routes = [
     component: NoMatch
   }
 ];
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Joshua added to disable Extras
 const isLocalHost = SETTINGS.EJSProp('client').ip === '127.0.0.1';
 
-/** (2) ROUTED FUNCTIONS *****************************************************\
-  Used by render()'s <Switch> to load a plain html page that is
-  located at app/htmldemos/<route>/<route.html>
+/// 2. ROUTED FUNCTIONS ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/
+    Used by render()'s <Switch> to load a plain html page that is
+    located at app/htmldemos/<route>/<route.html>
 
-  index.html           | body          min-height: 100%
-  index.html           | div#app
-  init-appshell        |   div         display:flex, flex-flow:column nowrap,
-                                       width:100%, height:100vh
-  init-appshell        |     Navbar    position:fixed
-  --- COMPONENT BELOW ---
-  init-appshell.HTML() |     div       display:flex, flex-flow:column nowrap,
-                                       width:100%
-  init-appshell.HTML() |       iframe  flex:1 0 auto, border:0
-\*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+    index.html           | body          min-height: 100%
+    index.html           | div#app
+    init-appshell        |   div         display:flex, flex-flow:column nowrap,
+                                        width:100%, height:100vh
+    init-appshell        |     Navbar    position:fixed
+    --- COMPONENT BELOW ---
+    init-appshell.HTML() |     div       display:flex, flex-flow:column nowrap,
+                                        width:100%
+    init-appshell.HTML() |       iframe  flex:1 0 auto, border:0
+/*/
 function HTML(props) {
   SETTINGS.ForceReloadOnNavigation();
   let loc = props.location.pathname.substring(1);
@@ -133,9 +134,9 @@ function HTML(props) {
   );
 }
 
-/** (3) NO ROUTE *************************************************************\
-  Used by render()'s <Switch> when there are no matching routes
-\*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+/// 3. NO ROUTE ///////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Used by render()'s <Switch> when there are no matching routes
 function NoMatch(props) {
   let hash = props.location.pathname.substring(1);
   return (
@@ -145,16 +146,14 @@ function NoMatch(props) {
   );
 }
 
-/** APPLICATION NAVBAR + SWITCHED ROUTER VIEW ********************************\
-
-    The application shell consists of a navbar implemented with Reactstrap
-    components and a React view associated with the current route via
-    ReactRouter <Switch> and <Route>.
-
-    The AppShell class is exported as the main module object for use with
-    require() statements (thanks to brunch magic)
-
-\*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+/// APPLICATION NAVBAR + ROUTER VIEW //////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** The application shell consists of a navbar implemented with Reactstrap
+ *  components and a React view associated with the current route via
+ *  ReactRouter <Switch> and <Route>.
+ *  The AppShell class is exported as the main module object for use with
+ *  require() statements (thanks to brunch magic)
+ */
 class AppShell extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /*/ constructor
@@ -169,25 +168,23 @@ class AppShell extends UNISYS.Component {
     // add UNISYS message for redirects
     this.HandleMessage('SHELL_REDIRECT', this.redirect);
   }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Handle changes in state of his toggle switch
-/*/ toggle() {
+  /** Handle changes in state of his toggle switch */
+  toggle() {
     this.setState({
       isOpen: !this.state.isOpen
     });
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Called by SHELL_REDIRECT unisys message
-/*/ redirect(data) {
+  /** Called by SHELL_REDIRECT unisys message */
+  redirect(data) {
     let { redirect } = data;
     this.props.history.push(redirect);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Draw top navbar w/ menus. Add route information
-  To add a new HTML, add the link to both the <Nav> and <Switch> staments.
-  To add a new VIEW, load the component
-/*/ render() {
+  /** Draw top navbar w/ menus. Add route information
+   *  To add a new HTML, add the link to both the <Nav> and <Switch> staments.
+   *  To add a new VIEW, load the component
+   */
+  render() {
     /// return component with matching routed view
     return (
       <div
@@ -254,6 +251,7 @@ class AppShell extends UNISYS.Component {
 } // AppShell()
 
 /// EXPORT ROUTE INFO /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 AppShell.Routes = Routes;
 
 /// EXPORT REACT CLASS ////////////////////////////////////////////////////////

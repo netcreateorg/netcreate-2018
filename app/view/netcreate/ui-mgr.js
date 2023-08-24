@@ -7,13 +7,9 @@
   It maps the template-schema variables to
   the visual display of components.
 
-
-
-
   What does it take care of?
   * order of display items?
   * visible status?
-
 
   Available Field Types
   * string
@@ -26,19 +22,17 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS = require('unisys/client');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+const PR = 'ui-mgr: ';
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var MOD = UNISYS.NewModule(module.id);
 var UDATA = UNISYS.NewDataLink(MOD);
-
-/// CONSTANTS /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
-const PR = 'ui-mgr: ';
 
 // /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 // /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -12,28 +12,23 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS = require('unisys/client');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+const PR = 'edge-mgr: ';
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var MOD = UNISYS.NewModule(module.id);
 var UDATA = UNISYS.NewDataLink(MOD);
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
-const PR = 'edge-mgr: ';
-
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ lifecycle INITIALIZE handler
-/*/
+/// lifecycle INITIALIZE handler
 MOD.Hook('INITIALIZE', () => {
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ FILTEREDNCDATA is updated by filter-mgr after NCDATA is changed.
-  /*/
+  // FILTEREDNCDATA is updated by filter-mgr after NCDATA is changed.
   UDATA.OnAppStateChange('FILTEREDNCDATA', data => {
     m_RenderEdges(data);
   });
@@ -41,13 +36,11 @@ MOD.Hook('INITIALIZE', () => {
 
 /// PUBLIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Looks up the edge color defined in the passed TEMPLATE
- * Fall back to default if type is not defined
- * @param {Object} edge
- * @param {Object} TEMPLATE
- * @returns {string} e.g. '#FF00FF' as defined by TEMPLATE type.option
+/** Looks up the edge color defined in the passed TEMPLATE
+ *  Fall back to default if type is not defined
+ *  @param {Object} edge
+ *  @param {Object} TEMPLATE
+ *  @returns {string} e.g. '#FF00FF' as defined by TEMPLATE type.option
  *                   or `undefined` if no color type is defined
  */
 MOD.LookupEdgeColor = (edge, TEMPLATE) => {
@@ -58,11 +51,10 @@ MOD.LookupEdgeColor = (edge, TEMPLATE) => {
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * m_RenderEdges uses a Map to reduce duplicate edges into a single
- * edge, calculating edge size based on edge.weight parameter along the way.
- * @param {Object} data FILTEREDNCDATA e.g. { nodes, edges }
- * @return Updates VDATA AppState
+/** m_RenderEdges uses a Map to reduce duplicate edges into a single
+ *  edge, calculating edge size based on edge.weight parameter along the way.
+ *  @param {Object} data FILTEREDNCDATA e.g. { nodes, edges }
+ *  @return Updates VDATA AppState
  */
 function m_RenderEdges(data) {
   const DEFAULT_SIZE = 1;

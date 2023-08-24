@@ -1,4 +1,4 @@
-/** NetMessage ****************************************************************\
+/*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   NetMessage objects are sent between the browser and server as part of the
   UNISYS messaging system. Unlike NetMessages of the previous version of STEP,
@@ -16,25 +16,25 @@
   callback. For more details, see the CallSequence class that manages
   the passing of data.
 
-////////////////////////////////////////////////////////////////////////////////
-/** MODULE DECLARATIONS *******************************************************/
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = { send: false, transact: false };
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var m_id_counter = 0;
 var m_id_prefix = 'PKT';
 var m_transactions = {};
 var m_netsocket = null;
 var m_group_id = null;
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const M_INIT = 'init';
 const M_ONLINE = 'online';
 const M_STANDALONE = 'offline';
 const M_CLOSED = 'closed';
 const M_ERROR = 'error';
 var m_mode = M_INIT;
-
-// constants
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPTS = require('../system/util/prompts');
 const PR = PROMPTS.Pad('PKT');
 const ERR = ':ERR:';

@@ -1,8 +1,8 @@
 if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    LOCAL SETTINGS
-    utility function for managing local
+  LOCAL SETTINGS
+  utility function for managing local
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 

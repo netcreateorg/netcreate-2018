@@ -1,23 +1,25 @@
+/*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
+
 if (window.NC_DBG) console.log(`inc ${module.id}`);
-/// SYSTEM INTEGRATION ////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS = require('unisys/client');
 const REFLECT = require('system/util/reflection');
 const LOGIC = require('./devreact-logic');
 const { Route } = require('react-router-dom');
-
-var DBG = true;
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const PROMPTS = require('system/util/prompts');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+var DBG = true;
 const PR = PROMPTS.Pad('DevReact');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ This is the root component for the view
-/*/ class DevReact extends UNISYS.Component {
+/** This is the root component for the view
+ */
+class DevReact extends UNISYS.Component {
   constructor(props) {
     super(props);
     UNISYS.ForceReloadOnNavigation();
@@ -64,11 +66,11 @@ const PR = PROMPTS.Pad('DevReact');
       </p>
     );
   }
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Try to route the following
-      http://localhost:3000/#dev-unisys/use/student/UNIT_KEY/USER_KEY/
-  /*/ render() {
+  /** Try to route the following
+   *  http://localhost:3000/#dev-unisys/use/student/UNIT_KEY/USER_KEY/
+   */
+  render() {
     return (
       <div id="fdshell" style={{ padding: '10px' }}>
         <h2>UNISYS-REACT INTEGRATION TEST SHELL</h2>
@@ -83,8 +85,8 @@ const PR = PROMPTS.Pad('DevReact');
 } // class DevUnisys
 
 /// EXPORT UNISYS SIGNATURE ///////////////////////////////////////////////////
-/// used in init.jsx to set module scope early
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// used in init.jsx to set module scope early
 DevReact.UMOD = module.id;
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////

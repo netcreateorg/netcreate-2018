@@ -1,101 +1,97 @@
+/* eslint-disable prefer-reflect */
+/* d3.call() is false-triggering the above rule */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    NCGraphRenderer
+  NCGraphRenderer
 
-    This uses D3 Version 4.0.
+  This uses D3 Version 4.0.
 
-    This is a pure data renderer based on d3-simplenetgraph.
-    It does not rely on any outside data sources/dependencies or UNISYS calls.
+  This is a pure data renderer based on d3-simplenetgraph.
+  It does not rely on any outside data sources/dependencies or UNISYS calls.
 
-    The one exception is that `mouseover` and `node click` events are
-    broadcast through UNISYS calls.
+  The one exception is that `mouseover` and `node click` events are
+  broadcast through UNISYS calls.
 
-    This is designed to work with the NCGraph React component.
+  This is designed to work with the NCGraph React component.
 
-    NCGraph calls NCGraphRenderer.SetData whenever it receives an updated data object.
-    This triggers NCGraphRenderer to redraw itself.
+  NCGraph calls NCGraphRenderer.SetData whenever it receives an updated data object.
+  This triggers NCGraphRenderer to redraw itself.
 
+  VDATA
+  -----
+  The data for display is generally referred to as VDATA, for visual
+  rendering data.
 
-
-    VDATA
-    -----
-    The data for display is generally referred to as VDATA, for visual
-    rendering data.
-
-      VDATA = { nodes:Object, edges:Object }
-      nodes = [ ...{ id :number,
-                     label :string,
-                     selected :boolean,
-                     selectedSecondary :boolean,  // for selected source/target node
-                     size :number,
-                     color :string(css),
-                     opacity :number(0-1),
-                     strokeColor :string(css),
-                     strokeWidth :number,
-                     textColor :string(css),
-                     help :string
-                   }],
-      edges = [ ...{ id :number,
-                     sourceId :number,
-                     targetId :number,
-                     size: number,
-                     color: string(css),
-                     opacity: number(0-1)
-                   }]
+    VDATA = { nodes:Object, edges:Object }
+    nodes = [ ...{ id :number,
+                    label :string,
+                    selected :boolean,
+                    selectedSecondary :boolean,  // for selected source/target node
+                    size :number,
+                    color :string(css),
+                    opacity :number(0-1),
+                    strokeColor :string(css),
+                    strokeWidth :number,
+                    textColor :string(css),
+                    help :string
+                  }],
+    edges = [ ...{ id :number,
+                    sourceId :number,
+                    targetId :number,
+                    size: number,
+                    color: string(css),
+                    opacity: number(0-1)
+                  }]
 
 
-    Using NCGraphRenderer
-    ---------------------
-    Embed NCGraphRender in a parent component.  See NCGraph for an example of use.
-    1. const graph = NCGraphRender(this.dom) -- Root element to attach the SVG graph to
-    2. graph.SetData(VDATA) -- Define data to draw
-       graph.UpdateGraph()   -- Force a redraw using the loaded data set
+  Using NCGraphRenderer
+  ---------------------
+  Embed NCGraphRender in a parent component.  See NCGraph for an example of use.
+  1. const graph = NCGraphRender(this.dom) -- Root element to attach the SVG graph to
+  2. graph.SetData(VDATA) -- Define data to draw
+      graph.UpdateGraph()   -- Force a redraw using the loaded data set
 
-    External Controls
-    * graph.ZoomReset()
-    * graph.ZoomIn()
-    * graph.ZoomOut()
-
-
-    Zoom/Pan
-    --------
-    Zooming/panning is handled via D3's zoom() function.  Basically it
-    involves creating a `g` element that wraps the node and link elements
-    and applying transforms on that wrapper.
+  External Controls
+  * graph.ZoomReset()
+  * graph.ZoomIn()
+  * graph.ZoomOut()
 
 
-    Provenance
-    ----------
-    d3-simplenetgraph was based on:
-    *  rdpoor's commented version of mbostock's original code
-       https://gist.github.com/rdpoor/3a66b3e082ffeaeb5e6e79961192f7d8
-    *  danilo's v4 update
-       https://bl.ocks.org/tezzutezzu/cd04b3f1efee4186ff42aae66c87d1a7
-    *  mbostock's general update pattern
-       https://bl.ocks.org/mbostock/3808218
-    *  Coderwall's zoom and pan method
-       https://coderwall.com/p/psogia/simplest-way-to-add-zoom-pan-on-d3-js
-    *  Vladyslav Babenko's zoom buttons example
-       https://jsfiddle.net/vbabenko/jcsqqu6j/9/
+  Zoom/Pan
+  --------
+  Zooming/panning is handled via D3's zoom() function.  Basically it
+  involves creating a `g` element that wraps the node and link elements
+  and applying transforms on that wrapper.
+
+
+  Provenance
+  ----------
+  d3-simplenetgraph was based on:
+  *  rdpoor's commented version of mbostock's original code
+      https://gist.github.com/rdpoor/3a66b3e082ffeaeb5e6e79961192f7d8
+  *  danilo's v4 update
+      https://bl.ocks.org/tezzutezzu/cd04b3f1efee4186ff42aae66c87d1a7
+  *  mbostock's general update pattern
+      https://bl.ocks.org/mbostock/3808218
+  *  Coderwall's zoom and pan method
+      https://coderwall.com/p/psogia/simplest-way-to-add-zoom-pan-on-d3-js
+  *  Vladyslav Babenko's zoom buttons example
+      https://jsfiddle.net/vbabenko/jcsqqu6j/9/
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = false;
-const PR = 'NCGraphRenderer';
-
-/* eslint-disable prefer-reflect */
-/* d3.call() is false-triggering the above rule */
-
-/// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const d3 = require('d3');
 const UNISYS = require('unisys/client');
 var UDATA = null;
 
-/// PRIVATE VARS //////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+const PR = 'NCGraphRenderer';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let m_width = 800;
 let m_height = 800;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const M_FORCEPROPERTIES = {
   // values for all forces
   center: {

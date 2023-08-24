@@ -2,11 +2,9 @@
 
   FILTER MANAGER
 
-
   Filter Definitions
 
   The initial filter definitions are loaded from the current database template.
-
 
     FILTERDEFS = {
         nodes: {                    // group
@@ -42,7 +40,6 @@
         }
     }
 
-
   FEATURES
 
   * See Whimiscal [diagram](https://whimsical.com/d3-data-flow-B2tTGnQYPSNviUhsPL64Dz)
@@ -67,50 +64,43 @@
         is reading directly from the _default.template file.  You can easily
         insert another filter into the mix programmatically.
 
-
-
-\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
-
-/* JD added some global settins for filters
+  JD added some global settins for filters
     Settings
       Transparency
         Nodes
         Edges
 
-        NOTE: Default is hand-set to 0 for now, but this should be in a / the template
-    */
+  NOTE: Default is hand-set to 0 for now, but this should be in a / the template
 
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
+
 import FILTER from './components/filter/FilterEnums';
 const UNISYS = require('unisys/client');
 const clone = require('rfdc')();
 const UTILS = require('./nc-utils');
+const PROMPTS = require('system/util/prompts');
+const NCLOGIC = require('./nc-logic');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var MOD = UNISYS.NewModule(module.id);
 var UDATA = UNISYS.NewDataLink(MOD);
 
-/// APP STATE/DATA STRUCTURES /////////////////////////////////////////////////
-const PROMPTS = require('system/util/prompts');
-const NCLOGIC = require('./nc-logic');
-
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+const PR = 'filter-mgr: ';
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var TEMPLATE = null; // template definition for prompts
 var FILTERDEFS_RESTORE; // pristine FILTERDEFS for clearing
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let NODE_DEFAULT_TRANSPARENCY;
 let EDGE_DEFAULT_TRANSPARENCY;
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let RemovedNodes = []; // nodes removed via COLLAPSE filter action
-
-/// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DATASET = window.NC_CONFIG.dataset || 'netcreate';
 const TEMPLATE_URL = `templates/${DATASET}.json`;
-
-const DBG = false;
-const PR = 'filter-mgr: ';
 
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -189,9 +179,7 @@ MOD.Hook('INITIALIZE', () => {
 
 /// IMPORT FILTER DEFINITIONS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * Loads filters from template file
+/** Loads filters from template file
  */
 function m_ImportFilters() {
   TEMPLATE = UDATA.AppState('TEMPLATE');
@@ -225,7 +213,7 @@ function m_ImportFilters() {
   // Save off a copy for clearing the form.
   FILTERDEFS_RESTORE = clone(fdefs);
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_ImportPrompts(prompts) {
   let filters = [];
   let counter = 0;
@@ -285,10 +273,8 @@ function m_ImportPrompts(prompts) {
 
 /// UDATA HANDLERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * Define an individual filter
- * @param {Object} data {group, filter}
+/** Define an individual filter
+ *  @param {Object} data {group, filter}
  */
 function m_FilterDefine(data) {
   const FILTERDEFS = UDATA.AppState('FILTERDEFS');
@@ -318,10 +304,9 @@ function m_FilterDefine(data) {
   }
   UDATA.SetAppState('FILTERDEFS', FILTERDEFS);
 }
-
-/**
- * Walk down the list of filters and apply them all
- * @param {Object} data A UDATA pkt {defs}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Walk down the list of filters and apply them all
+ *  @param {Object} data A UDATA pkt {defs}
  */
 function m_FiltersApply() {
   const FILTEREDNCDATA = UDATA.AppState('NCDATA');
@@ -356,13 +341,13 @@ function m_FiltersApply() {
   UDATA.SetAppState('FILTEREDNCDATA', FILTEREDNCDATA);
   // edge-mgr handles this call and updates VDATA, which is rendered by d3-simplenetgraph
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_ClearFilters() {
   // Reload fdata
   const FILTERDEFS = clone(FILTERDEFS_RESTORE);
   UDATA.SetAppState('FILTERDEFS', FILTERDEFS);
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_UpdateFilterSummary() {
   const FILTERDEFS = UDATA.AppState('FILTERDEFS');
 
@@ -383,12 +368,12 @@ function m_UpdateFilterSummary() {
 
   UDATA.LocalCall('FILTER_SUMMARY_UPDATE', { filtersSummary: summary });
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_UpdateFilters() {
   m_FiltersApply();
   m_UpdateFilterSummary();
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_FiltersToString(filters) {
   let summary = '';
   filters.forEach(filter => {
@@ -404,14 +389,13 @@ function m_FiltersToString(filters) {
   });
   return summary;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_OperatorToString(operator) {
   return FILTER.OPERATORS[operator].label;
 }
 
+/// UTILITY FUNCTIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ UTILITY FUNCTIONS
-/*/
-
 function m_MatchString(pin, haystack, contains = true) {
   pin = NCLOGIC.EscapeRegexChars(pin.trim());
   const regex = new RegExp(/*'^'+*/ pin, 'i');
@@ -426,7 +410,7 @@ function m_MatchString(pin, haystack, contains = true) {
   }
   return matches;
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_MatchNumber(operator, filterVal, objVal) {
   let matches;
   if (filterVal === '') {
@@ -459,14 +443,10 @@ function m_MatchNumber(operator, filterVal, objVal) {
   return matches;
 }
 
+/// NODE FILTERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ NODE FILTERS
-/*/
-
-/**
- * Side effect:
- *   FILTEREDNCDATA.nodes are updated with `isFilteredOut` flags.
- *
+/** Side effect:
+ *  FILTEREDNCDATA.nodes are updated with `isFilteredOut` flags.
  * @param {Array} filters
  */
 function m_FiltersApplyToNodes(FILTERDEFS, FILTEREDNCDATA) {
@@ -541,7 +521,7 @@ function m_NodeIsFiltered(node, FILTERDEFS) {
   //   node.filteredTransparency = 1.0; // opaque, not tranparent
   // }
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_IsNodeMatchedByFilter(node, filter) {
   if (
     filter.key === undefined ||
@@ -568,10 +548,8 @@ function m_IsNodeMatchedByFilter(node, filter) {
   }
 }
 
+/// EDGE FILTERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ EDGE FILTERS
-/*/
-
 function m_FiltersApplyToEdges(FILTERDEFS, FILTEREDNCDATA) {
   const { filterAction } = FILTERDEFS;
   const { filters, transparency } = FILTERDEFS.edges;
@@ -586,9 +564,9 @@ function m_FiltersApplyToEdges(FILTERDEFS, FILTEREDNCDATA) {
     );
   });
 }
-
-/*/ Side effect: Sets `isFiltered`
-/*/
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Side effect: Sets `isFiltered`
+ */
 function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDNCDATA) {
   // let all_no_op = true; // all filters are no_op
   let keepEdge = true;
@@ -673,7 +651,7 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDNCD
   // } else {
   // }
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_IsEdgeMatchedByFilter(edge, filter) {
   if (
     filter.key === undefined ||
@@ -708,19 +686,16 @@ function m_IsEdgeMatchedByFilter(edge, filter) {
   }
 }
 
+/// FOCUS FILTERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ FOCUS FILTERS
-/*/
-
-/**
- * Returns an Map of node ids that are directly connected to the passed `nodeId`
- * Uses a Map so there are no redundancies.
- * A more efficient search targeted on looking up nodes
- * @param {object} puredata Raw/pure data from NCData
- * @param {array} puredata.nodes
- * @param {array} puredata.edges where edge.source and edge.target are numeric ids
- * @param {string} nodeId The source nodeId to start the search from
- * @returns {map} Map of matching nodeIds {number}
+/** Returns an Map of node ids that are directly connected to the passed `nodeId`
+ *  Uses a Map so there are no redundancies.
+ *  A more efficient search targeted on looking up nodes
+ *  @param {object} puredata Raw/pure data from NCData
+ *  @param {array} puredata.nodes
+ *  @param {array} puredata.edges where edge.source and edge.target are numeric ids
+ *  @param {string} nodeId The source nodeId to start the search from
+ *  @returns {map} Map of matching nodeIds {number}
  */
 function m_FindConnectedNodeIds(puredata, nodeId) {
   let returnMatches = new Map();
@@ -730,14 +705,13 @@ function m_FindConnectedNodeIds(puredata, nodeId) {
   });
   return returnMatches;
 }
-
-/**
- * Recursively walks down the network starting from the sourceNodes
- * There can be more than one sourceNodes, e.g. this can set values starting with any number of nodes
- * Modifies puredata by reference
- * @param {object} puredata {nodes, edges}
- * @param {array} sourceNodes {string}
- * @param {number} range
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Recursively walks down the network starting from the sourceNodes
+ *  There can be more than one sourceNodes, e.g. this can set values starting with any number of nodes
+ *  Modifies puredata by reference
+ *  @param {object} puredata {nodes, edges}
+ *  @param {array} sourceNodes {string}
+ *  @param {number} range
  */
 function m_SetBaconValue(bacon_value, max_bacon_value, puredata, sourceNodes) {
   if (bacon_value > max_bacon_value) return;
@@ -761,15 +735,14 @@ function m_SetBaconValue(bacon_value, max_bacon_value, puredata, sourceNodes) {
       m_SetBaconValue(bacon_value + 1, max_bacon_value, puredata, newNodes);
   });
 }
-
-/**
- * Prepares `puredata` (aka FILTEREDNCDATA) for filtering by
- * seeding node data with "degrees of separation" (aka "bacon_value") from the selected node
- * Uses FILTERDEFS specifications for the focus selection and range
- * Modifies puredata by reference
- * This should generally be called right before filtering is applied
- * @param {*} FILTERDEFS
- * @param {*} puredata
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Prepares `puredata` (aka FILTEREDNCDATA) for filtering by
+ *  seeding node data with "degrees of separation" (aka "bacon_value") from the selected node
+ *  Uses FILTERDEFS specifications for the focus selection and range
+ *  Modifies puredata by reference
+ *  This should generally be called right before filtering is applied
+ *  @param {*} FILTERDEFS
+ *  @param {*} puredata
  */
 function m_FocusPrep(FILTERDEFS, puredata) {
   const { source, range } = FILTERDEFS.focus;
@@ -785,12 +758,11 @@ function m_FocusPrep(FILTERDEFS, puredata) {
   // Initiate the crawl starting at 1 with the source node
   m_SetBaconValue(1, range, puredata, [source]);
 }
-
-/**
- * Called when SELECTION appState changes, e.g. user has clicked on a node
- * while in FOCUS View.
- * @param {object} data
- * @param {array} data.nodes array of node objects
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Called when SELECTION appState changes, e.g. user has clicked on a node
+ *  while in FOCUS View.
+ *  @param {object} data
+ *  @param {array} data.nodes array of node objects
  */
 function m_SetFocus(data) {
   const selectedNode = data.nodes[0];
@@ -805,11 +777,8 @@ function m_SetFocus(data) {
     range: FILTERDEFS.focus.range
   };
   UDATA.SetAppState('FILTERDEFS', FILTERDEFS);
-
   // Actual filtering is done by m_FiltersApply call after FILTERDEFS change
 }
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

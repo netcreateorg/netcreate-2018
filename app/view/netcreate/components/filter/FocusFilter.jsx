@@ -12,11 +12,14 @@
 import React from 'react';
 const ReactStrap = require('reactstrap');
 const { Form, FormGroup, Input, Label } = ReactStrap;
-
 const UNISYS = require('unisys/client');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var UDATA = null;
 
 /// CLASS /////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class FocusFilter extends React.Component {
   constructor({ focusRange }) {
     super();

@@ -1,22 +1,23 @@
 if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    UNISYS STATE CLASS
+  UNISYS STATE CLASS
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+const REACT = require('react');
+const TYPEOF = require('type-detect');
+const Messager = require('unisys/client-messager-class');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const BAD_NSPACE = 'namespace must be string without _ chars';
 const BAD_LISTENR = 'listener must be function';
 const NO_UID_FLTR =
   'UNISYS.OnStateChange: pass DST_UID parameter to enable echo cancellation';
 const WARN_PROP_MISMATCH = 'MergeState is changing a property type';
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const REACT = require('react');
-const TYPEOF = require('type-detect');
-const Messager = require('unisys/client-messager-class');
 
 /// MODULE DECLARATIONS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

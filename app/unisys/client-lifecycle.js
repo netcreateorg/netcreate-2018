@@ -1,18 +1,16 @@
 if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    LifeCycle - A system manager for application lifecycle events.
+  LifeCycle - A system manager for application lifecycle events.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = window.NC_DBG && window.NC_DBG.lifecycle;
-const BAD_PATH = "module_path must be a string derived from the module's module.id";
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PATH = require('system/util/path');
 
-/// DECLARATIONS //////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = window.NC_DBG && window.NC_DBG.lifecycle;
+const BAD_PATH = "module_path must be a string derived from the module's module.id";
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var PHASE_HOOKS = new Map(); // functions that might right a Promise
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

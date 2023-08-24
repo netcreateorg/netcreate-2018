@@ -1,37 +1,36 @@
 if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    TEST REACT INTEGRATION through UNISYS
+  TEST REACT INTEGRATION through UNISYS
 
-    Things that UNISYS has to do:
-    [x] handle startup phases
-    [ ] how to handle the update cycle? need to review bencode
-    [ ] how to handle loading of app settings? punt
-    [ ] using subscribers
+  Things that UNISYS has to do:
+  [x] handle startup phases
+  [ ] how to handle the update cycle? need to review bencode
+  [ ] how to handle loading of app settings? punt
+  [ ] using subscribers
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-/// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SETTINGS = require('settings');
 const UNISYS = require('unisys/client');
 // master TEST enable is in DevUnisys.JSX constructor()
 // but most are tested and passed in this module
 const TEST = require('test');
-
-/// DEBUG SUPPORT /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = { handler: false };
 const PROMPTS = require('system/util/prompts');
 const JSCLI = require('system/util/jscli');
-// these constants are used in m_StartTests()
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = { handler: false };
+const PR = PROMPTS.Pad('DUL');
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// these constants are used in m_StartTests()
 const TEST_WAIT = 3000;
 var TEST_TIMER = null;
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // module 1
-const PR = PROMPTS.Pad('DUL');
 var MOD = UNISYS.NewModule(module.id);
 var UDATA = UNISYS.NewDataLink(MOD);
 // module 2
@@ -41,9 +40,10 @@ const PR2 = PROMPTS.Pad('DUL-REM');
 
 /// CONFIGURE TESTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ TEST_CONF lifecycle hook runs before anything else except for unscoped
-    code in a module
-/*/ MOD.Hook('TEST_CONF', function () {
+/** TEST_CONF lifecycle hook runs before anything else except for unscoped
+ *  code in a module
+ */
+MOD.Hook('TEST_CONF', function () {
   /* CONFIGURE UNISYS TESTS */
   // enable debug output and tests
   // true = enabled, false = skip
@@ -58,9 +58,10 @@ const PR2 = PROMPTS.Pad('DUL-REM');
 
 /// LIFECYCLE TESTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ First INITIALIZE Hook takes some time to resolve asynchronously
-    Enable this feature by returning a Promise
-/*/ MOD.Hook('INITIALIZE', function () {
+/** First INITIALIZE Hook takes some time to resolve asynchronously
+ *  Enable this feature by returning a Promise
+ */
+MOD.Hook('INITIALIZE', function () {
   if (!TEST('hook')) return Promise.resolve('immediate');
   TEST.Pass('hookInit1');
   let tms = 1000;
@@ -75,17 +76,19 @@ const PR2 = PROMPTS.Pad('DUL-REM');
   return p;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Second INITIALIZE Hook just runs a normal function.
-    Enable this feature by returning a Function
-/*/ MOD.Hook('INITIALIZE', function () {
+/** Second INITIALIZE Hook just runs a normal function.
+ *  Enable this feature by returning a Function
+ */
+MOD.Hook('INITIALIZE', function () {
   if (TEST('hook')) TEST.Pass('hookInit2');
 }); // end INITIALIZE 2
 
 /// OTHER TESTS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Initialize message handlers during INITIALIZE so we can run them later
-    during START
-/*/ MOD.Hook('INITIALIZE', function () {
+/** Initialize message handlers during INITIALIZE so we can run them later
+ *  during START
+ */
+MOD.Hook('INITIALIZE', function () {
   if (TEST('call')) {
     // 'TEST_CALL' is invoked from DevUnisys.jsx
     UDATA.HandleMessage('TEST_CALL', data => {
@@ -106,7 +109,6 @@ const PR2 = PROMPTS.Pad('DUL-REM');
       return Object.assign(data, { multi: 'MultiData' });
     });
   }
-
   // 'REMOTE_CALL_TEST' is invoked from MOD2
   // note that there are multiple handlers for 'REMOTE_CALL_TEST'
   // to test collecting data from all of them
@@ -126,8 +128,8 @@ const PR2 = PROMPTS.Pad('DUL-REM');
 
 /// TEST STATE ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Initialize in module 1
-/*/ MOD.Hook('INITIALIZE', function () {
+/// Initialize in module 1
+MOD.Hook('INITIALIZE', function () {
   let state = {
     deep: { deep_a: 1 },
     arr: [1, 3, 2],
@@ -139,8 +141,8 @@ const PR2 = PROMPTS.Pad('DUL-REM');
   };
   UDATA.ConcatAppState('testconcat', state);
 });
-/*/ Initialize in module 2
-/*/ MOD2.Hook('INITIALIZE', function () {
+/// Initialize in module 2
+MOD2.Hook('INITIALIZE', function () {
   let state = {
     deep: { deep_b: 2 },
     arr: [10, 11, 12],
@@ -152,8 +154,8 @@ const PR2 = PROMPTS.Pad('DUL-REM');
   };
   UDATA.ConcatAppState('testconcat', state);
 });
-/*/ test merging in module 2
-/*/ MOD2.Hook('START', function () {
+/// test merging in module 2
+MOD2.Hook('START', function () {
   let expected =
     '{"deep":{"deep_a":1,"deep_b":2},"arr":[1,3,2,10,11,12],"a":1,"b":2}';
   let serialized = JSON.stringify(UDATA2.AppState('testmerge'));
@@ -166,9 +168,10 @@ const PR2 = PROMPTS.Pad('DUL-REM');
 
 /// APP_READY MESSAGE REGISTRATION ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ The APP_READY hook is fired after all initialization phases have finished
-    and may also fire at other times with a valid info packet
-/*/ MOD.Hook('APP_READY', function (info) {
+/** The APP_READY hook is fired after all initialization phases have finished
+ *  and may also fire at other times with a valid info packet
+ */
+MOD.Hook('APP_READY', function (info) {
   info = info || {};
   if (TEST('hook')) TEST.Pass('hookStart');
   UNISYS.RegisterMessagesPromise().then(data => {
@@ -179,10 +182,11 @@ const PR2 = PROMPTS.Pad('DUL-REM');
 
 /// SECOND MODULE for MODULE-to-MODULE TESTS //////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ MOD2 is a completely different UNISYS MODULE declaration for ensuring that
-    modules can access data in other modules. Has its own LIFECYCLE naturally.
-    First declare message handlers during INITIALIZE
-/*/ MOD2.Hook('INITIALIZE', function () {
+/** MOD2 is a completely different UNISYS MODULE declaration for ensuring that
+ *  modules can access data in other modules. Has its own LIFECYCLE naturally.
+ *  First declare message handlers during INITIALIZE
+ */
+MOD2.Hook('INITIALIZE', function () {
   if (TEST('remote')) {
     UDATA2.HandleMessage('REMOTE_CALL_TEST', data => {
       if (data && Array.isArray(data.results)) {
@@ -195,8 +199,9 @@ const PR2 = PROMPTS.Pad('DUL-REM');
   }
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Now test message handlers during START
-/*/ MOD2.Hook('START', function () {
+/** Now test message handlers during START
+ */
+MOD2.Hook('START', function () {
   if (TEST('remote')) {
     // test remote data call (local, not network)
     UDATA2.LocalCall('REMOTE_CALL_TEST', { mycat: 'kitty', results: [] }).then(
@@ -206,12 +211,12 @@ const PR2 = PROMPTS.Pad('DUL-REM');
     );
   }
 });
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Test State is set during start
-    'test' a,b were set by separate INITIALIZE methods
-    in different modules
-/*/ MOD2.Hook('START', function () {
+/** Test State is set during start
+ *  'test' a,b were set by separate INITIALIZE methods
+ *  in different modules
+ */
+MOD2.Hook('START', function () {
   if (TEST('remote')) {
     // test remote data call (local, not network)
     UDATA2.LocalCall('REMOTE_CALL_TEST', { mycat: 'kitty', results: [] }).then(
@@ -224,8 +229,9 @@ const PR2 = PROMPTS.Pad('DUL-REM');
 
 /// SERVER CALL TESTS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Now test message handlers during START
-/*/ MOD2.Hook('START', function () {
+/** Now test message handlers during START
+ */
+MOD2.Hook('START', function () {
   // TEST SERVER NETWORK CALL
   if (TEST('server')) {
     // used for order testing
@@ -263,8 +269,8 @@ const PR2 = PROMPTS.Pad('DUL-REM');
 
 /// UNISYS NETWORK SEND/CALL/SIGNAL TESTS /////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ define test handler
-/*/ MOD2.Hook('INITIALIZE', function () {
+/// define test handler
+MOD2.Hook('INITIALIZE', function () {
   if (TEST('net')) {
     UDATA2.HandleMessage('NET_CALL_TEST', data => {
       // console.log(`*** NET_CALL_TEST (1) got data called by ${JSON.stringify(data.stack)} from socket ${UNISYS.SocketUADDR()}`);
@@ -299,8 +305,8 @@ const PR2 = PROMPTS.Pad('DUL-REM');
   }
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ invoke test handler on OTHER instance
-/*/ MOD2.Hook('START', function () {
+/// invoke test handler on OTHER instance
+MOD2.Hook('START', function () {
   setTimeout(delayed_send, 2000);
   // inline function
   function delayed_send() {
@@ -325,10 +331,11 @@ const PR2 = PROMPTS.Pad('DUL-REM');
 
 /// TEST STARTUP //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ The START phase executes after INITIALIZE has completed.
-    we register handlers to the VIEW state namespace,
-    and also set different namespace states on timers
-/*/ MOD.Hook('START', function () {
+/** The START phase executes after INITIALIZE has completed.
+ *  we register handlers to the VIEW state namespace,
+ *  and also set different namespace states on timers
+ */
+MOD.Hook('START', function () {
   /// ASSESS TESTS AFTER TEST_WAIT MS
   console.log('*** RUNNING UNISYS TESTS ***');
   TEST.SetTitle('RUNNING TESTS');
@@ -336,8 +343,8 @@ const PR2 = PROMPTS.Pad('DUL-REM');
   TEST_TIMER = setTimeout(TEST.Assess, TEST_WAIT);
 
   /// STATE CHANGE TESTING
-  /*/ register state change handler for 'VIEW' namespace
-  /*/ if (TEST('state')) {
+  /// register state change handler for 'VIEW' namespace
+  if (TEST('state')) {
     UDATA.OnAppStateChange('VIEW', state => {
       TEST.Pass('stateChange');
     });
@@ -349,8 +356,8 @@ const PR2 = PROMPTS.Pad('DUL-REM');
   } // if TEST state
 
   /// NETWORK TESTING
-  /*/ remote method invocation of REMOTE_CALL_TEST is expected to return data in a callback
-  /*/ if (TEST('remote')) {
+  /// remote method invocation of REMOTE_CALL_TEST is expected to return data in a callback
+  if (TEST('remote')) {
     UDATA.HandleMessage('REMOTE_CALL_TEST', (data, msgcon) => {
       // 'REMOTE_CALL_TEST' is also implemented in DevUnisys.jsx
       // so its return data will be merged with this
@@ -365,9 +372,9 @@ const PR2 = PROMPTS.Pad('DUL-REM');
     });
   } // if TEST remote
 
-  /*/ call counter function 3 times 500ms apart, then check that all tests passed
-      set a periodic timer update
-  /*/ var TESTCOUNTER = 3;
+  /// call counter function 3 times 500ms apart, then check that all tests passed
+  /// set a periodic timer update
+  var TESTCOUNTER = 3;
   var TESTINTERVAL = setInterval(function () {
     if (--TESTCOUNTER < 0) {
       clearInterval(TESTINTERVAL);

@@ -1,57 +1,56 @@
+/* eslint-disable prefer-reflect */
+/* d3.call() is false-triggering the above rule */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-
-    DEPRECATED -- NCGraphRenderer replaces d3-simplenetgraph
-
+  DEPRECATED -- NCGraphRenderer replaces d3-simplenetgraph
 
 
 
-    D3 Simple NetGraph
 
-    This uses D3 Version 4.0.
+  D3 Simple NetGraph
 
-    This is designed to work with the NetGraph React component.
+  This uses D3 Version 4.0.
 
-    NetGraph calls SetData whenever it receives an updated data object.
-    This triggers D3NetGraph to redraw itself.
+  This is designed to work with the NetGraph React component.
 
-    This simplified version derived from D3NetGraph.js was created to address
-    a problem with links not updating properly.
+  NetGraph calls SetData whenever it receives an updated data object.
+  This triggers D3NetGraph to redraw itself.
 
-    The first implementation of this removed the fancy force property settings
-    that were needed to handle the realtime UI widgets in 'D3 Force Demo' app.
-    Eventually these were brough back in once the link merging was debugged.
-    However, this hasn't been reconciled with the `D3 Force Demo` widgets.
-    It *might* work, but it *might* not.
+  This simplified version derived from D3NetGraph.js was created to address
+  a problem with links not updating properly.
 
-    Zooming/panning is handled via D3's zoom() function.  Basically it
-    involves creating a `g` element that wraps the node and link elements
-    and applying transforms on that wrapper.
+  The first implementation of this removed the fancy force property settings
+  that were needed to handle the realtime UI widgets in 'D3 Force Demo' app.
+  Eventually these were brough back in once the link merging was debugged.
+  However, this hasn't been reconciled with the `D3 Force Demo` widgets.
+  It *might* work, but it *might* not.
 
-    This is based on:
-    *  rdpoor's commented version of mbostock's original code
-       https://gist.github.com/rdpoor/3a66b3e082ffeaeb5e6e79961192f7d8
-    *  danilo's v4 update
-       https://bl.ocks.org/tezzutezzu/cd04b3f1efee4186ff42aae66c87d1a7
-    *  mbostock's general update pattern
-       https://bl.ocks.org/mbostock/3808218
-    *  Coderwall's zoom and pan method
-       https://coderwall.com/p/psogia/simplest-way-to-add-zoom-pan-on-d3-js
-    *  Vladyslav Babenko's zoom buttons example
-       https://jsfiddle.net/vbabenko/jcsqqu6j/9/
+  Zooming/panning is handled via D3's zoom() function.  Basically it
+  involves creating a `g` element that wraps the node and link elements
+  and applying transforms on that wrapper.
+
+  This is based on:
+  *  rdpoor's commented version of mbostock's original code
+      https://gist.github.com/rdpoor/3a66b3e082ffeaeb5e6e79961192f7d8
+  *  danilo's v4 update
+      https://bl.ocks.org/tezzutezzu/cd04b3f1efee4186ff42aae66c87d1a7
+  *  mbostock's general update pattern
+      https://bl.ocks.org/mbostock/3808218
+  *  Coderwall's zoom and pan method
+      https://coderwall.com/p/psogia/simplest-way-to-add-zoom-pan-on-d3-js
+  *  Vladyslav Babenko's zoom buttons example
+      https://jsfiddle.net/vbabenko/jcsqqu6j/9/
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = false;
-const PR = 'd3-simplenetgraph';
-
-/* eslint-disable prefer-reflect */
-/* d3.call() is false-triggering the above rule */
-
-/// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const d3 = require('d3');
 const UNISYS = require('unisys/client');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+const PR = 'd3-simplenetgraph';
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var UDATA = null;
 
 /// PRIVATE VARS //////////////////////////////////////////////////////////////
@@ -59,6 +58,7 @@ var UDATA = null;
 let m_width = 800;
 let m_height = 800;
 let mouseoverNodeId = -1; // id of the node the mouse is currently over
+//
 const M_FORCEPROPERTIES = {
   // values for all forces
   center: {

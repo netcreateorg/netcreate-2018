@@ -8,8 +8,6 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const UDATA = require('unisys/client-datalink-class');
 const UMODULE = require('unisys/client-module-class');

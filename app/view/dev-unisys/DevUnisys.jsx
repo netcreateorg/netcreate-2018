@@ -1,28 +1,31 @@
 if (window.NC_DBG) console.log(`inc ${module.id}`);
-/// SYSTEM INTEGRATION ////////////////////////////////////////////////////////
+/*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS = require('unisys/client');
 const REFLECT = require('system/util/reflection');
 /// MAGIC: DevUnisysLogic will add UNISYS Lifecycle Hooks on require()
 const LOGIC = require('./devunisys-logic');
 const { Switch, Route, Redirect, Link } = require('react-router-dom');
-
 const TEST = require('test');
-var DBG = false;
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const ReactStrap = require('reactstrap');
 const { InputGroup, InputGroupAddon, InputGroupText, Input } = ReactStrap;
 const { Alert } = ReactStrap;
 const PROMPTS = require('system/util/prompts');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+var DBG = false;
 const PR = PROMPTS.Pad('DevUnisys');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ This is the root component for the view
-/*/ class DevUnisys extends UNISYS.Component {
+/** This is the root component for the view
+ */
+class DevUnisys extends UNISYS.Component {
   constructor(props) {
     super(props);
     UNISYS.ForceReloadOnNavigation();
@@ -127,9 +130,10 @@ const PR = PROMPTS.Pad('DevUnisys');
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Try to route the following
-      http://localhost:3000/#dev-unisys/use/student/UNIT_KEY/USER_KEY/
-  /*/ render() {
+  /** Try to route the following
+   *  http://localhost:3000/#dev-unisys/use/student/UNIT_KEY/USER_KEY/
+   */
+  render() {
     return (
       <div id="fdshell" style={{ padding: '10px' }}>
         <h2>Unisys Feature Development Shell</h2>

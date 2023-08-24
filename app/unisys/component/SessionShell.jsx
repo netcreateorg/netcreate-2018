@@ -51,12 +51,6 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-/// DEBUGGING /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const PROMPTS = require('system/util/prompts');
 const SESSION = require('unisys/common-session');
@@ -77,7 +71,9 @@ const {
 const { Redirect } = require('react-router-dom');
 const UNISYS = require('unisys/client');
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// these styles are copied from AutoComplete.css
 const INPUT_STYLE = {

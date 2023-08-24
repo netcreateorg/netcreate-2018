@@ -195,20 +195,19 @@ import { mdReact } from 'markdown-react-js';
 const mdplugins = {
   emoji: require('markdown-it-emoji')
 };
-
-const DBG = false;
-const PR = 'EdgeEditor';
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const ReactStrap = require('reactstrap');
 const { Button, Col, Form, FormGroup, FormText, Input, Label } = ReactStrap;
 const AutoComplete = require('./AutoComplete');
 const NodeDetail = require('./NodeDetail');
-
 const UNISYS = require('unisys/client');
 const { EDITORTYPE } = require('system/util/enum');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+const PR = 'EdgeEditor';
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var UDATA = null;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////

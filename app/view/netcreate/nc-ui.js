@@ -10,57 +10,52 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const UNISYS = require('unisys/client');
-const MOD = UNISYS.NewModule(module.id);
-const UDATA = UNISYS.NewDataLink(MOD);
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const VIEWMODE = {
   EDIT: 'edit',
   VIEW: 'view'
 };
 
-/// METHODS ///////////////////////////////////////////////////////////////////
+/// MODULE INITIALIZATION /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const MOD = UNISYS.NewModule(module.id);
+const UDATA = UNISYS.NewDataLink(MOD);
 
+/// INPUT FORM CHANGE HANDLERS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// INPUT FORM CHANGE HANDLERS
-///
-
-/**
- * This processes the form data before passing it on to the parent handler.
- * The callback function is generally an input state update method in
- * NCNode or NCEdge
- * @param {Object} event
- * @param {function} cb Callback function
+/** This processes the form data before passing it on to the parent handler.
+ *  The callback function is generally an input state update method in
+ *  NCNode or NCEdge
+ *  @param {Object} event
+ *  @param {function} cb Callback function
  */
 function m_UIStringInputUpdate(event, cb) {
   const key = event.target.id;
   const value = event.target.value;
   if (typeof cb === 'function') cb(key, value);
 }
-/**
- * This processes the form data before passing it on to the parent handler.
- * The callback function is generally an input state update method in
- * NCNode or NCEdge
- * @param {Object} event
- * @param {function} cb Callback function
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** This processes the form data before passing it on to the parent handler.
+ *  The callback function is generally an input state update method in
+ *  NCNode or NCEdge
+ *  @param {Object} event
+ *  @param {function} cb Callback function
  */
 function m_UINumberInputUpdate(event, cb) {
   const key = event.target.id;
   const value = Number(event.target.value);
   if (typeof cb === 'function') cb(key, value);
 }
-/**
- * This processes the form data before passing it on to the parent handler.
- * The callback function is generally an input state update method in
- * NCNode or NCEdge
- * @param {Object} event
- * @param {function} cb Callback function
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** This processes the form data before passing it on to the parent handler.
+ *  The callback function is generally an input state update method in
+ *  NCNode or NCEdge
+ *  @param {Object} event
+ *  @param {function} cb Callback function
  */
 function m_UISelectInputUpdate(event, cb) {
   const key = event.target.id;
@@ -68,9 +63,8 @@ function m_UISelectInputUpdate(event, cb) {
   if (typeof cb === 'function') cb(key, value);
 }
 
+/// LAYOUT RENDERERS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// LAYOUT RENDERERS
-///
 function RenderTabSelectors(TABS, state, onclick) {
   const { uSelectedTab, uViewMode } = state;
   const columnsDef = `repeat(${Object.keys(TABS).length}, 1fr)`;
@@ -97,7 +91,7 @@ function RenderTabSelectors(TABS, state, onclick) {
     </div>
   );
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RenderAttributesTabView(state, defs) {
   const { attributes, degrees } = state;
   const items = [];
@@ -115,6 +109,7 @@ function RenderAttributesTabView(state, defs) {
 
   return <div className="formview">{items}</div>;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RenderAttributesTabEdit(state, defs, onchange) {
   const { attributes, degrees } = state;
   const items = [];
@@ -146,7 +141,7 @@ function RenderAttributesTabEdit(state, defs, onchange) {
 
   return <div className="formview">{items}</div>;
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RenderProvenanceTabView(state, defs) {
   const { provenance, degrees, created, updated, revision } = state;
   // FIXME: These will be dynamically generated with the new Provenance template
@@ -163,7 +158,7 @@ function RenderProvenanceTabView(state, defs) {
     </div>
   );
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RenderProvenanceTabEdit(state, defs, onchange) {
   const { provenance, degrees, created, updated, revision } = state;
   // FIXME: These will be dynamically generated with the new Provenance template
@@ -191,6 +186,7 @@ function RenderLabel(key, label) {
     </label>
   );
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RenderStringValue(key, value) {
   return (
     <div id={key} key={`${key}value`} className="viewvalue">
@@ -198,6 +194,7 @@ function RenderStringValue(key, value) {
     </div>
   );
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * There are two levels of callbacks necessary here.
  * 1. The `onChange` handler (in this module) processes the input's onChange event, and...
@@ -222,14 +219,14 @@ function RenderStringInput(key, value, cb) {
     />
   );
 }
-/**
- * There are two levels of callbacks necessary here.
- * 1. The `onChange` handler (in this module) processes the input's onChange event, and...
- * 2. ...then passes the resulting value to the `cb` function in the parent module.
- * @param {string} key
- * @param {string} value will be converted to a Number()
- * @param {function} cb
- * @returns
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** There are two levels of callbacks necessary here.
+ *  1. The `onChange` handler (in this module) processes the input's onChange event, and...
+ *  2. ...then passes the resulting value to the `cb` function in the parent module.
+ *  @param {string} key
+ *  @param {string} value will be converted to a Number()
+ *  @param {function} cb
+ *  @returns
  */
 function m_RenderNumberInput(key, value, cb) {
   return (
@@ -242,15 +239,16 @@ function m_RenderNumberInput(key, value, cb) {
     />
   );
 }
-/**
- * There are two levels of callbacks necessary here.
- * 1. The `onChange` handler (in this module) processes the input's onChange event, and...
- * 2. ...then passes the resulting value to the `cb` function in the parent module.
- * @param {string} key
- * @param {string} value
- * @param {function} cb
- * @returns
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** There are two levels of callbacks necessary here.
+ *  1. The `onChange` handler (in this module) processes the input's onChange event, and...
+ *  2. ...then passes the resulting value to the `cb` function in the parent module.
+ *  @param {string} key
+ *  @param {string} value
+ *  @param {function} cb
+ *  @returns
  */
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_RenderOptionsInput(key, value, defs, cb) {
   const options = defs[key].options;
   return (

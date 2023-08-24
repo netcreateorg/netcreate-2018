@@ -4,38 +4,32 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = false;
-
-///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNET = require('./server-network');
 const UDB = require('./server-database');
 const LOGGER = require('./server-logger');
-
-/// CONSTANTS /////////////////////////////////////////////////////////////////
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPTS = require('../system/util/prompts');
-const PR = PROMPTS.Pad('SRV');
 
-/// MODULE VARS ///////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+const PR = PROMPTS.Pad('SRV');
 
 /// API CREATE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var UNISYS = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Initialize() is called by brunch-server.js to define the default UNISYS
-    network values, so it can embed them in the index.ejs file for webapps
-    override = { port }
-/*/
+/** Initialize() is called by brunch-server.js to define the default UNISYS
+ *  network values, so it can embed them in the index.ejs file for webapps
+ *  override = { port }
+ */
 UNISYS.InitializeNetwork = override => {
   UDB.InitializeDatabase(override);
   return UNET.InitializeNetwork(override);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ RegisterHandlers() is called before network is started, so they're
-    ready to run. These are server-implemented reserved messages.
-/*/
+/** RegisterHandlers() is called before network is started, so they're
+ *  ready to run. These are server-implemented reserved messages.
+ */
 UNISYS.RegisterHandlers = () => {
   UNET.HandleMessage('SRV_REFLECT', function (pkt) {
     pkt.Data().serverSays = 'REFLECTING';
@@ -44,7 +38,7 @@ UNISYS.RegisterHandlers = () => {
     // return the original packet
     return pkt;
   });
-
+  //
   UNET.HandleMessage('SRV_REG_HANDLERS', function (pkt) {
     if (DBG) console.log(PR, sprint_message(pkt));
     // now need to store the handlers somehow.
@@ -52,34 +46,32 @@ UNISYS.RegisterHandlers = () => {
     // or return a new data object that will replace pkt.data
     return data;
   });
-
+  //
   UNET.HandleMessage('SRV_DBGET', function (pkt) {
     if (DBG) console.log(PR, sprint_message(pkt));
     return UDB.PKT_GetDatabase(pkt);
   });
-
+  //
   UNET.HandleMessage('SRV_DBSET', function (pkt) {
     if (DBG) console.log(PR, sprint_message(pkt));
     return UDB.PKT_SetDatabase(pkt);
   });
-
+  //
   /// Add new node/edges to db after an import
   UNET.HandleMessage('SRV_DBINSERT', function (pkt) {
     if (DBG) console.log(PR, sprint_message(pkt));
     return UDB.PKT_InsertDatabase(pkt);
   });
-
-  /// Update or add new node/edges to db after an import
+  // Update or add new node/edges to db after an import
   UNET.HandleMessage('SRV_DBMERGE', function (pkt) {
     if (DBG) console.log(PR, sprint_message(pkt));
     return UDB.PKT_MergeDatabase(pkt);
   });
 
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// TEMPLATE / IMPORT / NODE / EDGE EDITOR LOCKING
-  /**
-   * Reports on whether template, import, or node/edge are being edited
-   * @return { templateBeingEdited: boolean, importActive: boolean, nodeOrEdgeBeingEdited: boolean }
+  /** TEMPLATE / IMPORT / NODE / EDGE EDITOR LOCKING **/
+
+  /** Reports on whether template, import, or node/edge are being edited
+   *  @return { templateBeingEdited: boolean, importActive: boolean, nodeOrEdgeBeingEdited: boolean }
    */
   UNET.HandleMessage('SRV_GET_EDIT_STATUS', pkt => {
     // server-database
@@ -87,8 +79,7 @@ UNISYS.RegisterHandlers = () => {
     const data = UDB.GetEditStatus(pkt);
     return data;
   });
-  /**
-   * Requested by Node / Edge Editor when user wants to edit node / edge
+  /** Requested by Node / Edge Editor when user wants to edit node / edge
    * @return { templateBeingEdited: boolean, importActive: boolean, nodeOrEdgeBeingEdited: boolean }
    */
   UNET.HandleMessage('SRV_REQ_EDIT_LOCK', pkt => {
@@ -111,21 +102,19 @@ UNISYS.RegisterHandlers = () => {
     return data;
   });
 
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// TEMPLATE EDITING
+  /** TEMPLATE EDITING **/
+
   UNET.HandleMessage('SRV_TEMPLATE_REGENERATE_DEFAULT', pkt => {
     // server-database
     if (DBG) console.log(PR, sprint_message(pkt));
     return UDB.RegenerateDefaultTemplate();
   });
-
   UNET.HandleMessage('SRV_TEMPLATESAVE', pkt => {
     // server-database
     if (DBG) console.log(PR, sprint_message(pkt));
     UNET.NetCall('NET_TEMPLATE_UPDATE', pkt.data.template); // Broadcast template to other computers on the net
     return UDB.WriteTemplateTOML(pkt);
   });
-
   UNET.HandleMessage('SRV_GET_TEMPLATETOML_FILENAME', () => {
     return UDB.GetTemplateTOMLFileName();
   });
@@ -136,8 +125,7 @@ UNISYS.RegisterHandlers = () => {
     return UDB.PKT_UpdateDatabase(pkt);
   });
 
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// NODE/EDGE EDITING
+  /** NODE/EDGE EDITING **/
 
   // receives a packet from a client
   UNET.HandleMessage('SRV_DBUPDATE', function (pkt) {
@@ -239,8 +227,8 @@ UNISYS.RegisterHandlers = () => {
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/	StartNetwork() is called by brunch-server after the Express webserver
-/*/
+/**	StartNetwork() is called by brunch-server after the Express webserver
+ */
 UNISYS.StartNetwork = () => {
   UNET.StartNetwork();
 };

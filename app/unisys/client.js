@@ -2,18 +2,18 @@
 if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    This is the main browser client UNISYS module, which implements:
+  This is the main browser client UNISYS module, which implements:
 
-      LIFECYCLE - a promise-based hooked run order system
-      MESSAGING - a networked remote procedure call/event system
-      STATE     - a networked global application state system
+    LIFECYCLE - a promise-based hooked run order system
+    MESSAGING - a networked remote procedure call/event system
+    STATE     - a networked global application state system
 
-    UNISYS is designed to work with React or our own module system:
-    for modules:
-      UMOD = UNISYS.NewModule()
-      UDATA = UNISYS.NewDataLink(UMOD)
-    for React:
-      COMPONENT = class MyComponent extends UNISYS.Component
+  UNISYS is designed to work with React or our own module system:
+  for modules:
+    UMOD = UNISYS.NewModule()
+    UDATA = UNISYS.NewDataLink(UMOD)
+  for React:
+    COMPONENT = class MyComponent extends UNISYS.Component
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 

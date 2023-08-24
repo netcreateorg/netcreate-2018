@@ -25,15 +25,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-var DBG = false;
-
 const SETTINGS = require('settings');
-const isLocalHost =
-  SETTINGS.EJSProp('client').ip === '127.0.0.1' ||
-  location.href.includes('admin=true');
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import FILTER from './filter/FilterEnums';
 const React = require('react');
 const ReactStrap = require('reactstrap');
@@ -41,6 +33,15 @@ const { BUILTIN_FIELDS_NODE } = require('system/util/enum');
 const { Button } = ReactStrap;
 const MarkdownNote = require('./MarkdownNote');
 const UNISYS = require('unisys/client');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+var DBG = false;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const isLocalHost =
+  SETTINGS.EJSProp('client').ip === '127.0.0.1' ||
+  location.href.includes('admin=true');
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var UDATA = null;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////

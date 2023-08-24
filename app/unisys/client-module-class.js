@@ -9,14 +9,14 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+const LIFECYCLE = require('unisys/client-lifecycle');
+const PATH = require('system/util/path');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = true;
 const BAD_NAME = 'name parameter must be a string or unisys module';
 const NOT_UNIQUE = 'name must be unique';
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const LIFECYCLE = require('unisys/client-lifecycle');
-const PATH = require('system/util/path');
 
 /// MODULE DECLARATIONS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

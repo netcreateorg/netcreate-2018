@@ -5,9 +5,9 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const REFLECT = require('./reflection');
-var PROMPTS = {};
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// detect node environment and set padsize accordingly
 const IS_NODE =
   typeof process !== 'undefined' &&
@@ -16,12 +16,16 @@ const IS_NODE =
 var PAD_SIZE = IS_NODE
   ? 9 // nodejs
   : 0; // not nodejs
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// module declaration
+var PROMPTS = {};
 
 /// PROMPT STRING HELPERS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ return a string padded to work as a prompt for either browser or node
-    console output
-/*/ PROMPTS.Pad = function (prompt = '', psize = PAD_SIZE) {
+/** return a string padded to work as a prompt for either browser or node
+ *  console output
+ */
+PROMPTS.Pad = function (prompt = '', psize = PAD_SIZE) {
   let len = prompt.length;
   if (IS_NODE) return prompt.padEnd(psize, ' ') + '-';
   // must be non-node environment, so do dynamic string adjust
@@ -32,14 +36,16 @@ var PAD_SIZE = IS_NODE
   return prompt + ':';
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ returns PAD_SIZE stars
-/*/ PROMPTS.Stars = function (count) {
+/** returns PAD_SIZE stars
+ */
+PROMPTS.Stars = function (count) {
   if (count !== undefined) return ''.padEnd(count, '*');
   return ''.padEnd(PAD_SIZE, '*');
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ return string of calling object's name
-/*/ PROMPTS.FunctionName = function () {
+/** return string of calling object's name
+ */
+PROMPTS.FunctionName = function () {
   return REFLECT.FunctionName(2);
 };
 

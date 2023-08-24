@@ -1,39 +1,35 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    ## OVERVIEW
+  ## OVERVIEW
 
-       This provides a search field for looking up nodes.
+      This provides a search field for looking up nodes.
 
-       1. Users type in the field.
-       2. The field will suggest matching nodes.
-       3. User selects something from the suggestion list.
-       4. The node will get loaded in NodeSelector.
+      1. Users type in the field.
+      2. The field will suggest matching nodes.
+      3. User selects something from the suggestion list.
+      4. The node will get loaded in NodeSelector.
 
+  ## USAGE
 
-    ## USAGE
+    <Search/>
 
-      <Search/>
+  ## TECHNICAL DESCRIPTION
 
-    ## TECHNICAL DESCRIPTION
-
-       This provides a simple wrapper around AutoSuggest to handle
-       messaging and data passing.
-
-
+      This provides a simple wrapper around AutoSuggest to handle
+      messaging and data passing.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-var DBG = false;
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const ReactStrap = require('reactstrap');
 const { Col, FormGroup, Label } = ReactStrap;
 const AutoComplete = require('./AutoComplete');
-
 const UNISYS = require('unisys/client');
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+var DBG = false;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const thisIdentifier = 'search'; // SELECTION identifier
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////

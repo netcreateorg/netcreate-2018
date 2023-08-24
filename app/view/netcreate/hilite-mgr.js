@@ -10,8 +10,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS = require('unisys/client');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
@@ -19,15 +17,13 @@ const UNISYS = require('unisys/client');
 var MOD = UNISYS.NewModule(module.id);
 var UDATA = UNISYS.NewDataLink(MOD);
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 const PR = 'hilite-mgr: ';
 
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ lifecycle INITIALIZE handler
-/*/
 MOD.Hook('INITIALIZE', () => {
   UDATA.HandleMessage('USER_HILITE_NODE', m_UserHighlightNode);
   UDATA.HandleMessage('AUTOSUGGEST_HILITE_NODE', m_AutoSuggestHiliteNode);
@@ -42,20 +38,18 @@ function m_UserHighlightNode(data) {
   HILITE.userHighlightNodeId = data.nodeId;
   UDATA.SetAppState('HILITE', HILITE);
 }
-
-/**
- * AUTOSUGGEST_HILITE_NODE shows the current mouse-over node name in a list of
- * autosuggested/autocompleted node names from AutoComplete.
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** AUTOSUGGEST_HILITE_NODE shows the current mouse-over node name in a list of
+ *  autosuggested/autocompleted node names from AutoComplete.
  */
 function m_AutoSuggestHiliteNode(data) {
   const HILITE = UDATA.AppState('HILITE');
   HILITE.autosuggestHiliteNodeId = data.nodeId;
   UDATA.SetAppState('HILITE', HILITE);
 }
-
-/**
- * User is hovering over a row in the NodeTable.
- * The corresponding node in the graph will also highlighted.
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** User is hovering over a row in the NodeTable.
+ *  The corresponding node in the graph will also highlighted.
  */
 function m_TableHiliteNode(data) {
   const HILITE = UDATA.AppState('HILITE');

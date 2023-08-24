@@ -7,15 +7,8 @@
   * Help
   * Vocabulary
 
-
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-var DBG = false;
-var UDATA = null;
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const ReactStrap = require('reactstrap');
 const { TabContent, TabPane, Nav, NavItem, NavLink, Row, Col, Button } = ReactStrap;
@@ -25,8 +18,12 @@ const Help = require('./Help');
 const Vocabulary = require('./Vocabulary');
 const ImportExport = require('./ImportExport');
 const Template = require('./Template');
-
 const UNISYS = require('unisys/client');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+var DBG = false;
+var UDATA = null;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -27,30 +27,26 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS = require('unisys/client');
 
-/// INITIALIZE MODULE /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var MOD = UNISYS.NewModule(module.id);
-var UDATA = UNISYS.NewDataLink(MOD);
-
-/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 const PR = 'selection-mgr: ';
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SELECTION_MODE = {
   NORMAL: 'normal', // graph is selectable
   EDGE_EDIT: 'edge_edit', // edge is being edited
   // NODE_EDIT is not necessary b/c the transparent screen prevents clicks
   SOURCETARGET: 'sourcetarget' // waiting for a source or target
 };
-
-/// PRIVATE VARS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let m_SelectionMode = SELECTION_MODE.NORMAL; // default
+
+/// INITIALIZE MODULE /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+var MOD = UNISYS.NewModule(module.id);
+var UDATA = UNISYS.NewDataLink(MOD);
 
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -67,26 +63,22 @@ MOD.Hook('INITIALIZE', () => {
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-///
-
-/**
- * Set Selection Mode via SELECTMGR_SET_MODE
- * @param {Object} data
- * @param {Object} data.mode NORMAL || EDGE_EDIT || SOURCETARGET
+/** Set Selection Mode via SELECTMGR_SET_MODE
+ *  @param {Object} data
+ *  @param {Object} data.mode NORMAL || EDGE_EDIT || SOURCETARGET
  */
 function m_SetMode(data) {
   let newmode = SELECTION_MODE.NORMAL; // default
   if (Object.values(SELECTION_MODE).includes(data.mode)) newmode = data.mode;
   m_SelectionMode = newmode;
 }
-
-/**
- * User clicked on d3 graph node
- * --  Normal mode, clicking on a node selects it
- * --  SourceTarget mode is for selecting a source or target node while editing an edge
- * @param {Object} data
- * @param {array:string} data.nodeLabels
- * @param {array:number} data.nodeIDs
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** User clicked on d3 graph node
+ *  --  Normal mode, clicking on a node selects it
+ *  --  SourceTarget mode is for selecting a source or target node while editing an edge
+ *  @param {Object} data
+ *  @param {array:string} data.nodeLabels
+ *  @param {array:number} data.nodeIDs
  */
 function m_D3SelectNode(data) {
   const node = m_GetNode(data);
@@ -102,14 +94,13 @@ function m_D3SelectNode(data) {
     throw `Unknown SELECTION Mode ${m_SelectionMode}`;
   }
 }
-
-/**
- * Get the node that was passed via the search string
- * either nodeIDs or nodeLabels
- * @param {Object} searchdata
- * @param {array} searchdata.nodeLabels strings
- * @param {array} searchdata.nodeIDs numbers
- * @returns {Object} single node
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Get the node that was passed via the search string
+ *  either nodeIDs or nodeLabels
+ *  @param {Object} searchdata
+ *  @param {array} searchdata.nodeLabels strings
+ *  @param {array} searchdata.nodeIDs numbers
+ *  @returns {Object} single node
  */
 function m_GetNode(searchdata) {
   const NCDATA = UDATA.AppState('NCDATA');
@@ -126,10 +117,9 @@ function m_GetNode(searchdata) {
   }
   return node;
 }
-
-/**
- * Broadcast SELECTION and HILITE updates for selecting a single node
- * @param {Object} node
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Broadcast SELECTION and HILITE updates for selecting a single node
+ *  @param {Object} node
  */
 function m_SendSelectionUpdate(node) {
   const NCDATA = UDATA.AppState('NCDATA');
@@ -154,33 +144,31 @@ function m_SendSelectionUpdate(node) {
   UDATA.SetAppState('SELECTION', newSelection);
   UDATA.SetAppState('HILITE', newHilite);
 }
-
-/**
- * Broadcast SELECT_SOURCETARGET updates for selecting a source or target
- * @param {Object} node
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Broadcast SELECT_SOURCETARGET updates for selecting a source or target
+ *  @param {Object} node
  */
 function m_SendSourceTargetSelectionUpdate(node) {
   if (node === undefined) return; // skip update
   UDATA.LocalCall('SELECT_SOURCETARGET', { node });
 }
-
-/**
- * During Edge editing, show animated cursor after user selects a source
- * or target node.  (For secondary selections)
- * Broadcast SELECTMGR_SELECT_SECONDARY updates for selecting a source or target
- * @param {Object} data
- * @param {Object} data.node
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** During Edge editing, show animated cursor after user selects a source
+ *  or target node.  (For secondary selections)
+ *  Broadcast SELECTMGR_SELECT_SECONDARY updates for selecting a source or target
+ *  @param {Object} data
+ *  @param {Object} data.node
  */
 function m_SelectSecondary(data) {
   const SELECTION = UDATA.AppState('SELECTION');
   SELECTION.selectedSecondary = data.node.id;
   UDATA.SetAppState('SELECTION', SELECTION);
 }
-/**
- * Deselect the secondary selection
- * During Edge editing, after the user has selected the source or target
- * node, we turn off the secondary select (so the single blue rotating arrow
- * is cleared from the graph)
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Deselect the secondary selection
+ *  During Edge editing, after the user has selected the source or target
+ *  node, we turn off the secondary select (so the single blue rotating arrow
+ *  is cleared from the graph)
  */
 function m_DeselectSecondary() {
   // Broadcast secondary deselection -- remove animated arrow

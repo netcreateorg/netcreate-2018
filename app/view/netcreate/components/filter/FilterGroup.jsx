@@ -1,3 +1,9 @@
+/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  description
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+
 import FILTER from './FilterEnums';
 import FilterGroupProperties from './FilterGroupProperties';
 import NumberFilter from './NumberFilter';
@@ -7,13 +13,9 @@ import StringFilter from './StringFilter';
 const ReactStrap = require('reactstrap');
 const { Input, Label } = ReactStrap;
 
-export default function FilterGroup({
-  group,
-  label,
-  filters,
-  filterAction,
-  transparency
-}) {
+/// METHODS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function FilterGroup({ group, label, filters, filterAction, transparency }) {
   return (
     <div
       className="filter-group"
@@ -77,3 +79,7 @@ export default function FilterGroup({
     </div>
   );
 }
+
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export default FilterGroup;

@@ -1,39 +1,39 @@
 if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    Messager - Handle a collection of named events and their handlers
-    https://en.wikipedia.org/wiki/Event-driven_architecture#JavaScript
+  Messager - Handle a collection of named events and their handlers
+  https://en.wikipedia.org/wiki/Event-driven_architecture#JavaScript
 
-    NOTE: This class is often WRAPPED by other UNISYS modules that manage
-    a unique ID (such as the unique unisys datalink id) that hide that
-    implementation detail from local users (e.g. unisys-data-class)
+  NOTE: This class is often WRAPPED by other UNISYS modules that manage
+  a unique ID (such as the unique unisys datalink id) that hide that
+  implementation detail from local users (e.g. unisys-data-class)
 
-    HandleMessasge('MESG_NAME',handlerFunc,options)
-      Add a handlerFunc. Specify options.handlerUID to enable echo rejection
-      (same udata module will not invoke own handler when sending same message)
-    UnhandleMessage('MESG_NAME',handlerFunc)
-      Remove a handlerFunc associated with the handlerFuncFunction
-    Send('MESG_NAME',data,options)
-      Trigger an message+data to all handlers from a particular UDATA id
-      If options.srcUID is specified, echo suppression is enabled
-    Signal('MESG_NAME',data)
-      Similar to Send(), but will ALWAYS broadcast to all implementors
-    Call('MESG_NAME',data,options)
-      Similar to Send(), but can return a value to a callback function
-      options.srcUID is the UDATA id; set for echo supression to that uid
-      options.dataReturnFunc is the callback function.
+  HandleMessasge('MESG_NAME',handlerFunc,options)
+    Add a handlerFunc. Specify options.handlerUID to enable echo rejection
+    (same udata module will not invoke own handler when sending same message)
+  UnhandleMessage('MESG_NAME',handlerFunc)
+    Remove a handlerFunc associated with the handlerFuncFunction
+  Send('MESG_NAME',data,options)
+    Trigger an message+data to all handlers from a particular UDATA id
+    If options.srcUID is specified, echo suppression is enabled
+  Signal('MESG_NAME',data)
+    Similar to Send(), but will ALWAYS broadcast to all implementors
+  Call('MESG_NAME',data,options)
+    Similar to Send(), but can return a value to a callback function
+    options.srcUID is the UDATA id; set for echo supression to that uid
+    options.dataReturnFunc is the callback function.
 
-    NOTE: CallerReturnFunctions receive data object AND control object.
-    The control object has the "return" function that closes a transaction;
-    this is useful for async operations without Promises.
+  NOTE: CallerReturnFunctions receive data object AND control object.
+  The control object has the "return" function that closes a transaction;
+  this is useful for async operations without Promises.
 
-    NOTE: HandlerFunctions and CallerReturnFunctions are anotated with the
-    udata_id property, which can be set to avoid echoing a message back to
-    the same originating udata source.
+  NOTE: HandlerFunctions and CallerReturnFunctions are anotated with the
+  udata_id property, which can be set to avoid echoing a message back to
+  the same originating udata source.
 
-    NOTE: When providing a handlerFunc, you might want to bind it to a
-    specific object context (i.e. 'this') value using bind().
-    e.g. handlerFunction = handlerFunction.bind(this);
+  NOTE: When providing a handlerFunc, you might want to bind it to a
+  specific object context (i.e. 'this') value using bind().
+  e.g. handlerFunction = handlerFunction.bind(this);
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 

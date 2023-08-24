@@ -22,15 +22,14 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-var DBG = false;
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const ReactStrap = require('reactstrap');
 const { Table, FormText } = ReactStrap;
-
 const UNISYS = require('unisys/client');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+var DBG = false;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -55,8 +54,7 @@ class NodeDetail extends UNISYS.Component {
 
   /// UI HANDLERS ///////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ handleSelection(hilitedNode) {
+  handleSelection(hilitedNode) {
     let node = hilitedNode || {};
     node.attributes = node.attributes || {}; // validate attributes
     this.setState({
@@ -69,8 +67,7 @@ class NodeDetail extends UNISYS.Component {
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ render() {
+  render() {
     return (
       <div
         className={this.state.label === undefined ? 'd-none' : ''}

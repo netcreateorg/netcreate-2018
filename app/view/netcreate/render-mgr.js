@@ -12,8 +12,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS = require('unisys/client');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
@@ -21,16 +19,14 @@ const UNISYS = require('unisys/client');
 var MOD = UNISYS.NewModule(module.id);
 var UDATA = UNISYS.NewDataLink(MOD);
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 const PR = 'render-mgr: ';
-
-/// MODULE DATA ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let VDATA = {};
 
-/// UNISYS HANDLERS ///////////////////////////////////////////////////////////
+/// LIFECYCLE HANDLERS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ lifecycle INITIALIZE handler
 /*/
@@ -42,10 +38,10 @@ MOD.Hook('INITIALIZE', () => {
 
 /// MODULE PUBLIC METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Interprets VDATA into a simplified form for the renderer
- * @param {*} data NCDATA { nodes, edges }
- * @returns {Object} {
+/** API METHOD
+ *  Interprets VDATA into a simplified form for the renderer
+ *  @param {*} data NCDATA { nodes, edges }
+ *  @returns {Object} {
  *                     nodes: [ ...{id, label, selected, selectedSecondary,
  *                                  size, color, opacity, strokeColor, strokeWidth,
  *                                  help}],
@@ -60,11 +56,11 @@ MOD.ProcessNCData = data => {
   VDATA.edges = edges;
   return VDATA;
 };
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 MOD.SetNCData = data => {
   VDATA = data;
 };
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 MOD.UpdateSelection = data => {
   const nodes = m_UpdateNodes(VDATA.nodes);
   const edges = m_UpdateEdges(VDATA.edges);
@@ -134,6 +130,7 @@ function m_UpdateNodes(nodes) {
     return n;
   });
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_UpdateEdges(edges) {
   const TEMPLATE = UDATA.AppState('TEMPLATE');
   const HILITE = UDATA.AppState('HILITE');
@@ -162,10 +159,9 @@ function m_UpdateEdges(edges) {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Returns the tooltip help text for the node, using labels defined in the template
- * @param {*} node
- * @returns {string}
+/** Returns the tooltip help text for the node, using labels defined in the template
+ *  @param {*} node
+ *  @returns {string}
  */
 function m_GetHelp(node) {
   const TEMPLATE = UDATA.AppState('TEMPLATE');
@@ -197,11 +193,6 @@ function m_GetHelp(node) {
   return titleText;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- *
- * @param {*} nodeEdge
- * @returns
- */
 function m_GetUpdatedDateText(nodeEdge) {
   // console.warn('skipping m_GetUpdateDateText for now...revise after provenance/meta.revision is removed')
   // const d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);

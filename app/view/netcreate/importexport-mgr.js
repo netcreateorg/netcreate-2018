@@ -4,7 +4,6 @@
 
   See ImportExport.jsx for the UI.
 
-
   #### Data Format
 
   The import/export data format is '.csv'.
@@ -18,7 +17,6 @@
   * Dates can be exported and imported as UTCStrings
 
   In general, any valid '.csv' file exported by Excel ought to work.
-
 
   #### Permissions
 
@@ -60,24 +58,19 @@
 
   The DB is NOT updated until the user clicks "Import".
 
-
-  ####
-
-
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = true;
-const PR = 'importexport-mgr: ';
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const UNISYS = require('unisys/client');
 const DATASTORE = require('system/datastore');
 const TOML = require('@iarna/toml');
 const clone = require('rfdc')();
 const UTILS = require('./nc-utils');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = true;
+const PR = 'importexport-mgr: ';
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -97,13 +90,12 @@ const REGEXMatchCommasNotInQuotes = /,(?=(?:[^"]*"[^"]*")*[^"]*$)/;
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 function m_formatDate(date) {
   // wrap in quotes because time includes a comma
   if (date) return `"${new Date(date).toUTCString()}"`;
   return '';
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_encode(data) {
   let res;
   // double quotes need to be escaped
@@ -114,14 +106,14 @@ function m_encode(data) {
   // res = String(res).replace(/\n/g, 'nnn');
   return res;
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_decode(data) {
   let res;
   // double quotes need to be escaped
   res = String(data).replace(/""/g, '"');
   return res;
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // DEPRECATED -- Used to flatten 'attributes'
 //    'attributes' have been removed, so this should not be needed anymore
 // Converts nested key definitions into a flat array, e.g.
@@ -142,19 +134,15 @@ function m_flattenKeys(keys, prefix) {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// IMPORT / EXPORT HELPERS ///////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
+/// IMPORT/EXPORT HELPERS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Returns an array of export values for a given node record
- * Used during export.
- * @param {array} nodes - array of source nodes to export
- * @param {array} keys - node def keys, e.g. 'id' and 'label'
- *                       NOTE this is usually a subset of nodeDef keys
- *                       with `hidden` keys removed so they won't export
- * @returns - array of node values, e.g. [1,'Tacitus','Person',...]
+/** Returns an array of export values for a given node record
+ *  Used during export.
+ *  @param {array} nodes - array of source nodes to export
+ *  @param {array} keys - node def keys, e.g. 'id' and 'label'
+ *                        NOTE this is usually a subset of nodeDef keys
+ *                        with `hidden` keys removed so they won't export
+ *  @returns - array of node values, e.g. [1,'Tacitus','Person',...]
  */
 function m_renderNodeValues(node, keys) {
   const RESULT = [];
@@ -196,16 +184,14 @@ function m_renderNodeValues(node, keys) {
   });
   return RESULT;
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Returns an array of node records
- * Used during export.
- * @param {array} nodes - array of source nodes to export
- * @param {array} nodekeys - node def keys, e.g. 'id' and 'label'
- *                           NOTE this is usually a subset of nodeDef keys
- *                           with `hidden` keys removed so they won't export
- * @returns - array of nodes, e.g. [[<tacitus>], [<marc antony>], ...]
+/** Returns an array of node records
+ *  Used during export.
+ *  @param {array} nodes - array of source nodes to export
+ *  @param {array} nodekeys - node def keys, e.g. 'id' and 'label'
+ *                            NOTE this is usually a subset of nodeDef keys
+ *                            with `hidden` keys removed so they won't export
+ *  @returns - array of nodes, e.g. [[<tacitus>], [<marc antony>], ...]
  */
 function m_GenerateNodesArray(nodes, nodekeys) {
   /// Define Node KEYS
@@ -213,16 +199,14 @@ function m_GenerateNodesArray(nodes, nodekeys) {
   nodes.forEach(n => nodesArr.push(m_renderNodeValues(n, nodekeys)));
   return nodesArr;
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Returns an array of export values for a given edge record
- * Used during export.
- * @param {array} edge - array of source nodes to export
- * @param {array} keys - edge def keys, e.g. 'id' and 'label'
+/** Returns an array of export values for a given edge record
+ *  Used during export.
+ *  @param {array} edge - array of source nodes to export
+ *  @param {array} keys - edge def keys, e.g. 'id' and 'label'
  *                       NOTE this is usually a subset of edgeDef keys
  *                       with `hidden` keys removed so they won't export
- * @returns - array of edge values, e.g. [1,'is enemy of',2,...]
+ *  @returns - array of edge values, e.g. [1,'is enemy of',2,...]
  */
 function m_renderEdgeValues(edge, keys) {
   const RESULT = [];
@@ -270,16 +254,14 @@ function m_renderEdgeValues(edge, keys) {
   });
   return RESULT;
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Returns an array of edge records
- * Used during export.
- * @param {array} edges - array of source edges to export
- * @param {array} edgekeys - edge def keys, e.g. 'id' and 'label'
+/** Returns an array of edge records
+ *  Used during export.
+ *  @param {array} edges - array of source edges to export
+ *  @param {array} edgekeys - edge def keys, e.g. 'id' and 'label'
  *                           NOTE this is usually a subset of edgeDef keys
  *                           with `hidden` keys removed so they won't export
- * @returns - array of edges, e.g. [[<1:2>], [<1:4>], ...]
+ *  @returns - array of edges, e.g. [[<1:2>], [<1:4>], ...]
  */
 function m_GenerateEdgesArray(edges, edgekeys) {
   /// Define Edge KEYS
@@ -288,14 +270,11 @@ function m_GenerateEdgesArray(edges, edgekeys) {
   return edgeArr;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// EXPORT METHODS ////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// EXPORT NODES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Exports FILTERED data, not the full data set.
+/** API METHOD
+ *  Exports FILTERED data, not the full data set.
+ */
 MOD.ExportNodes = () => {
   const DATA = UDATA.AppState('FILTEREDNCDATA');
   const TEMPLATE = UDATA.AppState('TEMPLATE');
@@ -353,10 +332,12 @@ MOD.ExportNodes = () => {
   link.click();
   document.body.removeChild(link);
 };
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 /// EXPORT EDGES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Exports FILTERED data, not the full data set.
+/** API METHOD
+ *  Exports FILTERED data, not the full data set.
+ */
 MOD.ExportEdges = () => {
   const DATA = UDATA.AppState('FILTEREDNCDATA');
   const TEMPLATE = UDATA.AppState('TEMPLATE');
@@ -420,22 +401,17 @@ MOD.ExportEdges = () => {
   document.body.removeChild(link);
 };
 
-///////////////////////////////////////////////////////////////////////////////
 /// IMPORT METHODS ////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// IMPORT MODULE VARIABLES ///////////////////////////////////////////////////
 let nodeFile;
 let edgeFile;
 let nodesToImport = [];
 let edgesToImport = [];
 let IMPORT_NCDATA;
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Called by ImportExport when user clicks "Clear File Selections".
- * Resets the loaded/validated data for a new set of data
+/** API METHOD
+ *  Called by ImportExport when user clicks "Clear File Selections".
+ *  Resets the loaded/validated data for a new set of data
  */
 MOD.ResetImportData = () => {
   nodeFile = undefined;
@@ -445,10 +421,8 @@ MOD.ResetImportData = () => {
   IMPORT_NCDATA = clone(UDATA.AppState('NCDATA'));
 };
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// IMPORT HELPERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /// Make sure source and target have valid ids
 /// If not, add message to edgeImportErrors
 /// `row` is the line number in the import csv file
@@ -466,20 +440,19 @@ function m_hasValidSourceTarget(edge, NCDATA, edgeImportErrors, row) {
   return source && target;
 }
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// IMPORT MODULE METHODS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * Called by ImportExport if the user Cancels selecting a node file
+/** API METHOD
+ *  Called by ImportExport if the user Cancels selecting a node file
  */
 MOD.ResetNodeImportData = () => {
   nodeFile = undefined;
   nodesToImport = [];
   if (IMPORT_NCDATA) IMPORT_NCDATA.nodes = clone(UDATA.AppState('NCDATA').nodes);
 };
-/**
- * Called by IMportExport if the user Cancels selecting a node file
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API METHOD
+ *  Called by IMportExport if the user Cancels selecting a node file
  */
 MOD.ResetEdgeImportData = () => {
   edgeFile = undefined;
@@ -487,14 +460,13 @@ MOD.ResetEdgeImportData = () => {
   if (IMPORT_NCDATA) IMPORT_NCDATA.edges = clone(UDATA.AppState('NCDATA').edges);
 };
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NODE IMPORT ///////////////////////////////////////////////////////////////
-/**
- * Loads the file and checks the first row headers to make sure all the required
- * headers have been defined.
- * @param {Object} data
- * @param {File} data.nodefile - https://developer.mozilla.org/en-US/docs/Web/API/File
- * @returns {isValid:boolean, messageJsx:jsx, headers:[], lines:[]}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Loads the file and checks the first row headers to make sure all the required
+ *  headers have been defined.
+ *  @param {Object} data
+ *  @param {File} data.nodefile - https://developer.mozilla.org/en-US/docs/Web/API/File
+ *  @returns {isValid:boolean, messageJsx:jsx, headers:[], lines:[]}
  */
 async function m_NodefileCheckHeaders(data) {
   let isValid = true;
@@ -537,11 +509,11 @@ async function m_NodefileCheckHeaders(data) {
   }
   return { isValid, messageJsx, headers, lines };
 }
-/**
- * Reads each line, mapping data fields to internal representation fields
- * @param {array} headers
- * @param {array} lines
- * @returns { isValid:boolean, messageJsx:jsx, nodes:[] }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Reads each line, mapping data fields to internal representation fields
+ *  @param {array} headers
+ *  @param {array} lines
+ *  @returns { isValid:boolean, messageJsx:jsx, nodes:[] }
  */
 function m_NodefileLoadNodes(headers, lines) {
   // Map import fields (exportLabel) to internal representation fields, e.g. ID => id,
@@ -551,7 +523,6 @@ function m_NodefileLoadNodes(headers, lines) {
   Object.entries(TEMPLATE.nodeDefs).map(e =>
     INTERNAL_FIELDS_MAP.set(e[1].exportLabel, e[0])
   );
-
   // convert nodefileData to JSON
   // Load JSON
   let isValid = true;
@@ -614,11 +585,12 @@ function m_NodefileLoadNodes(headers, lines) {
   });
   return { isValid, messageJsx, nodes };
 }
-/**
- * Checks to make sure all nodes to import have a valid id or specify "new"
- * @param {array} nodes
- * @returns { isValid:boolean, messageJsx:jsx, nodes, IMPORT_NCDATA }
- *          At the end of this method, IMPORT_NCDATA will have imported nodes added EXCEPT for "new" id nodes
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Checks to make sure all nodes to import have a valid id or specify "new"
+ *  At the end of this method, IMPORT_NCDATA will have imported nodes added
+ *  EXCEPT for "new" id nodes
+ *  @param {array} nodes
+ *  @returns { isValid:boolean, messageJsx:jsx, nodes, IMPORT_NCDATA }
  */
 function m_NodefileValidateNodes(nodes) {
   let isValid = true;
@@ -682,17 +654,18 @@ function m_NodefileValidateNodes(nodes) {
   }
   return { isValid, messageJsx, nodes, IMPORT_NCDATA };
 }
-/**
- * Walks down the checkers/validators one by one and aborts/returns an error message if an
- * an error is encountered.  Data is stored temporarily in `IMPORT_NCDATA` so that we can
- * process edges -- e.g. an edge might refer to a node that is currently being imported.
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API METHOD
+ *  Walks down the checkers/validators one by one and aborts/returns an error message if an
+ *  an error is encountered.  Data is stored temporarily in `IMPORT_NCDATA` so that we can
+ *  process edges -- e.g. an edge might refer to a node that is currently being imported.
  *
- * Data is not actually imported in the DB until the user clicks "Import"
+ *  Data is not actually imported in the DB until the user clicks "Import"
  *
- * Side effect: Updates `nodesToImport` with validated nodes
- * @param {object} data
- * @param {File} data.nodefile - https://developer.mozilla.org/en-US/docs/Web/API/File
- * @return { isValid:boolean, messages:[], errors:[] }
+ *  Side effect: Updates `nodesToImport` with validated nodes
+ *  @param {object} data
+ *  @param {File} data.nodefile - https://developer.mozilla.org/en-US/docs/Web/API/File
+ *  @return { isValid:boolean, messages:[], errors:[] }
  */
 MOD.NodefileValidate = async data => {
   // No nodefile passed, user probably clicked cancel
@@ -730,14 +703,15 @@ MOD.NodefileValidate = async data => {
     messageTitle: `Nodes import file "${nodeFileName}": Validated!`
   });
 };
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 /// EDGE IMPORT ///////////////////////////////////////////////////////////////
-/**
- * Loads the file and checks the first row headers to make sure all the required
- * headers have been defined.
- * @param {Object} data
- * @param {File} data.edgefile - https://developer.mozilla.org/en-US/docs/Web/API/File
- * @returns {isValid:boolean, messageJsx:jsx, headers:[], lines:[]}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Loads the file and checks the first row headers to make sure all the
+ *  required headers have been defined.
+ *  See https://developer.mozilla.org/en-US/docs/Web/API/File for File
+ *  @param {Object} data
+ *  @param {File} data.edgefile
+ *  @returns {isValid:boolean, messageJsx:jsx, headers:[], lines:[]}
  */
 async function m_EdgefileCheckHeaders(data) {
   let isValid = true;
@@ -780,11 +754,11 @@ async function m_EdgefileCheckHeaders(data) {
   }
   return { isValid, messageJsx, headers, lines };
 }
-/**
- * Reads each line, mapping data fields to internal representation fields
- * @param {array} headers
- * @param {array} lines
- * @returns { isValid:boolean, messageJsx:jsx, nodes:[] }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Reads each line, mapping data fields to internal representation fields
+ *  @param {array} headers
+ *  @param {array} lines
+ *  @returns { isValid:boolean, messageJsx:jsx, nodes:[] }
  */
 function m_EdgefileLoadEdges(headers, lines) {
   // Map import fields (exportLabel) to internal representation fields, e.g. ID => id,
@@ -858,10 +832,10 @@ function m_EdgefileLoadEdges(headers, lines) {
   });
   return { isValid, messageJsx, edges };
 }
-/**
- * Checks to make sure all edges to import have a valid id or specify "new"
- * @param {array} edges
- * @returns { isValid:boolean, messageJsx:jsx, nodes, IMPORT_NCDATA }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Checks to make sure all edges to import have a valid id or specify "new"
+ *  @param {array} edges
+ *  @returns { isValid:boolean, messageJsx:jsx, nodes, IMPORT_NCDATA }
  *          At the end of this method, IMPORT_NCDATA will have imported edges added EXCEPT for "new" id edges
  */
 function m_EdgefileValidateEdges(edges) {
@@ -931,17 +905,19 @@ function m_EdgefileValidateEdges(edges) {
   }
   return { isValid, messageJsx, edges, IMPORT_NCDATA };
 }
-/**
- * Walks down the checkers/validators one by one and aborts/returns an error message if an
- * an error is encountered.  Data is stored temporarily in `IMPORT_NCDATA` so that we can
- * process edges -- e.g. an edge might refer to a node that is currently being imported.
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API METHOD
+ *  Walks down the checkers/validators one by one and aborts/returns an error
+ *  message if an an error is encountered.  Data is stored temporarily in
+ *  `IMPORT_NCDATA` so that we can process edges -- e.g. an edge might refer to
+ *  a node that is currently being imported.
  *
- * Data is not actually imported in the DB until the user clicks "Import"
+ *  Data is not actually imported in the DB until the user clicks "Import"
  *
- * Side effect: Updates `edgesToImport` with validated edges
- * @param {object} data
- * @param {File} data.edgefile - https://developer.mozilla.org/en-US/docs/Web/API/File
- * @return { isValid:boolean, messages:[], errors:[] }
+ *  Side effect: Updates `edgesToImport` with validated edges
+ *  @param {object} data
+ *  @param {File} data.edgefile - developer.mozilla.org/en-US/docs/Web/API/File
+ *  @return { isValid:boolean, messages:[], errors:[] }
  */
 MOD.EdgefileValidate = async data => {
   // No edgefile passed, user probably clicked cancel
@@ -978,12 +954,13 @@ MOD.EdgefileValidate = async data => {
     messageTitle: `Edges import file "${edgeFileName}": Validated!`
   });
 };
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 /// MAIN IMPORT ///////////////////////////////////////////////////////////////
-/**
- * This is triggered when the user clicks the "Import" button.
- * Forces a RELOAD_DB after the import data is merged into the database.
- * @returns {messageJsx} -- summary of file imported
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API METHOD
+ *  This is triggered when the user clicks the "Import" button.
+ *  Forces a RELOAD_DB after the import data is merged into the database.
+ *  @returns {messageJsx} -- summary of file imported
  */
 MOD.Import = async () => {
   // Write to database!

@@ -1,21 +1,21 @@
 if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    UNISYS NETWORK implements network controls and synchronization.
-    It initializes a network connection on the CONNECT lifecycle.
+  UNISYS NETWORK implements network controls and synchronization.
+  It initializes a network connection on the CONNECT lifecycle.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = { connect: true, handle: false };
-
-/// LOAD LIBRARIES ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SETTINGS = require('settings');
 const NetMessage = require('unisys/common-netmessage-class');
 const DEFS = require('./common-defs');
 const PROMPTS = require('system/util/prompts');
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = { connect: true, handle: false };
 const PR = PROMPTS.Pad('NETWORK');
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const WARN = PROMPTS.Pad('!!!');
 const ERR_NM_REQ = 'arg1 must be NetMessage instance';
 const ERR_NO_SOCKET = 'Network socket has not been established yet';
@@ -39,7 +39,7 @@ const M_NOCONNECT = 6;
 var m_status = M0_INIT;
 var m_options = {};
 
-// hearbeat
+// heartbeat
 var m_hearbeat_timer;
 
 /// API METHODS ///////////////////////////////////////////////////////////////
@@ -63,7 +63,6 @@ NETWORK.Connect = function (datalink, opt) {
     if (typeof opt.success === 'function') opt.success();
     return;
   }
-
   // if multiple network connections occur, emit warning
   // warning: don't modify this unless you have a deep knowledge of how
   // the webapp system works or you might break something
@@ -130,7 +129,6 @@ NETWORK.Connect = function (datalink, opt) {
   // handle incoming messages
   NETWORK.AddListener('message', m_HandleRegistrationMessage);
 }; // Connect()
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ After 'open' event, we expect the first message on the socket to contain
     network session-related messages

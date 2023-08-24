@@ -1,24 +1,28 @@
 if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    UNISYS DATALINK CLASS
+  UNISYS DATALINK CLASS
 
-    The UNISYS DATALINK (UDATA) class represents a connection to the UNISYS
-    event messaging system. Instances are created with UNISYS.NewDataLink().
+  The UNISYS DATALINK (UDATA) class represents a connection to the UNISYS
+  event messaging system. Instances are created with UNISYS.NewDataLink().
 
-    Each UNODE has a unique UNISYS_ID (the UID) which represents its
-    local address. Combined with the device UADDR, this makes every UNODE
-    on the network addressable.
+  Each UNODE has a unique UNISYS_ID (the UID) which represents its
+  local address. Combined with the device UADDR, this makes every UNODE
+  on the network addressable.
 
-    * UNODES can get and set global state objects
-    * UNODES can subscribe to state change events
-    * UNODES can register listeners for a named message
-    * UNODES can send broadcast to all listeners
-    * UNODES can call listeners and receive data
+  * UNODES can get and set global state objects
+  * UNODES can subscribe to state change events
+  * UNODES can register listeners for a named message
+  * UNODES can send broadcast to all listeners
+  * UNODES can call listeners and receive data
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-/// DEBUGGING /////////////////////////////////////////////////////////////////
+const SETTINGS = require('settings');
+const STATE = require('unisys/client-state');
+const Messager = require('unisys/client-messager-class');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = { send: false, return: false, register: false };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -30,12 +34,6 @@ const NO_DATAOBJ = 'syntax error: missing data object';
 const BAD_EJSPROPS =
   'EJS props (window.NC_UNISYS) is undefined, so can not set datalink IP address';
 const PR = 'UDATA:';
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const SETTINGS = require('settings');
-const STATE = require('unisys/client-state');
-const Messager = require('unisys/client-messager-class');
 
 /// NODE MANAGEMENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

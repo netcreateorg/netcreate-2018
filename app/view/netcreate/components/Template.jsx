@@ -29,11 +29,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-var DBG = false;
-var UDATA = null;
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const ReactStrap = require('reactstrap');
 const { Button } = ReactStrap;
@@ -43,8 +38,11 @@ const { EDITORTYPE } = require('system/util/enum');
 const TEMPLATE_MGR = require('../templateEditor-mgr');
 const SCHEMA = require('../template-schema');
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
-
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let UDATA = null;
 let EDITOR; // json-editor object
 let typeOptions;
 

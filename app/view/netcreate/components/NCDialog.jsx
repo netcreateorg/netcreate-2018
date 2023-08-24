@@ -1,26 +1,26 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    Generic Dialog
+  Generic Dialog
 
-    USE:
+  USE:
 
-      <NCDialog
-        statekey={key}
-        value={value}
-        onChange={this.handleInputUpdate}
-        onSelect={this.handleSelection}
-      />
+    <NCDialog
+      statekey={key}
+      value={value}
+      onChange={this.handleInputUpdate}
+      onSelect={this.handleSelection}
+    />
 
-    This will look up matching nodes via FIND_MATCHING_NODES nc-logic request.
+  This will look up matching nodes via FIND_MATCHING_NODES nc-logic request.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+const React = require('react');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 const PR = 'NCDialog';
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const React = require('react');
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

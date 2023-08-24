@@ -1,29 +1,29 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    Prototype Simple NetCreate Search Field
+  Prototype Simple NetCreate Search Field
 
-    Built for Version 2.0 ITEST.
+  Built for Version 2.0 ITEST.
 
-    Provides a:
-    * Search Field
-    * "Add New Node" button
-    * Autosuggest highlighter
+  Provides a:
+  * Search Field
+  * "Add New Node" button
+  * Autosuggest highlighter
 
-    USAGE
+  USAGE
 
-      <NCSearch />
+    <NCSearch />
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = false;
-const PR = 'NCSearch';
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const UNISYS = require('unisys/client');
 const NCAutoSuggest = require('./NCAutoSuggest');
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+const PR = 'NCSearch';
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let UDATA;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////

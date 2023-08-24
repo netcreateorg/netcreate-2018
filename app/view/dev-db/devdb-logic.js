@@ -1,34 +1,34 @@
 if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    DevDBLogic is the companion module that implements the console CLI for
-    manipulating the database on the server
+  DevDBLogic is the companion module that implements the console CLI for
+  manipulating the database on the server
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-/// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SETTINGS = require('settings');
 const UNISYS = require('unisys/client');
 const DATASTORE = require('system/datastore');
-
-/// DEBUG SUPPORT /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = { handler: false };
+//
 const PROMPTS = require('system/util/prompts');
 const JSCLI = require('system/util/jscli');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = { handler: false };
+const PR = PROMPTS.Pad('DevDBLogic');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // module 1
-const PR = PROMPTS.Pad('DevDBLogic');
 var MOD = UNISYS.NewModule(module.id);
 var UDATA = UNISYS.NewDataLink(MOD);
 
 /// COMPATIBILITY MODES  //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Provide Compatibility with DevUnisys instances
-/*/ MOD.Hook('INITIALIZE', function () {
+/** Provide Compatibility with DevUnisys instances
+ */
+MOD.Hook('INITIALIZE', function () {
   console.log('*** INITIALIZE ***');
   // without NET_SEND_TEST:
   // fail netCallHandlr, netData, netDataAdd, netDataMulti, netDataReturn
@@ -57,9 +57,10 @@ var UDATA = UNISYS.NewDataLink(MOD);
 
 /// APP_READY MESSAGE REGISTRATION ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ The APP_READY hook is fired after all initialization phases have finished
-    and may also fire at other times with a valid info packet
-/*/ MOD.Hook('APP_READY', function (info) {
+/** The APP_READY hook is fired after all initialization phases have finished
+ *  and may also fire at other times with a valid info packet
+ */
+MOD.Hook('APP_READY', function (info) {
   console.log('*** APP_READY ***');
   return new Promise((resolve, reject) => {
     let timeout = setTimeout(() => {
@@ -74,8 +75,7 @@ var UDATA = UNISYS.NewDataLink(MOD);
   });
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ MOD.Hook('START', function () {
+MOD.Hook('START', function () {
   console.log('*** START ***');
 });
 
@@ -85,8 +85,9 @@ MOD.Hook('INITIALIZE', () => {
   JSCLI.AddFunction(ncPushDatabase);
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Command: RESET THE DATABASE from default data
-/*/ function ncPushDatabase(jsonFile) {
+/** Command: RESET THE DATABASE from default data
+ */
+function ncPushDatabase(jsonFile) {
   jsonFile = jsonFile || 'data.reducedlinks.json';
   DATASTORE.PromiseJSONFile(jsonFile)
     .then(data => {
@@ -110,7 +111,6 @@ MOD.Hook('INITIALIZE', () => {
   // return syntax help
   return 'FYI: ncPushDatabase(jsonFile) can load file in assets/data';
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// EXPORT MODULE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

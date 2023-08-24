@@ -1,16 +1,12 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    DATASTORE
-    stub for testing module loading
-    eventually will load data from database
-    data.json is { nodes: [ {} ... {} ] }
+  DATASTORE
+  stub for testing module loading
+  eventually will load data from database
+  data.json is { nodes: [ {} ... {} ] }
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = { load: true };
-
-/// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const TOML = require('@iarna/toml');
 const SETTINGS = require('settings');
 const SESSION = require('unisys/common-session');
@@ -20,6 +16,8 @@ const PR = PROMPTS.Pad('Datastore');
 const NetMessage = require('unisys/common-netmessage-class');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = { load: true };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const HASH_ABET = 'ABCDEFGHIJKLMNPQRSTVWXYZ23456789';
 const HASH_MINLEN = 3;

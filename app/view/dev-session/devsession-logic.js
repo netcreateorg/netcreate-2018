@@ -1,8 +1,8 @@
 if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    DevDBLogic is the companion module that implements the console CLI for
-    manipulating the database on the server
+  DevDBLogic is the companion module that implements the console CLI for
+  manipulating the database on the server
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -28,16 +28,16 @@ var UDATA = UNISYS.NewDataLink(MOD);
 
 /// COMPATIBILITY MODES  //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ MOD.Hook('INITIALIZE', function () {
+MOD.Hook('INITIALIZE', function () {
   console.log('*** INITIALIZE ***');
 });
 
 /// APP_READY MESSAGE REGISTRATION ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ The APP_READY hook is fired after all initialization phases have finished
-    and may also fire at other times with a valid info packet
-/*/ MOD.Hook('APP_READY', function (info) {
+/** The APP_READY hook is fired after all initialization phases have finished
+ *  and may also fire at other times with a valid info packet
+ */
+MOD.Hook('APP_READY', function (info) {
   console.log('*** APP_READY ***');
   return new Promise((resolve, reject) => {
     let timeout = setTimeout(() => {
@@ -52,8 +52,7 @@ var UDATA = UNISYS.NewDataLink(MOD);
   });
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ MOD.Hook('START', function () {
+MOD.Hook('START', function () {
   console.log('*** INITIALIZE ***');
 });
 

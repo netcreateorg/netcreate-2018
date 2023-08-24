@@ -32,38 +32,24 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = false;
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS = require('unisys/client');
 const TOML = require('@iarna/toml');
 const DATASTORE = require('system/datastore');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var MOD = UNISYS.NewModule(module.id);
 var UDATA = UNISYS.NewDataLink(MOD);
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// UTILITIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-///////////////////////////////////////////////////////////////////////////////
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-///
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Used when importing a TOML file
-    Makes sure TOML file is readable.
-    Returns JSON
-/*/
+/** Used when importing a TOML file
+ *  Makes sure TOML file is readable. Returns JSON
+ */
 MOD.ValidateTOMLFile = async data => {
   const { tomlfile } = data;
   try {
@@ -75,7 +61,6 @@ MOD.ValidateTOMLFile = async data => {
     return { isValid: false, error: err };
   }
 };
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Update TEMPLATE AppState
     Called by Template.jsx to update the template data with the info from the form.
@@ -182,7 +167,6 @@ MOD.UpdateTemplate = (templateSnippet, editScope) => {
   // UDATA.SetAppState("TEMPLATE", TEMPLATE);
   return TEMPLATE;
 };
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Save template file to disk
     in case we do not necessarily want to autosave template data
@@ -191,7 +175,6 @@ MOD.UpdateTemplate = (templateSnippet, editScope) => {
 MOD.SaveTemplateToFile = template => {
   return DATASTORE.SaveTemplateFile(template);
 };
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Download template to local file
 /*/
