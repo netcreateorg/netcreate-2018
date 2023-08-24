@@ -36,8 +36,8 @@ var UDATA = UNISYS.NewDataLink(MOD);
 
 // /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 // /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// /*/ lifecycle INITIALIZE handler
-// /*/
+// /** lifecycle INITIALIZE handler
+//  */
 // MOD.Hook("INITIALIZE", () => {
 //   UDATA.HandleMessage('USER_HILITE_NODE', m_UserHighlightNode);
 //   UDATA.HandleMessage('AUTOSUGGEST_HILITE_NODE', m_AutoSuggestHiliteNode);

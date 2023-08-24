@@ -224,9 +224,10 @@ class NodeSelector extends UNISYS.Component {
     UDATA = UNISYS.NewDataLink(this);
 
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    /*/ SESSION is called by SessionSHell when the ID changes
+    /** SESSION is called by SessionSHell when the ID changes
       set system-wide. data: { classId, projId, hashedId, groupId, isValid }
-  /*/ this.OnAppStateChange('SESSION', this.onStateChange_SESSION);
+   */
+    this.OnAppStateChange('SESSION', this.onStateChange_SESSION);
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     this.OnAppStateChange('SELECTION', this.handleSelection);
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -237,12 +238,12 @@ class NodeSelector extends UNISYS.Component {
     UDATA.HandleMessage('EDIT_PERMISSIONS_UPDATE', this.setEditState);
 
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    /*/ If someone on the network updates a node or edge, SOURCE_UPDATE is broadcast.
+    /** If someone on the network updates a node or edge, SOURCE_UPDATE is broadcast.
       We catch it here and update the selection if the node we're displaying matches
       the updated node.
       This basically handles updated Node labels in both the main node and in related
       edges.
-  /*/
+    */
     UDATA.HandleMessage('SOURCE_UPDATE', data => {
       let needsUpdate = false;
       let currentNodeID = this.state.formData.id;
@@ -262,10 +263,10 @@ class NodeSelector extends UNISYS.Component {
       }
     });
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    /*/ NODE_EDIT is usually requested by NodeTable.
-      Only allow edit if the request has a valid nodeID
-      Ignore the request if we're already editing a node.
-  /*/
+    /** NODE_EDIT is usually requested by NodeTable. Only allow edit if the
+     *  request has a valid nodeID Ignore the request if we're already editing
+     *  a node.
+     */
     UDATA.HandleMessage('NODE_EDIT', data => {
       const { isBeingEdited, isLocked } = this.state;
       if (
@@ -291,12 +292,12 @@ class NodeSelector extends UNISYS.Component {
       }
     });
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    /*/ This will add any new edges that have links to the currently selected node
+    /** This will add any new edges that have links to the currently selected node
       to the list of edges in the NodeSelector.
       IMPORTANT: We ignore edge updates if an edge is currently being edited to
       prevent edge updates from clobbering the edit.  The list of edges is
       updated after the edit is completed, so new edges are added then.
-  /*/
+    */
     UDATA.HandleMessage('EDGE_UPDATE', data => {
       if (DBG)
         console.log(
@@ -339,7 +340,7 @@ class NodeSelector extends UNISYS.Component {
       }
     });
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    /*/ Handler for canceling a new edge
+    /** Handler for canceling a new edge
       Called by EdgeEditor
       Normally we would just use SOURCE_SELECT to reload the node.
       There are two issues with just using SOURCE_SELECT:
@@ -357,7 +358,7 @@ class NodeSelector extends UNISYS.Component {
 
       Call this with no data object to trigger deselect.  Used when
       source is deleted by admin user.
-  /*/
+    */
     UDATA.HandleMessage('EDGE_NEW_CANCEL', data => {
       if (data.nodeID === this.state.formData.id) {
         this.setState({ edgesAreLocked: false }, () => {
@@ -383,9 +384,9 @@ class NodeSelector extends UNISYS.Component {
     // UDATA.HandleMessage("EDGE_DELETE", (data) => {
     // });
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    /*/ This keeps track of whether an edge is being edited to prevent network
+    /** This keeps track of whether an edge is being edited to prevent network
       updates from clobbering an in-process edit.
-  /*/
+    */
     UDATA.HandleMessage('EDGEEDIT_LOCK', data => {
       this.setState({ edgesAreLocked: true });
     });
@@ -394,9 +395,9 @@ class NodeSelector extends UNISYS.Component {
     });
 
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    /*/ Prevent editing if server is disconnected.
+    /** Prevent editing if server is disconnected.
       This is necessary to hide the "Add New Node" button.
-  /*/
+    */
     this.OnDisconnect(() => {
       console.log('NodeSelector got disconnect');
       this.setState({ isLocked: true });
@@ -405,8 +406,9 @@ class NodeSelector extends UNISYS.Component {
 
   /// UTILITIES /////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Clear the form with optional label
-/*/ clearForm(label = '') {
+  /** Clear the form with optional label
+   */
+  clearForm(label = '') {
     this.releaseOpenEditor();
     this.setState({
       formData: {
@@ -437,8 +439,8 @@ class NodeSelector extends UNISYS.Component {
     this.setState({ nodeDefs: data.nodeDefs });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Disable Node Edit if a Template is being edited
-/*/
+  /** Disable Node Edit if a Template is being edited
+   */
   updateEditState() {
     // disable edit if template is being edited
     this.NetCall('SRV_GET_EDIT_STATUS').then(data => {
@@ -454,9 +456,9 @@ class NodeSelector extends UNISYS.Component {
     this.setState({ disableEdit, editLockMessage });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Deregister as an open editor
+  /** Deregister as an open editor
     Remove 'node' from OPENEDITORS
-/*/
+  */
   releaseOpenEditor() {
     // NOTE: We only deregister if we're currently actively editing
     //       otherwise we might inadvertently deregister
@@ -464,11 +466,11 @@ class NodeSelector extends UNISYS.Component {
       this.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.NODE });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Return a new unique ID
+  /** Return a new unique ID
     REVIEW: Should this be in nc-logic?
     ANSWER: YES. There shouldn't be ANY data-synthesis code in a component!
     HACK: Replace this code with a server call
-/*/ getNewNodeID() {
+  */ getNewNodeID() {
     throw new Error("Don't use getNewNodeID() because it is not network safe");
     /*/
       let highestID = 0;
@@ -482,8 +484,9 @@ class NodeSelector extends UNISYS.Component {
       /*/
   } // getNewNodeID
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Return a new unique ID
-/*/ getNewEdgeID() {
+  /** Return a new unique ID
+   */
+  getNewEdgeID() {
     throw new Error("Don't use getNewEdgeID() because it is not network safe");
     /*/
       let highestID = 0;
@@ -497,8 +500,9 @@ class NodeSelector extends UNISYS.Component {
       /*/
   } // getNewEdgeID
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Handle updated SELECTION
-/*/ handleSelection(data) {
+  /** Handle updated SELECTION
+   */
+  handleSelection(data) {
     if (DBG) console.log('NodeSelector: got state SELECTION', data);
 
     // Only update if we are the currently active field
@@ -569,24 +573,26 @@ class NodeSelector extends UNISYS.Component {
     this.validateForm();
   } // handleSelection
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Handle change in SESSION data
+  /** Handle change in SESSION data
     Called both by componentWillMount() and AppStateChange handler.
     The 'SESSION' state change is triggered in two places in SessionShell during
     its handleChange() when active typing is occuring, and also during
     SessionShell.componentWillMount()
-/*/ onStateChange_SESSION(decoded) {
+  */
+  onStateChange_SESSION(decoded) {
     let update = { isLocked: !decoded.isValid };
     this.setState(update);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Handle updated SEARCH
+  /** Handle updated SEARCH
     AutoComplete handles its internal updates, but we do need to validate the form
     When AutoComplete's input field is updated, it sends a SOURCE_SEARCH to ACL
     which returns the updated value in SEARCH state.  AutoComplete updates
     the input field using SEARCH.  We need to update the form data here
     and validate it for NodeSelector.
-/*/ onStateChange_SEARCH(data) {
+  */
+  onStateChange_SEARCH(data) {
     // Only update if we are the currently active field
     // otherwise an Edge might be active
     let { activeAutoCompleteId } = this.AppState('ACTIVEAUTOCOMPLETE');
@@ -633,8 +639,9 @@ class NodeSelector extends UNISYS.Component {
     this.validateForm();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Copy the node data passed via SELECTION in the form
-/*/ loadFormFromNode(newNode) {
+  /** Copy the node data passed via SELECTION in the form
+   */
+  loadFormFromNode(newNode) {
     if (DBG) console.log('NodeSelector.loadFormFromNode', newNode);
     if (newNode === undefined) {
       throw 'NodeSelector.loadFormFromNode called with undefined newNode!';
@@ -683,8 +690,9 @@ class NodeSelector extends UNISYS.Component {
   } // loadFormFromNode
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ validateForm() {
+  /**
+   */
+  validateForm() {
     let isValid = false;
     let formData = this.state.formData;
 
@@ -707,8 +715,9 @@ class NodeSelector extends UNISYS.Component {
   /// REVIEW: Do we really need to manage each input field change with a state update
   /// or can we just grab the final text during the "SAVE"?
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ onLabelChange(label) {
+  /**
+   */
+  onLabelChange(label) {
     // REVIEW: Currently this is not being called because AutoComplete
     // doesn't have a change handler
     let node = this.state.formData;
@@ -717,43 +726,48 @@ class NodeSelector extends UNISYS.Component {
     this.validateForm();
   } // onLabelChange
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ onTypeChange(event) {
+  /**
+   */
+  onTypeChange(event) {
     let node = this.state.formData;
     node.type = event.target.value;
     this.setState({ formData: node });
   } // onTypeChange
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ onNotesChange(event) {
+  /**
+   */
+  onNotesChange(event) {
     let node = this.state.formData;
     node.notes = event.target.value;
     this.setState({ formData: node });
   } // onNotesChange
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ onInfoChange(event) {
+  /**
+   */
+  onInfoChange(event) {
     let node = this.state.formData;
     node.info = event.target.value;
     this.setState({ formData: node });
   } // onInfoChange
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ onProvenanceChange(event) {
+  /**
+   */
+  onProvenanceChange(event) {
     let node = this.state.formData;
     node.provenance = event.target.value;
     this.setState({ formData: node });
   } // onProvenanceChange
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ onCommentsChange(event) {
+  /**
+   */
+  onCommentsChange(event) {
     let node = this.state.formData;
     node.comments = event.target.value;
     this.setState({ formData: node });
   } // onCommentsChange
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/
+  /**
+   */
   onReplacementNodeIDChange(event) {
     let replacementNodeID = parseInt(event.target.value);
     let isValid = false;
@@ -772,8 +786,9 @@ class NodeSelector extends UNISYS.Component {
     });
   } // onReplacementNodeIDChange
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ onNewNodeButtonClick(event) {
+  /**
+   */
+  onNewNodeButtonClick(event) {
     event.preventDefault();
 
     // Save the search label to re-insert into the new node
@@ -814,8 +829,8 @@ class NodeSelector extends UNISYS.Component {
     });
   } // onNewNodeButtonClick
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onDeleteButtonClick() {
     // nodeID needs to be a Number.  It should have been set in loadFormFromNode
     let nodeID = this.state.formData.id;
@@ -835,8 +850,8 @@ class NodeSelector extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   // this is an admin only function to allow unlocking of locked nodes without having to reload
   onForceUnlock() {
     // nodeID needs to be a Number.  It should have been set in loadFormFromNode
@@ -858,8 +873,8 @@ class NodeSelector extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onEditButtonClick(event) {
     event.preventDefault();
 
@@ -871,11 +886,8 @@ class NodeSelector extends UNISYS.Component {
     this.requestEditNode(nodeID);
   } // onEditButtonClick
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onCiteButtonClick(event) {
     event.preventDefault();
 
@@ -898,9 +910,8 @@ class NodeSelector extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/
-
+  /**
+   */
   requestEditNode(nodeID) {
     this.NetCall('SRV_DBLOCKNODE', { nodeID: nodeID }).then(data => {
       if (data.NOP) {
@@ -915,8 +926,8 @@ class NodeSelector extends UNISYS.Component {
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   editNode() {
     // Add ID if one isn't already defined
     let formData = this.state.formData;
@@ -943,8 +954,9 @@ class NodeSelector extends UNISYS.Component {
     });
   } // editNode
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ onAddNewEdgeButtonClick(event) {
+  /**
+   */
+  onAddNewEdgeButtonClick(event) {
     event.preventDefault();
     /*
             When creating a new edge, we first
@@ -969,8 +981,9 @@ class NodeSelector extends UNISYS.Component {
     });
   } // onAddNewEdgeButtonClick
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ onCancelButtonClick() {
+  /**
+   */
+  onCancelButtonClick() {
     // If we were editing, then revert and exit
     if (this.state.isBeingEdited) {
       let originalNode = this.AppState('NCDATA').nodes.filter(node => {
@@ -1003,8 +1016,8 @@ class NodeSelector extends UNISYS.Component {
     }
   } // onCancelButtonClick
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Select the node for editing
-  /*/
+  /** Select the node for editing
+   */
   onEditOriginal(event) {
     event.preventDefault();
     let duplicateNodeID = parseInt(this.state.duplicateNodeID);
@@ -1028,14 +1041,15 @@ class NodeSelector extends UNISYS.Component {
     this.AppCall('AUTOCOMPLETE_SELECT', { id: 'search' });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ User confirms they want to edit the existing node.
-  /*/
+  /** User confirms they want to edit the existing node.
+   */
   onCloseDuplicateDialog() {
     this.setState({ isDuplicateNodeLabel: false });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ onSubmit(event) {
+  /**
+   */
+  onSubmit(event) {
     event.preventDefault();
     // Update the data with the selectedNode
     let formData = this.state.formData;
@@ -1076,8 +1090,9 @@ class NodeSelector extends UNISYS.Component {
   } // onSubmit
 
   /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
-  /*/ REACT calls this to receive the component layout and data sources
-/*/ render() {
+  /** REACT calls this to receive the component layout and data sources
+   */
+  render() {
     const {
       nodeDefs,
       duplicateWarning,
@@ -1421,9 +1436,8 @@ class NodeSelector extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/
-
+  /**
+   */
   helpText(obj) {
     if (!obj) return;
     var text = '';
@@ -1434,8 +1448,8 @@ class NodeSelector extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/
+  /**
+   */
   markdownDisplay(text) {
     if (!this.state.isBeingEdited)
       return mdReact({
@@ -1456,8 +1470,8 @@ class NodeSelector extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ componentDidMount() {
+  /**
+   */ componentDidMount() {
     this.onStateChange_SESSION(this.AppState('SESSION'));
     this.validateForm();
     this.updateEditState();
@@ -1486,8 +1500,8 @@ class NodeSelector extends UNISYS.Component {
     }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Release the lock if we're unmounting
-/*/ componentWillUnmount() {
+  /** Release the lock if we're unmounting
+   */ componentWillUnmount() {
     if (DBG) console.log('NodeEditor.componentWillUnMount!');
     if (this.state.isBeingEdited) {
       this.NetCall('SRV_DBUNLOCKNODE', { nodeID: this.state.formData.id }).then(

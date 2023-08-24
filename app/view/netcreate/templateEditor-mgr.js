@@ -62,7 +62,7 @@ MOD.ValidateTOMLFile = async data => {
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Update TEMPLATE AppState
+/** Update TEMPLATE AppState
     Called by Template.jsx to update the template data with the info from the form.
     Mostly used to process whether the form is:
     a) updating the whole template data, or
@@ -77,7 +77,7 @@ MOD.ValidateTOMLFile = async data => {
     MAJOR SIDE EFFECT: Updates NCDATA with changes!
     `templateSnippet` can be the whole template object, or just the node types or
     edge types.
-/*/
+ */
 MOD.UpdateTemplate = (templateSnippet, editScope) => {
   let TEMPLATE = UDATA.AppState('TEMPLATE');
 
@@ -168,16 +168,16 @@ MOD.UpdateTemplate = (templateSnippet, editScope) => {
   return TEMPLATE;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Save template file to disk
+/** Save template file to disk
     in case we do not necessarily want to autosave template data
     This calls: datastore > server > server-database
-/*/
+ */
 MOD.SaveTemplateToFile = template => {
   return DATASTORE.SaveTemplateFile(template);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Download template to local file
-/*/
+/** Download template to local file
+ */
 MOD.DownloadTemplate = () => {
   DATASTORE.GetTemplateTOMLFileName() // datastore > server > server-database
     .then(data => {

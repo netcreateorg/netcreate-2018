@@ -141,8 +141,8 @@ class SessionShell extends UNISYS.Component {
 
   /// ROUTE RENDER FUNCTIONS ////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ render successful logged-in
-  /*/
+  /** render successful logged-in
+   */
   renderLoggedIn(decoded) {
     if (decoded) {
       let classproj = `${decoded.classId}-${decoded.projId}`;
@@ -184,8 +184,8 @@ class SessionShell extends UNISYS.Component {
     }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ render must login (readonly)
-  /*/
+  /** render must login (readonly)
+   */
   renderLogin() {
     let { token, classId, projId, groupId, subId, hashedId, isValid } = this.state;
     if (token) token = token.toUpperCase();
@@ -316,8 +316,8 @@ class SessionShell extends UNISYS.Component {
     this.previousIsValid = decoded.isValid;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Main Render Function
-  /*/
+  /** Main Render Function
+   */
   render() {
     // FUN FACTS
     // this.state set in constructor

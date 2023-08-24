@@ -49,10 +49,10 @@ var UDATA = null; // assigned during NETWORK.Connect()
 
 /// CONNECT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Establish connection to UNISYS server. This is called by client.js during
+/** Establish connection to UNISYS server. This is called by client.js during
     NetworkInitialize(), which itself fires after the application has rendered
     completely.
-/*/
+ */
 NETWORK.Connect = function (datalink, opt) {
   // special case: STANDALONE mode is set by a different set of magical
   // window.NC_UNISYS properties
@@ -100,9 +100,9 @@ NETWORK.Connect = function (datalink, opt) {
   });
   // handle socket errors
   NETWORK.AddListener('error', function (event) {
-    /*/ DSHACK: For Spring 2019, adding manifest support to try to
+    /** DSHACK: For Spring 2019, adding manifest support to try to
         avoid rewriting the app with service workers
-    /*/
+     */
     let appCache = window.applicationCache;
     switch (appCache.status) {
       case appCache.UNCACHED:
@@ -130,9 +130,9 @@ NETWORK.Connect = function (datalink, opt) {
   NETWORK.AddListener('message', m_HandleRegistrationMessage);
 }; // Connect()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ After 'open' event, we expect the first message on the socket to contain
+/** After 'open' event, we expect the first message on the socket to contain
     network session-related messages
-/*/
+ */
 function m_HandleRegistrationMessage(msgEvent) {
   let regData = JSON.parse(msgEvent.data);
   let { HELLO, UADDR } = regData;
@@ -153,9 +153,9 @@ function m_HandleRegistrationMessage(msgEvent) {
   m_ResetHearbeatTimer();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ When a heartbeat ping is received, respond with a pong to let the server
+/** When a heartbeat ping is received, respond with a pong to let the server
     know that we're still alive.
-/*/
+ */
 function m_RespondToHeartbeat() {
   if (NETSOCK.ws.readyState === NETSOCK.ws.OPEN) {
     NETSOCK.ws.send('pong', err => {
@@ -164,7 +164,7 @@ function m_RespondToHeartbeat() {
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ If a 'hearbeat' message is not received from the server every 5 seconds
+/** If a 'hearbeat' message is not received from the server every 5 seconds
     we assume the network connection has gone down.  The timeout should be
     greater than the server heartbeat interval set in
     server-network.js:m_StartHeartbeat()
@@ -173,7 +173,7 @@ function m_RespondToHeartbeat() {
     connection.  In order to detect the internet connection going down
     (e.g. wifi) we need to check to see if we are peridically receiving
     a heartbeat message from the server.
-/*/
+ */
 function m_ResetHearbeatTimer() {
   clearTimeout(m_hearbeat_timer);
   m_hearbeat_timer = setTimeout(function heartbeatStopped() {
@@ -259,8 +259,8 @@ function m_HandleMessage(msgEvent) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Send a packet on socket connection, assuming it is valid
-/*/
+/** Send a packet on socket connection, assuming it is valid
+ */
 NETWORK.Send = function (pkt) {
   if (!(pkt instanceof NetMessage)) throw Error(ERR_NM_REQ);
   if (NETSOCK.ws.readyState === 1) {
@@ -272,8 +272,8 @@ NETWORK.Send = function (pkt) {
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Send a packet on socket connection, return Promise
-/*/
+/** Send a packet on socket connection, return Promise
+ */
 NETWORK.Call = function (pkt) {
   if (!(pkt instanceof NetMessage)) throw Error(ERR_NM_REQ);
   if (NETSOCK.ws.readyState === 1) {
@@ -285,8 +285,8 @@ NETWORK.Call = function (pkt) {
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Force close of connection, for example if UNISYS.AppReady() fails
-/*/
+/** Force close of connection, for example if UNISYS.AppReady() fails
+ */
 NETWORK.Close = function (code, reason) {
   code = code || 1000;
   reason = reason || 'unisys forced close';

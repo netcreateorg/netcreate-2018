@@ -27,9 +27,10 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
 
 /// STATE /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ UNISYS namespaces are transformed to uppercase.
+/** UNISYS namespaces are transformed to uppercase.
     A namespace must be a string that does not contain reserved char '_'
-/*/ function m_ConformNamespace(namespace) {
+ */
+function m_ConformNamespace(namespace) {
   // must be a string
   if (typeof namespace !== 'string') return undefined;
   // disallow empty string
@@ -44,9 +45,10 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
   return namespace;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Used for merging and concatenating state, when a simple copy-overwrite
+/** Used for merging and concatenating state, when a simple copy-overwrite
     simply will not do.
-/*/ function m_ConformState(namespace, newState, opt) {
+ */
+function m_ConformState(namespace, newState, opt) {
   opt = opt || { merge: true };
   // make a copy of the old state
   let state = Object.assign({}, STATES.get(namespace));
@@ -106,10 +108,11 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
   return state;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Retrieve the emitter associated with a namespace, which contains handles
+/** Retrieve the emitter associated with a namespace, which contains handles
     all the listeners associated with a namespace. Always returns a valid
     emitter, creating it if the passed namespace is valid.
-/*/ function m_GetStateMessager(nspace) {
+ */
+function m_GetStateMessager(nspace) {
   nspace = m_ConformNamespace(nspace);
   if (!nspace) throw Error(BAD_NSPACE);
   let msgr = STATES_LISTEN.get(nspace);
@@ -120,8 +123,9 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
   return msgr;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: update the selected namespace state with new state
-/*/ USTATE.SetState = (namespace, newState, src_uid) => {
+/** API: update the selected namespace state with new state
+ */
+USTATE.SetState = (namespace, newState, src_uid) => {
   namespace = m_ConformNamespace(namespace);
   if (!namespace) throw Error(BAD_NSPACE);
   // update old state by partially overwrite of state
@@ -140,8 +144,9 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
   // future: forward also to network
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: merge objects and arrays in state
-/*/ USTATE.MergeState = (namespace, newState, src_uid) => {
+/** API: merge objects and arrays in state
+ */
+USTATE.MergeState = (namespace, newState, src_uid) => {
   namespace = m_ConformNamespace(namespace);
   if (!namespace) throw Error(BAD_NSPACE);
   // update old state by partially overwrite of state
@@ -161,8 +166,9 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
   // future: forward also to network
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: merge objects and concat arrays in state
-/*/ USTATE.ConcatState = (namespace, newState, src_uid) => {
+/** API: merge objects and concat arrays in state
+ */
+USTATE.ConcatState = (namespace, newState, src_uid) => {
   namespace = m_ConformNamespace(namespace);
   if (!namespace) throw Error(BAD_NSPACE);
   // update old state by partially overwrite of state
@@ -182,15 +188,17 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
   // future: forward also to network
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: retrieve a COPY of state object of namespace
-/*/ USTATE.State = namespace => {
+/** API: retrieve a COPY of state object of namespace
+ */
+USTATE.State = namespace => {
   namespace = m_ConformNamespace(namespace);
   if (!namespace) throw Error(BAD_NSPACE);
   return Object.assign({}, STATES.get(namespace));
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: subscribe to namestate updates
-/*/ USTATE.OnStateChange = (namespace, listener, src_uid) => {
+/** API: subscribe to namestate updates
+ */
+USTATE.OnStateChange = (namespace, listener, src_uid) => {
   namespace = m_ConformNamespace(namespace);
   if (!namespace) throw Error(BAD_NSPACE);
   if (typeof listener !== 'function') throw Error(BAD_LISTENR);
@@ -199,8 +207,9 @@ var STATES_LISTEN = new Map(); // namespace str => emitter
   namespaceMessager.HandleMessage(namespace, listener, { handlerUID: src_uid });
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: unsubscribe to namestate updates
-/*/ USTATE.OffStateChange = (namespace, listener) => {
+/** API: unsubscribe to namestate updates
+ */
+USTATE.OffStateChange = (namespace, listener) => {
   namespace = m_ConformNamespace(namespace);
   if (!namespace) throw Error(BAD_NSPACE);
   if (typeof listener !== 'function') throw Error(BAD_LISTENR);

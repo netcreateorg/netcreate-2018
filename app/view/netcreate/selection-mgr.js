@@ -50,8 +50,8 @@ var UDATA = UNISYS.NewDataLink(MOD);
 
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ lifecycle INITIALIZE handler
-/*/
+/** lifecycle INITIALIZE handler
+ */
 MOD.Hook('INITIALIZE', () => {
   UDATA.HandleMessage('SELECTMGR_SET_MODE', m_SetMode);
   UDATA.HandleMessage('D3_SELECT_NODE', m_D3SelectNode);

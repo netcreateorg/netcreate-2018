@@ -9,8 +9,9 @@ let DBG = false;
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ list of tests that are allowed to run
-/*/ let TESTS = {
+/** list of tests that are allowed to run
+ */
+let TESTS = {
   call: false, // unisys calls
   state: false, // unisys state manager
   hook: false, // unisys lifecycle hooks
@@ -18,11 +19,13 @@ let DBG = false;
   net: false, // network connection to socket server
   server: false // unisys 'server implemented' calls
 };
-/*/ groups of tests to run
-/*/ let PASSED = {};
+/** groups of tests to run
+ */
+let PASSED = {};
 let TEST_GO = false;
-/*/ pairs of arrays to match (array of arrays)
-/*/ let ARR_MATCH = [];
+/** pairs of arrays to match (array of arrays)
+ */
+let ARR_MATCH = [];
 let PR = 'TEST:';
 let m_meta_info = {};
 
@@ -32,9 +35,10 @@ let m_skipped = [];
 let m_passed = [];
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Main TEST ENABLE
+/** Main TEST ENABLE
     pass the testname (as listed in TESTS) and either true or false)
-/*/ let TM = (testname, flag) => {
+ */
+let TM = (testname, flag) => {
   if (testname === undefined) {
     console.warn(
       `${PR} %cConfigured and Active`,
@@ -82,8 +86,9 @@ TM.MetaString = function () {
   return o;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: pass the particular subtest
-/*/ TM.Pass = function (subtest) {
+/** API: pass the particular subtest
+ */
+TM.Pass = function (subtest) {
   m_InitShell();
   // initialize tests
   if (DBG) console.log(`${PR} %cPass %c${subtest}`, 'color:green', 'color:black');
@@ -95,8 +100,9 @@ TM.MetaString = function () {
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: fail the particular subtest
-/*/ TM.Fail = function (subtest) {
+/** API: fail the particular subtest
+ */
+TM.Fail = function (subtest) {
   m_InitShell();
   if (DBG) console.error(`${PR} %cFail ${subtest}`, 'color:red;font-weight:bold');
   if (PASSED[subtest]) {
@@ -126,8 +132,9 @@ TM.MetaString = function () {
   throw Error(`Unknown subtest: ${subtest}`);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: check if the particular subtests passed have indeed passed
-/*/ TM.Passed = function (...args) {
+/** API: check if the particular subtests passed have indeed passed
+ */
+TM.Passed = function (...args) {
   if (DBG) console.log(PR, 'Passed');
   let passed = true;
   args.forEach(subtest => {
@@ -137,8 +144,9 @@ TM.MetaString = function () {
   return passed;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: output test results
-/*/ TM.Assess = function () {
+/** API: output test results
+ */
+TM.Assess = function () {
   if (DBG) console.log(PR, 'Assess');
   m_failed = [];
   m_skipped = [];
@@ -147,22 +155,25 @@ TM.MetaString = function () {
   m_TestResults();
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: assess whether passed arrays match during Assess function()
-/*/ TM.AssessArrayMatch = function (subtest, arr1, arr2) {
+/** API: assess whether passed arrays match during Assess function()
+ */
+TM.AssessArrayMatch = function (subtest, arr1, arr2) {
   if (DBG) console.log(PR, 'AssessArrayMatch');
   ARR_MATCH.push([subtest, arr1, arr2]);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: return TRUE if there were no failing tests in the last test.
+/** API: return TRUE if there were no failing tests in the last test.
     Call TM.Assess() again to retest
-/*/ TM.AllPassed = function () {
+ */
+TM.AllPassed = function () {
   return m_failed.length !== 0;
 };
 
 /// TEST FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ sets the PASSED object keys to enable/disable tests prior to running
-/*/ function m_ConfigureTestFlags(testname, flag) {
+/** sets the PASSED object keys to enable/disable tests prior to running
+ */
+function m_ConfigureTestFlags(testname, flag) {
   if (flag === undefined) throw 'arg2 flag must be true to enable, false to disable';
   // the subtest value must be set to false first
   // to skip tests, the subtest value is set to null
@@ -251,8 +262,9 @@ function m_PreTest() {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ prints the test output to console
-/*/ function m_TestResults() {
+/** prints the test output to console
+ */
+function m_TestResults() {
   m_ShowShell();
   // check all test results
   let pEntries = Object.entries(PASSED);
@@ -333,9 +345,10 @@ function m_PreTest() {
   console.groupEnd();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ initialize the shell user interface for test results as elements, but
+/** initialize the shell user interface for test results as elements, but
     don't yet link them because component may not have rendered yet
-/*/ function m_InitShell() {
+ */
+function m_InitShell() {
   if (!E_OUT) {
     E_OUT = document.createElement('pre');
     E_HEADER = document.createElement('h4');

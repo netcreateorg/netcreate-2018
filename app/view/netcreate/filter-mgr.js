@@ -104,8 +104,8 @@ const TEMPLATE_URL = `templates/${DATASET}.json`;
 
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ lifecycle INITIALIZE handler
-/*/
+/** lifecycle INITIALIZE handler
+ */
 MOD.Hook('INITIALIZE', () => {
   UDATA.OnAppStateChange('FILTERDEFS', data => {
     if (DBG) console.log(PR + 'OnAppStateChange: FILTERDEFS', data);
@@ -114,22 +114,22 @@ MOD.Hook('INITIALIZE', () => {
   });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ FILTER_DEFINE is called by StringFilter when user has updated filter.
-  /*/
+  /** FILTER_DEFINE is called by StringFilter when user has updated filter.
+   */
   UDATA.HandleMessage('FILTER_DEFINE', data => {
     m_FilterDefine(data);
   });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ FILTER_CLEAR is called by FiltersPanel when user clicks "Clear Filters" button
-  /*/
+  /** FILTER_CLEAR is called by FiltersPanel when user clicks "Clear Filters" button
+   */
   UDATA.HandleMessage('FILTER_CLEAR', () => {
     m_ClearFilters();
   });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ FILTERS_UPDATE is called by FiltersPanel switches between filters and highlights
-  /*/
+  /** FILTERS_UPDATE is called by FiltersPanel switches between filters and highlights
+   */
   UDATA.HandleMessage('FILTERS_UPDATE', data => {
     const FILTERDEFS = UDATA.AppState('FILTERDEFS');
     FILTERDEFS.filterAction = data.filterAction;
@@ -150,14 +150,14 @@ MOD.Hook('INITIALIZE', () => {
     UDATA.SetAppState('FILTERDEFS', FILTERDEFS);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Listen for NCDATA updates so we know to trigger change?
-  /*/
+  /** Listen for NCDATA updates so we know to trigger change?
+   */
   UDATA.OnAppStateChange('NCDATA', data => {
     m_UpdateFilters();
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Listen for TEMPLATE updates so we know to trigger change?
-  /*/
+  /** Listen for TEMPLATE updates so we know to trigger change?
+   */
   UDATA.OnAppStateChange('TEMPLATE', data => {
     // this is critical -- graph will not draw if this is
     // not called from nc-logic.LOADASSETS
@@ -165,9 +165,9 @@ MOD.Hook('INITIALIZE', () => {
   });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ 2023-06 Interim Approach -- eventually should convert to new selection mgr
+  /** 2023-06 Interim Approach -- eventually should convert to new selection mgr
       Listen for SELECTION changes for setting Focus
-  /*/
+   */
   UDATA.OnAppStateChange('SELECTION', data => {
     // Only if Focus is active
     const FILTERDEFS = UDATA.AppState('FILTERDEFS');

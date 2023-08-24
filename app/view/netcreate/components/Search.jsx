@@ -61,10 +61,12 @@ class Search extends UNISYS.Component {
 
   /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ componentWillMount() {}
-  /*/ REACT calls this to receive the component layout and data sources
-/*/ render() {
+  /**
+   */
+  componentWillMount() {}
+  /** REACT calls this to receive the component layout and data sources
+   */
+  render() {
     return (
       <FormGroup row>
         <Col>

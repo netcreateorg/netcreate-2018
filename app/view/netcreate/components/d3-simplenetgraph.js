@@ -150,10 +150,11 @@ class D3NetGraph {
     // Set up Zoom
     this.zoom = d3.zoom().on('zoom', this._HandleZoom);
 
-    /*/ Create svg element which will contain our D3 DOM elements.
+    /** Create svg element which will contain our D3 DOM elements.
       Add default click handler so when clicking empty space, deselect all.
       NOTE: the svg element is actualy d3.selection object, not an svg obj.
-  /*/ this.d3svg = d3
+   */
+    this.d3svg = d3
       .select(rootElement)
       .append('svg')
       .attr('id', 'netgraph')
@@ -264,25 +265,25 @@ class D3NetGraph {
     this._SetData(data);
   }
 
-  /*/ Update default values when template has changed
-  /*/
+  /** Update default values when template has changed
+   */
   _HandleTemplateUpdate(data) {
     if (DBG) console.log(PR, 'got state TEMPLATE', data);
     this._SetDefaultValues();
   }
 
-  /*/ Clear the SVG data
+  /** Clear the SVG data
     Currently not used because we just deconstruct d3-simplenetgraph insead.
     Was thought to be needed during imports otherwise _UpdateGraph reads data from existing
     SVG elements rather than the new data.
-/*/
+ */
   _ClearSVG() {
     this.zoomWrapper.selectAll('.edge').remove();
     this.zoomWrapper.selectAll('.node').remove();
   }
 
-  /*/ Set default node and edge size values from TEMPLATE
-  /*/
+  /** Set default node and edge size values from TEMPLATE
+   */
   _SetDefaultValues() {
     const TEMPLATE = UDATA.AppState('TEMPLATE');
     this.nodeSizeDefault = TEMPLATE.nodeSizeDefault;
@@ -291,9 +292,9 @@ class D3NetGraph {
     this.edgeSizeMax = TEMPLATE.edgeSizeMax;
   }
 
-  /*/ The parent container passes data to the d3 graph via this SetData call
+  /** The parent container passes data to the d3 graph via this SetData call
     which then triggers all the internal updates
-/*/
+ */
   _SetData(newData) {
     if (newData) {
       // Make a shallow copy to protect against mutation, while
@@ -318,8 +319,8 @@ class D3NetGraph {
     }
   }
 
-  /*/ This sets up the force properties for the simulation and tick handler.
-/*/ _Initialize() {
+  /** This sets up the force properties for the simulation and tick handler.
+   */ _Initialize() {
     // Create the force layout.  After a call to force.start(), the tick
     // method will be called repeatedly until the layout "gels" in a stable
     // configuration.
@@ -334,7 +335,7 @@ class D3NetGraph {
       .on('tick', this._Tick);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Call _UpdateGraph() after new data has been loaded. This creates link and node
+  /** Call _UpdateGraph() after new data has been loaded. This creates link and node
     svg objects and sets their forceProperties.
     The component `node` structure:
         <g class="node">  // node group object
@@ -353,7 +354,7 @@ class D3NetGraph {
     This method actually does more than just "update" an existing graph; in D3
     you can write code that initializes AND updates data.
 
-/*/ _UpdateGraph() {
+ */ _UpdateGraph() {
     const COLORMAP = UDATA.AppState('COLORMAP');
 
     // DATA JOIN
@@ -640,9 +641,9 @@ class D3NetGraph {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Apply new force properties
+  /** Apply new force properties
     Call this on construct and if forceProperties have changed.
-/*/ _UpdateForces() {
+ */ _UpdateForces() {
     this.simulation
       .force(
         'link',
@@ -708,7 +709,7 @@ class D3NetGraph {
       );
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Update the display positions after each simulation tick
+  /** Update the display positions after each simulation tick
 
     This tick method is called repeatedly until the layout stabilizes.
 
@@ -716,7 +717,8 @@ class D3NetGraph {
     gets drawn first -- the drawing order is determined by the ordering in the
     DOM.  See the notes under link_update.enter() above for one technique for
     setting the ordering in the DOM.
-/*/ _Tick() {
+ */
+  _Tick() {
     // Drawing the nodes: Update the location of each node group element
     // from the x, y fields of the corresponding node object.
     this.zoomWrapper.selectAll('.node').attr('transform', d => {
@@ -742,10 +744,10 @@ class D3NetGraph {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Sets the width of the links during update cycles
+  /** Sets the width of the links during update cycles
     Used by linElements.enter() and linkElements.merge()
     and mouseover events.
-/*/
+ */
   _UpdateLinkStrokeWidth(edge) {
     if (DBG) console.log(PR, '_UpdateLinkStrokeWidth', edge);
     const sourceId = typeof edge.source === 'number' ? edge.source : edge.source.id;
@@ -804,14 +806,14 @@ class D3NetGraph {
     this.d3svg.call(this.zoom.transform, transform);
   }
 
-  /*/ This primarily handles mousewheel zooms
-/*/
+  /** This primarily handles mousewheel zooms
+   */
   _HandleZoom() {
     if (DBG) console.log(PR, '_HandleZoom');
     d3.select('.zoomer').attr('transform', d3.event.transform);
   }
-  /*/ This handles zoom button zooms.
-/*/
+  /** This handles zoom button zooms.
+   */
   _Transition(zoomLevel) {
     if (DBG) console.log(PR, '_Transition');
     this.d3svg
@@ -822,23 +824,23 @@ class D3NetGraph {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ _Dragstarted(d, self) {
+  /**
+   */ _Dragstarted(d, self) {
     if (DBG) console.log(PR, '_Dragstarted', d.x, d.y);
     if (!d3.event.active) self.simulation.alphaTarget(0.3).restart();
     d.fx = d.x;
     d.fy = d.y;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ _Dragged(d) {
+  /**
+   */ _Dragged(d) {
     if (DBG) console.log(PR, '_Dragged');
     d.fx = d3.event.x;
     d.fy = d3.event.y;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ _Dragended(d, self) {
+  /**
+   */ _Dragended(d, self) {
     if (DBG) console.log(PR, '_Dragended');
     if (!d3.event.active) self.simulation.alphaTarget(0.0001);
     d.fx = null;

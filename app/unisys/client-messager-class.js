@@ -48,20 +48,22 @@ var DBG = false;
 /// UNISYS MESSAGER CLASS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Messager {
-  /*/ Instances of this class can be used to implement a UNISYS-style message
+  /** Instances of this class can be used to implement a UNISYS-style message
     passing scheme with shared semantics. It maintains a Map keyed by mesgName
     strings, containing a Set object filled with handlers for that mesgName.
-/*/ constructor() {
+ */
+  constructor() {
     this.handlerMap = new Map(); // message map storing sets of functions
     this.messager_id = ++MSGR_IDCOUNT;
   }
 
   /// FIRE ONCE EVENTS //////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ API: subscribe a handlerFunc function with a particular unisys id
+  /** API: subscribe a handlerFunc function with a particular unisys id
     to receive a particular message. The handlerFunc receives a data obj
     and should return one as well. If there is an error, return a string.
-/*/ HandleMessage(mesgName, handlerFunc, options = {}) {
+ */
+  HandleMessage(mesgName, handlerFunc, options = {}) {
     let { handlerUID } = options;
     let { syntax } = options;
     if (typeof handlerFunc !== 'function') {
@@ -84,8 +86,9 @@ class Messager {
     return this;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ API: unsubscribe a handlerFunc function from a particular event
-/*/ UnhandleMessage(mesgName, handlerFunc) {
+  /** API: unsubscribe a handlerFunc function from a particular event
+   */
+  UnhandleMessage(mesgName, handlerFunc) {
     if (!arguments.length) {
       this.handlerMap.clear();
     } else if (arguments.length === 1) {
@@ -99,12 +102,13 @@ class Messager {
     return this;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ API: trigger a message with the data object payload, sending to all handlers
+  /** API: trigger a message with the data object payload, sending to all handlers
     that implement that event. Includer sender's unisys id to prevent the sender
     to receiving its own message back if it happens to implement the message as
     well. dstScope is 'net' or 'local' to limit where to send, or 'all'
     for everyone on net or local
-/*/ Send(mesgName, inData, options = {}) {
+ */
+  Send(mesgName, inData, options = {}) {
     let { srcUID, type } = options;
     let { toLocal = true, toNet = true } = options;
     const handlers = this.handlerMap.get(mesgName);
@@ -133,9 +137,10 @@ class Messager {
     } // end toNetwork
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ API: wrapper for Send() used when you want every handlerFunc, including
+  /** API: wrapper for Send() used when you want every handlerFunc, including
     the sender, to receive the event even if it is the one who sent it.
-/*/ Signal(mesgName, data, options = {}) {
+ */
+  Signal(mesgName, data, options = {}) {
     if (options.srcUID) {
       console.warn(
         `overriding srcUID ${options.srcUID} with NULL because Signal() doesn't use it`
@@ -145,8 +150,9 @@ class Messager {
     this.Send(mesgName, data, options);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ API: Return an array of Promises. Called by UDATA.Call().
-/*/ Call(mesgName, inData, options = {}) {
+  /** API: Return an array of Promises. Called by UDATA.Call().
+   */
+  Call(mesgName, inData, options = {}) {
     let { srcUID, type } = options;
     let { toLocal = true, toNet = true } = options;
     const handlers = this.handlerMap.get(mesgName);
@@ -193,8 +199,9 @@ class Messager {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ API: Return a list of messages handled by this Messager instance
-/*/ MessageNames() {
+  /** API: Return a list of messages handled by this Messager instance
+   */
+  MessageNames() {
     let handlers = [];
     this.handlerMap.forEach((value, key) => {
       handlers.push(key);
@@ -203,8 +210,9 @@ class Messager {
     return handlers;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ API: Verify that message exists
-/*/ HasMessageName(msg = '') {
+  /** API: Verify that message exists
+   */
+  HasMessageName(msg = '') {
     return this.handlerMap.has(msg);
   }
 } // class Messager

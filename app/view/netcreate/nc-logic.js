@@ -181,8 +181,8 @@ var TEMPLATE = null; // template definition for prompts
 
 /// DB LOADER HELPERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Used by LOADASSETS and RELOAD_DB to reload NCDATA from the database.
-/*/
+/** Used by LOADASSETS and RELOAD_DB to reload NCDATA from the database.
+ */
 function m_PromiseLoadDB() {
   return DATASTORE.PromiseD3Data().then(data => {
     if (DBG) console.log(PR, 'DATASTORE returned data', data);
@@ -199,9 +199,9 @@ function m_PromiseLoadDB() {
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ LOADASSETS fires before react components are loaded
+/** LOADASSETS fires before react components are loaded
     see client-lifecycle.js for description
-/*/
+ */
 MOD.Hook('LOADASSETS', () => {
   if (UNISYS.IsStandaloneMode()) {
     // STANDALONE MODE
@@ -1071,11 +1071,11 @@ function m_MigrateData(data) {
 // As of 3/2022 edge source and target use ids, so there's no longer
 // a need to convert them.
 //
-// /*/ Converts edge.source and edge.target from objects to ids
+// /** Converts edge.source and edge.target from objects to ids
 //     d3 converts edge.source and edget.target from ids to node objects
 //     when it renders NCDATA.  When getting ready to save edges to the database
 //     we need to convert them back to ids.
-// /*/
+//  */
 // function m_ConvertSourceTarget2ID(edges) {
 //   return edges.map(e => {
 //     e.source = e.source && e.source.id;

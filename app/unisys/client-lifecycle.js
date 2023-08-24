@@ -44,10 +44,10 @@ var MOD = {
   scope: 'system/booting' // overwritten by UNISYS.SystemInitialize()
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ UTILITY: compare the destination scope with the acceptable scope (the
+/** UTILITY: compare the destination scope with the acceptable scope (the
     module.id of the root JSX component in a view). Any module not in the
     system directory will not get called
-/*/
+ */
 function m_ExecuteScopedPhase(phase, o) {
   // check for special unisys or system directory
   if (o.scope.indexOf('system') === 0) return o.f();
@@ -64,10 +64,10 @@ function m_ExecuteScopedPhase(phase, o) {
 
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: register a Phase Handler which is invoked by MOD.Execute()
+/** API: register a Phase Handler which is invoked by MOD.Execute()
     phase is a string constant from PHASES array above
     f is a function that does work immediately, or returns a Promise
-/*/
+ */
 MOD.Hook = (phase, f, scope) => {
   // make sure scope is included
   if (typeof scope !== 'string')
@@ -89,11 +89,11 @@ MOD.Hook = (phase, f, scope) => {
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Execute all Promises associated with a phase, completing when
+/** API: Execute all Promises associated with a phase, completing when
     all the callback functions complete. If the callback function returns
     a Promise, this is added to a list of Promises to wait for before the
     function returns control to the calling code.
-/*/
+ */
 MOD.Execute = async phase => {
   // require scope to be set
   if (MOD.scope === false)
@@ -152,9 +152,9 @@ MOD.Execute = async phase => {
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: The scope is used to filter lifecycle events within a particular
+/** API: The scope is used to filter lifecycle events within a particular
     application path, which are defined under the view directory.
-/*/
+ */
 MOD.SetScope = module_path => {
   if (typeof module_path !== 'string') throw Error(BAD_PATH);
   if (DBG) console.log(`setting lifecycle scope to ${module_path}`);
@@ -162,8 +162,8 @@ MOD.SetScope = module_path => {
   MOD.scope = PATH.Dirname(module_path);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: The scope
-/*/
+/** API: The scope
+ */
 MOD.Scope = () => {
   return MOD.scope;
 };

@@ -127,26 +127,26 @@ class NCGraph extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UI METHODS
 
-  /*/
-  /*/
+  /**
+   */
   onZoomReset() {
     this.state.ncGraphRenderer.ZoomReset();
   }
-  /*/
-  /*/
+  /**
+   */
   onZoomIn() {
     this.state.ncGraphRenderer.ZoomIn();
   }
-  /*/
-  /*/
+  /**
+   */
   onZoomOut() {
     this.state.ncGraphRenderer.ZoomOut();
   }
 
   /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ constructGraph() {
+  /**
+   */ constructGraph() {
     // first destroy any existing SVG graph elements
     const netgraph = document.getElementById('netgraph');
     if (netgraph) netgraph.remove();
@@ -166,13 +166,13 @@ class NCGraph extends UNISYS.Component {
 
   /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ componentDidMount() {
+  /**
+   */ componentDidMount() {
     this.constructGraph();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ componentWillUnMount() {
+  /**
+   */ componentWillUnMount() {
     UDATA.AppStateChangeOff('VDATA', this.updateVData);
     UDATA.AppStateChangeOff('TEMPLATE', this.updateTemplate);
     UDATA.AppStateChangeOff('COLORMAP', this.updateColorMap);
@@ -181,8 +181,8 @@ class NCGraph extends UNISYS.Component {
     UDATA.UnhandleMessage('CONSTRUCT_GRAPH', this.constructGraph);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ shouldComponentUpdate() {
+  /**
+   */ shouldComponentUpdate() {
     // This prevents React from updating the component,
     // allowing D3 to handle the simulation animation updates
     // This is also necessary for D3 to handle the
@@ -190,8 +190,8 @@ class NCGraph extends UNISYS.Component {
     return false;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ render() {
+  /**
+   */ render() {
     const { nodeTypes, edgeTypes } = this.state;
     return (
       <div ref={dom => (this.dom = dom)} style={{ height: '100%' }}>

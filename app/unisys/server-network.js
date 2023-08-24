@@ -48,9 +48,10 @@ var m_pong_timer = [];
 var UNET = {};
 const SERVER_UADDR = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Initialize() is called by brunch-server.js to define the default UNISYS
+/** Initialize() is called by brunch-server.js to define the default UNISYS
     network values, so it can embed them in the index.ejs file for webapps
-/*/ UNET.InitializeNetwork = options => {
+ */
+UNET.InitializeNetwork = options => {
   options = options || {};
   options.port = options.port || DEFAULT_NET_PORT;
   options.uaddr = options.uaddr || SERVER_UADDR;
@@ -60,9 +61,10 @@ const SERVER_UADDR = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
   return mu_options;
 }; // end InitializeNetwork()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/	CreateNetwork() is called by brunch-server after the Express webserver
+/**	CreateNetwork() is called by brunch-server after the Express webserver
     has started listening, initializing the UNISYS NETWORK socket listener.
-/*/ UNET.StartNetwork = () => {
+ */
+UNET.StartNetwork = () => {
   // create listener.
   if (DBG) console.log(PR, `UNISYS NETWORK initialized on port ${mu_options.port}`);
   mu_wss = new WSS(mu_options);
@@ -72,11 +74,12 @@ const SERVER_UADDR = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
   });
 }; // end CreateNetwork()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ HandleMessage() registers a server-implemented handler.
+/** HandleMessage() registers a server-implemented handler.
     The handlerFunc receives a NetMessage and should return one as well.
     It can also return a non-object if there is an error.
     Logic is similar to client-datalink-class.js equivalent
-/*/ UNET.HandleMessage = function (mesgName, handlerFunc) {
+ */
+UNET.HandleMessage = function (mesgName, handlerFunc) {
   if (typeof handlerFunc !== 'function') {
     throw 'arg2 must be a function';
   }
@@ -89,10 +92,11 @@ const SERVER_UADDR = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
   return this;
 }; // end HandleMessage()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ UnhandleMessage() de-registers a server-implemented handler, in case you
+/** UnhandleMessage() de-registers a server-implemented handler, in case you
     ever want to do that.
     Logic is similar to client-datalink-class.js equivalent
-/*/ UNET.UnhandleMessage = function (mesgName, handlerFunc) {
+ */
+UNET.UnhandleMessage = function (mesgName, handlerFunc) {
   if (!arguments.length) {
     m_server_handlers.clear();
   } else if (arguments.length === 1) {
@@ -106,8 +110,9 @@ const SERVER_UADDR = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
   return this;
 }; // end UnhandleMessage()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Call remote handler, with possible return value
-/*/ UNET.NetCall = async function (mesgName, data) {
+/** Call remote handler, with possible return value
+ */
+UNET.NetCall = async function (mesgName, data) {
   let pkt = new NetMessage(mesgName, data);
   let promises = m_PromiseRemoteHandlers(pkt);
   if (DBG)
@@ -122,8 +127,9 @@ const SERVER_UADDR = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
   return resObj;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Send data to remote handler, no expected return value
-/*/ UNET.NetSend = function (mesgName, data) {
+/** Send data to remote handler, no expected return value
+ */
+UNET.NetSend = function (mesgName, data) {
   let pkt = new NetMessage(mesgName, data);
   let promises = m_PromiseRemoteHandlers(pkt);
   // we don't care about waiting for the promise to complete
@@ -134,8 +140,9 @@ const SERVER_UADDR = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
     );
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Send signal to remote handler, no expected return value
-/*/ UNET.NetSignal = function (mesgName, data) {
+/** Send signal to remote handler, no expected return value
+ */
+UNET.NetSignal = function (mesgName, data) {
   console.warn(
     PR,
     'NOTE: Use NetSend(), not NetSignal() since the server doesnt care.'
@@ -143,9 +150,10 @@ const SERVER_UADDR = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
   UNET.NetSend(mesgName, data);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ RegisterRemoteHandlers() accepts a RegistrationPacket with data = { messages }
+/** RegisterRemoteHandlers() accepts a RegistrationPacket with data = { messages }
     and writes to the two main maps for handling incoming messages
-/*/ UNET.RegisterRemoteHandlers = function (pkt) {
+ */
+UNET.RegisterRemoteHandlers = function (pkt) {
   if (pkt.Message() !== 'SRV_REG_HANDLERS') throw Error('not a registration packet');
   let uaddr = pkt.SourceAddress();
   let { messages = [] } = pkt.Data();
@@ -169,8 +177,9 @@ const SERVER_UADDR = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
 
 /// MODULE HELPER FUNCTIONS ///////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ The socket has connected, so let's save this to our connection list
-/*/ function m_NewSocketConnected(socket) {
+/** The socket has connected, so let's save this to our connection list
+ */
+function m_NewSocketConnected(socket) {
   if (DBG) console.log(PR, 'socket connected');
 
   m_SocketAdd(socket);
@@ -191,10 +200,11 @@ const SERVER_UADDR = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
   m_StartHeartbeat();
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ When a new socket is connected, we send a periodic heartbeat to let them
+/** When a new socket is connected, we send a periodic heartbeat to let them
     know we're still here, and so client can detect when network is lost.
     This will keep sending a heartbeat to the socket so long as it is open.
-/*/ function m_StartHeartbeat() {
+ */
+function m_StartHeartbeat() {
   if (DBG) console.log(PR, 'starting heartbeat');
   if (m_heartbeat_interval) return; // already started
   m_heartbeat_interval = setInterval(function sendHeartbeat() {
@@ -217,7 +227,7 @@ const SERVER_UADDR = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ If a 'pong' message is not received from the client 5 seconds
+/** If a 'pong' message is not received from the client 5 seconds
     after we send the client a ping message, we assume the network connection
     has gone down.
 
@@ -225,7 +235,8 @@ const SERVER_UADDR = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
     connection.  In order to detect the internet connection going down
     (e.g. loss of wifi) we need to check to see if we are peridically receiving
     a heartbeat message from the client.
-/*/
+ */
+
 function m_ResetPongTimer(uaddr) {
   clearTimeout(m_pong_timer[uaddr]);
   m_pong_timer[uaddr] = setTimeout(function pongTimedOut() {
@@ -245,9 +256,10 @@ function m_ResetPongTimer(uaddr) {
 }
 
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ When a new socket connection happens, send back the special registration
+/** When a new socket connection happens, send back the special registration
     packet (WIP)
-/*/ function m_SocketClientAck(socket) {
+ */
+function m_SocketClientAck(socket) {
   let data = {
     HELLO: 'Welcome to UNISYS',
     UADDR: socket.UADDR
@@ -255,8 +267,9 @@ function m_ResetPongTimer(uaddr) {
   socket.send(JSON.stringify(data));
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Handle all incoming socket messages asynchronously through Promises
-/*/ function m_SocketMessage(socket, json) {
+/** Handle all incoming socket messages asynchronously through Promises
+ */
+function m_SocketMessage(socket, json) {
   // Check Heartbeat
   if (json === 'pong') {
     if (socket.UADDR === undefined) {
@@ -288,13 +301,15 @@ function m_ResetPongTimer(uaddr) {
   } // end switch
 } // end m_SocketMessage()
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ handle global state and rebroadcast
-/*/ function m_HandleState(socket, pkt) {
+/** handle global state and rebroadcast
+ */
+function m_HandleState(socket, pkt) {
   //
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ handle messages that are a Send(), Signal(), or Call()
-/*/ async function m_HandleMessage(socket, pkt) {
+/** handle messages that are a Send(), Signal(), or Call()
+ */
+async function m_HandleMessage(socket, pkt) {
   // is this a returning packet that was forwarded?
   if (pkt.IsOwnResponse()) {
     // console.log(PR,`-- ${pkt.Message()} completing transaction ${pkt.seqlog.join(':')}`);
@@ -353,10 +368,11 @@ function m_ResetPongTimer(uaddr) {
   pkt.ReturnTransaction(socket);
 } // m_HandleMessage()
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ m_PromiseServerHandlers() returns an array of promises, which should be used
+/** m_PromiseServerHandlers() returns an array of promises, which should be used
      by Promises.all() inside an async/await function (m_SocketMessage above)
     Logic is similar to client-datalink-class.js Call()
-/*/ function m_PromiseServerHandlers(pkt) {
+ */
+function m_PromiseServerHandlers(pkt) {
   let mesgName = pkt.Message();
   const handlers = m_server_handlers.get(mesgName);
   /// create promises for all registered handlers
@@ -382,9 +398,10 @@ function m_ResetPongTimer(uaddr) {
   }
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ If a handler is registered elsewhere on UNET, then dispatch to them for
+/** If a handler is registered elsewhere on UNET, then dispatch to them for
     eventual reflection back through server aggregation of data.
-/*/ function m_PromiseRemoteHandlers(pkt) {
+ */
+function m_PromiseRemoteHandlers(pkt) {
   // debugging values
   let s_uaddr = pkt.SourceAddress();
   // logic values
@@ -440,8 +457,9 @@ function m_ResetPongTimer(uaddr) {
   }
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ function m_SocketAdd(socket) {
+/**
+ */
+function m_SocketAdd(socket) {
   // save socket by socket_id
   let sid = m_GetNewUADDR();
   // store additional props in socket
@@ -453,15 +471,17 @@ function m_ResetPongTimer(uaddr) {
   if (DBG) m_ListSockets(`add ${sid}`);
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ function m_GetNewUADDR(prefix = 'UADDR') {
+/**
+ */
+function m_GetNewUADDR(prefix = 'UADDR') {
   ++mu_sid_counter;
   let cstr = mu_sid_counter.toString(10).padStart(2, '0');
   return `${prefix}_${cstr}`;
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ function m_SocketDelete(socket) {
+/**
+ */
+function m_SocketDelete(socket) {
   let uaddr = socket.UADDR;
   if (!mu_sockets.has(uaddr)) throw Error(DBG_SOCK_BADCLOSE);
   if (DBG) console.log(PR, `socket DEL ${uaddr} from network`);
@@ -479,8 +499,9 @@ function m_ResetPongTimer(uaddr) {
   if (DBG) m_ListSockets(`del ${socket.UADDR}`);
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ function m_ListSockets(change) {
+/**
+ */
+function m_ListSockets(change) {
   console.log(PR, 'SocketList change:', change);
   // let's use iterators! for..of
   let values = mu_sockets.values();

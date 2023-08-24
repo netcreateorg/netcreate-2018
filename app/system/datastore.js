@@ -30,8 +30,8 @@ let NCDATA = {};
 
 /// LIFECYCLE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ establish message handlers during INITIALIZE phase
-/*/
+/** establish message handlers during INITIALIZE phase
+ */
 DSTOR.Hook('INITIALIZE', () => {
   // DBUPDATE_ALL is a local call originating from within the app
   // Used to update the full NCDATA object during template updates
@@ -65,9 +65,9 @@ DSTOR.Hook('INITIALIZE', () => {
 
 /// SESSION ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ datastore needs to set NetMessage GroupID property on behalf of SESSIONS
+/** datastore needs to set NetMessage GroupID property on behalf of SESSIONS
     because SESSION can't include NetMessage (or vice versa)
-/*/
+ */
 DSTOR.SetSessionGroupID = function (decodedData) {
   let { token, isValid } = decodedData;
   if (isValid) {
@@ -80,14 +80,14 @@ DSTOR.SetSessionGroupID = function (decodedData) {
 
 /// DB INTERFACE //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Placeholder DATA access function
-/*/
+/** API: Placeholder DATA access function
+ */
 DSTOR.Data = function () {
   return NCDATA;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Write update to database
-/*/
+/** API: Write update to database
+ */
 DSTOR.UpdateServerDB = function (data) {
   // check that network is online
   if (UNISYS.IsStandaloneMode()) {
@@ -104,8 +104,8 @@ DSTOR.UpdateServerDB = function (data) {
   });
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ update max node id count for generating new ids
-/*/
+/** update max node id count for generating new ids
+ */
 DSTOR.PromiseCalculateMaxNodeId = function () {
   return new Promise((resolve, reject) => {
     UDATA.NetCall('SRV_CALCULATE_MAXNODEID').then(data => {
@@ -119,8 +119,8 @@ DSTOR.PromiseCalculateMaxNodeId = function () {
   });
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ get a unique NodeID
-/*/
+/** get a unique NodeID
+ */
 DSTOR.PromiseNewNodeID = function () {
   return new Promise((resolve, reject) => {
     UDATA.NetCall('SRV_DBGETNODEID').then(data => {
@@ -142,8 +142,8 @@ DSTOR.PromiseNewNodeID = function () {
   });
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ get multiple unique NodeIDs
-/*/
+/** get multiple unique NodeIDs
+ */
 DSTOR.PromiseNewNodeIDs = function (count) {
   return new Promise((resolve, reject) => {
     UDATA.NetCall('SRV_DBGETNODEIDS', { count }).then(data => {
@@ -157,8 +157,8 @@ DSTOR.PromiseNewNodeIDs = function (count) {
   });
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ update max edge id count for generating new ids
-/*/
+/** update max edge id count for generating new ids
+ */
 DSTOR.PromiseCalculateMaxEdgeId = function () {
   return new Promise((resolve, reject) => {
     UDATA.NetCall('SRV_CALCULATE_MAXEDGEID').then(data => {
@@ -172,8 +172,8 @@ DSTOR.PromiseCalculateMaxEdgeId = function () {
   });
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ get a unique Edge
-/*/
+/** get a unique Edge
+ */
 DSTOR.PromiseNewEdgeID = function () {
   return new Promise((resolve, reject) => {
     UDATA.NetCall('SRV_DBGETEDGEID').then(data => {
@@ -195,8 +195,8 @@ DSTOR.PromiseNewEdgeID = function () {
   });
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ get multiple unique EdgeIDs
-/*/
+/** get multiple unique EdgeIDs
+ */
 DSTOR.PromiseNewEdgeIDs = function (count) {
   return new Promise((resolve, reject) => {
     UDATA.NetCall('SRV_DBGETEDGEIDS', { count }).then(data => {
@@ -212,8 +212,8 @@ DSTOR.PromiseNewEdgeIDs = function (count) {
 
 /// DATABASE LOADER ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Load default data set from a JSON file in /assets/data
-/*/
+/** API: Load default data set from a JSON file in /assets/data
+ */
 DSTOR.PromiseJSONFile = function (jsonFile) {
   if (typeof jsonFile !== 'string') {
     throw new Error('pass arg <filename_in_assets/data>');
@@ -235,8 +235,8 @@ DSTOR.PromiseJSONFile = function (jsonFile) {
   return promise;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Load default data set from a TOML file in /assets/data
-/*/
+/** API: Load default data set from a TOML file in /assets/data
+ */
 DSTOR.PromiseTOMLFile = function (tomlFile) {
   if (typeof tomlFile !== 'string') {
     throw new Error('pass arg <filename_in_assets/data>');
@@ -258,29 +258,29 @@ DSTOR.PromiseTOMLFile = function (tomlFile) {
   return promise;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Load D3 Database
-/*/
+/** API: Load D3 Database
+ */
 DSTOR.PromiseD3Data = function () {
   // UDATA.Call() returns a promise
   return UDATA.Call('SRV_DBGET', {}); // server.js
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Write Template file to Server
-/*/
+/** API: Write Template file to Server
+ */
 DSTOR.SaveTemplateFile = template => {
   // UDATA.Call() returns a promise
   return UDATA.Call('SRV_TEMPLATESAVE', { template }); // server.js
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Get Template File Path.
+/** API: Get Template File Path.
     Called by templateEditor-mgr when downloading template file.
-/*/
+ */
 DSTOR.GetTemplateTOMLFileName = () => {
   return UDATA.Call('SRV_GET_TEMPLATETOML_FILENAME');
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Update database from d3data-formatted object
-/*/
+/** API: Update database from d3data-formatted object
+ */
 DSTOR.UpdateDataPromise = function (d3data) {
   return new Promise((resolve, reject) => {
     UDATA.Call('SRV_DBUPDATE_ALL', d3data).then(res => {
@@ -294,8 +294,8 @@ DSTOR.UpdateDataPromise = function (d3data) {
   });
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Insert new records into database from d3data-formatted object
-/*/
+/** API: Insert new records into database from d3data-formatted object
+ */
 DSTOR.InsertServerDB = function (d3data) {
   return new Promise((resolve, reject) => {
     UDATA.Call('SRV_DBINSERT', d3data).then(res => {
@@ -329,8 +329,8 @@ DSTOR.MergeServerDB = function (mergeData) {
   });
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: (WIP) write database from d3data-formatted object
-/*/
+/** API: (WIP) write database from d3data-formatted object
+ */
 DSTOR.OverwriteDataPromise = function (d3data) {
   return new Promise((resolve, reject) => {
     UDATA.Call('SRV_DBSET', d3data).then(res => {

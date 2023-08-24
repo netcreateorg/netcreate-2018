@@ -28,7 +28,7 @@ const UDB = require('./app/unisys/server-database');
 // exports a configuration object
 module.exports = {
   /// CONCATENATION /////////////////////////////////////////////////////////////
-  /*/ Brunch intelligently combines source javascript, stylesheets, and
+  /** Brunch intelligently combines source javascript, stylesheets, and
   templates into single files. It includes not only your source files in
   the app/ directory, but is smart enough to look in node_modules/ and
   vendor/ directories. The joinTo property allows multiple ways to define
@@ -37,7 +37,8 @@ module.exports = {
   NOTE: brunch includes ONLY files referred to by require() statements
   NOTE: app, vendor, public are relative to this config file
   NOTE: any directory is fair game for pattern matching
-/*/ files: {
+  */
+  files: {
     javascripts: {
       joinTo: {
         'scripts/netc-app.js': /^app/,
@@ -52,10 +53,11 @@ module.exports = {
   },
 
   /// PLUGIN CONFIGURATION //////////////////////////////////////////////////////
-  /*/ Brunch plugins generally work without configuration, but sometimes you need
+  /** Brunch plugins generally work without configuration, but sometimes you need
   to do it, particularly for plugins that interface with other npm packages
   with their own configuration requirements (e.g. babel)
-/*/ plugins: {
+  */
+  plugins: {
     babel: {
       // brunch-babel plugin requires additional babel settings to enable jsx processing
       // npm i --save-dev babel babel-preset-env babel-preset-react
@@ -72,19 +74,21 @@ module.exports = {
   },
 
   /// SERVER CONFIGURATION //////////////////////////////////////////////////////
-  /*/ Brunch will use its internal server unless a brunch-server.js module is
+  /** Brunch will use its internal server unless a brunch-server.js module is
   present. The module should return a function that accepts a config obj and
   a callback function that is invoked when the server is done initializing.
   It should return an object with a close() method (as ExpressJS app does)
-/*/ server: {
+  */
+  server: {
     // viewing url is http://localhost:3000 by default, unless overridden by nc.js
     port: parseInt(NC_CONFIG.port)
   },
 
   /// NPM INTEGRATION ///////////////////////////////////////////////////////////
-  /*/ Brunch is aware of the node_modules directory but sometimes needs help to
+  /** Brunch is aware of the node_modules directory but sometimes needs help to
   find the right source files to include in processing.
-/*/ npm: {
+  */
+  npm: {
     styles: {
       /// include these css files in the stylesheets joinTo
       bootstrap: ['dist/css/bootstrap.min.css']
@@ -101,18 +105,20 @@ module.exports = {
   },
 
   /// STORYBOOK COMPATIBILITY ///////////////////////////////////////////////////
-  /*/ Storybook uses spread operators, which are not supported in the current
+  /** Storybook uses spread operators, which are not supported in the current
     version of brunch-babel.  Brunch doesn't need to compile storybook files
     anyway because storybook has its own compile via webpack.  So ignore them.
-/*/ conventions: {
+  */
+  conventions: {
     ignored: [/\.stories.js$/]
   },
 
   /// OVERRIDES FOR PRODUCTION //////////////////////////////////////////////////
-  /*/ Brunch configuration settings default to development mode in the
+  /** Brunch configuration settings default to development mode in the
     environment. You can override each env (e.g. production) after all other
     declarations are done.
-/*/ overrides: {
+  */
+  overrides: {
     // env 'classroom' is set by npm start / npm run start
     classroom: {
       optimize: true,

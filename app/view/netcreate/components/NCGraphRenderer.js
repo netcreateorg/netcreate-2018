@@ -175,10 +175,10 @@ class NCGraphRenderer {
     // Set up Zoom
     this.zoom = d3.zoom().on('zoom', this.m_HandleZoom);
 
-    /*/ Create svg element which will contain our D3 DOM elements.
+    /** Create svg element which will contain our D3 DOM elements.
         Add default click handler so when clicking empty space, deselect all.
         NOTE: the svg element is actualy d3.selection object, not an svg obj.
-    /*/
+     */
     this.d3svg = d3
       .select(rootElement)
       .append('svg')
@@ -242,27 +242,26 @@ class NCGraphRenderer {
   /// CLASS PRIVATE METHODS /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  /*/ Clear the SVG data
+  /** Clear the SVG data
       Currently not used because we just deconstruct d3-simplenetgraph insead.
       Was thought to be needed during imports otherwise _UpdateGraph reads data from existing
       SVG elements rather than the new data.
-  /*/
+   */
   ClearSVG() {
     this.zoomWrapper.selectAll('.edge').remove();
     this.zoomWrapper.selectAll('.node').remove();
   }
 
-  /**
-   * The parent container passes data to the d3 graph via this SetData call
-   * which then triggers all the internal updates
+  /** The parent container passes data to the d3 graph via this SetData call
+   *  which then triggers all the internal updates
    *
-   * When a SELECTION is updated, we use skipForceUpdate to preven the
-   * simulation from re-applying forces, causing nodes to move.  Without this
-   * as you mouseover a node, ALL the nodes move and it becomes impossible to
-   * select the node.
-   * @param {Object} newData VDATA { nodes, edges }
-   * @param {Object} options
-   * @param {boolean} options.skipForceUpdate skip force updates during selection updates
+   *  When a SELECTION is updated, we use skipForceUpdate to preven the
+   *  simulation from re-applying forces, causing nodes to move.  Without this
+   *  as you mouseover a node, ALL the nodes move and it becomes impossible to
+   *  select the node.
+   *  @param {Object} newData VDATA { nodes, edges }
+   *  @param {Object} options
+   *  @param {boolean} options.skipForceUpdate skip force updates during selection updates
    */
   SetData(newData, options = {}) {
     if (newData) {
@@ -291,8 +290,8 @@ class NCGraphRenderer {
     }
   }
 
-  /*/ This sets up the force properties for the simulation and tick handler.
-  /*/
+  /** This sets up the force properties for the simulation and tick handler.
+   */
   m_Initialize() {
     // Create the force layout.  After a call to force.start(), the tick
     // method will be called repeatedly until the layout "gels" in a stable
@@ -308,26 +307,26 @@ class NCGraphRenderer {
       .on('tick', this.m_Tick);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Call UpdateGraph() after new data has been loaded. This creates link and node
-    svg objects and sets their forceProperties.
-    The component `node` structure:
-        <g class="node">  // node group object
-           <circle>
-           <text>         // label
-           <title>        // tooltip
-        </g>
+  /**
+   * Call UpdateGraph() after new data has been loaded. This creates link and node
+      svg objects and sets their forceProperties.
+      The component `node` structure:
+          <g class="node">  // node group object
+            <circle>
+            <text>         // label
+            <title>        // tooltip
+          </g>
 
-    This method implements the unified enter/exit/update pattern described
-    here: http://d3indepth.com/enterexit/#general-update-pattern
+      This method implements the unified enter/exit/update pattern described
+      here: http://d3indepth.com/enterexit/#general-update-pattern
 
-    By convention, selection methods that return the current selection use
-    four spaces of indent, while methods that return a new selection use only two.
-    This helps reveal changes of context by making them stick out of the chain.
+      By convention, selection methods that return the current selection use
+      four spaces of indent, while methods that return a new selection use only two.
+      This helps reveal changes of context by making them stick out of the chain.
 
-    This method actually does more than just "update" an existing graph; in D3
-    you can write code that initializes AND updates data.
-
-  /*/
+      This method actually does more than just "update" an existing graph; in D3
+      you can write code that initializes AND updates data.
+   */
   UpdateGraph() {
     // DATA JOIN
     // select all elemnts with class .node in d3svg
@@ -416,7 +415,7 @@ class NCGraphRenderer {
       .append('title') // node tooltip
       .text(d => d.help);
 
-    /*/ TRICKY D3 CODE CONCEPTS AHEAD
+    /** TRICKY D3 CODE CONCEPTS AHEAD
 
         CONTEXT: The author of this code has assumed that NCDATA may
         completely changed, so his update code is written with this in mind.
@@ -451,7 +450,7 @@ class NCGraphRenderer {
         elements  it created, and checks data binding through the id. This
         is fast, and the SVG elements do not have to be recreated.
 
-    /*/
+     */
 
     // UPDATE circles in each node for all nodes
     nodeElements
@@ -627,9 +626,9 @@ class NCGraphRenderer {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Apply new force properties
+  /** Apply new force properties
       Call this on construct and if forceProperties have changed.
-  /*/
+   */
   m_UpdateForces() {
     this.simulation
       .force(
@@ -694,7 +693,7 @@ class NCGraphRenderer {
       );
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Update the display positions after each simulation tick
+  /** Update the display positions after each simulation tick
 
     This tick method is called repeatedly until the layout stabilizes.
 
@@ -702,7 +701,7 @@ class NCGraphRenderer {
     gets drawn first -- the drawing order is determined by the ordering in the
     DOM.  See the notes under link_update.enter() above for one technique for
     setting the ordering in the DOM.
-  /*/
+   */
   m_Tick() {
     // Drawing the nodes: Update the location of each node group element
     // from the x, y fields of the corresponding node object.
@@ -755,14 +754,14 @@ class NCGraphRenderer {
     this.d3svg.call(this.zoom.transform, transform);
   }
 
-  /*/ This primarily handles mousewheel zooms
-  /*/
+  /** This primarily handles mousewheel zooms
+   */
   m_HandleZoom() {
     if (DBG) console.log(PR, 'HandleZoom');
     d3.select('.zoomer').attr('transform', d3.event.transform);
   }
-  /*/ This handles zoom button zooms.
-  /*/
+  /** This handles zoom button zooms.
+   */
   m_Transition(zoomLevel) {
     if (DBG) console.log(PR, 'Transition');
     this.d3svg
@@ -773,8 +772,8 @@ class NCGraphRenderer {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   m_Dragstarted(d, self) {
     if (DBG) console.log(PR, 'Dragstarted', d.x, d.y);
     // if (!d3.event.active) self.simulation.alphaTarget(0.3).restart(); // orig value results in a lot of movement after selection
@@ -783,16 +782,16 @@ class NCGraphRenderer {
     d.fy = d.y;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   m_Dragged(d) {
     if (DBG) console.log(PR, 'Dragged');
     d.fx = d3.event.x;
     d.fy = d3.event.y;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   m_Dragended(d, self) {
     if (DBG) console.log(PR, 'Dragended');
     if (!d3.event.active) self.simulation.alphaTarget(0.0001);

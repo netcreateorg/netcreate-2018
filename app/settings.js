@@ -20,9 +20,10 @@ let RELOAD_TIMER = null;
 
 /// MAIN GETTER/SETTER FUNCTION  //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ settings.js returns a function as its module.exports value so
+/** settings.js returns a function as its module.exports value so
     syntax like let a = SETTINGS['key'] can be used.
-/*/ let MOD = (a, b) => {
+ */
+let MOD = (a, b) => {
   if (a === undefined) throw 'SETTINGS requires key or key,value parms';
   if (typeof a !== 'string') throw 'SETTINGS parm1 must be key string';
 
@@ -36,19 +37,22 @@ let RELOAD_TIMER = null;
 
 /// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ alternate call to set a key value pair
-/*/ MOD.Set = (key, val) => {
+/** alternate call to set a key value pair
+ */
+MOD.Set = (key, val) => {
   MOD(key, val);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ alternate call to retrieve a key
-/*/ MOD.Get = key => {
+/** alternate call to retrieve a key
+ */
+MOD.Get = key => {
   return MOD(key);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Force Reload if another module was navigated to and we want to ensure the
+/** Force Reload if another module was navigated to and we want to ensure the
     entire browser was refreshed so only one set of app modules is loaded
-/*/ MOD.ForceReloadOnNavigation = () => {
+ */
+MOD.ForceReloadOnNavigation = () => {
   RELOAD_CHECK++;
   if (RELOAD_CHECK > 1) {
     console.warn(`SETTINGS: ForceReloadOnNavigation active. Reloading!`);
@@ -61,13 +65,15 @@ let RELOAD_TIMER = null;
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ test time function
-/*/ MOD.CurrentTime = () => {
+/** test time function
+ */
+MOD.CurrentTime = () => {
   return DATE.toDateString();
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-/*/ MOD.IsAdmin = () => {
+/**
+ */
+MOD.IsAdmin = () => {
   return (
     MOD.EJSProp('client').ip === '127.0.0.1' || location.href.includes('admin=true')
   );
@@ -75,9 +81,10 @@ let RELOAD_TIMER = null;
 
 /// SERVER-PROVIDED PROPERTIES ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ searches through the window.NC_UNISYS object that is injected by web page
+/** searches through the window.NC_UNISYS object that is injected by web page
     app/static/index.ejs, which contains interesting values from server
-/*/ MOD.EJSProp = propName => {
+ */
+MOD.EJSProp = propName => {
   if (propName === undefined) return EJSPROPS;
   return EJSPROPS[propName];
 };

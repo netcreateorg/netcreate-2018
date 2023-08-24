@@ -51,10 +51,10 @@ let m_open_editors = []; // array of template, node, or edge editors
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 let DB = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Backup Database File Utility
+/** Backup Database File Utility
     Used by PKT_MergeDatabase to clone the db before importing.
     Saves the db in the runtime folder with a timestamp suffix.
-/*/
+ */
 function m_BackupDatabase() {
   FS.ensureDirSync(PATH.dirname(db_file));
   if (FS.existsSync(db_file)) {
@@ -67,14 +67,14 @@ function m_BackupDatabase() {
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Default Template Path
-/*/
+/** Default Template Path
+ */
 function m_DefaultTemplatePath() {
   return TEMPLATEPATH + '_default' + TEMPLATE_EXT;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Initialize the database
-/*/
+/** API: Initialize the database
+ */
 DB.InitializeDatabase = function (options = {}) {
   let dataset = NC_CONFIG.dataset;
   db_file = m_GetValidDBFilePath(dataset);
@@ -175,8 +175,8 @@ DB.InitializeDatabase = function (options = {}) {
 }; // InitializeDatabase()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// utility function for loading template
-/*/ Converts a version 1.3 JSON template to a version 1.4 TOML template
-/*/
+/** Converts a version 1.3 JSON template to a version 1.4 TOML template
+ */
 // eslint-disable-next-line complexity
 function m_MigrateJSONtoTOML(JSONtemplate) {
   console.log(PR, 'Converting JSON to TOML...');
@@ -330,9 +330,9 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
   return TOMLtemplate;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Loads an original circa version 1.3 JSON template
+/** Loads an original circa version 1.3 JSON template
     and converts it to a TOML template
-/*/
+ */
 function m_LoadJSONTemplate(templatePath) {
   return new Promise((resolve, reject) => {
     // 1. Load JSON
@@ -348,8 +348,8 @@ function m_LoadJSONTemplate(templatePath) {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Loads a *.template.toml file from the server.
-/*/
+/** Loads a *.template.toml file from the server.
+ */
 function m_LoadTOMLTemplate(templateFilePath) {
   return new Promise((resolve, reject) => {
     const templateFile = FS.readFile(templateFilePath, 'utf8', (err, data) => {
@@ -407,14 +407,14 @@ function m_LoadTOMLTemplate(templateFilePath) {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Load Template
+/** Load Template
     1. Tries to load a TOML template
     2. If it can't be found, tries to load the JSON template and convert it
     3. If that fails, clone the default TOML template and load it
     Called by
     * DB.InitializeDatabase
     * DB.WriteTemplateTOML
-/*/
+ */
 async function m_LoadTemplate() {
   const TOMLtemplateFilePath = m_GetTemplateTOMLFilePath();
   FS.ensureDirSync(PATH.dirname(TOMLtemplateFilePath));
@@ -443,14 +443,14 @@ async function m_LoadTemplate() {
 
 /// REVIEW: Should this be moved to a separate server-template module?
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Migrate Template File
+/** Migrate Template File
     Updates older templates to the current template-schema specification by
     inserting missing properties needed by the UI.
     Any changes to template-schema should be reflected here.
 
     FIXME: There is code in m_LoadTOMLTemplate() that also does migration that
     needs to be moved here!
-/*/
+ */
 function m_MigrateTemplate() {
   // 2023-0628 BASE Defaults -- these should have been previously defined
   if (TEMPLATE.searchColor === undefined)
@@ -489,11 +489,11 @@ function m_MigrateTemplate() {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Validate Template File
+/** Validate Template File
     Lazy check of template object definitions to make sure they are of
     expected types and values so the UI doesn't choke and die. Throws an error
     if property is missing.
-/*/
+ */
 // eslint-disable-next-line complexity
 function m_ValidateTemplate() {
   try {
@@ -558,10 +558,10 @@ function m_ValidateTemplate() {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: load database
+/** API: load database
     note: InitializeDatabase() was already called on system initialization
     to populate the NODES and EDGES structures.
-/*/
+ */
 DB.PKT_GetDatabase = function (pkt) {
   let nodes = NODES.chain().data({ removeMeta: false });
   let edges = EDGES.chain().data({ removeMeta: false });
@@ -578,8 +578,8 @@ DB.PKT_GetDatabase = function (pkt) {
   return { d3data: { nodes, edges }, template: TEMPLATE };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: reset database from scratch
-/*/
+/** API: reset database from scratch
+ */
 DB.PKT_SetDatabase = function (pkt) {
   if (DBG) console.log(PR, `PKT_SetDatabase`);
   let { nodes = [], edges = [] } = pkt.Data();
@@ -598,8 +598,8 @@ DB.PKT_SetDatabase = function (pkt) {
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Add nodes/edges to an existing db
-/*/
+/** API: Add nodes/edges to an existing db
+ */
 DB.PKT_InsertDatabase = function (pkt) {
   if (DBG) console.log(PR, `PKT_InsertDatabase`);
   let { nodes = [], edges = [] } = pkt.Data();
@@ -616,13 +616,13 @@ DB.PKT_InsertDatabase = function (pkt) {
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Update or add nodes/edges to an existing db
+/** API: Update or add nodes/edges to an existing db
     If the node/edge exists, update it.
     Otherwise, insert it.
     This walks down the node and edge arrays one by one,
     using PKT_Update to decide whether to insert or update the data.
     REVIEW: Consider batch operations ala `NODES.insert(nodes)`?
-/*/
+ */
 DB.PKT_MergeDatabase = function (pkt) {
   if (DBG) console.log(PR, `PKT_MergeDatabase`);
   let { nodes = [], edges = [] } = pkt.Data();
@@ -653,9 +653,9 @@ DB.PKT_MergeDatabase = function (pkt) {
   );
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Update all data in existing database.
+/** API: Update all data in existing database.
     Used to update node/edge types after template edit
-/*/
+ */
 DB.PKT_UpdateDatabase = function (pkt) {
   if (DBG) console.log(PR, `PKT_UpdateDatabase`);
   let { nodes = [], edges = [] } = pkt.Data();
@@ -870,9 +870,9 @@ DB.PKT_RequestUnlockAll = function (pkt) {
   return { unlocked: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ called by server-network when a client disconnects we want to unlock any
+/** called by server-network when a client disconnects we want to unlock any
     nodes and edges they had locked.
-/*/
+ */
 DB.RequestUnlock = function (uaddr) {
   m_locked_nodes.forEach((value, key) => {
     if (value === uaddr) m_locked_nodes.delete(key);
@@ -1081,9 +1081,9 @@ DB.PKT_Update = function (pkt) {
 
 /// NODE ANNOTATION ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ write/remove packet SourceGroupID() information into the node before writing
+/** write/remove packet SourceGroupID() information into the node before writing
     the first entry is the insert, subsequent operations are updates
-/*/
+ */
 DB.AppendNodeLog = function (node, pkt) {
   if (!node._nlog) node._nlog = [];
   let gid = pkt.SourceGroupID() || pkt.SourceAddress();
@@ -1103,9 +1103,9 @@ DB.FilterNodeLog = function (node) {
 };
 /// EDGE ANNOTATION ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ write/remove packet SourceGroupID() information into the node before writing
+/** write/remove packet SourceGroupID() information into the node before writing
     the first entry is the insert, subsequent operations are updates
-/*/
+ */
 DB.AppendEdgeLog = function (edge, pkt) {
   if (!edge._elog) edge._elog = [];
   let gid = pkt.SourceGroupID() || pkt.SourceAddress();
@@ -1126,9 +1126,9 @@ DB.FilterEdgeLog = function (edge) {
 
 /// JSON EXPORT ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ called by brunch to generate an up-to-date JSON file to path.
+/** called by brunch to generate an up-to-date JSON file to path.
     creates the path if it doesn't exist
-/*/
+ */
 DB.WriteDbJSON = function (filePath) {
   let dataset = NC_CONFIG.dataset;
 
@@ -1156,10 +1156,10 @@ DB.WriteDbJSON = function (filePath) {
   });
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ DEPRECATED.  Replaced by WriteTemplateTOML
+/** DEPRECATED.  Replaced by WriteTemplateTOML
     called by brunch to generate an up-to-date Template file to path.
     creates the path if it doesn't exist
-/*/
+ */
 DB.WriteTemplateJSON = function (filePath) {
   let templatePath = RUNTIMEPATH + NC_CONFIG.dataset + '.template';
   FS.ensureDirSync(PATH.dirname(templatePath));
@@ -1173,8 +1173,8 @@ DB.WriteTemplateJSON = function (filePath) {
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ called by Template Editor and DB.WriteTemplateTOML
-/*/
+/** called by Template Editor and DB.WriteTemplateTOML
+ */
 function m_GetTemplateTOMLFileName() {
   return NC_CONFIG.dataset + TEMPLATE_EXT;
 }
@@ -1185,13 +1185,13 @@ DB.GetTemplateTOMLFileName = () => {
   return { filename: m_GetTemplateTOMLFileName() };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ called by Template Editor to save TOML template changes to disk.
+/** called by Template Editor to save TOML template changes to disk.
     parm {object} pkt.data.template
                   pkt.data.path      Will override the current template path in NC_CONFIG.dataset
                                      Use this to write to the _default template or
                                      other specific template.
     Loads the template after saving!
-/*/
+ */
 DB.WriteTemplateTOML = pkt => {
   if (pkt.data === undefined)
     throw 'DB.WriteTemplateTOML pkt received with no `data`';
@@ -1219,11 +1219,11 @@ DB.WriteTemplateTOML = pkt => {
     });
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Clones the existing toml template
+/** Clones the existing toml template
     called by brunch to generate an up-to-date Template file to path
     for standalone mode.
     creates the path if it doesn't exist
-/*/
+ */
 DB.CloneTemplateTOML = function (filePath) {
   const TOMLtemplateFilePath = m_GetTemplateTOMLFilePath();
   FS.ensureDirSync(PATH.dirname(TOMLtemplateFilePath));
@@ -1236,11 +1236,11 @@ DB.CloneTemplateTOML = function (filePath) {
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Regenerate Default Template from Template Schema
+/** Regenerate Default Template from Template Schema
     Call this when `template-schema.js` changes so that _default.template.toml will
     match the schema defined in `template-schema.js`.
     Use JSCLI `ncRegenerateDefaultTemplate` in the dev console to call this.
-/*/
+ */
 DB.RegenerateDefaultTemplate = () => {
   const pkt = {
     data: {

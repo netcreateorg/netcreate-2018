@@ -179,9 +179,8 @@ class AutoComplete extends UNISYS.Component {
 
   /// UNISYS STATE CHANGE HANDLERS //////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  /*/ 'SEARCH' handler
-  /*/
+  /** 'SEARCH' handler
+   */
   onStateChange_SEARCH(data) {
     // grab entire global state for 'SELECTION
     // REVIEW // autocompleteid probab;y should be stored elsewhere or use a
@@ -231,11 +230,11 @@ class AutoComplete extends UNISYS.Component {
     }
   } // onStateChange_SEARCH
 
-  /*/ 'SELECTION' handler
-    Update this AutoComplete input value when the currently selected SELECTION has changed
-    AND we are active and have the current activeAutoCompleteId.
-    This is especially important for when adding a target field to a new EdgeEditor.
-  /*/
+  /** 'SELECTION' handler
+      Update this AutoComplete input value when the currently selected SELECTION has changed
+      AND we are active and have the current activeAutoCompleteId.
+      This is especially important for when adding a target field to a new EdgeEditor.
+   */
   onStateChange_SELECTION(data) {
     if (DBG)
       console.log('...AutoComplete', this.props.identifier, ': Got SELECTION', data);
@@ -288,9 +287,9 @@ class AutoComplete extends UNISYS.Component {
     }
   }
 
-  /*/ 'AUTOCOMPLETE' handler
+  /** 'AUTOCOMPLETE' handler
     Update this AutoComplete state when the currently selected AUTOCOMPLETE field has changed
-  /*/
+   */
   onStateChange_AUTOCOMPLETE(data) {
     if (DBG)
       console.log(
@@ -310,9 +309,9 @@ class AutoComplete extends UNISYS.Component {
 
   /// AUTOSUGGEST HANDLERS ////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Handle Autosuggest's input event trigger
+  /** Handle Autosuggest's input event trigger
     User has typed something new into the field
-  /*/
+   */
   onInputChange(event, { newValue, method }) {
     // Pass the input value (node label search string) to UDATA
     // which will in turn pass the searchLabel back to the SEARCH
@@ -321,20 +320,20 @@ class AutoComplete extends UNISYS.Component {
     this.AppCall('SOURCE_SEARCH', { searchString: newValue });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Handle Autosuggest's request to set the value of the input field when
-    a selection is clicked.
-  /*/
+  /** Handle Autosuggest's request to set the value of the input field when
+      a selection is clicked.
+   */
   getSuggestionValue(suggestion) {
     return suggestion.label;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Handle Autosuggest's request for HTML rendering of suggestions
-  /*/
+  /** Handle Autosuggest's request for HTML rendering of suggestions
+   */
   renderSuggestion(suggestion) {
     return suggestion.label;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Handle Autosuggest's request for list of suggestions
+  /** Handle Autosuggest's request for list of suggestions
     lexicon =  string array of node labels
 
     lexicon is a one-dimensional string array that represents the complete list
@@ -343,7 +342,7 @@ class AutoComplete extends UNISYS.Component {
 
     We construct the list on the fly based on the NCDATA data.  If the data model
     changes, we'll need to update this lexicon constructor.
-  /*/
+   */
   onSuggestionsFetchRequested() {
     let data = this.AppState('SEARCH');
     if (data.suggestedNodes) {
@@ -356,41 +355,41 @@ class AutoComplete extends UNISYS.Component {
     }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Handle Autosuggest's request to clear list of suggestions
-  /*/
+  /** Handle Autosuggest's request to clear list of suggestions
+   */
   onSuggestionsClearRequested() {
     this.setState({
       suggestions: []
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Autosuggest's callback when a selection is made
-    If a new value is suggested, we call SOURCE_SELECT.
-    Autocomplete-logic should handle the creation of a new data object.
-  /*/
+  /** Autosuggest's callback when a selection is made
+      If a new value is suggested, we call SOURCE_SELECT.
+      Autocomplete-logic should handle the creation of a new data object.
+   */
   onSuggestionSelected(event, { suggestion }) {
     // User selected an existing node in the suggestion list
     this.AppCall('SOURCE_SELECT', { nodeIDs: [suggestion.id] });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Autosuggest calls this whenever the user has highlighted a different suggestion
-    from the suggestion list.
-  /*/
+  /** Autosuggest calls this whenever the user has highlighted a different suggestion
+      from the suggestion list.
+   */
   onSuggestionHighlighted({ suggestion }) {
     if (suggestion && suggestion.id)
       this.AppCall('AUTOSUGGEST_HILITE_NODE', { nodeId: suggestion.id });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Autosuggest checks this before rendering suggestions
-    Set the prop to turn off suggestions
-  /*/
+  /** Autosuggest checks this before rendering suggestions
+      Set the prop to turn off suggestions
+   */
   shouldRenderSuggestions(value) {
     return this.state.mode === MODE_ACTIVE;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ The AutoComplete field has lost focus.
-    Check to see if it references a valid node, if so, select it
-  /*/
+  /** The AutoComplete field has lost focus.
+      Check to see if it references a valid node, if so, select it
+   */
   onBlur(value) {
     // User selected an existing node in the suggestion list
     // or User clicked on d3 graph
@@ -401,18 +400,18 @@ class AutoComplete extends UNISYS.Component {
 
   /// REACT LIFECYCLE /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ AutoComplete fields are routinely constructed and deconstructed as different
-    edges and nodes are selected.  We need to keep track of whether it's
-    mounted or not so that we know when it's valid to call setState.  Otherwise
-    we might call setState on an unmounted component and generate a React warning.
-    https://reactjs.org/blog/2015/12/16/ismounted-antipattern.html
-  /*/
+  /** AutoComplete fields are routinely constructed and deconstructed as different
+      edges and nodes are selected.  We need to keep track of whether it's
+      mounted or not so that we know when it's valid to call setState.  Otherwise
+      we might call setState on an unmounted component and generate a React warning.
+      https://reactjs.org/blog/2015/12/16/ismounted-antipattern.html
+   */
   componentDidMount() {
     _IsMounted = true;
     this.setState({ mode: this.props.inactiveMode });
   }
-  /*/
-  /*/
+  /**
+   */
   componentWillUnmount() {
     _IsMounted = false;
     // deregister ACTIVEAUTOMPLETE when component unmounts
@@ -422,9 +421,9 @@ class AutoComplete extends UNISYS.Component {
     this.AppStateChangeOff('ACTIVEAUTOCOMPLETE', this.onStateChange_AUTOCOMPLETE);
   }
 
-  /*/ Conditionally render components based on current 'mode'. The mode
+  /** Conditionally render components based on current 'mode'. The mode
     is passed
-  /*/
+   */
   render() {
     const { value, suggestions } = this.state;
     const inputProps = {

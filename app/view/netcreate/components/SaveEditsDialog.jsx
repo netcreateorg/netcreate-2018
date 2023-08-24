@@ -55,8 +55,8 @@ class SaveChangesDialog extends UNISYS.Component {
 
   /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Select the node for editing
-  /*/
+  /** Select the node for editing
+   */
   handleEdit(event) {
     event.preventDefault();
     let nodeID = parseInt(event.target.value);
@@ -69,13 +69,8 @@ class SaveChangesDialog extends UNISYS.Component {
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ This is not yet implemented as of React 16.2.  It's implemented in 16.3.
-      getDerivedStateFromProps (props, state) {
-        console.error('getDerivedStateFromProps!!!');
-      }
-  /*/
-  /*/ This this fires after render().
-  /*/
+  /** This this fires after render().
+   */
   componentDidMount() {
     let tabpanel = document.getElementById('tabpanel');
     this.setState({
@@ -83,8 +78,8 @@ class SaveChangesDialog extends UNISYS.Component {
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   render() {
     let { nodeDefs } = this.state;
     const Modal = props => {};

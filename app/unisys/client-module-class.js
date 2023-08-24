@@ -25,14 +25,16 @@ var MODULES_COUNTER = 1; // unisys modules counter
 
 /// UNISYS MODULE CLASS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Instances of this class are used to participate in the UNISYS lifecycle.
+/** Instances of this class are used to participate in the UNISYS lifecycle.
     Constructor receives the value of module.id, which is used to help scope
     what lifecycle hooks are distributed to which module
-/*/ class UnisysModule {
+ */
+class UnisysModule {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ initializer is the value module.id or another instance of UnisysModule,
+  /** initializer is the value module.id or another instance of UnisysModule,
       which is used to create a derivative name of form 'initializer name:0'
-  /*/ constructor(module) {
+   */
+  constructor(module) {
     if (module === undefined) throw Error(BAD_NAME);
     // can pass another unisys modules to create derived name
     if (module instanceof UnisysModule) {
@@ -55,30 +57,35 @@ var MODULES_COUNTER = 1; // unisys modules counter
 
   /// PROPERTIES //////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ this is used for identifying the module. It must be unique across all
-  /*/ ModuleID() {
+  /** this is used for identifying the module. It must be unique across all
+   */
+  ModuleID() {
     return this.module_id;
   }
-  /*/ utility method to return a short name
-  /*/ ModuleName() {
+  /** utility method to return a short name
+   */
+  ModuleName() {
     return PATH.Basename(this.module_id);
   }
 
   /// UTILITIES ///////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ used to create a derivative name
-  /*/ AutoName() {
+  /** used to create a derivative name
+   */
+  AutoName() {
     return `${this.module_id}:${this.subnameCounter++}`;
   }
-  /*/ check if the name already exists in the MODULES collection
-  /*/ HasModule(name) {
+  /** check if the name already exists in the MODULES collection
+   */
+  HasModule(name) {
     return MODULES.has(name);
   }
 
   /// LIFECYCLE /////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ wrap Hook function to include the ModuleID
-  /*/ Hook(phase, f) {
+  /** wrap Hook function to include the ModuleID
+   */
+  Hook(phase, f) {
     LIFECYCLE.Hook(phase, f, this.ModuleID());
   }
 } // end UnisysModule

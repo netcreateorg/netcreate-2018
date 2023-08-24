@@ -66,8 +66,8 @@ class InfoPanel extends UNISYS.Component {
 
   /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   toggle(tab) {
     window.event.stopPropagation();
     if (this.state.activeTab !== tab) {
@@ -142,8 +142,8 @@ class InfoPanel extends UNISYS.Component {
         console.error('getDerivedStateFromProps!!!');
       }
   /*/
-  /*/ This this fires after render().
-  /*/
+  /** This this fires after render().
+   */
   componentDidMount() {
     let tabpanel = document.getElementById('tabpanel');
     this.setState({
@@ -160,8 +160,8 @@ class InfoPanel extends UNISYS.Component {
     return true;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   render() {
     const {
       activeTab,

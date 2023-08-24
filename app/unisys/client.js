@@ -43,15 +43,17 @@ var UDATA = new UniData(UNISYS);
 
 /// UNISYS MODULE MAKING //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Make new module with UNISYS convenience methods
-/*/ UNISYS.NewModule = uniqueName => {
+/** API: Make new module with UNISYS convenience methods
+ */
+UNISYS.NewModule = uniqueName => {
   return new UniModule(uniqueName);
 };
 
 /// UNISYS CONNECTOR //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Make new module with UNISYS convenience methods
-/*/ UNISYS.NewDataLink = (module, optName) => {
+/** API: Make new module with UNISYS convenience methods
+ */
+UNISYS.NewDataLink = (module, optName) => {
   return new UniData(module, optName);
 };
 
@@ -80,50 +82,56 @@ UNISYS.RegisterMessagesPromise = (messages = []) => {
 
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: LIFECYCLE Hook() functions
-/*/
+/** API: LIFECYCLE Hook() functions
+ */
+
 UNISYS.Hook = (phase, f) => {
   if (typeof phase !== 'string') throw Error('arg1 is phase as string');
   if (typeof f !== 'function') throw Error('arg2 is function callback');
   LIFECYCLE.Hook(phase, f, UNISYS.ModuleID()); // pass phase and hook function
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: System Initialize
-/*/
+/** API: System Initialize
+ */
+
 UNISYS.SystemInitialize = module_id => {
   UNISYS.SetScope(module_id);
   SETTINGS.ForceReloadSingleApp();
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API HELPER: LIFECYCLE Scope() functions
+/** API HELPER: LIFECYCLE Scope() functions
     The 'scope' is used by LIFECYCLE to determine what modules implementing
     various HOOKS will be called. The root_module_id is a path that will
     be considered the umbrella of "allowed to hook" modules. For REACT apps,
     this is the root directory of the root view component. Additionally,
     the unisys and system directories are allowed to run their hooks
-/*/ UNISYS.SetScope = root_module_id => {
+ */
+UNISYS.SetScope = root_module_id => {
   LIFECYCLE.SetScope(root_module_id); // pass phase and hook function
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API HELPER: SETTINGS ForceReloadSingleApp
+/** API HELPER: SETTINGS ForceReloadSingleApp
     checks to see if settings flag is "dirty"; if it is, then reload the
     location to ensure no linger apps are running in the background. Yes
     this is a bit of a hack.
-/*/
+ */
+
 UNISYS.ForceReloadOnNavigation = () => {
   SETTINGS.ForceReloadOnNavigation();
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API HELPER: return TRUE if passed module.id is within the current set
+/** API HELPER: return TRUE if passed module.id is within the current set
     scope
-/*/
+ */
+
 UNISYS.InScope = module_id => {
   let currentScope = LIFECYCLE.Scope();
   return module_id.includes(currentScope);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: application startup
-/*/
+/** API: application startup
+ */
+
 UNISYS.EnterApp = async () => {
   try {
     await LIFECYCLE.Execute('TEST_CONF'); // TESTCONFIG hook
@@ -139,9 +147,10 @@ UNISYS.EnterApp = async () => {
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: call this when the view system's DOM has stabilized and is ready
+/** API: call this when the view system's DOM has stabilized and is ready
     for manipulation by other code
-/*/
+ */
+
 UNISYS.SetupDOM = async () => {
   try {
     await LIFECYCLE.Execute('DOM_READY'); // GUI layout has finished composing
@@ -154,8 +163,9 @@ UNISYS.SetupDOM = async () => {
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: network startup
-/*/
+/** API: network startup
+ */
+
 UNISYS.JoinNet = () => {
   return new Promise((resolve, reject) => {
     try {
@@ -170,8 +180,9 @@ UNISYS.JoinNet = () => {
   });
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: configure system before run
-/*/
+/** API: configure system before run
+ */
+
 UNISYS.SetupRun = async () => {
   try {
     await LIFECYCLE.Execute('RESET'); // RESET runtime datastructures
@@ -187,8 +198,9 @@ UNISYS.SetupRun = async () => {
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: handle periodic updates for a simulation-driven timestep
-/*/
+/** API: handle periodic updates for a simulation-driven timestep
+ */
+
 UNISYS.Run = async () => {
   r;
   try {
@@ -198,45 +210,51 @@ UNISYS.Run = async () => {
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: do the Shutdown lifecycle
+/** API: do the Shutdown lifecycle
     NOTE ASYNC ARROW FUNCTION (necessary?)
-/*/
+ */
+
 UNISYS.BeforePause = async () => {
   await LIFECYCLE.Execute('PREPAUSE');
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: do the Shutdown lifecycle
+/** API: do the Shutdown lifecycle
     NOTE ASYNC ARROW FUNCTION (necessary?)
-/*/
+ */
+
 UNISYS.Paused = async () => {
   await LIFECYCLE.Execute('PAUSE');
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: do the Shutdown lifecycle
+/** API: do the Shutdown lifecycle
     NOTE ASYNC ARROW FUNCTION (necessary?)
-/*/
+ */
+
 UNISYS.PostPause = async () => {
   await LIFECYCLE.Execute('POSTPAUSE');
   resolve();
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: do the Shutdown lifecycle
+/** API: do the Shutdown lifecycle
     NOTE ASYNC ARROW FUNCTION (necessary?)
-/*/
+ */
+
 UNISYS.CleanupRun = async () => {
   await LIFECYCLE.Execute('STOP');
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: application offline
+/** API: application offline
     NOTE ASYNC ARROW FUNCTION (necessary?)
-/*/
+ */
+
 UNISYS.ServerDisconnect = async () => {
   await LIFECYCLE.Execute('DISCONNECT');
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: application shutdown
+/** API: application shutdown
     NOTE ASYNC ARROW FUNCTION (necessary?)
-/*/
+ */
+
 UNISYS.ExitApp = async () => {
   await LIFECYCLE.Execute('UNLOADASSETS');
   await LIFECYCLE.Execute('SHUTDOWN');
@@ -244,8 +262,9 @@ UNISYS.ExitApp = async () => {
 
 /// NETWORK INFORMATION ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ return the current connected Socket Address (e.g. UADDR_12)
-/*/
+/** return the current connected Socket Address (e.g. UADDR_12)
+ */
+
 UNISYS.SocketUADDR = () => {
   return NETWORK.SocketUADDR();
 };
@@ -256,8 +275,9 @@ UNISYS.IsStandaloneMode = () => {
 
 /// DATA LOGGING //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ send a logging message
-/*/
+/** send a logging message
+ */
+
 UNISYS.Log = (event, ...items) => {
   if (typeof event !== 'string') {
     console.error("UNISYS.Log( 'eventString', value, value, value... )");
@@ -266,8 +286,9 @@ UNISYS.Log = (event, ...items) => {
 };
 
 /// REACT INTEGRATION /////////////////////////////////////////////////////////
-/*/ return the referene to the UNISYS extension of React.Component
-/*/
+/** return the referene to the UNISYS extension of React.Component
+ */
+
 UNISYS.Component = UniComponent;
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////

@@ -40,9 +40,10 @@ try {
 module.exports = (config, callback) => {
   /// STARTUP UNISYS ////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ This happens early because we need to inject UNISYS connection parameters
+  /** This happens early because we need to inject UNISYS connection parameters
   into index.ejs
-/*/ let nc_options = {
+  */
+  let nc_options = {
     port: NC_CONFIG.netport
   };
   let unetOptions = UNISYS.InitializeNetwork(nc_options);
@@ -115,8 +116,9 @@ module.exports = (config, callback) => {
   /// our app uses ejs templates
   APP.use('/', EXPRESS.static(PATH_PUBLIC));
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ additional route: /action (placeholder)
-/*/ APP.use('/action', (req, res, next) => {
+  /** additional route: /action (placeholder)
+   */
+  APP.use('/action', (req, res, next) => {
     res.send('POST action completed!');
   });
 

@@ -308,9 +308,9 @@ class EdgeEditor extends UNISYS.Component {
     // as a handler, otherwise object context is lost
 
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    /*/ SESSION is called by SessionShell when the ID changes
+    /** SESSION is called by SessionShell when the ID changes
         set system-wide. data: { classId, projId, hashedId, groupId, isValid }
-    /*/
+     */
     this.OnAppStateChange('SESSION', this.onStateChange_SESSION);
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     this.OnAppStateChange('SELECTION', this.handleSelection);
@@ -326,9 +326,9 @@ class EdgeEditor extends UNISYS.Component {
     UDATA.HandleMessage('EDIT_PERMISSIONS_UPDATE', this.setEditState);
 
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    /*/ Prevent editing if server is disconnected.
+    /** Prevent editing if server is disconnected.
         This is necessary to hide the "Add New Node" button.
-    /*/
+     */
     this.OnDisconnect(() => {
       console.log('EdgeSelector got disconnect');
       this.setState({ isLocked: true });
@@ -337,8 +337,8 @@ class EdgeEditor extends UNISYS.Component {
 
   /// UTILITIES /////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   clearForm() {
     this.setState({
       formData: {
@@ -388,8 +388,8 @@ class EdgeEditor extends UNISYS.Component {
     this.setState({ edgeDefs: data.edgeDefs });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Disable Edge Edit if a Template is being edited
-  /*/
+  /** Disable Edge Edit if a Template is being edited
+   */
   updateEditState() {
     UDATA.NetCall('SRV_GET_EDIT_STATUS').then(data => {
       this.setEditState(data);
@@ -405,8 +405,8 @@ class EdgeEditor extends UNISYS.Component {
     this.setState({ disableEdit, editLockMessage });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ populate formdata from NCDATA
-  /*/
+  /** populate formdata from NCDATA
+   */
   loadSourceAndTarget() {
     if (DBG) console.log('EdgeEditor.loadSourceAndTarget!');
 
@@ -542,13 +542,13 @@ class EdgeEditor extends UNISYS.Component {
 
   /// UDATA STATE HANDLERS //////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ When the user is creating a new node, they need to set a target node.
+  /** When the user is creating a new node, they need to set a target node.
       The target node is set via an AutoComplete field.
       When a node is selected via the AutoComplete field, the SELECTION state is updated.
       So EdgeEditor needs to listen to the SELECTION state in order to
       know the target node has been selected.
       SELECTION is also triggered when the network updates an edge.
-  /*/
+   */
   handleSelection(data) {
     if (DBG) console.log('EdgeEditor', this.props.edgeID, 'got SELECTION data', data);
     // If we're one of the edges that have been updated, and we're not currently being edited,
@@ -636,9 +636,9 @@ class EdgeEditor extends UNISYS.Component {
     }
   } // handleSelection
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Someone externally has selected an edge.
+  /** Someone externally has selected an edge.
     Usually someone has clicked a button in the EdgeList to view/edit an edge
-  /*/
+   */
   handleEdgeSelection(data) {
     if (DBG)
       console.log('EdgeEditor', this.props.edgeID, ': got state EDGE_SELECT', data);
@@ -650,9 +650,9 @@ class EdgeEditor extends UNISYS.Component {
   } // handleEdgeSelection
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Someone externally has selected an edge for editing.
+  /** Someone externally has selected an edge for editing.
     Usually someone has clicked a button in the EdgeTable to edit an edge
-  /*/
+   */
   handleEdgeEdit(data) {
     const { formData, isBeingEdited, isLocked } = this.state;
     if (DBG)
@@ -694,18 +694,18 @@ class EdgeEditor extends UNISYS.Component {
     }
   } // handleEdgeEdit
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   handleEdgeClose() {
     if (this.state.isExpanded) this.setState({ isExpanded: false });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Handle change in SESSION data
+  /** Handle change in SESSION data
     Called both by componentDidMount() and AppStateChange handler.
     The 'SESSION' state change is triggered in two places in SessionShell during
     its handleChange() when active typing is occuring, and also during
     SessionShell.componentWillMount()
-  /*/
+   */
   onStateChange_SESSION(decoded) {
     let update = { isLocked: !decoded.isValid };
     this.setState(update);
@@ -713,9 +713,9 @@ class EdgeEditor extends UNISYS.Component {
 
   /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Expand if the edge is collapsed.
+  /** Expand if the edge is collapsed.
     Cancel editing if the edge is expanded.
-  /*/
+   */
   onEdgeClick() {
     // Cancel/Close
     if (this.state.isExpanded) {
@@ -779,8 +779,8 @@ class EdgeEditor extends UNISYS.Component {
     }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onDeleteButtonClick() {
     this.clearForm();
     this.AppCall('AUTOCOMPLETE_SELECT', { id: 'search' });
@@ -790,8 +790,8 @@ class EdgeEditor extends UNISYS.Component {
     this.AppCall('DB_UPDATE', { edgeID: this.props.edgeID });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onEditButtonClick() {
     this.setState({ hideModal: true });
 
@@ -809,8 +809,8 @@ class EdgeEditor extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onCiteButtonClick(event) {
     event.preventDefault();
 
@@ -833,8 +833,8 @@ class EdgeEditor extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   requestEdit() {
     let edgeID = this.state.formData.id;
     if (
@@ -877,8 +877,8 @@ class EdgeEditor extends UNISYS.Component {
     }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onSwapSourceAndTarget() {
     let formData = this.state.formData;
 
@@ -903,8 +903,9 @@ class EdgeEditor extends UNISYS.Component {
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ onChangeSource() {
+  /**
+   */
+  onChangeSource() {
     this.setState({
       sourceIsEditable: true,
       hasValidSource: false,
@@ -918,8 +919,8 @@ class EdgeEditor extends UNISYS.Component {
     this.AppCall('SOURCE_SEARCH', { searchString: '' });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onChangeTarget() {
     this.setState({
       targetIsEditable: true,
@@ -934,24 +935,24 @@ class EdgeEditor extends UNISYS.Component {
     this.AppCall('SOURCE_SEARCH', { searchString: '' });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onRelationshipChange(event) {
     let formData = this.state.formData;
     formData.type = event.target.value;
     this.setState({ formData: formData });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onInfoChange(event) {
     let formData = this.state.formData;
     formData.info = event.target.value;
     this.setState({ formData: formData });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onWeightChange(event) {
     // The built in <input min="0"> will keep the step buttons from going below 0,
     // but the user can still input "0". When editing, you need to be able to
@@ -962,48 +963,48 @@ class EdgeEditor extends UNISYS.Component {
     this.setState({ formData: formData });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onProvenanceChange(event) {
     let formData = this.state.formData;
     formData.provenance = event.target.value;
     this.setState({ formData: formData });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onCommentsChange(event) {
     let formData = this.state.formData;
     formData.comments = event.target.value;
     this.setState({ formData: formData });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onCitationChange(event) {
     let formData = this.state.formData;
     formData.citation = event.target.value;
     this.setState({ formData: formData });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onCategoryChange(event) {
     let formData = this.state.formData;
     formData.category = event.target.value;
     this.setState({ formData: formData });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onNotesChange(event) {
     let formData = this.state.formData;
     formData.notes = event.target.value;
     this.setState({ formData: formData });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onSubmit(event) {
     event.preventDefault();
     let formData = this.state.formData;
@@ -1084,8 +1085,8 @@ class EdgeEditor extends UNISYS.Component {
     }
   /*/
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   render() {
     const { edgeID, parentNodeLabel, parentNodeIsLocked } = this.props;
     const {
@@ -1511,8 +1512,8 @@ class EdgeEditor extends UNISYS.Component {
     );
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ componentDidMount() {
+  /**
+   */ componentDidMount() {
     if (DBG) console.log('EdgeEditor.componentDidMount!');
     this.loadSourceAndTarget();
     this.onStateChange_SESSION(this.AppState('SESSION'));
@@ -1543,8 +1544,8 @@ class EdgeEditor extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Release the lock if we're unmounting
-  /*/
+  /** Release the lock if we're unmounting
+   */
   componentWillUnmount() {
     if (DBG) console.log('EdgeEditor.componentWillUnMount!');
     if (this.state.isBeingEdited) {
@@ -1578,8 +1579,8 @@ class EdgeEditor extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
 
   helpText(obj) {
     if (!obj) return;

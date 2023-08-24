@@ -31,9 +31,10 @@ MOD.Hook('INITIALIZE', function () {
  */
 MOD.Hook('START', function () {
   console.log('*** START ***');
-  /*/ call counter function 3 times 500ms apart, then check that all tests passed
+  /** call counter function 3 times 500ms apart, then check that all tests passed
       set a periodic timer update
-  /*/ var TESTCOUNTER = 3;
+   */
+  var TESTCOUNTER = 3;
   var TESTINTERVAL = setInterval(function () {
     if (--TESTCOUNTER < 0) {
       clearInterval(TESTINTERVAL);

@@ -52,9 +52,9 @@ const ROUTING_MODE = ['req', 'res'];
 
 /// UNISYS NETMESSAGE CLASS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ A UNetMessage encapsulates a specific message and data payload for sending
+/** A UNetMessage encapsulates a specific message and data payload for sending
     across the network.
-/*/
+ */
 class NetMessage {
   constructor(msg, data, type) {
     // OPTION 1
@@ -104,47 +104,47 @@ class NetMessage {
 
   /// ACCESSSOR METHODS ///////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ returns the type
-  /*/
+  /** returns the type
+   */
   Type() {
     return this.type;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ returns true if type matches
-  /*/
+  /** returns true if type matches
+   */
   IsType(type) {
     return this.type === type;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ returns the type
-  /*/
+  /** returns the type
+   */
   SetType(type) {
     this.type = m_CheckType(type);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ returns the message
-  /*/
+  /** returns the message
+   */
   Message() {
     return this.msg;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ sets the message field
-  /*/
+  /** sets the message field
+   */
   SetMessage(msgstr) {
     this.msg = msgstr;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ returns the entire data payload or the property within the data payload
+  /** returns the entire data payload or the property within the data payload
       (can return undefined if property doesn't exist)
-  /*/
+   */
   Data(prop) {
     if (!prop) return this.data;
     if (typeof prop === 'string') return this.data[prop];
     throw ERR_BAD_PROP;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ convenience method to set data object entirely
-  /*/
+  /** convenience method to set data object entirely
+   */
   SetData(propOrVal, val) {
     if (typeof propOrVal === 'object') {
       this.data = propOrVal;
@@ -157,21 +157,21 @@ class NetMessage {
     throw ERR_BAD_PROP;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ returns truthy value (this.data) if the passed msgstr matches the
+  /** returns truthy value (this.data) if the passed msgstr matches the
       message associated with this NetMessage
-  /*/
+   */
   Is(msgstr) {
     return msgstr === this.msg ? this.data : undefined;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ convenience function return true if server message
-  /*/
+  /** convenience function return true if server message
+   */
   IsServerMessage() {
     return this.msg.startsWith('SRV_');
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ getter/setter for the memo description field
-  /*/
+  /** getter/setter for the memo description field
+   */
   Memo() {
     return this.memo;
   }
@@ -179,29 +179,29 @@ class NetMessage {
     this.memo = memo;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ convenience function to return JSON version of this object
-  /*/
+  /** convenience function to return JSON version of this object
+   */
   JSON() {
     return JSON.stringify(this);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ return the session groupid (CLASS-PROJ-HASH) that's been set globally
-  /*/
+  /** return the session groupid (CLASS-PROJ-HASH) that's been set globally
+   */
   SourceGroupID() {
     return this.s_group;
   }
 
   /// TRANSACTION SUPPORT /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ The sequence number is positive if this packet is reused
-  /*/
+  /** The sequence number is positive if this packet is reused
+   */
   SeqNum() {
     return this.seqnum;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Return the originating address of this netmessage packet. It is valid
+  /** Return the originating address of this netmessage packet. It is valid
       only after the packet has been sent at least once.
-  /*/
+   */
   SourceAddress() {
     // is this packet originating from server to a remote?
     if (
@@ -219,8 +219,8 @@ class NetMessage {
     this.s_uaddr = pkt.SourceAddress();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ return an informational string about the packet useful for logging
-  /*/
+  /** return an informational string about the packet useful for logging
+   */
   Info(key) {
     switch (key) {
       case 'src': /* falls-through */
@@ -237,9 +237,9 @@ class NetMessage {
     return this.id;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Send packet on either provided socket or default socket. Servers provide
+  /** Send packet on either provided socket or default socket. Servers provide
       the socket because it's handling multiple sockets from different clients.
-  /*/
+   */
   SocketSend(socket = m_netsocket) {
     if (m_mode === M_ONLINE || m_mode === M_INIT) {
       this.s_group = NetMessage.GlobalGroupID();
@@ -262,8 +262,8 @@ class NetMessage {
     // FYI: global m_netsocket is not defined on server, since packets arrive on multiple sockets
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Create a promise to resolve when packet returns
-  /*/
+  /** Create a promise to resolve when packet returns
+   */
   QueueTransaction(socket = m_netsocket) {
     if (m_mode === M_STANDALONE) {
       console.warn(PR, 'STANDALONE MODE: QueueTransaction() suppressed!');
@@ -293,11 +293,11 @@ class NetMessage {
     return p;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ return the 'routing mode':
+  /** return the 'routing mode':
         req/res is request/reply (message requests and optional response)
         f_req/f_res is forwarded request/reply (forwarded messages and optional return)
         the f_res is converted to res and sent back to original requester
-  /*/
+   */
   RoutingMode() {
     return this.rmode;
   }
@@ -310,8 +310,8 @@ class NetMessage {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  /*/ If this packet is a returned transaction, then return true
-  /*/
+  /** If this packet is a returned transaction, then return true
+   */
   IsTransaction() {
     return (
       this.rmode !== ROUTING_MODE[0] &&
@@ -320,8 +320,8 @@ class NetMessage {
     );
   }
   ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/	update the sequence metadata and return on same socket
-  /*/
+  /**	update the sequence metadata and return on same socket
+   */
   ReturnTransaction(socket = m_netsocket) {
     // global m_netsocket is not defined on server, since packets arrive on multiple sockets
     if (!socket) throw Error('ReturnTransaction(sock) requires a valid socket');
@@ -333,10 +333,10 @@ class NetMessage {
     this.SocketSend(socket);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ If this is a transaction packet that is returned, then execute the stored
+  /** If this is a transaction packet that is returned, then execute the stored
       resolver function from the promise stored in m_transactions, which will
       then trigger .then() following any calls
-  /*/
+   */
   CompleteTransaction() {
     let dbg = DBG.transact && !this.IsServerMessage();
     var hash = m_GetHashKey(this);
@@ -355,10 +355,10 @@ class NetMessage {
 
 /// STATIC CLASS METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ set the NETWORK interface object that implements Send()
+/** set the NETWORK interface object that implements Send()
     This class operates both under the server and the client.
     This is a client feature.
-/*/
+ */
 NetMessage.GlobalSetup = function (config) {
   let { netsocket, uaddr } = config;
   if (uaddr) NetMessage.UADDR = uaddr;
@@ -371,9 +371,9 @@ NetMessage.GlobalSetup = function (config) {
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ cleanup any allocated storage. This class operates both under the
+/** cleanup any allocated storage. This class operates both under the
     server and the client. This is a client feature.
-/*/
+ */
 NetMessage.GlobalCleanup = function () {
   if (m_netsocket) {
     console.log(PR, 'GlobalCleanup: deallocating netsocket, mode closed');
@@ -382,9 +382,9 @@ NetMessage.GlobalCleanup = function () {
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ cleanup any allocated storage internally. This class operates both under the
+/** cleanup any allocated storage internally. This class operates both under the
     server and the client. This is a client feature.
-/*/
+ */
 NetMessage.GlobalOfflineMode = function (data) {
   m_mode = M_STANDALONE;
   if (m_netsocket) {
@@ -407,20 +407,20 @@ NetMessage.GlobalOfflineMode = function (data) {
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ return the address (socket_id) assigned to this app instance
-/*/
+/** return the address (socket_id) assigned to this app instance
+ */
 NetMessage.SocketUADDR = function () {
   return NetMessage.UADDR;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Return a default server UADDR
-/*/
+/** Return a default server UADDR
+ */
 NetMessage.DefaultServerUADDR = function () {
   return 'SVR_01';
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Return current SessionID string
-/*/
+/** Return current SessionID string
+ */
 NetMessage.GlobalGroupID = function () {
   return m_group_id;
 };
@@ -431,24 +431,24 @@ NetMessage.GlobalSetGroupID = function (token) {
 
 /// PRIVATE CLASS HELPERS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ when a packet is reconstructed from an existing object or json string,
+/** when a packet is reconstructed from an existing object or json string,
     its sequence number is incremented, and the old source uaddr is pushed
     onto the seqlog stack.
-/*/
+ */
 function m_SeqIncrement(pkt) {
   pkt.seqnum++;
   return pkt;
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/	return the hash used for storing transaction callbacks
-/*/
+/**	return the hash used for storing transaction callbacks
+ */
 function m_GetHashKey(pkt) {
   let hash = `${pkt.SourceAddress()}:${pkt.id}`;
   return hash;
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ is this an allowed type? throw error if not
-/*/
+/** is this an allowed type? throw error if not
+ */
 function m_CheckType(type) {
   if (type === undefined) {
     throw new Error('must pass a type string, not ' + type);
@@ -457,8 +457,8 @@ function m_CheckType(type) {
   return type;
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ is this an allowed mode? throw error if not
-/*/
+/** is this an allowed mode? throw error if not
+ */
 function m_CheckRMode(mode) {
   if (mode === undefined) {
     throw new Error('must pass a mode string, not ' + mode);

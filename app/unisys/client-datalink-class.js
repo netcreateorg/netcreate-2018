@@ -46,17 +46,19 @@ var MESSAGER = new Messager();
 
 /// UNISYS NODE CLASS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Instances of this class can register/unregister message handlers and also
+/** Instances of this class can register/unregister message handlers and also
     send messages. Constructor receives an owner, which is inspected for
     properties to determine how to classify the created messager for debugging
     purposes
-/*/ class UnisysDataLink {
-  /*/ CONSTRUCTOR
+ */
+class UnisysDataLink {
+  /** CONSTRUCTOR
       A messager creates a unique ID within the webapp instance. Since
       messagers are "owned" by an object, we want the ID to reflect
       the owner's identity too while also allowing multiple instances per
       owner.
-  /*/ constructor(owner, optName) {
+   */
+  constructor(owner, optName) {
     let msgr_type = '?TYPE';
     let msgr_name = '?NAME';
 
@@ -143,9 +145,10 @@ var MESSAGER = new Messager();
     MESSAGER.UnhandleMessage(mesgName, listener);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ UDATA wraps Messager.Call(), which returns an array of promises.
+  /** UDATA wraps Messager.Call(), which returns an array of promises.
       The UDATA version of Call() manages the promises, and returns a
-  /*/ async Call(mesgName, inData = {}, options = {}) {
+   */
+  async Call(mesgName, inData = {}, options = {}) {
     options = Object.assign(options, { type: 'mcall' });
     if (DBG.send) {
       let status = '';
@@ -173,9 +176,10 @@ var MESSAGER = new Messager();
     return resObj;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Sends the data to all message implementors UNLESS it is originating from
+  /** Sends the data to all message implementors UNLESS it is originating from
       the same UDATA instance (avoid echoing back to self)
-  /*/ Send(mesgName, inData = {}, options = {}) {
+   */
+  Send(mesgName, inData = {}, options = {}) {
     if (DBG.send) console.log(`${this.uid}_${PR}`, '** DATALINK SEND', mesgName);
     options = Object.assign(options, { type: 'msend' });
     // uid is "source uid" of subscribing object, to avoid reflection
@@ -186,54 +190,61 @@ var MESSAGER = new Messager();
     MESSAGER.Send(mesgName, inData, options);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Sends the data to all message implementors, irregardless of origin.
-  /*/ Signal(mesgName, inData = {}, options = {}) {
+  /** Sends the data to all message implementors, irregardless of origin.
+   */
+  Signal(mesgName, inData = {}, options = {}) {
     options = Object.assign(options, { type: 'msig' });
     MESSAGER.Signal(mesgName, inData, options);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ version of Call that forces local-only calls
-  /*/ LocalCall(mesgName, inData, options = {}) {
+  /** version of Call that forces local-only calls
+   */
+  LocalCall(mesgName, inData, options = {}) {
     options = Object.assign(options, { type: 'mcall' });
     options.toLocal = true;
     options.toNet = false;
     return this.Call(mesgName, inData, options);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ version of Send that force local-only calls
-  /*/ LocalSend(mesgName, inData, options = {}) {
+  /** version of Send that force local-only calls
+   */
+  LocalSend(mesgName, inData, options = {}) {
     options = Object.assign(options, { type: 'msend' });
     options.toLocal = true;
     options.toNet = false;
     this.Send(mesgName, inData, options);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ version of Send that force local-only calls
-  /*/ LocalSignal(mesgName, inData, options = {}) {
+  /** version of Send that force local-only calls
+   */
+  LocalSignal(mesgName, inData, options = {}) {
     options = Object.assign(options, { type: 'msig' });
     options.toLocal = true;
     options.toNet = false;
     this.Signal(mesgName, inData, options);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ version of Call that forces network-only calls
-  /*/ NetCall(mesgName, inData, options = {}) {
+  /** version of Call that forces network-only calls
+   */
+  NetCall(mesgName, inData, options = {}) {
     options = Object.assign(options, { type: 'mcall' });
     options.toLocal = false;
     options.toNet = true;
     return this.Call(mesgName, inData, options);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ version of Send that force network-only calls
-  /*/ NetSend(mesgName, inData, options = {}) {
+  /** version of Send that force network-only calls
+   */
+  NetSend(mesgName, inData, options = {}) {
     options = Object.assign(options, { type: 'msend' });
     options.toLocal = false;
     options.toNet = true;
     this.Send(mesgName, inData, options);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ version of Signal that forces network-only signal
-  /*/ NetSignal(mesgName, inData, options = {}) {
+  /** version of Signal that forces network-only signal
+   */
+  NetSignal(mesgName, inData, options = {}) {
     options.toLocal = false;
     options.toNet = true;
     this.Signal(mesgName, inData, options);
@@ -246,14 +257,16 @@ var MESSAGER = new Messager();
 
 /// STATIC CLASS METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ There's a single MESSAGER object that handles all registered messages for
+/** There's a single MESSAGER object that handles all registered messages for
     UNISYS.
-/*/ UnisysDataLink.MessageNames = function () {
+ */
+UnisysDataLink.MessageNames = function () {
   return MESSAGER.MessageNames();
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Filter any bad messages from the passed array of strings
-/*/ UnisysDataLink.ValidateMessageNames = function (msgs = []) {
+/** Filter any bad messages from the passed array of strings
+ */
+UnisysDataLink.ValidateMessageNames = function (msgs = []) {
   let valid = [];
   msgs.forEach(name => {
     if (MESSAGER.HasMessageName(name)) valid.push(name);

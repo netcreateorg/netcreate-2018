@@ -1250,7 +1250,7 @@ MOD.TEMPLATE = {
 
 /// SCHEMA METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API METHOD for Extra schema definition for the Type Editor UI
+/*/ API METHOD for Extra schema definition for the Type Editor UI
  *  This introduces a wrapper around the Node or Edge Type Schema to provide
  *  extra UI elements for managing Type changes that the normal Template
  *  editor does not have:

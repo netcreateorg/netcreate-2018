@@ -93,8 +93,9 @@ class NodeTable extends UNISYS.Component {
   } // constructor
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ componentDidMount() {
+  /**
+   */
+  componentDidMount() {
     if (DBG) console.error('NodeTable.componentDidMount!');
 
     this.onStateChange_SESSION(this.AppState('SESSION'));
@@ -117,12 +118,12 @@ class NodeTable extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Handle change in SESSION data
+  /** Handle change in SESSION data
     Called both by componentWillMount() and AppStateChange handler.
     The 'SESSION' state change is triggered in two places in SessionShell during
     its handleChange() when active typing is occuring, and also during
     SessionShell.componentWillMount()
-  /*/
+   */
   onStateChange_SESSION(decoded) {
     this.setState({ isLocked: !decoded.isValid });
   }
@@ -176,8 +177,8 @@ class NodeTable extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Handle updated SELECTION
-  /*/
+  /** Handle updated SELECTION
+   */
   handleDataUpdate(data) {
     if (DBG) console.log('handle data update');
     if (data.nodes) {
@@ -229,8 +230,8 @@ class NodeTable extends UNISYS.Component {
 
   /// UTILITIES /////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   sortByID(nodes) {
     if (nodes) {
       return nodes.sort((a, b) => {
@@ -244,8 +245,8 @@ class NodeTable extends UNISYS.Component {
     return 0;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   sortByEdgeCount(nodes) {
     if (nodes) {
       return nodes.sort((a, b) => {
@@ -260,8 +261,8 @@ class NodeTable extends UNISYS.Component {
     return 0;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   sortByLabel(nodes) {
     if (nodes) {
       return nodes.sort((a, b) => {
@@ -273,8 +274,8 @@ class NodeTable extends UNISYS.Component {
     return 0;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ DEPRECATED -- 'attributes' is no longer being used
-  /*/
+  /** DEPRECATED -- 'attributes' is no longer being used
+   */
   sortByAttribute(nodes, key) {
     if (nodes) {
       return nodes.sort((a, b) => {
@@ -288,8 +289,8 @@ class NodeTable extends UNISYS.Component {
     return 0;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   sortByKey(nodes, key, type) {
     if (nodes) {
       return nodes.sort((a, b) => {
@@ -314,8 +315,8 @@ class NodeTable extends UNISYS.Component {
     return 0;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   sortByUpdated(nodes) {
     if (nodes) {
       return nodes.sort((a, b) => {
@@ -329,10 +330,10 @@ class NodeTable extends UNISYS.Component {
     return undefined;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ If no `sortkey` is passed, the sort will use the existing state.sortkey
+  /** If no `sortkey` is passed, the sort will use the existing state.sortkey
     Returns the sorted nodes so that the calling function can handle
     state updates all at once.
-  /*/
+   */
   sortTable(sortkey = this.state.sortkey, nodes, type) {
     switch (sortkey) {
       case 'id':
@@ -356,8 +357,8 @@ class NodeTable extends UNISYS.Component {
 
   /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onButtonClick(event) {
     event.preventDefault();
 
@@ -371,22 +372,22 @@ class NodeTable extends UNISYS.Component {
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onToggleExpanded(event) {
     this.setState({
       isExpanded: !this.state.isExpanded
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onHighlightRow(nodeId) {
     UDATA.LocalCall('TABLE_HILITE_NODE', { nodeId });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   setSortKey(key, type) {
     if (key === this.state.sortkey) this.sortDirection = -1 * this.sortDirection;
     // if this was already the key, flip the direction
@@ -396,8 +397,8 @@ class NodeTable extends UNISYS.Component {
     this.setState({ sortkey: key, nodes });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   selectNode(id, event) {
     event.preventDefault();
 
@@ -416,8 +417,8 @@ class NodeTable extends UNISYS.Component {
     }
   /*/
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   render() {
     if (this.state.nodes === undefined) return '';
     const { nodeDefs, isLocked } = this.state;

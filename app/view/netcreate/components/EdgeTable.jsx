@@ -120,12 +120,12 @@ class EdgeTable extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Handle change in SESSION data
+  /** Handle change in SESSION data
     Called both by componentWillMount() and AppStateChange handler.
     The 'SESSION' state change is triggered in two places in SessionShell during
     its handleChange() when active typing is occuring, and also during
     SessionShell.componentWillMount()
-  /*/
+   */
   onStateChange_SESSION(decoded) {
     this.setState({ isLocked: !decoded.isValid });
   }
@@ -179,8 +179,8 @@ class EdgeTable extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Handle updated SELECTION: NCDATA updates
-  /*/
+  /** Handle updated SELECTION: NCDATA updates
+   */
   handleDataUpdate(data) {
     if (data && data.edges && data.nodes) {
       // NCDATA.edges no longer uses source/target objects
@@ -203,10 +203,10 @@ class EdgeTable extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Handle FILTEREDNCDATA updates sent by filters-logic.m_FiltersApply
+  /** Handle FILTEREDNCDATA updates sent by filters-logic.m_FiltersApply
       Note that edge.soourceLabel and edge.targetLabel should already be set
       by filter-mgr.
-  /*/
+   */
   handleFilterDataUpdate(data) {
     if (data.edges) {
       const filteredEdges = data.edges;
@@ -248,8 +248,8 @@ class EdgeTable extends UNISYS.Component {
 
   /// UTILITIES /////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   sortByID(edges) {
     if (edges) {
       return edges.sort((a, b) => {
@@ -263,8 +263,8 @@ class EdgeTable extends UNISYS.Component {
     return undefined;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   sortBySourceLabel(edges) {
     if (edges) {
       return edges.sort((a, b) => {
@@ -276,8 +276,8 @@ class EdgeTable extends UNISYS.Component {
     return undefined;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   sortByTargetLabel(edges) {
     if (edges) {
       return edges.sort((a, b) => {
@@ -290,8 +290,8 @@ class EdgeTable extends UNISYS.Component {
     return undefined;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ DEPRECATED -- 'attributes' is no longer being used
-  /*/
+  /** DEPRECATED -- 'attributes' is no longer being used
+   */
   sortByAttribute(edges, key) {
     if (edges) {
       return edges.sort((a, b) => {
@@ -312,8 +312,8 @@ class EdgeTable extends UNISYS.Component {
     return undefined;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   sortByKey(edges, key, type) {
     if (edges) {
       return edges.sort((a, b) => {
@@ -345,8 +345,8 @@ class EdgeTable extends UNISYS.Component {
     return undefined;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   sortByUpdated(edges) {
     if (edges) {
       return edges.sort((a, b) => {
@@ -360,8 +360,8 @@ class EdgeTable extends UNISYS.Component {
     return undefined;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ If no `sortkey` is passed, the sort will use the existing state.sortkey
-  /*/
+  /** If no `sortkey` is passed, the sort will use the existing state.sortkey
+   */
   sortTable(sortkey = this.state.sortkey, edges, type) {
     switch (sortkey) {
       case 'id':
@@ -377,16 +377,16 @@ class EdgeTable extends UNISYS.Component {
     }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   sortSymbol(key) {
     if (key !== this.state.sortkey) return '';
     // this is not the current sort, so don't show anything
     else return this.sortDirection === 1 ? '▼' : '▲'; // default to "decreasing" and flip if clicked again
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Look up the Node label for source / target ids
-  /*/
+  /** Look up the Node label for source / target ids
+   */
   lookupNodeLabel(nodeId) {
     const node = this.state.nodes.find(n => n.id === nodeId);
     if (node === undefined) return '...';
@@ -396,8 +396,8 @@ class EdgeTable extends UNISYS.Component {
 
   /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onButtonClick(event) {
     event.preventDefault();
 
@@ -412,16 +412,16 @@ class EdgeTable extends UNISYS.Component {
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   onToggleExpanded(event) {
     this.setState({
       isExpanded: !this.state.isExpanded
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   setSortKey(key, type) {
     if (key === this.state.sortkey) this.sortDirection = -1 * this.sortDirection;
     // if this was already the key, flip the direction
@@ -434,8 +434,8 @@ class EdgeTable extends UNISYS.Component {
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   selectNode(id, event) {
     event.preventDefault();
 
@@ -447,9 +447,9 @@ class EdgeTable extends UNISYS.Component {
   /// OBJECT HELPERS ////////////////////////////////////////////////////////////
   /// these probably should go into a utility class
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Return array of objects that match the match_me object keys/values
+  /** Return array of objects that match the match_me object keys/values
     NOTE: make sure that strings are compared with strings, etc
-  /*/
+   */
   m_FindMatchingObjsByProp(obj_list, match_me = {}) {
     // operate on arrays only
     if (!Array.isArray(obj_list))
@@ -468,29 +468,29 @@ class EdgeTable extends UNISYS.Component {
 
   /// EDGE HELPERS //////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Return array of nodes that match the match_me object keys/values
+  /** Return array of nodes that match the match_me object keys/values
     NOTE: make sure that strings are compared with strings, etc
-  /*/
+   */
   m_FindMatchingEdgeByProp(match_me = {}) {
     return this.m_FindMatchingObjsByProp(this.state.edges, match_me);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Convenience function to retrieve edge by ID
-  /*/
+  /** Convenience function to retrieve edge by ID
+   */
   m_FindEdgeById(id) {
     return this.m_FindMatchingEdgeByProp({ id })[0];
   }
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ This is not yet implemented as of React 16.2.  It's implemented in 16.3.
+  /** This is not yet implemented as of React 16.2.  It's implemented in 16.3.
       getDerivedStateFromProps (props, state) {
         console.error('getDerivedStateFromProps!!!');
       }
-  /*/
+   */
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   render() {
     let { edgeDefs, isLocked } = this.state;
     if (edgeDefs.category === undefined) {
