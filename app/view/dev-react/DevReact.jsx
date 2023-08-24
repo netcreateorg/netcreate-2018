@@ -1,8 +1,8 @@
+if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-if (window.NC_DBG) console.log(`inc ${module.id}`);
 const UNISYS = require('unisys/client');
 const REFLECT = require('system/util/reflection');
 const LOGIC = require('./devreact-logic');

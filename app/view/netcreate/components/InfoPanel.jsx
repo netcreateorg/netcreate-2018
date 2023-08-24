@@ -19,7 +19,6 @@ const React = require('react');
 const ReactStrap = require('reactstrap');
 const { TabContent, TabPane, Nav, NavItem, NavLink, Row, Col, Button } = ReactStrap;
 const classnames = require('classnames');
-
 const NodeTable = require('./NodeTable');
 const EdgeTable = require('./EdgeTable');
 const More = require('./More');
@@ -29,7 +28,7 @@ const More = require('./More');
 var DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var UDATA = null;
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const defaultTabPanelHeight = 42; // show only tab buttons, no gap
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
