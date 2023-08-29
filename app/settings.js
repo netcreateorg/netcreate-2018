@@ -74,8 +74,10 @@ MOD.CurrentTime = () => {
 /**
  */
 MOD.IsAdmin = () => {
-  // return MOD.EJSProp('client').ip === '127.0.0.1' || location.href.includes('admin=true')
-  return location.href.includes('admin=true');
+  return (
+    MOD.EJSProp('client').ip === '127.0.0.1' || location.href.includes('admin=true')
+  );
+  // return location.href.includes('admin=true'); // Joshua's relaxed check from #72
 };
 
 /// SERVER-PROVIDED PROPERTIES ////////////////////////////////////////////////
