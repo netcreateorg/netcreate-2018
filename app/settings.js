@@ -71,13 +71,16 @@ MOD.CurrentTime = () => {
   return DATE.toDateString();
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
+/** Returns true is the NetCreate app should assume that an administrator is
+ *  logged in. Administrators can edit templates. The check is very weak,
+ *  relying on browsers running on localhost with the URL parameter.
+ *  TODO: will be replacing with "real" login system for NetCreate 2.0.
  */
 MOD.IsAdmin = () => {
-  return (
-    MOD.EJSProp('client').ip === '127.0.0.1' || location.href.includes('admin=true')
-  );
-  // return location.href.includes('admin=true'); // Joshua's relaxed check from #72
+  const isLocalHost = MOD.EJSProp('client').ip === '127.0.0.1';
+  const urlHasAdmin = location.href.includes('admin=true');
+  //
+  return isLocalHost && urlHasAdmin;
 };
 
 /// SERVER-PROVIDED PROPERTIES ////////////////////////////////////////////////
