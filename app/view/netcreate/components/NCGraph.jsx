@@ -1,37 +1,32 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    NetGraph is a React wrapper for a D3 network graph component.
+  NetGraph is a React wrapper for a D3 network graph component.
 
-    This component uses React to create the base dom element, but ncGraphRenderer
-    handles the data updates, rendering and animation updates.
+  This component uses React to create the base dom element, but ncGraphRenderer
+  handles the data updates, rendering and animation updates.
 
-    React is explicitly prevented from updating the component (see
-    shouldComponentUpdate)
+  React is explicitly prevented from updating the component (see
+  shouldComponentUpdate)
 
-    ## TO USE
+  ## TO USE
 
-            <NCGraph/>
+          <NCGraph/>
 
-    ## Why not use FauxDom?
+  ## Why not use FauxDom?
 
-    https://lab.oli.me.uk/react-faux-dom-state/
-    This article suggests that maybe using force graphs with react-faux-dom
-    not quite work.
-        "If you want to animate things, use a React animation library (they’re
-         great and work fine with faux DOM), you have to find the React way to
-         do things, sadly some D3 concepts just don’t translate. If you want
-         some physics based graph full of state then you’re probably better
-         off keeping to the original way of embedding D3 in React, dropping
-         out of React and letting D3 mutate that element."
-    Indeed, in our testing, the animation updates were not optimal.
+  https://lab.oli.me.uk/react-faux-dom-state/
+  This article suggests that maybe using force graphs with react-faux-dom
+  not quite work.
+      "If you want to animate things, use a React animation library (they’re
+        great and work fine with faux DOM), you have to find the React way to
+        do things, sadly some D3 concepts just don’t translate. If you want
+        some physics based graph full of state then you’re probably better
+        off keeping to the original way of embedding D3 in React, dropping
+        out of React and letting D3 mutate that element."
+  Indeed, in our testing, the animation updates were not optimal.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = false;
-const PR = 'NCGraph';
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const ReactDOM = require('react-dom');
 const ReactStrap = require('reactstrap');
@@ -40,6 +35,11 @@ const NCGraphRenderer = require('./NCGraphRenderer');
 const UNISYS = require('unisys/client');
 import RENDERMGR from '../render-mgr';
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+const PR = 'NCGraph';
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let UDATA = null;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
@@ -76,8 +76,6 @@ class NCGraph extends UNISYS.Component {
   } // constructor
 
   /// CLASS PRIVATE METHODS /////////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// DATA METHODS
   /**
@@ -129,26 +127,26 @@ class NCGraph extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UI METHODS
 
-  /*/
-  /*/
+  /**
+   */
   onZoomReset() {
     this.state.ncGraphRenderer.ZoomReset();
   }
-  /*/
-  /*/
+  /**
+   */
   onZoomIn() {
     this.state.ncGraphRenderer.ZoomIn();
   }
-  /*/
-  /*/
+  /**
+   */
   onZoomOut() {
     this.state.ncGraphRenderer.ZoomOut();
   }
 
   /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ constructGraph() {
+  /**
+   */ constructGraph() {
     // first destroy any existing SVG graph elements
     const netgraph = document.getElementById('netgraph');
     if (netgraph) netgraph.remove();
@@ -168,13 +166,13 @@ class NCGraph extends UNISYS.Component {
 
   /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ componentDidMount() {
+  /**
+   */ componentDidMount() {
     this.constructGraph();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ componentWillUnMount() {
+  /**
+   */ componentWillUnMount() {
     UDATA.AppStateChangeOff('VDATA', this.updateVData);
     UDATA.AppStateChangeOff('TEMPLATE', this.updateTemplate);
     UDATA.AppStateChangeOff('COLORMAP', this.updateColorMap);
@@ -183,8 +181,8 @@ class NCGraph extends UNISYS.Component {
     UDATA.UnhandleMessage('CONSTRUCT_GRAPH', this.constructGraph);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ shouldComponentUpdate() {
+  /**
+   */ shouldComponentUpdate() {
     // This prevents React from updating the component,
     // allowing D3 to handle the simulation animation updates
     // This is also necessary for D3 to handle the
@@ -192,8 +190,8 @@ class NCGraph extends UNISYS.Component {
     return false;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-/*/ render() {
+  /**
+   */ render() {
     const { nodeTypes, edgeTypes } = this.state;
     return (
       <div ref={dom => (this.dom = dom)} style={{ height: '100%' }}>
@@ -208,7 +206,9 @@ class NCGraph extends UNISYS.Component {
             </span>
           </div>
         </div>
-        <div style={{ position: 'absolute', right: '10px', width: '50px', zIndex: 1001 }}>
+        <div
+          style={{ position: 'absolute', right: '10px', width: '50px', zIndex: 1001 }}
+        >
           <Button
             outline
             onClick={this.onZoomIn}

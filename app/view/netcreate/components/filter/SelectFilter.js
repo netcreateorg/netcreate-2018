@@ -41,28 +41,28 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-
 import FILTER from './FilterEnums';
 import React from 'react';
 const ReactStrap = require('reactstrap');
 const { Form, FormGroup, Input, Label } = ReactStrap;
-
 const UNISYS = require('unisys/client');
-var UDATA = null;
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+var UDATA = null;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const OPERATORS = [
   FILTER.OPERATORS.NO_OP,
   FILTER.OPERATORS.CONTAINS,
   FILTER.OPERATORS.NOT_CONTAINS
-]
-
+];
 
 /// CLASS /////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class SelectFilter extends React.Component {
-
   constructor({
     group,
-    filter: {id, type, key, keylabel, operator, value, options},
+    filter: { id, type, key, keylabel, operator, value, options },
     onChangeHandler
   }) {
     super();
@@ -81,15 +81,21 @@ class SelectFilter extends React.Component {
   }
 
   OnChangeOperator(e) {
-    this.setState({
-      operator: e.target.value
-    }, this.TriggerChangeHandler);
+    this.setState(
+      {
+        operator: e.target.value
+      },
+      this.TriggerChangeHandler
+    );
   }
 
   OnChangeValue(e) {
-    this.setState({
-      value: e.target.value
-    }, this.TriggerChangeHandler);
+    this.setState(
+      {
+        value: e.target.value
+      },
+      this.TriggerChangeHandler
+    );
   }
 
   TriggerChangeHandler() {
@@ -104,11 +110,12 @@ class SelectFilter extends React.Component {
       value: this.state.value,
       options
     };
-    if (UDATA) UDATA.LocalCall('FILTER_DEFINE', {
-      group: this.props.group,
-      filter,
-      filterAction
-    }); // set a SINGLE filter
+    if (UDATA)
+      UDATA.LocalCall('FILTER_DEFINE', {
+        group: this.props.group,
+        filter,
+        filterAction
+      }); // set a SINGLE filter
   }
 
   OnSubmit(e) {
@@ -133,27 +140,46 @@ class SelectFilter extends React.Component {
             https://getbootstrap.com/docs/4.5/utilities/flex/
          */}
         <FormGroup className="flex-nowrap">
-          <Label size="sm" className="small text-muted"
-            style={{ fontSize: '0.75em', lineHeight: '1em', width: `6em`, justifyContent: 'flex-end' }}>
+          <Label
+            size="sm"
+            className="small text-muted"
+            style={{
+              fontSize: '0.75em',
+              lineHeight: '1em',
+              width: `6em`,
+              justifyContent: 'flex-end'
+            }}
+          >
             {keylabel}&nbsp;
           </Label>
-          <Input type="select" value={operator}
-            style={{ height:'1.5em', padding: '0'}}
-            onChange={this.OnChangeOperator} bsSize="sm">
-            {OPERATORS.map(op =>
-              <option value={op.key} key={`${id}${op.key}`} size="sm">{op.label}</option>
-            )}
+          <Input
+            type="select"
+            value={operator}
+            style={{ height: '1.5em', padding: '0' }}
+            onChange={this.OnChangeOperator}
+            bsSize="sm"
+          >
+            {OPERATORS.map(op => (
+              <option value={op.key} key={`${id}${op.key}`} size="sm">
+                {op.label}
+              </option>
+            ))}
           </Input>
-          <Input type="select" value={value}
-            style={{maxWidth:'12em', height:'1.5em', padding: '0'}}
-            onChange={this.OnChangeValue} bsSize="sm"
-            disabled={operator === FILTER.OPERATORS.NO_OP.key}>
+          <Input
+            type="select"
+            value={value}
+            style={{ maxWidth: '12em', height: '1.5em', padding: '0' }}
+            onChange={this.OnChangeValue}
+            bsSize="sm"
+            disabled={operator === FILTER.OPERATORS.NO_OP.key}
+          >
             {operator !== FILTER.OPERATORS.NO_OP.key
-              ? options.map(op =>
-                  <option value={op} key={`${id}${op}`} size="sm">{op}</option>
-                )
-              : ''
-            }
+              ? options.map(op => (
+                  <option value={op} key={`${id}${op}`} size="sm">
+                    {op}
+                  </option>
+                ))
+              : ''}
           </Input>
         </FormGroup>
       </Form>

@@ -51,12 +51,6 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-/// DEBUGGING /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const PROMPTS = require('system/util/prompts');
 const SESSION = require('unisys/common-session');
@@ -77,7 +71,9 @@ const {
 const { Redirect } = require('react-router-dom');
 const UNISYS = require('unisys/client');
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// these styles are copied from AutoComplete.css
 const INPUT_STYLE = {
@@ -145,8 +141,8 @@ class SessionShell extends UNISYS.Component {
 
   /// ROUTE RENDER FUNCTIONS ////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ render successful logged-in
-  /*/
+  /** render successful logged-in
+   */
   renderLoggedIn(decoded) {
     if (decoded) {
       let classproj = `${decoded.classId}-${decoded.projId}`;
@@ -188,8 +184,8 @@ class SessionShell extends UNISYS.Component {
     }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ render must login (readonly)
-  /*/
+  /** render must login (readonly)
+   */
   renderLogin() {
     let { token, classId, projId, groupId, subId, hashedId, isValid } = this.state;
     if (token) token = token.toUpperCase();
@@ -320,8 +316,8 @@ class SessionShell extends UNISYS.Component {
     this.previousIsValid = decoded.isValid;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Main Render Function
-  /*/
+  /** Main Render Function
+   */
   render() {
     // FUN FACTS
     // this.state set in constructor

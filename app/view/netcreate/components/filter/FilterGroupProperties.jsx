@@ -1,11 +1,21 @@
+/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  description
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+
 import FILTER from './FilterEnums';
 import React from 'react';
 const ReactStrap = require('reactstrap');
 const { Form, FormGroup, Input, Label } = ReactStrap;
-
 const UNISYS = require('unisys/client');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var UDATA = null;
 
+/// CLASS DECLARATIONS ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class FilterGroupProperties extends React.Component {
   // Currently inconsistent because not passing in a key, etc.
   // if we expand on this notion of group-leve globals we'll need to update
@@ -38,13 +48,12 @@ class FilterGroupProperties extends React.Component {
   // to have future additional properties here, so this way the flow won't change (change functions call trigger change)
   TriggerChangeHandler() {
     // for debugging
-    if (false)
-      console.log(
-        'Filter group for ' +
-          this.state.group +
-          ' setting transparency to ' +
-          this.state.transparency
-      );
+    // console.log(
+    //   'Filter group for ' +
+    //     this.state.group +
+    //     ' setting transparency to ' +
+    //     this.state.transparency
+    // );
 
     // set the transparency globally for this group (nodes or edges)
     UDATA.LocalCall('FILTER_DEFINE', {

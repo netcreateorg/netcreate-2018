@@ -12,42 +12,36 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UNISYS = require("unisys/client");
+const UNISYS = require('unisys/client');
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var MOD = UNISYS.NewModule(module.id);
 var UDATA = UNISYS.NewDataLink(MOD);
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
-const PR = "render-mgr: ";
-
-/// MODULE DATA ///////////////////////////////////////////////////////////////
+const PR = 'render-mgr: ';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let VDATA = {};
 
-/// UNISYS HANDLERS ///////////////////////////////////////////////////////////
+/// LIFECYCLE HANDLERS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ lifecycle INITIALIZE handler
 /*/
-MOD.Hook("INITIALIZE", () => {
+MOD.Hook('INITIALIZE', () => {
   // Register any handlers?
   // Probably not needed as NCGraph handles most events and uses this
   // module as utility methods.
 }); // end UNISYS_INIT
 
-
 /// MODULE PUBLIC METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Interprets VDATA into a simplified form for the renderer
- * @param {*} data NCDATA { nodes, edges }
- * @returns {Object} {
+/** API METHOD
+ *  Interprets VDATA into a simplified form for the renderer
+ *  @param {*} data NCDATA { nodes, edges }
+ *  @returns {Object} {
  *                     nodes: [ ...{id, label, selected, selectedSecondary,
  *                                  size, color, opacity, strokeColor, strokeWidth,
  *                                  help}],
@@ -55,25 +49,25 @@ MOD.Hook("INITIALIZE", () => {
  *                   }
  */
 MOD.ProcessNCData = data => {
-  if (DBG) console.log('ProcessNCData')
+  if (DBG) console.log('ProcessNCData');
   const nodes = m_UpdateNodes(data.nodes);
   const edges = m_UpdateEdges(data.edges);
   VDATA.nodes = nodes;
   VDATA.edges = edges;
   return VDATA;
-}
-
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 MOD.SetNCData = data => {
   VDATA = data;
-}
-
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 MOD.UpdateSelection = data => {
   const nodes = m_UpdateNodes(VDATA.nodes);
   const edges = m_UpdateEdges(VDATA.edges);
   VDATA.nodes = nodes;
   VDATA.edges = edges;
   return VDATA;
-}
+};
 
 /// MODULE PRIVATE METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -85,7 +79,9 @@ function m_UpdateNodes(nodes) {
   const selectedNodes = SELECTION.nodes ? SELECTION.nodes.map(n => n.id) : [];
   const autosuggestHiliteNodeId = HILITE.autosuggestHiliteNodeId;
   const tableHiliteNodeId = HILITE.tableHiliteNodeId;
-  const foundNodes = SEARCH.suggestedNodes ? SEARCH.suggestedNodes.map(n => n.id) : [];
+  const foundNodes = SEARCH.suggestedNodes
+    ? SEARCH.suggestedNodes.map(n => n.id)
+    : [];
   const highlightStrokeColor = TEMPLATE.sourceColor;
   const foundStrokeColor = TEMPLATE.searchColor;
 
@@ -134,6 +130,7 @@ function m_UpdateNodes(nodes) {
     return n;
   });
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_UpdateEdges(edges) {
   const TEMPLATE = UDATA.AppState('TEMPLATE');
   const HILITE = UDATA.AppState('HILITE');
@@ -144,10 +141,11 @@ function m_UpdateEdges(edges) {
     //          size and max size checking was completed in edge-mgr
     const sourceId = typeof e.source === 'number' ? e.source : e.source.id;
     const targetId = typeof e.target === 'number' ? e.target : e.target.id;
-    if (e.selected ||
-      (userHighlightNodeId === undefined) || // no mouseover
-      (sourceId === userHighlightNodeId) ||  // mouseover the source
-      (targetId === userHighlightNodeId)     // or target
+    if (
+      e.selected ||
+      userHighlightNodeId === undefined || // no mouseover
+      sourceId === userHighlightNodeId || // mouseover the source
+      targetId === userHighlightNodeId // or target
     ) {
       // leave size alone, max size checking is in edge-mgr
       e.width = e.size;
@@ -161,40 +159,40 @@ function m_UpdateEdges(edges) {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Returns the tooltip help text for the node, using labels defined in the template
- * @param {*} node
- * @returns {string}
+/** Returns the tooltip help text for the node, using labels defined in the template
+ *  @param {*} node
+ *  @returns {string}
  */
 function m_GetHelp(node) {
   const TEMPLATE = UDATA.AppState('TEMPLATE');
   const nodeDefs = TEMPLATE.nodeDefs;
-  let titleText = "";
+  let titleText = '';
   if (nodeDefs.label.includeInGraphTooltip !== undefined) {
     // Add Label
-    if (nodeDefs.label.includeInGraphTooltip) titleText += nodeDefs.label.displayLabel + ": " + node.label + "\n";
+    if (nodeDefs.label.includeInGraphTooltip)
+      titleText += nodeDefs.label.displayLabel + ': ' + node.label + '\n';
     // Add type
-    if (nodeDefs.type.includeInGraphTooltip) titleText += nodeDefs.type.displayLabel + ": " + node.type + "\n";
+    if (nodeDefs.type.includeInGraphTooltip)
+      titleText += nodeDefs.type.displayLabel + ': ' + node.type + '\n';
     // Add degrees
-    if (nodeDefs.degrees.includeInGraphTooltip) titleText += nodeDefs.degrees.displayLabel + ": " + node.degrees + "\n";
+    if (nodeDefs.degrees.includeInGraphTooltip)
+      titleText += nodeDefs.degrees.displayLabel + ': ' + node.degrees + '\n';
     // Add notes
-    if (nodeDefs.notes.includeInGraphTooltip) titleText += nodeDefs.notes.displayLabel + ": " + node.notes + "\n";
+    if (nodeDefs.notes.includeInGraphTooltip)
+      titleText += nodeDefs.notes.displayLabel + ': ' + node.notes + '\n';
     // Add info
-    if (nodeDefs.info.includeInGraphTooltip) titleText += nodeDefs.info.displayLabel + ": " + node.info + "\n";
+    if (nodeDefs.info.includeInGraphTooltip)
+      titleText += nodeDefs.info.displayLabel + ': ' + node.info + '\n';
     // Add updated info
-    if (nodeDefs.updated.includeInGraphTooltip) titleText += nodeDefs.updated.displayLabel + ": " + m_GetUpdatedDateText(node);
+    if (nodeDefs.updated.includeInGraphTooltip)
+      titleText += nodeDefs.updated.displayLabel + ': ' + m_GetUpdatedDateText(node);
   } else {
     // For backwards compatability
-    titleText += nodeDefs.displayLabel.label + ": " + node.label + "\n";
+    titleText += nodeDefs.displayLabel.label + ': ' + node.label + '\n';
   }
   return titleText;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- *
- * @param {*} nodeEdge
- * @returns
- */
 function m_GetUpdatedDateText(nodeEdge) {
   // console.warn('skipping m_GetUpdateDateText for now...revise after provenance/meta.revision is removed')
   // const d = new Date(nodeEdge.meta.revision > 0 ? nodeEdge.meta.updated : nodeEdge.meta.created);
@@ -205,7 +203,6 @@ function m_GetUpdatedDateText(nodeEdge) {
   // const dateTime = date + ' at ' + time + " by " + author;
   // return dateTime;
 }
-
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

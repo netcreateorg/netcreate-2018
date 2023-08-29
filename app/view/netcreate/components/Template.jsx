@@ -1,3 +1,4 @@
+/* eslint-disable no-alert */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Template Editor View
@@ -28,11 +29,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-var DBG = false;
-var UDATA = null;
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const ReactStrap = require('reactstrap');
 const { Button } = ReactStrap;
@@ -42,8 +38,11 @@ const { EDITORTYPE } = require('system/util/enum');
 const TEMPLATE_MGR = require('../templateEditor-mgr');
 const SCHEMA = require('../template-schema');
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
-
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let UDATA = null;
 let EDITOR; // json-editor object
 let typeOptions;
 
@@ -169,7 +168,8 @@ class Template extends UNISYS.Component {
       .then(result => {
         const schemaNodeTypeOptions = SCHEMA.NODETYPEOPTIONS;
         // Wrap options in custom Schema to show Delete management UI
-        const nodeTypeEditorSchema = SCHEMA.GetTypeEditorSchema(schemaNodeTypeOptions);
+        const nodeTypeEditorSchema =
+          SCHEMA.GetTypeEditorSchema(schemaNodeTypeOptions);
         const startval = { options: result.template.nodeDefs.type.options };
         this.setState({ editScope: 'nodeTypeOptions', isBeingEdited: true });
         this.loadEditor(
@@ -194,7 +194,8 @@ class Template extends UNISYS.Component {
       .then(result => {
         const schemaEdgeTypeOptions = SCHEMA.EDGETYPEOPTIONS;
         // Wrap options in custom Schema to show Delete management UI
-        const edgeTypeEditorSchema = SCHEMA.GetTypeEditorSchema(schemaEdgeTypeOptions);
+        const edgeTypeEditorSchema =
+          SCHEMA.GetTypeEditorSchema(schemaEdgeTypeOptions);
         const startval = { options: result.template.edgeDefs.type.options };
         this.setState({ editScope: 'edgeTypeOptions', isBeingEdited: true });
         this.loadEditor(
@@ -264,13 +265,8 @@ class Template extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   render() {
-    const {
-      disableEdit,
-      isBeingEdited,
-      tomlfile,
-      tomlfileStatus,
-      tomlfileErrors
-    } = this.state;
+    const { disableEdit, isBeingEdited, tomlfile, tomlfileStatus, tomlfileErrors } =
+      this.state;
     let editorjsx;
     if (disableEdit && !isBeingEdited) {
       // Node or Edge is being edited, show disabled message
@@ -292,8 +288,8 @@ class Template extends UNISYS.Component {
       editorjsx = (
         <div hidden={isBeingEdited}>
           <p>
-            <b>PROCEED WITH CAUTION!</b>: Editing templates will modify the data in your
-            dataset and may leave your dataset in an unusable state. Only{' '}
+            <b>PROCEED WITH CAUTION!</b>: Editing templates will modify the data in
+            your dataset and may leave your dataset in an unusable state. Only{' '}
             <b>expert users</b> who know how the data is set up should do this.
           </p>
           <div
@@ -347,7 +343,9 @@ class Template extends UNISYS.Component {
                 />
                 &nbsp;<i>{tomlfileStatus}</i>
                 <br />
-                {tomlfileErrors && <span style={{ color: 'red' }}>{tomlfileErrors}</span>}
+                {tomlfileErrors && (
+                  <span style={{ color: 'red' }}>{tomlfileErrors}</span>
+                )}
               </label>
               <br />
             </div>

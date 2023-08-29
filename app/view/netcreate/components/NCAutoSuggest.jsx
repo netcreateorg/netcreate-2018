@@ -1,44 +1,44 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    Custom Auto Suggest for NetCreate
+  Custom Auto Suggest for NetCreate
 
-    USE:
+  USE:
 
-      <NCAutoSuggest
-        statekey={key}
-        value={value}
-        onChange={this.handleInputUpdate}
-        onSelect={this.handleSelection}
-      />
+    <NCAutoSuggest
+      statekey={key}
+      value={value}
+      onChange={this.handleInputUpdate}
+      onSelect={this.handleSelection}
+    />
 
-    PROPS
+  PROPS
 
-      onChange(key, value) -- returns `key` and `value` for the input field
-      onSelect(key, valuem, id) -- returns `key` and `value` for the final submission
-                                   as well as the matching id
+    onChange(key, value) -- returns `key` and `value` for the input field
+    onSelect(key, valuem, id) -- returns `key` and `value` for the final submission
+                                  as well as the matching id
 
-    This will look up matching nodes via FIND_MATCHING_NODES nc-logic request.
+  This will look up matching nodes via FIND_MATCHING_NODES nc-logic request.
 
-    This is a simple HTML component that will allow users to enter arbitrary
-    text input.  Any partial node labels will display as a list of popup
-    menu options.
+  This is a simple HTML component that will allow users to enter arbitrary
+  text input.  Any partial node labels will display as a list of popup
+  menu options.
 
-    It can be used in a NCNode or NCEdge
+  It can be used in a NCNode or NCEdge
 
-    `statekey` provides a unique key for source/target selection
+  `statekey` provides a unique key for source/target selection
 
-    Replaces the AutoComplete and AutoSuggest components.
+  Replaces the AutoComplete and AutoSuggest components.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = false;
-const PR = 'NCAutoSuggest';
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const UNISYS = require('unisys/client');
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+const PR = 'NCAutoSuggest';
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let UDATA;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////

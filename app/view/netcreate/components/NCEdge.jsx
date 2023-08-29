@@ -22,11 +22,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = false;
-const PR = 'NCEdge';
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const UNISYS = require('unisys/client');
 const { EDITORTYPE, BUILTIN_FIELDS_EDGE } = require('system/util/enum');
@@ -34,16 +29,20 @@ const NCUI = require('../nc-ui');
 const NCAutoSuggest = require('./NCAutoSuggest');
 const NCDialog = require('./NCDialog');
 
-let UDATA;
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+const PR = 'NCEdge';
 const TABS = {
   // Also used as labels
   ATTRIBUTES: 'ATTRIBUTES',
   PROVENANCE: 'PROVENANCE'
 };
-
 const EDGE_NOT_SET_LABEL = '...';
 const ARROW_DOWN = `\u2193`;
 const ARROW_UPDOWN = `\u21F5`;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let UDATA;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

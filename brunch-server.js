@@ -40,9 +40,10 @@ try {
 module.exports = (config, callback) => {
   /// STARTUP UNISYS ////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ This happens early because we need to inject UNISYS connection parameters
+  /** This happens early because we need to inject UNISYS connection parameters
   into index.ejs
-/*/ let nc_options = {
+  */
+  let nc_options = {
     port: NC_CONFIG.netport
   };
   let unetOptions = UNISYS.InitializeNetwork(nc_options);
@@ -115,8 +116,9 @@ module.exports = (config, callback) => {
   /// our app uses ejs templates
   APP.use('/', EXPRESS.static(PATH_PUBLIC));
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ additional route: /action (placeholder)
-/*/ APP.use('/action', (req, res, next) => {
+  /** additional route: /action (placeholder)
+   */
+  APP.use('/action', (req, res, next) => {
     res.send('POST action completed!');
   });
 
@@ -154,12 +156,12 @@ module.exports = (config, callback) => {
         stdout = stdout.trim();
         if (stdout !== 'i386') {
           console.log(PR, `ARCHITECTURE: ${stdout}`);
-          console.log(PR, '.. Expected i386, operation may be unstable');
+          console.log(PR, '.. Expected i386. Operation may be unstable!');
           console.log(
             PR,
-            '.. For arm64 on mac, consider using Rosetta-compatible shell by running'
+            '.. For arm64 on mac, launch a Rosetta-compatible shell by running'
           );
-          console.log(PR, `.. 'arch x86_64 /bin/zsh'`);
+          console.log(PR, `.. 'arch -x86_64 /bin/zsh'`);
         } else {
           console.log(PR, `ARCHITECTURE: ${stdout}`);
         }

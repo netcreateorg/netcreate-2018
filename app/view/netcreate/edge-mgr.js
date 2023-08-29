@@ -12,67 +12,55 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+const UNISYS = require('unisys/client');
 
-/// LIBRARIES /////////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UNISYS = require("unisys/client");
+const DBG = false;
+const PR = 'edge-mgr: ';
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var MOD = UNISYS.NewModule(module.id);
 var UDATA = UNISYS.NewDataLink(MOD);
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
-const PR = "edge-mgr: ";
-
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ lifecycle INITIALIZE handler
-/*/
-MOD.Hook("INITIALIZE", () => {
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ FILTEREDNCDATA is updated by filter-mgr after NCDATA is changed.
-  /*/
-  UDATA.OnAppStateChange("FILTEREDNCDATA", data => {
+/// lifecycle INITIALIZE handler
+MOD.Hook('INITIALIZE', () => {
+  // FILTEREDNCDATA is updated by filter-mgr after NCDATA is changed.
+  UDATA.OnAppStateChange('FILTEREDNCDATA', data => {
     m_RenderEdges(data);
-  })
-
+  });
 }); // end UNISYS_INIT
 
 /// PUBLIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Looks up the edge color defined in the passed TEMPLATE
- * Fall back to default if type is not defined
- * @param {Object} edge
- * @param {Object} TEMPLATE
- * @returns {string} e.g. '#FF00FF' as defined by TEMPLATE type.option
+/** Looks up the edge color defined in the passed TEMPLATE
+ *  Fall back to default if type is not defined
+ *  @param {Object} edge
+ *  @param {Object} TEMPLATE
+ *  @returns {string} e.g. '#FF00FF' as defined by TEMPLATE type.option
  *                   or `undefined` if no color type is defined
  */
 MOD.LookupEdgeColor = (edge, TEMPLATE) => {
   const type = edge.type;
   const typeOption = TEMPLATE.edgeDefs.type.options.find(o => o.label === type);
   return typeOption ? typeOption.color : TEMPLATE.edgeDefs.type.options[0].color;
-}
-
+};
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * m_RenderEdges uses a Map to reduce duplicate edges into a single
- * edge, calculating edge size based on edge.weight parameter along the way.
- * @param {Object} data FILTEREDNCDATA e.g. { nodes, edges }
- * @return Updates VDATA AppState
+/** m_RenderEdges uses a Map to reduce duplicate edges into a single
+ *  edge, calculating edge size based on edge.weight parameter along the way.
+ *  @param {Object} data FILTEREDNCDATA e.g. { nodes, edges }
+ *  @return Updates VDATA AppState
  */
 function m_RenderEdges(data) {
   const DEFAULT_SIZE = 1;
   const VDATA = data;
 
-  const TEMPLATE = UDATA.AppState("TEMPLATE");
+  const TEMPLATE = UDATA.AppState('TEMPLATE');
   const edgeSizeMax = TEMPLATE.edgeSizeMax;
 
   /*/ ISSUES
@@ -83,7 +71,11 @@ function m_RenderEdges(data) {
   /*/
 
   // Prepare to check for color
-  const colorsAreDefined = TEMPLATE.edgeDefs.type && TEMPLATE.edgeDefs.type.options && Array.isArray(TEMPLATE.edgeDefs.type.options) && TEMPLATE.edgeDefs.type.options.length > 0;
+  const colorsAreDefined =
+    TEMPLATE.edgeDefs.type &&
+    TEMPLATE.edgeDefs.type.options &&
+    Array.isArray(TEMPLATE.edgeDefs.type.options) &&
+    TEMPLATE.edgeDefs.type.options.length > 0;
 
   // Synthesize duplicate edges into a single edge.
   const edgeMap = new Map(); // key = {source}{target}
@@ -91,7 +83,7 @@ function m_RenderEdges(data) {
   VDATA.edges.forEach(e => {
     const edgeKey = m_GetEdgeKey(e); // single key for both directions
     const currEdge = edgeMap.get(edgeKey);
-    const eWeight = (Number(e.weight) || DEFAULT_SIZE); // weight defaults to 1, force Number
+    const eWeight = Number(e.weight) || DEFAULT_SIZE; // weight defaults to 1, force Number
 
     // 1. Set Size
     e.size = eWeight + (currEdge ? currEdge.size : 0); // cumulative size

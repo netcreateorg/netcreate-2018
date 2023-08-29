@@ -7,13 +7,9 @@
   It maps the template-schema variables to
   the visual display of components.
 
-
-
-
   What does it take care of?
   * order of display items?
   * visible status?
-
 
   Available Field Types
   * string
@@ -26,31 +22,27 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+const UNISYS = require('unisys/client');
 
-/// LIBRARIES /////////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UNISYS = require("unisys/client");
+const DBG = false;
+const PR = 'ui-mgr: ';
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var MOD = UNISYS.NewModule(module.id);
 var UDATA = UNISYS.NewDataLink(MOD);
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
-const PR = "ui-mgr: ";
-
 // /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 // /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// /*/ lifecycle INITIALIZE handler
-// /*/
+// /** lifecycle INITIALIZE handler
+//  */
 // MOD.Hook("INITIALIZE", () => {
 //   UDATA.HandleMessage('USER_HILITE_NODE', m_UserHighlightNode);
 //   UDATA.HandleMessage('AUTOSUGGEST_HILITE_NODE', m_AutoSuggestHiliteNode);
 //   UDATA.HandleMessage('TABLE_HILITE_NODE', m_TableHiliteNode);
 // }); // end UNISYS_INIT
-
 
 // /// MODULE METHODS ////////////////////////////////////////////////////////////
 // /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,7 +52,6 @@ const PR = "ui-mgr: ";
 //   HILITE.userHighlightNodeId = data.nodeId;
 //   UDATA.SetAppState('HILITE', HILITE);
 // }
-
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -1,7 +1,7 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    Session Utilities
-    collection of session-related data structures
+  Session Utilities
+  collection of session-related data structures
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -9,38 +9,38 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 //
-const PROMPTS = require("../system/util/prompts");
-const PR = PROMPTS.Pad("SESSUTIL");
+const PROMPTS = require('../system/util/prompts');
+const PR = PROMPTS.Pad('SESSUTIL');
 
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const HashIds = require("hashids");
+const HashIds = require('hashids');
 
 /// MODULE DEFS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let SESUTIL = {};
-const HASH_ABET = "ABCDEFGHIJKLMNPQRSTVWXYZ23456789";
+const HASH_ABET = 'ABCDEFGHIJKLMNPQRSTVWXYZ23456789';
 const HASH_MINLEN = 3;
 var m_current_groupid = null;
 
 /// SESSION ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Given a token of form CLASS-PROJECT-HASHEDID, return an object
+/** Given a token of form CLASS-PROJECT-HASHEDID, return an object
     containing as many decoded values as possible. Check isValid for
     complete decode succes. groupId is also set if successful
-/*/
-SESUTIL.DecodeToken = function(token, dataset) {
+ */
+SESUTIL.DecodeToken = function (token, dataset) {
   if (token === undefined) return {};
   if (dataset === undefined) {
     console.error('SESUTIL.DecodeToken called without "dataset" parameter.');
     return {};
   }
-  let tokenBits = token.split("-");
+  let tokenBits = token.split('-');
   let classId, projId, hashedId, groupId, subId, isValid;
   // optimistically set valid flag to be negated on failure
   isValid = true;
   // check for superficial issues
-  if (token.substr(-1) === "-") {
+  if (token.substr(-1) === '-') {
     isValid = false;
   }
   // token is of form CLS-PRJ-HASHEDID
@@ -56,13 +56,13 @@ SESUTIL.DecodeToken = function(token, dataset) {
   groupId = hashids.decode(hashedId)[0];
   // invalidate if groupId isn't an integer
   if (!Number.isInteger(groupId)) {
-    if (DBG) console.error("invalid token");
+    if (DBG) console.error('invalid token');
     isValid = false;
     groupId = 0;
   }
   // invalidate if groupId isn't non-negative integer
   if (groupId < 0) {
-    if (DBG) console.error("decoded token, but value out of range <0");
+    if (DBG) console.error('decoded token, but value out of range <0');
     isValid = false;
     groupId = 0;
   }
@@ -72,14 +72,14 @@ SESUTIL.DecodeToken = function(token, dataset) {
   if (subId) {
     if (
       subId.length > 2 &&
-      subId.indexOf("ID") === 0 &&
+      subId.indexOf('ID') === 0 &&
       /^\d+$/.test(subId.substring(2))
     ) {
-      if (DBG) console.log("detected subid", subId.substring(2));
+      if (DBG) console.log('detected subid', subId.substring(2));
       // subId contains a string "ID<N>" where <N> is an integer
     } else {
       // subId exists but didn't match subid format
-      if (DBG) console.log("invalid subId string", subId);
+      if (DBG) console.log('invalid subId string', subId);
       isValid = false; // groupId is still valid,
       subId = 0;
     }
@@ -90,25 +90,24 @@ SESUTIL.DecodeToken = function(token, dataset) {
   return decoded;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Return TRUE if the token decodes into an expected range of values
-/*/
-SESUTIL.IsValidToken = function(token, dataset) {
+/** Return TRUE if the token decodes into an expected range of values
+ */
+SESUTIL.IsValidToken = function (token, dataset) {
   let decoded = SESUTIL.DecodeToken(token, dataset);
   return decoded && Number.isInteger(decoded.groupId);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Returns a token string of form CLASS-PROJECT-HASHEDID
+/** Returns a token string of form CLASS-PROJECT-HASHEDID
     classId and projId should be short and are case-insensitive.
     groupId must be a non-negative integer
-/*/
-SESUTIL.MakeToken = function(classId, projId, groupId, dataset) {
+ */
+SESUTIL.MakeToken = function (classId, projId, groupId, dataset) {
   // type checking
-  if (typeof classId !== "string")
+  if (typeof classId !== 'string')
     throw Error(`classId arg1 '${classId}' must be string`);
-  if (typeof projId !== "string")
+  if (typeof projId !== 'string')
     throw Error(`projId arg2 '${projId}' must be string`);
-  if (classId.length < 1)
-    throw Error(`classId arg1 length should be 1 or more`);
+  if (classId.length < 1) throw Error(`classId arg1 length should be 1 or more`);
   if (projId.length < 1) throw Error(`projId arg2 length should be 1 or more`);
   if (!Number.isInteger(groupId))
     throw Error(`groupId arg3 '${groupId}' must be integer`);
@@ -125,9 +124,9 @@ SESUTIL.MakeToken = function(classId, projId, groupId, dataset) {
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Set the global GROUPID, which is included in all NetMessage
+/** Set the global GROUPID, which is included in all NetMessage
     packets that are sent to server.
-/*/
+ */
 // REVIEW/FIXME
 // `SetGroupID` isn't being called by anyone?
 // If it is, the DecodeToken call needs to add a 'dataset' parameter or it will
@@ -139,7 +138,7 @@ SESUTIL.SetGroupID = function (token) {
   return good;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SESUTIL.GroupID = function() {
+SESUTIL.GroupID = function () {
   return m_current_groupid;
 };
 

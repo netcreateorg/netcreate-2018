@@ -32,10 +32,12 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 /// UNISYS INITIALIZE REQUIRES for REACT ROOT /////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS = require('unisys/client');
 const SessionShell = require('unisys/component/SessionShell');
 
 /// DEBUG SWITCHES ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var DBG = false;
 const PROMPTS = require('system/util/prompts');
 const PR = PROMPTS.Pad('ACD');
@@ -108,9 +110,9 @@ class NetCreate extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ SESSION is called by SessionShell when the ID changes
+  /** SESSION is called by SessionShell when the ID changes
       Show or hide netgraph depending on template settings.
-  /*/
+   */
   onStateChange_SESSION(decoded) {
     this.setState({ isLoggedIn: decoded.isValid });
   }
@@ -125,9 +127,9 @@ class NetCreate extends UNISYS.Component {
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ This is the root component, so this fires after all subcomponents have
+  /** This is the root component, so this fires after all subcomponents have
       been fully rendered by render().
-  /*/
+   */
   componentDidMount() {
     // Init dragger
     let dragger = document.getElementById('dragger');
@@ -146,8 +148,8 @@ class NetCreate extends UNISYS.Component {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Define the component structure of the web application
-  /*/
+  /** Define the component structure of the web application
+   */
   render() {
     const { isLoggedIn, disconnectMsg, layoutNodesOpen, layoutFiltersOpen } =
       this.state;

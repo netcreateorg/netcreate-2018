@@ -7,23 +7,20 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = false;
-
-/// LOAD LIBRARIES ////////////////////////////////////////////////////////////
-/// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const Loki = require('lokijs');
 const PATH = require('path');
 const FSE = require('fs-extra');
-
-/// CONSTANTS /////////////////////////////////////////////////////////////////
-/// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-const PROMPTS = require('../system/util/prompts');
-const PR = PROMPTS.Pad('SRV-LOG');
+///
 const NC_CONFIG = require('../../app-config/netcreate-config');
 
-/// MODULE-WIDE VARS //////////////////////////////////////////////////////////
-/// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+const PROMPTS = require('../system/util/prompts');
+const PR = PROMPTS.Pad('SRV-LOG');
 
+/// MODULE-WIDE VARS //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const LOG_DIR = '../../runtime/logs';
 const Tracer = require('tracer');
 const LOG_DELIMITER = '\t';
@@ -47,21 +44,26 @@ const e_weekday = [
   'Saturday'
 ];
 
-// initialize event logger
+/// RUNTIME INITIALIZATION ////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// initialize event logger
 var dir = PATH.resolve(PATH.join(__dirname, LOG_DIR));
 FSE.ensureDir(dir, function (err) {
   if (err) throw new Error('could not make ' + dir + ' directory');
   var logname = str_TimeDatedFilename('log') + '.txt';
   var pathname = dir + '/' + logname;
   fs_log = FSE.createWriteStream(pathname);
-  LogLine(`NETCREATE APPSERVER SESSION LOG for ${str_DateStamp()} ${str_TimeStamp()}`);
+  LogLine(
+    `NETCREATE APPSERVER SESSION LOG for ${str_DateStamp()} ${str_TimeStamp()}`
+  );
   LogLine('---');
 });
 
-/**	LOGGING FUNCTIONS ******************************************************/
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/	Log a standard system log message
-/*/ function LogLine(...args) {
+/// LOGGING FUNCTIONS /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Log a standard system log message
+ */
+function LogLine(...args) {
   if (!fs_log) return;
 
   var out = str_TimeStamp() + LOG_DELIMITER;
@@ -78,9 +80,8 @@ FSE.ensureDir(dir, function (err) {
   fs_log.write(out);
 }
 
-/////////////////////////////////////////////////////////////////////////////
-/**	UTILITY FUNCTIONS ******************************************************/
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// UTILITY FUNCTIONS /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function str_TimeStamp() {
   var date = new Date();
   var hh = ('0' + date.getHours()).slice(-2);
@@ -119,17 +120,19 @@ function str_TimeDatedFilename(...args) {
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 let LOG = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Handle incoming log events
-/*/ LOG.PKT_LogEvent = function (pkt) {
+/** API: Handle incoming log events
+ */
+LOG.PKT_LogEvent = function (pkt) {
   let { event, items } = pkt.Data();
   if (DBG) console.log(PR, pkt.Info(), event, ...items);
   LogLine(pkt.Info(), event || '-', ...items);
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Write to log as delimited arguments
-/*/ LOG.Write = LogLine;
+/** API: Write to log as delimited arguments
+ */
+LOG.Write = LogLine;
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
-/// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = LOG;

@@ -2,7 +2,7 @@
 /* eslint-disable nonblock-statement-body-position */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-DATABASE SERVER
+  DATABASE SERVER
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -51,10 +51,10 @@ let m_open_editors = []; // array of template, node, or edge editors
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 let DB = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Backup Database File Utility
+/** Backup Database File Utility
     Used by PKT_MergeDatabase to clone the db before importing.
     Saves the db in the runtime folder with a timestamp suffix.
-/*/
+ */
 function m_BackupDatabase() {
   FS.ensureDirSync(PATH.dirname(db_file));
   if (FS.existsSync(db_file)) {
@@ -67,14 +67,14 @@ function m_BackupDatabase() {
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Default Template Path
-/*/
+/** Default Template Path
+ */
 function m_DefaultTemplatePath() {
   return TEMPLATEPATH + '_default' + TEMPLATE_EXT;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Initialize the database
-/*/
+/** API: Initialize the database
+ */
 DB.InitializeDatabase = function (options = {}) {
   let dataset = NC_CONFIG.dataset;
   db_file = m_GetValidDBFilePath(dataset);
@@ -175,8 +175,8 @@ DB.InitializeDatabase = function (options = {}) {
 }; // InitializeDatabase()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// utility function for loading template
-/*/ Converts a version 1.3 JSON template to a version 1.4 TOML template
-/*/
+/** Converts a version 1.3 JSON template to a version 1.4 TOML template
+ */
 // eslint-disable-next-line complexity
 function m_MigrateJSONtoTOML(JSONtemplate) {
   console.log(PR, 'Converting JSON to TOML...');
@@ -191,7 +191,9 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
       SCHEMA.hideDeleteNodeButton.default,
     allowLoggedInUserToImport: SCHEMA.allowLoggedInUserToImport.default, // new parameter not in old json template
     duplicateWarning:
-      (jt.nodePrompts && jt.nodePrompts.label && jt.nodePrompts.label.duplicateWarning) ||
+      (jt.nodePrompts &&
+        jt.nodePrompts.label &&
+        jt.nodePrompts.label.duplicateWarning) ||
       SCHEMA.duplicateWarning.default,
     nodeIsLockedMessage:
       (jt.nodePrompts &&
@@ -328,9 +330,9 @@ function m_MigrateJSONtoTOML(JSONtemplate) {
   return TOMLtemplate;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Loads an original circa version 1.3 JSON template
+/** Loads an original circa version 1.3 JSON template
     and converts it to a TOML template
-/*/
+ */
 function m_LoadJSONTemplate(templatePath) {
   return new Promise((resolve, reject) => {
     // 1. Load JSON
@@ -346,8 +348,8 @@ function m_LoadJSONTemplate(templatePath) {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Loads a *.template.toml file from the server.
-/*/
+/** Loads a *.template.toml file from the server.
+ */
 function m_LoadTOMLTemplate(templateFilePath) {
   return new Promise((resolve, reject) => {
     const templateFile = FS.readFile(templateFilePath, 'utf8', (err, data) => {
@@ -356,7 +358,8 @@ function m_LoadTOMLTemplate(templateFilePath) {
       const json = TOML.parse(data);
       // Ensure key fields are present, else default to schema
       const SCHEMA = TEMPLATE_SCHEMA.TEMPLATE.properties;
-      json.duplicateWarning = json.duplicateWarning || SCHEMA.duplicateWarning.default;
+      json.duplicateWarning =
+        json.duplicateWarning || SCHEMA.duplicateWarning.default;
       json.nodeIsLockedMessage =
         json.nodeIsLockedMessage || SCHEMA.nodeIsLockedMessage.default;
       json.edgeIsLockedMessage =
@@ -404,14 +407,14 @@ function m_LoadTOMLTemplate(templateFilePath) {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Load Template
+/** Load Template
     1. Tries to load a TOML template
     2. If it can't be found, tries to load the JSON template and convert it
     3. If that fails, clone the default TOML template and load it
     Called by
     * DB.InitializeDatabase
     * DB.WriteTemplateTOML
-/*/
+ */
 async function m_LoadTemplate() {
   const TOMLtemplateFilePath = m_GetTemplateTOMLFilePath();
   FS.ensureDirSync(PATH.dirname(TOMLtemplateFilePath));
@@ -440,14 +443,14 @@ async function m_LoadTemplate() {
 
 /// REVIEW: Should this be moved to a separate server-template module?
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Migrate Template File
+/** Migrate Template File
     Updates older templates to the current template-schema specification by
     inserting missing properties needed by the UI.
     Any changes to template-schema should be reflected here.
 
     FIXME: There is code in m_LoadTOMLTemplate() that also does migration that
     needs to be moved here!
-/*/
+ */
 function m_MigrateTemplate() {
   // 2023-0628 BASE Defaults -- these should have been previously defined
   if (TEMPLATE.searchColor === undefined)
@@ -463,7 +466,8 @@ function m_MigrateTemplate() {
   if (TEMPLATE.filterFocus === undefined)
     TEMPLATE.filterFocus = TEMPLATE_SCHEMA.TEMPLATE.properties.filterFocus.default;
   if (TEMPLATE.filterFadeHelp === undefined)
-    TEMPLATE.filterFadeHelp = TEMPLATE_SCHEMA.TEMPLATE.properties.filterFadeHelp.default;
+    TEMPLATE.filterFadeHelp =
+      TEMPLATE_SCHEMA.TEMPLATE.properties.filterFadeHelp.default;
   if (TEMPLATE.filterReduceHelp === undefined)
     TEMPLATE.filterReduceHelp =
       TEMPLATE_SCHEMA.TEMPLATE.properties.filterReduceHelp.default;
@@ -485,11 +489,11 @@ function m_MigrateTemplate() {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Validate Template File
+/** Validate Template File
     Lazy check of template object definitions to make sure they are of
     expected types and values so the UI doesn't choke and die. Throws an error
     if property is missing.
-/*/
+ */
 // eslint-disable-next-line complexity
 function m_ValidateTemplate() {
   try {
@@ -502,7 +506,10 @@ function m_ValidateTemplate() {
       throw 'Missing `nodeDefs.label` label=' + nodeDefs.label;
     if (nodeDefs.type === undefined)
       throw 'Missing `nodeDefs.type` type= ' + nodeDefs.type;
-    if (nodeDefs.type.options === undefined || !Array.isArray(nodeDefs.type.options)) {
+    if (
+      nodeDefs.type.options === undefined ||
+      !Array.isArray(nodeDefs.type.options)
+    ) {
       throw 'Missing or bad `nodeDefs.type.options` options=' + nodeDefs.type.options;
     }
     if (nodeDefs.notes === undefined)
@@ -522,7 +529,10 @@ function m_ValidateTemplate() {
       throw 'Missing `edgeDefs.source` source=' + edgeDefs.source;
     if (edgeDefs.type === undefined)
       throw 'Missing `edgeDefs.type` type= ' + edgeDefs.type;
-    if (edgeDefs.type.options === undefined || !Array.isArray(edgeDefs.type.options)) {
+    if (
+      edgeDefs.type.options === undefined ||
+      !Array.isArray(edgeDefs.type.options)
+    ) {
       throw 'Missing or bad `edgeDefs.type.options` options=' + edgeDefs.type.options;
     }
     if (edgeDefs.target === undefined)
@@ -548,17 +558,18 @@ function m_ValidateTemplate() {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: load database
+/** API: load database
     note: InitializeDatabase() was already called on system initialization
     to populate the NODES and EDGES structures.
-/*/
+ */
 DB.PKT_GetDatabase = function (pkt) {
   let nodes = NODES.chain().data({ removeMeta: false });
   let edges = EDGES.chain().data({ removeMeta: false });
   if (DBG)
     console.log(
       PR,
-      `PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${edges.length
+      `PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${
+        edges.length
       } edges)`
     );
   m_MigrateNodes(nodes);
@@ -567,8 +578,8 @@ DB.PKT_GetDatabase = function (pkt) {
   return { d3data: { nodes, edges }, template: TEMPLATE };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: reset database from scratch
-/*/
+/** API: reset database from scratch
+ */
 DB.PKT_SetDatabase = function (pkt) {
   if (DBG) console.log(PR, `PKT_SetDatabase`);
   let { nodes = [], edges = [] } = pkt.Data();
@@ -587,8 +598,8 @@ DB.PKT_SetDatabase = function (pkt) {
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Add nodes/edges to an existing db
-/*/
+/** API: Add nodes/edges to an existing db
+ */
 DB.PKT_InsertDatabase = function (pkt) {
   if (DBG) console.log(PR, `PKT_InsertDatabase`);
   let { nodes = [], edges = [] } = pkt.Data();
@@ -605,13 +616,13 @@ DB.PKT_InsertDatabase = function (pkt) {
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Update or add nodes/edges to an existing db
+/** API: Update or add nodes/edges to an existing db
     If the node/edge exists, update it.
     Otherwise, insert it.
     This walks down the node and edge arrays one by one,
     using PKT_Update to decide whether to insert or update the data.
     REVIEW: Consider batch operations ala `NODES.insert(nodes)`?
-/*/
+ */
 DB.PKT_MergeDatabase = function (pkt) {
   if (DBG) console.log(PR, `PKT_MergeDatabase`);
   let { nodes = [], edges = [] } = pkt.Data();
@@ -642,9 +653,9 @@ DB.PKT_MergeDatabase = function (pkt) {
   );
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Update all data in existing database.
+/** API: Update all data in existing database.
     Used to update node/edge types after template edit
-/*/
+ */
 DB.PKT_UpdateDatabase = function (pkt) {
   if (DBG) console.log(PR, `PKT_UpdateDatabase`);
   let { nodes = [], edges = [] } = pkt.Data();
@@ -773,12 +784,15 @@ function m_IsInvalidNode(nodeID) {
   nodeID = Number.parseInt(nodeID, 10);
   if (isNaN(nodeID)) return m_MakeLockError(`nodeID was not a number`);
   if (nodeID < 0) return m_MakeLockError(`nodeID ${nodeID} must be positive integer`);
-  if (nodeID > m_max_nodeID) return m_MakeLockError(`nodeID ${nodeID} is out of range`);
+  if (nodeID > m_max_nodeID)
+    return m_MakeLockError(`nodeID ${nodeID} is out of range`);
   // find if the node exists
   let matches = NODES.find({ id: nodeID });
   if (matches.length === 0) return m_MakeLockError(`nodeID ${nodeID} not found`);
   if (matches.length > 1)
-    return m_MakeLockError(`nodeID ${nodeID} matches multiple entries...critical error!`);
+    return m_MakeLockError(
+      `nodeID ${nodeID} matches multiple entries...critical error!`
+    );
   // no retval is no error!
   return undefined;
 }
@@ -828,12 +842,15 @@ function m_IsInvalidEdge(edgeID) {
   edgeID = Number.parseInt(edgeID, 10);
   if (isNaN(edgeID)) return m_MakeLockError(`edgeID was not a number`);
   if (edgeID < 0) return m_MakeLockError(`edgeID ${edgeID} must be positive integer`);
-  if (edgeID > m_max_edgeID) return m_MakeLockError(`edgeID ${edgeID} is out of range`);
+  if (edgeID > m_max_edgeID)
+    return m_MakeLockError(`edgeID ${edgeID} is out of range`);
   // find if the node exists
   let matches = EDGES.find({ id: edgeID });
   if (matches.length === 0) return m_MakeLockError(`edgeID ${edgeID} not found`);
   if (matches.length > 1)
-    return m_MakeLockError(`edgeID ${edgeID} matches multiple entries...critical error!`);
+    return m_MakeLockError(
+      `edgeID ${edgeID} matches multiple entries...critical error!`
+    );
   // no retval is no error!
   return undefined;
 }
@@ -853,9 +870,9 @@ DB.PKT_RequestUnlockAll = function (pkt) {
   return { unlocked: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ called by server-network when a client disconnects we want to unlock any
+/** called by server-network when a client disconnects we want to unlock any
     nodes and edges they had locked.
-/*/
+ */
 DB.RequestUnlock = function (uaddr) {
   m_locked_nodes.forEach((value, key) => {
     if (value === uaddr) m_locked_nodes.delete(key);
@@ -876,7 +893,10 @@ DB.PKT_Update = function (pkt) {
     if (matches.length === 0) {
       // if there was no node, then this is an insert new operation
       if (DBG)
-        console.log(PR, `PKT_Update ${pkt.Info()} INSERT nodeID ${JSON.stringify(node)}`);
+        console.log(
+          PR,
+          `PKT_Update ${pkt.Info()} INSERT nodeID ${JSON.stringify(node)}`
+        );
 
       // Handle different id types
       if (isNaN(node.id)) {
@@ -892,7 +912,8 @@ DB.PKT_Update = function (pkt) {
       if (!updatedNode)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
+            node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'insert', node: updatedNode };
@@ -902,7 +923,9 @@ DB.PKT_Update = function (pkt) {
         if (DBG)
           console.log(
             PR,
-            `PKT_Update ${pkt.Info()} UPDATE nodeID ${node.id} ${JSON.stringify(node)}`
+            `PKT_Update ${pkt.Info()} UPDATE nodeID ${node.id} ${JSON.stringify(
+              node
+            )}`
           );
         LOGGER.Write(pkt.Info(), `update node`, node.id, JSON.stringify(node));
         DB.AppendNodeLog(n, pkt); // log GroupId to node stored in database
@@ -913,12 +936,14 @@ DB.PKT_Update = function (pkt) {
       if (!updatedNode)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
+            node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'update', node: updatedNode };
     } else {
-      if (DBG) console.log(PR, `WARNING: multiple nodeID ${node.id} x${matches.length}`);
+      if (DBG)
+        console.log(PR, `WARNING: multiple nodeID ${node.id} x${matches.length}`);
       LOGGER.Write(pkt.Info(), `ERROR`, node.id, 'duplicate node id');
       retval = { op: 'error-multinodeid' };
     }
@@ -953,7 +978,8 @@ DB.PKT_Update = function (pkt) {
       if (!updatedEdge)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
+            node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'insert', edge: updatedEdge };
@@ -963,9 +989,9 @@ DB.PKT_Update = function (pkt) {
         if (DBG)
           console.log(
             PR,
-            `PKT_Update ${pkt.SourceGroupID()} UPDATE edgeID ${edge.id} ${JSON.stringify(
-              edge
-            )}`
+            `PKT_Update ${pkt.SourceGroupID()} UPDATE edgeID ${
+              edge.id
+            } ${JSON.stringify(edge)}`
           );
         LOGGER.Write(pkt.Info(), `update edge`, edge.id, JSON.stringify(edge));
         DB.AppendEdgeLog(e, pkt); // log GroupId to edge stored in database
@@ -976,7 +1002,8 @@ DB.PKT_Update = function (pkt) {
       if (!updatedEdge)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
+            node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'update', edge: updatedEdge };
@@ -1003,7 +1030,10 @@ DB.PKT_Update = function (pkt) {
     });
 
     // handle linked nodes
-    replacementNodeID = m_CleanID(`${pkt.Info()} replacementNodeID`, replacementNodeID);
+    replacementNodeID = m_CleanID(
+      `${pkt.Info()} replacementNodeID`,
+      replacementNodeID
+    );
     if (replacementNodeID !== -1) {
       // re-link edges to replacementNodeID...
       EDGES.findAndUpdate({ source: nodeID }, e => {
@@ -1051,9 +1081,9 @@ DB.PKT_Update = function (pkt) {
 
 /// NODE ANNOTATION ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ write/remove packet SourceGroupID() information into the node before writing
+/** write/remove packet SourceGroupID() information into the node before writing
     the first entry is the insert, subsequent operations are updates
-/*/
+ */
 DB.AppendNodeLog = function (node, pkt) {
   if (!node._nlog) node._nlog = [];
   let gid = pkt.SourceGroupID() || pkt.SourceAddress();
@@ -1073,9 +1103,9 @@ DB.FilterNodeLog = function (node) {
 };
 /// EDGE ANNOTATION ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ write/remove packet SourceGroupID() information into the node before writing
+/** write/remove packet SourceGroupID() information into the node before writing
     the first entry is the insert, subsequent operations are updates
-/*/
+ */
 DB.AppendEdgeLog = function (edge, pkt) {
   if (!edge._elog) edge._elog = [];
   let gid = pkt.SourceGroupID() || pkt.SourceAddress();
@@ -1096,9 +1126,9 @@ DB.FilterEdgeLog = function (edge) {
 
 /// JSON EXPORT ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ called by brunch to generate an up-to-date JSON file to path.
+/** called by brunch to generate an up-to-date JSON file to path.
     creates the path if it doesn't exist
-/*/
+ */
 DB.WriteDbJSON = function (filePath) {
   let dataset = NC_CONFIG.dataset;
 
@@ -1126,10 +1156,10 @@ DB.WriteDbJSON = function (filePath) {
   });
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ DEPRECATED.  Replaced by WriteTemplateTOML
+/** DEPRECATED.  Replaced by WriteTemplateTOML
     called by brunch to generate an up-to-date Template file to path.
     creates the path if it doesn't exist
-/*/
+ */
 DB.WriteTemplateJSON = function (filePath) {
   let templatePath = RUNTIMEPATH + NC_CONFIG.dataset + '.template';
   FS.ensureDirSync(PATH.dirname(templatePath));
@@ -1143,8 +1173,8 @@ DB.WriteTemplateJSON = function (filePath) {
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ called by Template Editor and DB.WriteTemplateTOML
-/*/
+/** called by Template Editor and DB.WriteTemplateTOML
+ */
 function m_GetTemplateTOMLFileName() {
   return NC_CONFIG.dataset + TEMPLATE_EXT;
 }
@@ -1155,15 +1185,16 @@ DB.GetTemplateTOMLFileName = () => {
   return { filename: m_GetTemplateTOMLFileName() };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ called by Template Editor to save TOML template changes to disk.
+/** called by Template Editor to save TOML template changes to disk.
     parm {object} pkt.data.template
                   pkt.data.path      Will override the current template path in NC_CONFIG.dataset
                                      Use this to write to the _default template or
                                      other specific template.
     Loads the template after saving!
-/*/
+ */
 DB.WriteTemplateTOML = pkt => {
-  if (pkt.data === undefined) throw 'DB.WriteTemplateTOML pkt received with no `data`';
+  if (pkt.data === undefined)
+    throw 'DB.WriteTemplateTOML pkt received with no `data`';
   const templateFilePath = pkt.data.path || m_GetTemplateTOMLFilePath();
   FS.ensureDirSync(PATH.dirname(templateFilePath));
   // Does the template exist?  If so, rename the old version with curren timestamp.
@@ -1188,11 +1219,11 @@ DB.WriteTemplateTOML = pkt => {
     });
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Clones the existing toml template
+/** Clones the existing toml template
     called by brunch to generate an up-to-date Template file to path
     for standalone mode.
     creates the path if it doesn't exist
-/*/
+ */
 DB.CloneTemplateTOML = function (filePath) {
   const TOMLtemplateFilePath = m_GetTemplateTOMLFilePath();
   FS.ensureDirSync(PATH.dirname(TOMLtemplateFilePath));
@@ -1205,11 +1236,11 @@ DB.CloneTemplateTOML = function (filePath) {
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Regenerate Default Template from Template Schema
+/** Regenerate Default Template from Template Schema
     Call this when `template-schema.js` changes so that _default.template.toml will
     match the schema defined in `template-schema.js`.
     Use JSCLI `ncRegenerateDefaultTemplate` in the dev console to call this.
-/*/
+ */
 DB.RegenerateDefaultTemplate = () => {
   const pkt = {
     data: {
@@ -1287,7 +1318,9 @@ DB.GetEditStatus = () => {
     (m_open_editors.includes(EDITORTYPE.NODE) ||
       m_open_editors.includes(EDITORTYPE.EDGE));
   return {
-    templateBeingEdited, importActive, nodeOrEdgeBeingEdited,
+    templateBeingEdited,
+    importActive,
+    nodeOrEdgeBeingEdited,
     lockedNodes: [...m_locked_nodes.keys()],
     lockedEdges: [...m_locked_edges.keys()]
   };
@@ -1402,7 +1435,10 @@ function m_GetValidDBFilePath(dataset) {
   // validate dataset name
   let regex = /^([A-z0-9-_+./])*$/; // Allow _ - + . /, so nested pathways are allowed
   if (!regex.test(dataset)) {
-    console.error(PR, `Trying to initialize database with bad dataset name: ${dataset}`);
+    console.error(
+      PR,
+      `Trying to initialize database with bad dataset name: ${dataset}`
+    );
   }
 
   return RUNTIMEPATH + dataset + '.loki';

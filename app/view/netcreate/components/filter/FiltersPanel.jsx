@@ -19,13 +19,15 @@ import FilterGroup from './FilterGroup';
 import FocusFilter from './FocusFilter';
 import React from 'react';
 const ReactStrap = require('reactstrap');
-
 const { Button, ButtonGroup, Input, Label, FormGroup } = ReactStrap;
-
 const UNISYS = require('unisys/client');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var UDATA = null;
 
-/// CLASS /////////////////////////////////////////////////////////////////////
+/// CLASS DECLARATIONS ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class FiltersPanel extends UNISYS.Component {
   constructor({ filterGroups, onFiltersChange, tableHeight }) {
     super();
@@ -210,7 +212,9 @@ class FiltersPanel extends UNISYS.Component {
         >
           <div>{FilterControlPanel}</div>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-evenly', padding: '5px' }}>
+        <div
+          style={{ display: 'flex', justifyContent: 'space-evenly', padding: '5px' }}
+        >
           <Button size="sm" onClick={this.OnClearBtnClick}>
             Clear Filters
           </Button>
@@ -222,9 +226,4 @@ class FiltersPanel extends UNISYS.Component {
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-// Storybook export
-// export default FiltersPanel;
-
-// Brunch export
 module.exports = FiltersPanel;

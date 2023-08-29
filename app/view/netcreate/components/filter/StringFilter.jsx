@@ -36,30 +36,30 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-
 import FILTER from './FilterEnums';
 import React from 'react';
 const ReactStrap = require('reactstrap');
 const { Form, FormGroup, Input, Label } = ReactStrap;
-
 const UNISYS = require('unisys/client');
-var UDATA = null;
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+var UDATA = null;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const OPERATORS = [
   FILTER.OPERATORS.NO_OP,
   FILTER.OPERATORS.CONTAINS,
   FILTER.OPERATORS.NOT_CONTAINS,
   FILTER.OPERATORS.IS_EMPTY,
   FILTER.OPERATORS.IS_NOT_EMPTY
-]
+];
 
-
-/// CLASS /////////////////////////////////////////////////////////////////////
+/// CLASS DECLARATION /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class StringFilter extends React.Component {
-
   constructor({
     group,
-    filter: {id, type, ey, keylabel, operator, value},
+    filter: { id, type, ey, keylabel, operator, value },
     onChangeHandler
   }) {
     super();
@@ -78,15 +78,21 @@ class StringFilter extends React.Component {
   }
 
   OnChangeOperator(e) {
-    this.setState({
-      operator: e.target.value
-    }, this.TriggerChangeHandler);
+    this.setState(
+      {
+        operator: e.target.value
+      },
+      this.TriggerChangeHandler
+    );
   }
 
   OnChangeValue(e) {
-    this.setState({
-      value: e.target.value
-    }, this.TriggerChangeHandler);
+    this.setState(
+      {
+        value: e.target.value
+      },
+      this.TriggerChangeHandler
+    );
   }
 
   TriggerChangeHandler() {
@@ -100,11 +106,12 @@ class StringFilter extends React.Component {
       operator: this.state.operator,
       value: this.state.value
     };
-    if (UDATA) UDATA.LocalCall('FILTER_DEFINE', {
-      group: this.props.group,
-      filter,
-      filterAction
-    }); // set a SINGLE filter
+    if (UDATA)
+      UDATA.LocalCall('FILTER_DEFINE', {
+        group: this.props.group,
+        filter,
+        filterAction
+      }); // set a SINGLE filter
   }
 
   OnSubmit(e) {
@@ -122,22 +129,43 @@ class StringFilter extends React.Component {
             https://getbootstrap.com/docs/4.5/utilities/flex/
          */}
         <FormGroup className="flex-nowrap">
-          <Label size="sm" className="small text-muted"
-            style={{ fontSize: '0.75em', lineHeight: '1em', width: `6em`, justifyContent: 'flex-end' }}>
+          <Label
+            size="sm"
+            className="small text-muted"
+            style={{
+              fontSize: '0.75em',
+              lineHeight: '1em',
+              width: `6em`,
+              justifyContent: 'flex-end'
+            }}
+          >
             {keylabel}&nbsp;
           </Label>
-          <Input type="select" value={operator}
-            style={{maxWidth:'12em', height:'1.5em', padding: '0'}}
-            onChange={this.OnChangeOperator} bsSize="sm">
-            {OPERATORS.map(op =>
-              <option value={op.key} key={`${id}${op.key}`} size="sm">{op.label}</option>
-            )}
+          <Input
+            type="select"
+            value={operator}
+            style={{ maxWidth: '12em', height: '1.5em', padding: '0' }}
+            onChange={this.OnChangeOperator}
+            bsSize="sm"
+          >
+            {OPERATORS.map(op => (
+              <option value={op.key} key={`${id}${op.key}`} size="sm">
+                {op.label}
+              </option>
+            ))}
           </Input>
-          <Input type="text" value={value} placeholder="..."
+          <Input
+            type="text"
+            value={value}
+            placeholder="..."
             style={{ maxWidth: '12em', height: '1.5em' }}
-            onChange={this.OnChangeValue} bsSize="sm"
+            onChange={this.OnChangeValue}
+            bsSize="sm"
             disabled={operator === FILTER.OPERATORS.NO_OP.key}
-            hidden={operator === FILTER.OPERATORS.IS_EMPTY.key || operator === FILTER.OPERATORS.IS_NOT_EMPTY.key}
+            hidden={
+              operator === FILTER.OPERATORS.IS_EMPTY.key ||
+              operator === FILTER.OPERATORS.IS_NOT_EMPTY.key
+            }
           />
         </FormGroup>
       </Form>
