@@ -1,7 +1,7 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    Session Utilities
-    collection of session-related data structures
+  Session Utilities
+  collection of session-related data structures
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -25,10 +25,10 @@ var m_current_groupid = null;
 
 /// SESSION ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Given a token of form CLASS-PROJECT-HASHEDID, return an object
+/** Given a token of form CLASS-PROJECT-HASHEDID, return an object
     containing as many decoded values as possible. Check isValid for
     complete decode succes. groupId is also set if successful
-/*/
+ */
 SESUTIL.DecodeToken = function (token, dataset) {
   if (token === undefined) return {};
   if (dataset === undefined) {
@@ -90,25 +90,24 @@ SESUTIL.DecodeToken = function (token, dataset) {
   return decoded;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Return TRUE if the token decodes into an expected range of values
-/*/
+/** Return TRUE if the token decodes into an expected range of values
+ */
 SESUTIL.IsValidToken = function (token, dataset) {
   let decoded = SESUTIL.DecodeToken(token, dataset);
   return decoded && Number.isInteger(decoded.groupId);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Returns a token string of form CLASS-PROJECT-HASHEDID
+/** Returns a token string of form CLASS-PROJECT-HASHEDID
     classId and projId should be short and are case-insensitive.
     groupId must be a non-negative integer
-/*/
+ */
 SESUTIL.MakeToken = function (classId, projId, groupId, dataset) {
   // type checking
   if (typeof classId !== 'string')
     throw Error(`classId arg1 '${classId}' must be string`);
   if (typeof projId !== 'string')
     throw Error(`projId arg2 '${projId}' must be string`);
-  if (classId.length < 1)
-    throw Error(`classId arg1 length should be 1 or more`);
+  if (classId.length < 1) throw Error(`classId arg1 length should be 1 or more`);
   if (projId.length < 1) throw Error(`projId arg2 length should be 1 or more`);
   if (!Number.isInteger(groupId))
     throw Error(`groupId arg3 '${groupId}' must be integer`);
@@ -125,18 +124,15 @@ SESUTIL.MakeToken = function (classId, projId, groupId, dataset) {
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Set the global GROUPID, which is included in all NetMessage
+/** Set the global GROUPID, which is included in all NetMessage
     packets that are sent to server.
-/*/
+ */
 // REVIEW/FIXME
 // `SetGroupID` isn't being called by anyone?
 // If it is, the DecodeToken call needs to add a 'dataset' parameter or it will
 // fail.
 SESUTIL.SetGroupID = function (token) {
-  console.error(
-    'SetGroupID calling decodeToken NC_CONFIG IS',
-    window.NC_CONFIG
-  );
+  console.error('SetGroupID calling decodeToken NC_CONFIG IS', window.NC_CONFIG);
   let good = SESUTIL.DecodeToken(token).isValid;
   if (good) m_current_groupid = token;
   return good;

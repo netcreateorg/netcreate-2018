@@ -20,25 +20,20 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-var DBG = true;
-
-
-/// UNISYS INITIALIZE REQUIRES for REACT ROOT /////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS = require('unisys/client');
-var   UDATA  = null;
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const ReactStrap = require('reactstrap');
 const { TabContent, TabPane, Nav, NavItem, NavLink, Row, Col, Button } = ReactStrap;
 const classnames = require('classnames');
-
 const Help = require('./Help');
 const NodeTable = require('./NodeTable');
 const EdgeTable = require('./EdgeTable');
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+var DBG = true;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+var UDATA = null;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -48,43 +43,34 @@ class SaveChangesDialog extends UNISYS.Component {
     super(props);
 
     this.state = {
-      nodeDefs: this.AppState('TEMPLATE').nodeDefs,
-    }
+      nodeDefs: this.AppState('TEMPLATE').nodeDefs
+    };
 
     this.handleEdit = this.handleEdit.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
 
     /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
-
   } // constructor
-
-
 
   /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ Select the node for editing
-  /*/
+  /** Select the node for editing
+   */
   handleEdit(event) {
     event.preventDefault();
     let nodeID = parseInt(event.target.value);
     UDATA.LocalCall('SOURCE_SELECT', { nodeIDs: [nodeID] });
   }
 
-  handleCancel () {
+  handleCancel() {
     event.preventDefault();
-
   }
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ This is not yet implemented as of React 16.2.  It's implemented in 16.3.
-      getDerivedStateFromProps (props, state) {
-        console.error('getDerivedStateFromProps!!!');
-      }
-  /*/
-  /*/ This this fires after render().
-  /*/
+  /** This this fires after render().
+   */
   componentDidMount() {
     let tabpanel = document.getElementById('tabpanel');
     this.setState({
@@ -92,19 +78,21 @@ class SaveChangesDialog extends UNISYS.Component {
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/
-  /*/
+  /**
+   */
   render() {
     let { nodeDefs } = this.state;
+    const Modal = props => {};
+    const ModalBody = props => {};
     return (
       <Modal>
-        <ModalBody>You've made changes to the Node.  Are you sure you want to </ModalBody>
+        <ModalBody>
+          {"You've made changes to the Node. Are you sure you want to"}
+        </ModalBody>
       </Modal>
     );
   }
-
 } // class SaveChangesDialog
-
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

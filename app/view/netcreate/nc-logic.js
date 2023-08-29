@@ -1,3 +1,4 @@
+/* eslint-disable no-alert */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   nc-logic
@@ -39,15 +40,32 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = false;
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SETTINGS = require('settings');
 const UNISYS = require('unisys/client');
 const JSCLI = require('system/util/jscli');
 const D3 = require('d3');
 const UTILS = require('./nc-utils');
+
+const NETWORK = require('unisys/client-network');
+const DATASTORE = require('system/datastore');
+const SESSION = require('unisys/common-session');
+const PROMPTS = require('system/util/prompts');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+const PR = PROMPTS.Pad('NCLOGIC');
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DESELECTED_COLOR = '';
+// For backwards compatability, if the template is not setting these
+// Ideally we want to centralize the backwards compatability at some point into one spot
+// OR just remove it, but this was easier to test and shouldn't impact performance substantively
+const DEFAULT_SEARCH_COLOR = '#008800';
+const DEFAULT_SOURCE_COLOR = '#FFa500';
+const TARGET_COLOR = '#FF0000';
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DATASET = window.NC_CONFIG.dataset || 'netcreate';
+const TEMPLATE_URL = `templates/${DATASET}.toml`;
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -57,133 +75,114 @@ var UDATA = UNISYS.NewDataLink(MOD);
 /// APP STATE/DATA STRUCTURES /////////////////////////////////////////////////
 /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
 
+  SELECTION
 
-    SELECTION
+  The SELECTION state maintains the list of nodes and edges that are
+  currently selected and loaded in the forms.
 
-    The SELECTION state maintains the list of nodes and edges that are
-    currently selected and loaded in the forms.
+  Set by      AutoComplete's call to SOURCE_SELECT
+              D3SimpleNetGraph's call to SOURCE_SELECT
+              EdgeEditor's call to EDGE_UPDATE
+  Handled by  NodeSelector to load the currently selected node
+              NodeSelector also sets the edges in EdgeEditor
+              EdgeEditor to select the target node when creating new edge
 
-    Set by      AutoComplete's call to SOURCE_SELECT
-                D3SimpleNetGraph's call to SOURCE_SELECT
-                EdgeEditor's call to EDGE_UPDATE
-    Handled by  NodeSelector to load the currently selected node
-                NodeSelector also sets the edges in EdgeEditor
-                EdgeEditor to select the target node when creating new edge
-
-    * nodes     An array of current selected nodes for editing.
-                This is the node the user clicked on in the graph or selected from
-                the suggestions list
-    * edges     An array of edge objects for editing
-                *REVIEW*: Should this be renamed "selectedEdges" to distinguish from
-                *NCDATA.edge
-
-
-
-    SEARCH
-
-    The SEARCH state keeps track of the text being searched for in the
-    main AutoComplete field.  It also provides a list of the nodes that match
-    the search string so that AutoComplete and D3 can display them.  (D3
-    doesn't actually process the SEARCH state change.  Instead it's processed
-    by nc-logic in response to SOURCE_SEARCH calls -- nc-logic
-    will set the node's `selected` or `stroke-color` state if a node
-    is currently selected or matches a search parameter, respectively.)
-
-    Set by      AutoComplete's call to SOURCE_SEARCH when its input changes.
-    Handled by  AutoComplete for its controlled input field
-                NodeSelector for validating when editing the form.
-
-    * searchLabel     A string that the user has typed into AutoComplete
-    * suggestedNodes  An array of nodes that match the searchLabel
+  * nodes     An array of current selected nodes for editing.
+              This is the node the user clicked on in the graph or selected from
+              the suggestions list
+  * edges     An array of edge objects for editing
+              *REVIEW*: Should this be renamed "selectedEdges" to distinguish from
+              *NCDATA.edge
 
 
 
-    ACTIVEAUTOCOMPLETE
+  SEARCH
 
-    The ACTIVEAUTOCOMPLETE state points to the id of the AutoComplete
-    field (either search, or NodeSElector, or EdgeEditor) that has the
-    current focus.  Search results and d3 clicks are routed to the
-    active AutComplete component.
+  The SEARCH state keeps track of the text being searched for in the
+  main AutoComplete field.  It also provides a list of the nodes that match
+  the search string so that AutoComplete and D3 can display them.  (D3
+  doesn't actually process the SEARCH state change.  Instead it's processed
+  by nc-logic in response to SOURCE_SEARCH calls -- nc-logic
+  will set the node's `selected` or `stroke-color` state if a node
+  is currently selected or matches a search parameter, respectively.)
 
-    Set by      Search's call to AUTOCOMPLETE_SELECT on startup
-                NodeSelector's call to AUTOCOMPLETE_SELECT when Edit Node is clicked
-                " when changes are submitted
-                EdgeEditor's call to AUTOCOMPLETE_SELECT when a new Edge is created
-                " an edge is selected externally for editing
-                " an edge being editted is closed (hand back to search)
-                " changes are submitted
+  Set by      AutoComplete's call to SOURCE_SEARCH when its input changes.
+  Handled by  AutoComplete for its controlled input field
+              NodeSelector for validating when editing the form.
 
-    Handled by  AutoComplete to enable/disable its mode active state,
-                know when and when not to handle SEARCH and SELECTION state updates.
-
-    Looked up   NodeSelector to check if it's the current activeAutoCompleteId
-
-    * activeAutoCompleteId
-                id of active <AutoComplete> field
-                of form: 'node-xx' or 'edge-source-xx' or 'edge-target-xx'
-                where xx = the id of the <AutoComplete> field that has input focus.
-                This is used to keep track of the currently active
-                AutoComplete field. Inactive fields and updates are determined by
-                the value of this property.
+  * searchLabel     A string that the user has typed into AutoComplete
+  * suggestedNodes  An array of nodes that match the searchLabel
 
 
-    NCDATA
 
-    NCDATA is the core pristine network data of nodes and edges. It is read
-    directly from the database, or, when importing data, data is imported
-    into NCDATA.  It is an object consisting of two arrays:
-      `NCDATA = { nodes: [], edges: [] }`
-    See https://whimsical.com/network-data-flow-63qtRETqrfDVfp7EchUdzp
-    NCDATA is maintained as a application-wide AppState, though some modules
-    may keep a local copy.  (This needs to be reviewed and revised).
-    It includes:
-    * nodes: all nodes (not all may be actually changed)
-    * edges: all edges (not all may be actually changed)
+  ACTIVEAUTOCOMPLETE
+
+  The ACTIVEAUTOCOMPLETE state points to the id of the AutoComplete
+  field (either search, or NodeSElector, or EdgeEditor) that has the
+  current focus.  Search results and d3 clicks are routed to the
+  active AutComplete component.
+
+  Set by      Search's call to AUTOCOMPLETE_SELECT on startup
+              NodeSelector's call to AUTOCOMPLETE_SELECT when Edit Node is clicked
+              " when changes are submitted
+              EdgeEditor's call to AUTOCOMPLETE_SELECT when a new Edge is created
+              " an edge is selected externally for editing
+              " an edge being editted is closed (hand back to search)
+              " changes are submitted
+
+  Handled by  AutoComplete to enable/disable its mode active state,
+              know when and when not to handle SEARCH and SELECTION state updates.
+
+  Looked up   NodeSelector to check if it's the current activeAutoCompleteId
+
+  * activeAutoCompleteId
+              id of active <AutoComplete> field
+              of form: 'node-xx' or 'edge-source-xx' or 'edge-target-xx'
+              where xx = the id of the <AutoComplete> field that has input focus.
+              This is used to keep track of the currently active
+              AutoComplete field. Inactive fields and updates are determined by
+              the value of this property.
 
 
-    FILTEREDNCDATA
+  NCDATA
 
-    FILTEREDNCDATA is the processed network data. It is derived from NCDATA.
-    It represents a subset of NCDATA with filtered items tagged (for highlight)
-    or removed. d3 will alter FILTEREDNCDATA, replacing edge source/targets
-    ids with node objects.
-    FILTEREDNCDATA is updated whenever NCDATA is updated.
+  NCDATA is the core pristine network data of nodes and edges. It is read
+  directly from the database, or, when importing data, data is imported
+  into NCDATA.  It is an object consisting of two arrays:
+    `NCDATA = { nodes: [], edges: [] }`
+  See https://whimsical.com/network-data-flow-63qtRETqrfDVfp7EchUdzp
+  NCDATA is maintained as a application-wide AppState, though some modules
+  may keep a local copy.  (This needs to be reviewed and revised).
+  It includes:
+  * nodes: all nodes (not all may be actually changed)
+  * edges: all edges (not all may be actually changed)
 
-    There are three key differences between NCDATA and FILTEREDNCDATA:
-    1. edge.source and edge.target in NCDATA refer to node ids
-       whereas in FILTEREDNCDATA, edge.source and edge.target are node objects
-    2. Only FILTEREDNCDATA is passed to d3.  d3 never directly touches NCDATA.
-    3. FILTEREDNCDATA is directly derived from NCDATA, and can contain a subset
-       of the nodes or edges of NCDATA. In contrast, NCDATA contains ALL nodes
-       and edges.  When a filter is set, FILTEREDNCDATA is updated from
-       NCDATA, with nodes and edges removed or marked according to the filter.
+
+  FILTEREDNCDATA
+
+  FILTEREDNCDATA is the processed network data. It is derived from NCDATA.
+  It represents a subset of NCDATA with filtered items tagged (for highlight)
+  or removed. d3 will alter FILTEREDNCDATA, replacing edge source/targets
+  ids with node objects.
+  FILTEREDNCDATA is updated whenever NCDATA is updated.
+
+  There are three key differences between NCDATA and FILTEREDNCDATA:
+  1. edge.source and edge.target in NCDATA refer to node ids
+      whereas in FILTEREDNCDATA, edge.source and edge.target are node objects
+  2. Only FILTEREDNCDATA is passed to d3.  d3 never directly touches NCDATA.
+  3. FILTEREDNCDATA is directly derived from NCDATA, and can contain a subset
+      of the nodes or edges of NCDATA. In contrast, NCDATA contains ALL nodes
+      and edges.  When a filter is set, FILTEREDNCDATA is updated from
+      NCDATA, with nodes and edges removed or marked according to the filter.
 
 \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -/*/
 var NCDATA = null; // see above for description
 var TEMPLATE = null; // template definition for prompts
-const NETWORK = require('unisys/client-network');
-const DATASTORE = require('system/datastore');
-const SESSION = require('unisys/common-session');
-const PROMPTS = require('system/util/prompts');
-const PR = PROMPTS.Pad('NCLOGIC');
-
-/// CONSTANTS /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DESELECTED_COLOR = '';
-// For backwards compatability, if the template is not setting these
-// Ideally we want to centralize the backwards compatability at some point into one spot
-// OR just remove it, but this was easier to test and shouldn't impact performance substantively
-const DEFAULT_SEARCH_COLOR = '#008800';
-const DEFAULT_SOURCE_COLOR = '#FFa500';
-const TARGET_COLOR = '#FF0000';
-
-const DATASET = window.NC_CONFIG.dataset || 'netcreate';
-const TEMPLATE_URL = `templates/${DATASET}.toml`;
 
 /// DB LOADER HELPERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Used by LOADASSETS and RELOAD_DB to reload NCDATA from the database.
-/*/
+/** Used by LOADASSETS and RELOAD_DB to reload NCDATA from the database.
+ */
 function m_PromiseLoadDB() {
   return DATASTORE.PromiseD3Data().then(data => {
     if (DBG) console.log(PR, 'DATASTORE returned data', data);
@@ -200,9 +199,9 @@ function m_PromiseLoadDB() {
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ LOADASSETS fires before react components are loaded
+/** LOADASSETS fires before react components are loaded
     see client-lifecycle.js for description
-/*/
+ */
 MOD.Hook('LOADASSETS', () => {
   if (UNISYS.IsStandaloneMode()) {
     // STANDALONE MODE
@@ -226,7 +225,10 @@ MOD.Hook('LOADASSETS', () => {
       });
     }
     // don't use cache, but instead try loading standalone files
-    console.warn(PR, "STANDALONE MODE: 'LOADASSETS' is using files (USE_CACHE=false)");
+    console.warn(
+      PR,
+      "STANDALONE MODE: 'LOADASSETS' is using files (USE_CACHE=false)"
+    );
     // added by Joshua to check for alternative datasets in the folder
     let urlParams = new URLSearchParams(window.location.search);
     let dataset = urlParams.get('dataset');
@@ -259,10 +261,9 @@ MOD.Hook('LOADASSETS', () => {
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ CONFIGURE fires after LOADASSETS, so this is a good place to put TEMPLATE
-    validation.
-/*/
-// eslint-disable-next-line complexity
+/** CONFIGURE fires after LOADASSETS, so this is a good place to put TEMPLATE
+ *  validation.
+ */
 MOD.Hook('CONFIGURE', () => {
   // Process Node, NodeColorMap and Edge options
   m_UpdateColorMap();
@@ -270,8 +271,8 @@ MOD.Hook('CONFIGURE', () => {
 
 /// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ DISCONNECT fires when NetMessage.GlobalOfflineMode()
-/*/
+/** DISCONNECT fires when NetMessage.GlobalOfflineMode()
+ */
 MOD.Hook('DISCONNECT', () => {
   console.log('DISCONNECT HOOK');
   const lstore = window.localStorage;
@@ -282,31 +283,30 @@ MOD.Hook('DISCONNECT', () => {
 
 /// UNISYS HANDLERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ lifecycle INITIALIZE handler
-/*/
+/** lifecycle INITIALIZE handler
+ */
 MOD.Hook('INITIALIZE', () => {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ RELOAD_DB
-      Called by importexport-mgr.js.MOD.Import:818
-      During import, DB_MERGE will be called to merge the import data
-      into the DB.  Then it will call RELOAD_DB to re-read the updated
-      NCDATA from the database.  This is necessary because new ids will
-      have been generated during the merge.
-  /*/
+  /** RELOAD_DB
+   *  Called by importexport-mgr.js.MOD.Import:818
+   *  During import, DB_MERGE will be called to merge the import data
+   *  into the DB.  Then it will call RELOAD_DB to re-read the updated
+   *  NCDATA from the database.  This is necessary because new ids will
+   *  have been generated during the merge.
+   */
   UDATA.HandleMessage('RELOAD_DB', () => {
     return Promise.all([m_PromiseLoadDB()]);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ NCDATA
-  /*/
+  /// NCDATA
   UDATA.OnAppStateChange('NCDATA', stateChange => {
     if (DBG) console.log('nc-logic: Got NCDATA', stateChange);
     NCDATA = stateChange;
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ Handle D3-related updates based on state changes. Subcomponents are
-      responsible for updating themselves.
-  /*/
+  /** Handle D3-related updates based on state changes. Subcomponents are
+   *  responsible for updating themselves.
+   */
   UDATA.OnAppStateChange('SELECTION', stateChange => {
     if (DBG) console.log('nc-logic: Got SELECTION', stateChange);
     let { nodes, edges } = stateChange;
@@ -331,8 +331,7 @@ MOD.Hook('INITIALIZE', () => {
     }
   }); // StateChange SELECTION
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ Search field has been updated
-  /*/
+  /// Search field has been updated
   UDATA.OnAppStateChange('SEARCH', stateChange => {
     if (DBG) console.log('nc-logic: Got SEARCH', stateChange);
     let { nodes, edges } = stateChange;
@@ -353,16 +352,15 @@ MOD.Hook('INITIALIZE', () => {
   }); // StateChange SELECTION
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ User has clicked on a suggestion from the AutoComplete suggestion list.
-      The source node should be loaded in NodeSelector.
-
-      OR, user has clicked on a node in the D3 graph.
-
-      SOURCE_SELECT select node by LABEL. There is only one selected node
-      in the app at any one time, though nodeLabels is passed as an array.
-      SEE ALSO: AutoComplete.onSuggestionSelected() and
-                D3SimpleNetGraph._UpdateGraph click handler
-  /*/
+  /** User has clicked on a suggestion from the AutoComplete suggestion list.
+   *  The source node should be loaded in NodeSelector.
+   *
+   *  OR, user has clicked on a node in the D3 graph.
+   *  SOURCE_SELECT select node by LABEL. There is only one selected node
+   *  in the app at any one time, though nodeLabels is passed as an array.
+   *  SEE ALSO: AutoComplete.onSuggestionSelected() and
+   *  D3SimpleNetGraph._UpdateGraph click handler
+   */
   UDATA.HandleMessage('SOURCE_SELECT', m_sourceSelect);
   function m_sourceSelect(data) {
     if (DBG) console.log(PR, 'SOURCE_SELECT got data', data);
@@ -374,7 +372,8 @@ MOD.Hook('INITIALIZE', () => {
 
     if (nodeID) {
       node = m_FindNodeById(nodeID); // Node IDs should be integers, not strings
-      if (DBG) console.log(PR, 'SOURCE_SELECT found by nodeID', nodeID, 'node:', node);
+      if (DBG)
+        console.log(PR, 'SOURCE_SELECT found by nodeID', nodeID, 'node:', node);
     } else if (nodeLabel) {
       node = m_FindMatchingNodesByLabel(nodeLabel).shift();
       if (DBG)
@@ -394,7 +393,7 @@ MOD.Hook('INITIALIZE', () => {
       };
       newHilite = {
         autosuggestHiliteNodeId: undefined
-      }
+      };
     } else {
       // Load existing node and edges
       let edges = [];
@@ -402,7 +401,9 @@ MOD.Hook('INITIALIZE', () => {
         // if no edges are defined, skip, otherwise chokes on NCDATA.edges.filter
         if (nodeID) {
           edges = edges.concat(
-            NCDATA.edges.filter(edge => edge.source === nodeID || edge.target === nodeID)
+            NCDATA.edges.filter(
+              edge => edge.source === nodeID || edge.target === nodeID
+            )
           );
         } else {
           console.error(
@@ -425,7 +426,7 @@ MOD.Hook('INITIALIZE', () => {
       };
       newHilite = {
         autosuggestHiliteNodeId: undefined
-      }
+      };
     }
 
     // Set the SELECTION state so that listeners such as NodeSelectors update themselves
@@ -434,9 +435,9 @@ MOD.Hook('INITIALIZE', () => {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ SOURCE_SEARCH sets the current matching term as entered in an
-      AutoComplete field.
-  /*/
+  /** SOURCE_SEARCH sets the current matching term as entered in an
+   *  AutoComplete field.
+   */
   UDATA.HandleMessage('SOURCE_SEARCH', function (data) {
     let { searchString } = data;
     let matches = m_FindMatchingNodesByLabel(searchString);
@@ -451,11 +452,11 @@ MOD.Hook('INITIALIZE', () => {
   });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ SOURCE_SEARCH_AND_SELECT first searches for an exact matching node
-      and if found, selects it.
-      This is called by AutoComplete onBlur in case we need to make an
-      implicit selection.
-  /*/
+  /** SOURCE_SEARCH_AND_SELECT first searches for an exact matching node
+   *  and if found, selects it.
+   *  This is called by AutoComplete onBlur in case we need to make an
+   *  implicit selection.
+   */
   UDATA.HandleMessage('SOURCE_SEARCH_AND_SELECT', function (data) {
     let { searchString } = data;
     let node = m_FindMatchingNodesByLabel(searchString).shift();
@@ -470,11 +471,11 @@ MOD.Hook('INITIALIZE', () => {
   });
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ SOURCE_UPDATE is called when the properties of a node has changed
-      Globally updates DATASTORE and working NCDATA objects with the new node data.
-      NOTE: SOURCE_UPDATE can be invoked remotely by the server on a DATABASE
-      update.
-  /*/
+  /** SOURCE_UPDATE is called when the properties of a node has changed
+   *  Globally updates DATASTORE and working NCDATA objects with the new node data.
+   *  NOTE: SOURCE_UPDATE can be invoked remotely by the server on a DATABASE
+   *  update.
+   */
   UDATA.HandleMessage('SOURCE_UPDATE', function (data) {
     let { node } = data;
     // REVIEW: NodeSelector should probably not be submitting data
@@ -496,24 +497,23 @@ MOD.Hook('INITIALIZE', () => {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
   UDATA.HandleMessage('NODE_CREATE', data => {
     // provenance
-    const session = UDATA.AppState("SESSION");
+    const session = UDATA.AppState('SESSION');
     const timestamp = new Date().toLocaleDateString('en-US');
     const provenance_str = `Added by ${session.token} on ${timestamp}`;
 
-    return DATASTORE.PromiseNewNodeID()
-      .then(newNodeID => {
-        const node = { id: newNodeID, label: data.label, provenance: provenance_str };
-        return UDATA.LocalCall('DB_UPDATE', { node }).then(() => {
-          NCDATA.nodes.push(node);
-          UDATA.SetAppState('NCDATA', NCDATA);
-          return node;
-        });
+    return DATASTORE.PromiseNewNodeID().then(newNodeID => {
+      const node = { id: newNodeID, label: data.label, provenance: provenance_str };
+      return UDATA.LocalCall('DB_UPDATE', { node }).then(() => {
+        NCDATA.nodes.push(node);
+        UDATA.SetAppState('NCDATA', NCDATA);
+        return node;
       });
+    });
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ NODE_DELETE is called by NodeSelector via datastore.js and
-      Server.js when an node should be removed
-  /*/
+  /** NODE_DELETE is called by NodeSelector via datastore.js and
+   *  Server.js when an node should be removed
+   */
   UDATA.HandleMessage('NODE_DELETE', function (data) {
     let { nodeID, replacementNodeID } = data;
 
@@ -553,20 +553,20 @@ MOD.Hook('INITIALIZE', () => {
     // FIXME: Need to also trigger resize!
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ NODE_TYPES_UPDATE is called by templateEditor-mgr after user has changed the
-      node type options.  This maps changed options to a new name,
-      and deleted type options to existing options.
-      This updates:
-      * The template file with new new node types
-      * NCDATA and the databse file with node type changes
-
-      @param {object} data
-      @param {object} data.nodeTypesChanges - { label, color, replacement, delete }
-      @param {string} data.nodeTypesChanges.label - orig label, used for matching to current node setting
-      @param {string} data.nodeTypesChanges.color
-      @param {string} data.nodeTypesChanges.replacement - text to replace label
-      @param {boolean} data.nodeTypesChanges.delete - option should be removed after mapping
-  /*/
+  /** NODE_TYPES_UPDATE is called by templateEditor-mgr after user has changed the
+   *  node type options.  This maps changed options to a new name,
+   *  and deleted type options to existing options.
+   *  This updates:
+   *  - The template file with new new node types
+   *  - NCDATA and the databse file with node type changes
+   *
+   *  @param {object} data
+   *  @param {object} data.nodeTypesChanges - { label, color, replacement, delete }
+   *  @param {string} data.nodeTypesChanges.label - orig label, used for matching to current node setting
+   *  @param {string} data.nodeTypesChanges.color
+   *  @param {string} data.nodeTypesChanges.replacement - text to replace label
+   *  @param {boolean} data.nodeTypesChanges.delete - option should be removed after mapping
+   */
   UDATA.HandleMessage('NODE_TYPES_UPDATE', data => {
     const { nodeTypesChanges } = data;
     const changeMap = new Map();
@@ -605,48 +605,46 @@ MOD.Hook('INITIALIZE', () => {
     return { nodes: m_FindMatchingNodesByLabel(data.searchString) };
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /**
-   * When creating a new edge, we first
-   * 1. Add a bare bones edge object with a new ID to the local state.edges
-   * 2. Pass it to render, so that a new EdgeEditor will be created.
-   * 3. In EdgeEditor, we create a dummy edge object
-   * @param {Object} data
-   * @param {string} data.nodeId
+  /** When creating a new edge, we first
+   *  1. Add a bare bones edge object with a new ID to the local state.edges
+   *  2. Pass it to render, so that a new EdgeEditor will be created.
+   *  3. In EdgeEditor, we create a dummy edge object
+   *  @param {Object} data
+   *  @param {string} data.nodeId
    */
   UDATA.HandleMessage('EDGE_CREATE', data => {
     // call server to retrieve an unused edge ID
-    return DATASTORE.PromiseNewEdgeID()
-      .then(newEdgeID => {
-        // Add it to local state for now
-        const edge = {
-          id: newEdgeID,
-          source: data.nodeId,
-          target: undefined,
-          attributes: {}
-        };
-        return UDATA.LocalCall('DB_UPDATE', { edge }).then(() => {
-          console.log('...DB_UPDATE node is now', edge)
-          NCDATA.edges.push(edge);
-          UDATA.SetAppState('NCDATA', NCDATA);
-          return edge;
-        });
+    return DATASTORE.PromiseNewEdgeID().then(newEdgeID => {
+      // Add it to local state for now
+      const edge = {
+        id: newEdgeID,
+        source: data.nodeId,
+        target: undefined,
+        attributes: {}
+      };
+      return UDATA.LocalCall('DB_UPDATE', { edge }).then(() => {
+        console.log('...DB_UPDATE node is now', edge);
+        NCDATA.edges.push(edge);
+        UDATA.SetAppState('NCDATA', NCDATA);
+        return edge;
       });
+    });
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ EDGE_TYPES_UPDATE is called by templateEditor-mgr after user has changed the
-      edge type options.  This maps changed options to a new name,
-      and deleted type options to existing options.
-      This updates:
-      * The template file with new new edge types
-      * NCDATA and the databse file with edge type changes
-
-      @param {object} data
-      @param {object} data.nodeTypesChanges - { label, color, replacement, delete }
-      @param {string} data.nodeTypesChanges.label - orig label, used for matching to current edge setting
-      @param {string} data.nodeTypesChanges.color
-      @param {string} data.nodeTypesChanges.replacement - text to replace label
-      @param {boolean} data.nodeTypesChanges.delete - option should be removed after mapping
-  /*/
+  /** EDGE_TYPES_UPDATE is called by templateEditor-mgr after user has changed the
+   *  edge type options.  This maps changed options to a new name,
+   *  and deleted type options to existing options.
+   *  This updates:
+   *  - The template file with new new edge types
+   *  - NCDATA and the databse file with edge type changes
+   *
+   *  @param {object} data
+   *  @param {object} data.nodeTypesChanges - { label, color, replacement, delete }
+   *  @param {string} data.nodeTypesChanges.label - orig label, used for matching to current edge setting
+   *  @param {string} data.nodeTypesChanges.color
+   *  @param {string} data.nodeTypesChanges.replacement - text to replace label
+   *  @param {boolean} data.nodeTypesChanges.delete - option should be removed after mapping
+   */
   UDATA.HandleMessage('EDGE_TYPES_UPDATE', data => {
     const { edgeTypesChanges } = data;
     const changeMap = new Map();
@@ -670,10 +668,10 @@ MOD.Hook('INITIALIZE', () => {
     UDATA.SetAppState('NCDATA', NCDATA);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ EDGE_UPDATE is called when the properties of an edge has changed
-      NOTE: SOURCE_UPDATE can be invoked remotely by the server on a DATABASE
-      update.
-  /*/
+  /** EDGE_UPDATE is called when the properties of an edge has changed
+   *  NOTE: SOURCE_UPDATE can be invoked remotely by the server on a DATABASE
+   *  update.
+   */
   UDATA.HandleMessage('EDGE_UPDATE', function (data) {
     let { edge } = data;
     if (DBG) console.log('nc-logic.EDGE_UPDATE: received edge', edge);
@@ -690,7 +688,8 @@ MOD.Hook('INITIALIZE', () => {
     }
     // if there was one edge
     if (updatedEdges.length === 1) {
-      if (DBG) console.log('nc-logic.EDGE_UPDATE: updating existing edge', updatedEdges);
+      if (DBG)
+        console.log('nc-logic.EDGE_UPDATE: updating existing edge', updatedEdges);
     }
     // if there were more edges than expected
     if (updatedEdges.length > 1) {
@@ -701,10 +700,9 @@ MOD.Hook('INITIALIZE', () => {
     UTILS.RecalculateAllNodeDegrees(NCDATA);
     UDATA.SetAppState('NCDATA', NCDATA);
   });
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ EDGE_DELETE is called when an edge should be removed from...something?
-  /*/
+  /** EDGE_DELETE is called when an edge should be removed from...something?
+   */
   UDATA.HandleMessage('EDGE_DELETE', function (data) {
     let { edgeID } = data;
     let edges = [];
@@ -734,27 +732,24 @@ MOD.Hook('INITIALIZE', () => {
       edges: edges
     });
   });
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ AUTOCOMPLETE_SELECT is called by <AutoComplete> components to tell the
-      module which one has the current focus.
-  /*/
+  /** AUTOCOMPLETE_SELECT is called by <AutoComplete> components to tell the
+   *  module which one has the current focus.
+   */
   UDATA.HandleMessage('AUTOCOMPLETE_SELECT', function (data) {
     m_HandleAutoCompleteSelect(data);
   });
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - inside hook
-  /*/ TEMPLATE has been edited
-      This message is sent from server.js over the net.
-      This is the main handler for the local app.  It updates the appState.
-  /*/
+  /** TEMPLATE has been edited
+   *  This message is sent from server.js over the net.
+   *  This is the main handler for the local app.  It updates the appState.
+   */
   UDATA.HandleMessage('NET_TEMPLATE_UPDATE', stateChange => {
     if (DBG) console.log(PR, 'NET_TEMPLATE_UPDATE state change', stateChange);
     TEMPLATE = stateChange;
     UDATA.SetAppState('TEMPLATE', TEMPLATE);
     m_UpdateColorMap();
   });
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   UDATA.HandleMessage('EDIT_CURRENT_TEMPLATE', () => {
     return { template: TEMPLATE };
@@ -762,9 +757,8 @@ MOD.Hook('INITIALIZE', () => {
 }); // end UNISYS_INIT
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ INIT HANDLERS
-/*/
-
+/** INIT HANDLERS
+ */
 function m_HandleAutoCompleteSelect(data) {
   if (DBG) console.log('ACL: Setting activeAutoCompleteId to', data.id);
   UDATA.SetAppState('ACTIVEAUTOCOMPLETE', {
@@ -773,8 +767,8 @@ function m_HandleAutoCompleteSelect(data) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ lifecycle RESET handler
-/*/
+/** lifecycle RESET handler
+ */
 MOD.Hook('RESET', () => {
   // Force an AppState update here so that the react components will load
   // the data after they've been initialized.  The SetAppState call in
@@ -784,9 +778,9 @@ MOD.Hook('RESET', () => {
 
 /// APP_READY MESSAGE REGISTRATION ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ The APP_READY hook is fired after all initialization phases have finished
-    and may also fire at other times with a valid info packet
-/*/
+/** The APP_READY hook is fired after all initialization phases have finished
+ *  and may also fire at other times with a valid info packet
+ */
 MOD.Hook('APP_READY', function (info) {
   /// RETURN PROMISE to prevent phase from continuing until after registration
   /// of messages is successful
@@ -826,9 +820,9 @@ MOD.Hook('APP_READY', function (info) {
 /// OBJECT HELPERS ////////////////////////////////////////////////////////////
 /// these probably should go into a utility class
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Return array of objects that match the match_me object keys/values
-    NOTE: make sure that strings are compared with strings, etc
-/*/
+/** Return array of objects that match the match_me object keys/values
+ *  NOTE: make sure that strings are compared with strings, etc
+ */
 function m_FindMatchingObjsByProp(obj_list, match_me = {}) {
   // operate on arrays only
   if (!Array.isArray(obj_list))
@@ -845,12 +839,13 @@ function m_FindMatchingObjsByProp(obj_list, match_me = {}) {
   return matches;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Set array of objects that match to key/values of yes/no respectively
-    Returns array of matched objects
-/*/
+/** Set array of objects that match to key/values of yes/no respectively
+ *  Returns array of matched objects
+ */
 function m_SetMatchingObjsByProp(obj_list, match_me = {}, yes = {}, no = {}) {
   // operate on arrays only
-  if (!Array.isArray(obj_list)) throw Error('SetMatchingObjsByPropp arg1 must be array');
+  if (!Array.isArray(obj_list))
+    throw Error('SetMatchingObjsByPropp arg1 must be array');
 
   let returnMatches = [];
   obj_list.forEach(node => {
@@ -869,8 +864,8 @@ function m_SetMatchingObjsByProp(obj_list, match_me = {}, yes = {}, no = {}) {
   return returnMatches;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Update props of everything in obj_list
-/*/
+/** Update props of everything in obj_list
+ */
 function m_SetAllObjs(obj_list, all = {}) {
   // operate on arrays only
   if (!Array.isArray(obj_list)) throw Error('SetAllNodes arg1 must be array');
@@ -882,9 +877,8 @@ MOD.SetAllObjs = m_SetAllObjs; // Expose for filter-mgr.js
 
 /// NODE HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/*/ Update ColorMap
-/*/
+/** Update ColorMap
+ */
 function m_UpdateColorMap() {
   // REVIEW: Load ColorMap in d3?  or elsewhere?  does it need its own state?
   // Joshua added Edges in here ... it should either be renamed or kept separate
@@ -913,9 +907,9 @@ function m_UpdateColorMap() {
     );
   }
 }
-
-/*/ Return array of nodes that DON'T match del_me object keys/values
-/*/
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Return array of nodes that DON'T match del_me object keys/values
+ */
 function m_DeleteMatchingNodesByProp(del_me = {}) {
   let matches = NCDATA.nodes.filter(node => {
     let pass = false;
@@ -930,20 +924,21 @@ function m_DeleteMatchingNodesByProp(del_me = {}) {
   // return array of matches (can be empty array)
   return matches;
 }
-/*/ Return array of nodes that match the match_me object keys/values
-    NOTE: make sure that strings are compared with strings, etc
-/*/
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Return array of nodes that match the match_me object keys/values
+ *  NOTE: make sure that strings are compared with strings, etc
+ */
 function m_FindMatchingNodeByProp(match_me = {}) {
   return m_FindMatchingObjsByProp(NCDATA.nodes, match_me);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Convenience function to retrieve node by ID
-/*/ function m_FindNodeById(id) {
+/** Convenience function to retrieve node by ID
+ */ function m_FindNodeById(id) {
   return m_FindMatchingNodeByProp({ id })[0];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Return array of nodes with labels that partially match str
-/*/
+/** Return array of nodes with labels that partially match str
+ */
 function m_FindMatchingNodesByLabel(str = '') {
   if (!str) return [];
   str = u_EscapeRegexChars(str.trim());
@@ -952,10 +947,10 @@ function m_FindMatchingNodesByLabel(str = '') {
   return NCDATA.nodes.filter(node => regex.test(node.label));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Set nodes that PARTIALLY match 'str' to 'yes' props.
-    All others nodes are set to 'no' props. Return matches
-    Optionally resets all the NON matching nodes as well
-/*/
+/** Set nodes that PARTIALLY match 'str' to 'yes' props.
+ *  All others nodes are set to 'no' props. Return matches
+ *  Optionally resets all the NON matching nodes as well
+ */
 function m_SetMatchingNodesByLabel(str = '', yes = {}, no = {}) {
   let returnMatches = [];
   str = u_EscapeRegexChars(str.trim());
@@ -971,19 +966,18 @@ function m_SetMatchingNodesByLabel(str = '', yes = {}, no = {}) {
   });
   return returnMatches;
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Update props of exact matching nodes, returns matches
-    Optionally resets all the NON matching nodes as well
-/*/
+/** Update props of exact matching nodes, returns matches
+ *  Optionally resets all the NON matching nodes as well
+ */
 function m_SetMatchingNodesByProp(match_me = {}, yes = {}, no = {}) {
   return m_SetMatchingObjsByProp(NCDATA.nodes, match_me, yes, no);
 }
 
 /// EDGE HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Return array of edges that DON'T match del_me object keys/values
-/*/
+/** Return array of edges that DON'T match del_me object keys/values
+ */
 function m_DeleteMatchingEdgeByProp(del_me = {}) {
   let matches = NCDATA.edges.filter(edge => {
     let pass = false;
@@ -999,50 +993,50 @@ function m_DeleteMatchingEdgeByProp(del_me = {}) {
   return matches;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Update props of exact matching edges, returns matches
-/*/
+/** Update props of exact matching edges, returns matches
+ */
 function m_SetMatchingEdgesByProp(match_me = {}, yes = {}, no = {}) {
   return m_SetMatchingObjsByProp(NCDATA.edges, match_me, yes, no);
 }
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ REGEX: the chars in brackets are part of matching character set.
-    Declaring this as a constant makes the RegEx run faster (I think).
-/*/
+/** REGEX: the chars in brackets are part of matching character set.
+ *  Declaring this as a constant makes the RegEx run faster (I think).
+ */
 const REGEX_REGEXCHARS = /[.*+?^${}()|[\]\\]/g;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Adds a \ in front of characters that have special RegEx meaning
-    From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expression
-/*/
+/** Adds a \ in front of characters that have special RegEx meaning
+ *  From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expression
+ */
 function u_EscapeRegexChars(string) {
   return string.replace(REGEX_REGEXCHARS, '\\$&'); // $& means the whole matched string
 }
 MOD.EscapeRegexChars = u_EscapeRegexChars; // Expose for filter-mgr.js
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Migrate Data from older formats
-
-    1. Convert all IDs to integers
-        Node and Edge IDs should be integers.
-        This isn't a problem with newly created datasets as the network-generated IDs
-        are integers.  However, with older data sets, the IDs may have been strings.
-        e.g. exports from Gephi will have string IDs.
-        This mismatch is a problem when looking up nodes by ID.
-          `data` is passed by reference
-          This modifies `data`
-          data = { nodes: [], edges: [] }
-    2. Convert 'attributes' from pre v1.4 datasets
-        NODES
-          attributes.Node_type => type
-          attributes[Extra Info] => info
-          attributes.Notes => notes
-        EDGES
-          attributes.Relationship => type
-          attributes.Info => info
-          attributes.Citations = citation
-          attributes.Notes => notes
-    3. Remove the old `attributes` key
-/*/
+/** Migrate Data from older formats
+ *
+ *  1. Convert all IDs to integers
+ *      Node and Edge IDs should be integers.
+ *      This isn't a problem with newly created datasets as the network-generated IDs
+ *      are integers.  However, with older data sets, the IDs may have been strings.
+ *      e.g. exports from Gephi will have string IDs.
+ *      This mismatch is a problem when looking up nodes by ID.
+ *        `data` is passed by reference
+ *        This modifies `data`
+ *        data = { nodes: [], edges: [] }
+ *  2. Convert 'attributes' from pre v1.4 datasets
+ *      NODES
+ *        attributes.Node_type => type
+ *        attributes[Extra Info] => info
+ *        attributes.Notes => notes
+ *      EDGES
+ *        attributes.Relationship => type
+ *        attributes.Info => info
+ *        attributes.Citations = citation
+ *        attributes.Notes => notes
+ *  3. Remove the old `attributes` key
+ */
 function m_MigrateData(data) {
   data.nodes.forEach(node => {
     node.id = parseInt(node.id);
@@ -1077,11 +1071,11 @@ function m_MigrateData(data) {
 // As of 3/2022 edge source and target use ids, so there's no longer
 // a need to convert them.
 //
-// /*/ Converts edge.source and edge.target from objects to ids
+// /** Converts edge.source and edge.target from objects to ids
 //     d3 converts edge.source and edget.target from ids to node objects
 //     when it renders NCDATA.  When getting ready to save edges to the database
 //     we need to convert them back to ids.
-// /*/
+//  */
 // function m_ConvertSourceTarget2ID(edges) {
 //   return edges.map(e => {
 //     e.source = e.source && e.source.id;
@@ -1092,24 +1086,24 @@ function m_MigrateData(data) {
 
 /// NODE MARKING METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Visually change all nodes to the deselected color
-/*/
+/** Visually change all nodes to the deselected color
+ */
 function m_UnMarkAllNodes() {
   let props = { selected: DESELECTED_COLOR };
   m_SetAllObjs(NCDATA.nodes, props);
   UDATA.SetAppState('NCDATA', NCDATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Remove the stroke color.  Used to unmark search matches.
-/*/
+/** Remove the stroke color.  Used to unmark search matches.
+ */
 function m_UnStrokeAllNodes() {
   let props = { strokeColor: undefined };
   m_SetAllObjs(NCDATA.nodes, props);
   UDATA.SetAppState('NCDATA', NCDATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Sets matching node labels to the passed selection color
-/*/
+/** Sets matching node labels to the passed selection color
+ */
 function m_MarkNodesThatMatch(searchString, color) {
   if (searchString === '') {
     m_UnMarkAllNodes();
@@ -1121,11 +1115,11 @@ function m_MarkNodesThatMatch(searchString, color) {
   UDATA.SetAppState('NCDATA', NCDATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Sets matching node labels to the passed selection color
-    This sets the stroke color, which is used to display
-    the matching nodes during a search.  If the node is
-    also selected, the selected color will override this color.
-/*/
+/** Sets matching node labels to the passed selection color
+ *  This sets the stroke color, which is used to display
+ *  the matching nodes during a search.  If the node is
+ *  also selected, the selected color will override this color.
+ */
 function m_SetStrokeColorThatMatch(searchString, color) {
   let matched = { strokeColor: color };
   let notmatched = { strokeColor: undefined };
@@ -1133,8 +1127,8 @@ function m_SetStrokeColorThatMatch(searchString, color) {
   UDATA.SetAppState('NCDATA', NCDATA);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Sets the 'selected' state of edges that are attached to the node
-/*/
+/* Sets the 'selected' state of edges that are attached to the node
+ */
 function m_MarkSelectedEdges(edges, node) {
   // Delesect all edges first
   edges.forEach(edge => {
@@ -1154,19 +1148,17 @@ function m_MarkSelectedEdges(edges, node) {
 
 /// COMMAND LINE UTILITIES ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Command: REGENERATE DEFAULT TEMPLATE
-    This will regenerate the `_default.template.toml` file from
-    the current `template-schema.js` spec.  This is only necessary to do
-    if you've edited the `template.schema.js`` file.
-/*/ JSCLI.AddFunction(
-  function ncRegenerateDefaultTemplate() {
-    UDATA.Call('SRV_TEMPLATE_REGENERATE_DEFAULT');
-    console.log('_default.template.toml regenerated from `template-schema.js`');
-  }
-);
-/*/ Command: RESET THE DATABASE from default data
-/*/
+/** Command: REGENERATE DEFAULT TEMPLATE
+ *  This will regenerate the `_default.template.toml` file from
+ *  the current `template-schema.js` spec.  This is only necessary to do
+ *  if you've edited the `template.schema.js`` file.
+ */
+JSCLI.AddFunction(function ncRegenerateDefaultTemplate() {
+  UDATA.Call('SRV_TEMPLATE_REGENERATE_DEFAULT');
+  console.log('_default.template.toml regenerated from `template-schema.js`');
+});
+/** Command: RESET THE DATABASE from default data
+ */
 JSCLI.AddFunction(function ncPushDatabase(jsonFile) {
   jsonFile = jsonFile || 'data.reducedlinks.json';
   DATASTORE.PromiseJSONFile(jsonFile)
@@ -1197,17 +1189,16 @@ JSCLI.AddFunction(function ncPushDatabase(jsonFile) {
   return 'FYI: ncPushDatabase(jsonFile) can load file in assets/data';
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Command: EMPTY THE DATABASE from default data
-/*/ JSCLI.AddFunction(
-  function ncEmptyDatabase() {
-    window.ncPushDatabase('nada.json');
-    return 'FYI: pushing empty database from assets/data/nada.json...reloading';
-  }
-);
+/** Command: EMPTY THE DATABASE from default data
+ */
+JSCLI.AddFunction(function ncEmptyDatabase() {
+  window.ncPushDatabase('nada.json');
+  return 'FYI: pushing empty database from assets/data/nada.json...reloading';
+});
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Command: Unlock the database.  Used to recover from error conditions where
-    a node or edge is inadvertently left locked.
-/*/
+/** Command: Unlock the database.  Used to recover from error conditions where
+ *  a node or edge is inadvertently left locked.
+ */
 JSCLI.AddFunction(function ncUnlockAll() {
   UDATA.NetCall('SRV_DBUNLOCKALL', {});
   return 'Unlocking all nodes and edges in the database, and enabling template edits.';
@@ -1229,8 +1220,8 @@ JSCLI.AddFunction(function ncDumpData() {
   return `ncDumpData: ${JSON.stringify(NCDATA)}`;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Command: Token Generator
-/*/
+/** Command: Token Generator
+ */
 JSCLI.AddFunction(function ncMakeTokens(clsId, projId, dataset, numGroups) {
   // type checking
   if (typeof clsId !== 'string')

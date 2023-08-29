@@ -32,39 +32,24 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = false;
+const UNISYS = require('unisys/client');
+const TOML = require('@iarna/toml');
+const DATASTORE = require('system/datastore');
 
-/// LIBRARIES /////////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UNISYS = require("unisys/client");
-const TOML = require("@iarna/toml");
-const DATASTORE = require("system/datastore");
+const DBG = false;
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var MOD = UNISYS.NewModule(module.id);
 var UDATA = UNISYS.NewDataLink(MOD);
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
-/// UTILITIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// UNISYS LIFECYCLE HOOKS ////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-///////////////////////////////////////////////////////////////////////////////
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-///
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Used when importing a TOML file
-    Makes sure TOML file is readable.
-    Returns JSON
-/*/
+/** Used when importing a TOML file
+ *  Makes sure TOML file is readable. Returns JSON
+ */
 MOD.ValidateTOMLFile = async data => {
   const { tomlfile } = data;
   try {
@@ -75,10 +60,9 @@ MOD.ValidateTOMLFile = async data => {
   } catch (err) {
     return { isValid: false, error: err };
   }
-}
-
+};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Update TEMPLATE AppState
+/** Update TEMPLATE AppState
     Called by Template.jsx to update the template data with the info from the form.
     Mostly used to process whether the form is:
     a) updating the whole template data, or
@@ -93,7 +77,7 @@ MOD.ValidateTOMLFile = async data => {
     MAJOR SIDE EFFECT: Updates NCDATA with changes!
     `templateSnippet` can be the whole template object, or just the node types or
     edge types.
-/*/
+ */
 MOD.UpdateTemplate = (templateSnippet, editScope) => {
   let TEMPLATE = UDATA.AppState('TEMPLATE');
 
@@ -123,14 +107,18 @@ MOD.UpdateTemplate = (templateSnippet, editScope) => {
       return true;
     });
     // 2. Update NCDATA with new types
-    UDATA.LocalCall("NODE_TYPES_UPDATE", { nodeTypesChanges: templateSnippet.options });
+    UDATA.LocalCall('NODE_TYPES_UPDATE', {
+      nodeTypesChanges: templateSnippet.options
+    });
     // 3. Remove Types marked for deletion
-    TEMPLATE.nodeDefs.type.options = TEMPLATE.nodeDefs.type.options.filter(o => !o.delete);
+    TEMPLATE.nodeDefs.type.options = TEMPLATE.nodeDefs.type.options.filter(
+      o => !o.delete
+    );
     // 4. Update types with replacement labels
     TEMPLATE.nodeDefs.type.options = TEMPLATE.nodeDefs.type.options.map(o => {
       if (o.replacement) {
         o.label = o.replacement;
-        o.replacement = "";
+        o.replacement = '';
       }
       return o;
     });
@@ -159,14 +147,18 @@ MOD.UpdateTemplate = (templateSnippet, editScope) => {
       return true;
     });
     // 2. Update NCDATA with new types
-    UDATA.LocalCall("EDGE_TYPES_UPDATE", { edgeTypesChanges: templateSnippet.options });
+    UDATA.LocalCall('EDGE_TYPES_UPDATE', {
+      edgeTypesChanges: templateSnippet.options
+    });
     // 3. Remove Types marked for deletion
-    TEMPLATE.edgeDefs.type.options = TEMPLATE.edgeDefs.type.options.filter(o => !o.delete);
+    TEMPLATE.edgeDefs.type.options = TEMPLATE.edgeDefs.type.options.filter(
+      o => !o.delete
+    );
     // 4. Update types with replacements
     TEMPLATE.edgeDefs.type.options = TEMPLATE.edgeDefs.type.options.map(o => {
       if (o.replacement) {
         o.label = o.replacement;
-        o.replacement = "";
+        o.replacement = '';
       }
       return o;
     });
@@ -174,20 +166,18 @@ MOD.UpdateTemplate = (templateSnippet, editScope) => {
   // This call is redundant.  SaveTemplateToFile will trigger a state update.
   // UDATA.SetAppState("TEMPLATE", TEMPLATE);
   return TEMPLATE;
-}
-
+};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Save template file to disk
+/** Save template file to disk
     in case we do not necessarily want to autosave template data
     This calls: datastore > server > server-database
-/*/
+ */
 MOD.SaveTemplateToFile = template => {
   return DATASTORE.SaveTemplateFile(template);
-}
-
+};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Download template to local file
-/*/
+/** Download template to local file
+ */
 MOD.DownloadTemplate = () => {
   DATASTORE.GetTemplateTOMLFileName() // datastore > server > server-database
     .then(data => {
@@ -195,7 +185,7 @@ MOD.DownloadTemplate = () => {
       const TEMPLATE = UDATA.AppState('TEMPLATE');
       const toml = TOML.stringify(TEMPLATE);
       const link = document.createElement('a');
-      const blob = new Blob(["\ufeff", toml]);
+      const blob = new Blob(['\ufeff', toml]);
       const url = URL.createObjectURL(blob);
       link.href = url;
       link.download = filename;
@@ -203,8 +193,7 @@ MOD.DownloadTemplate = () => {
       link.click();
       document.body.removeChild(link);
     });
-}
-
+};
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

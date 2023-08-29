@@ -1,15 +1,12 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    Store common system definitions here between client and server modules.
+  Store common system definitions here between client and server modules.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG         = true;
-
-/// LIBRARIES /////////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var   DEFS = {};
-
+var DEFS = {};
 DEFS.SERVER_HEARTBEAT_INTERVAL = 5000; // ms
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
