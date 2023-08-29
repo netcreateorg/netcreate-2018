@@ -69,6 +69,7 @@ class EdgeTable extends UNISYS.Component {
     this.OnTemplateUpdate = this.OnTemplateUpdate.bind(this);
     this.onButtonClick = this.onButtonClick.bind(this);
     this.onToggleExpanded = this.onToggleExpanded.bind(this);
+    this.onHighlightNode = this.onHighlightNode.bind(this);
     this.m_FindMatchingObjsByProp = this.m_FindMatchingObjsByProp.bind(this);
     this.m_FindMatchingEdgeByProp = this.m_FindMatchingEdgeByProp.bind(this);
     this.m_FindEdgeById = this.m_FindEdgeById.bind(this);
@@ -421,6 +422,12 @@ class EdgeTable extends UNISYS.Component {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /**
+  /*/
+  onHighlightNode(nodeId) {
+    UDATA.LocalCall('TABLE_HILITE_NODE', { nodeId });
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /*/
    */
   setSortKey(key, type) {
     if (key === this.state.sortkey) this.sortDirection = -1 * this.sortDirection;
@@ -520,6 +527,7 @@ class EdgeTable extends UNISYS.Component {
     );
     return (
       <div
+        onMouseLeave={() => this.onHighlightNode(undefined)}
         style={{
           overflow: 'auto',
           position: 'relative',
@@ -635,7 +643,11 @@ class EdgeTable extends UNISYS.Component {
                 {/* Cast to string for edge.target where target is undefined */}
                 <td hidden={!DBG}>{String(edge.source)}</td>
                 <td>
-                  <a href="#" onClick={e => this.selectNode(edge.source, e)}>
+                  <a
+                    href="#"
+                    onClick={e => this.selectNode(edge.source, e)}
+                    onMouseOver={() => this.onHighlightNode(edge.source)}
+                  >
                     {edge.sourceLabel}
                   </a>
                 </td>
@@ -643,7 +655,11 @@ class EdgeTable extends UNISYS.Component {
                 {/* Cast to string for edge.target where target is undefined */}
                 <td hidden={!DBG}>{String(edge.target)}</td>
                 <td>
-                  <a href="#" onClick={e => this.selectNode(edge.target, e)}>
+                  <a
+                    href="#"
+                    onClick={e => this.selectNode(edge.target, e)}
+                    onMouseOver={() => this.onHighlightNode(edge.target)}
+                  >
                     {edge.targetLabel}
                   </a>
                 </td>
