@@ -143,6 +143,10 @@ class Template extends UNISYS.Component {
   // ClassName added in template-schema.GetTypeEditorSchema()
   disableOrigLabelFields() {
     const origLabelFields = document.getElementsByClassName('disabledField');
+    if (origLabelFields === undefined || origLabelFields.length === 0) {
+      console.warn('@BL: disableOrigLabelFields() fail on disabledField class');
+      return;
+    }
     origLabelFields.forEach(f => f.setAttribute('disabled', 'disabled'));
   }
 
