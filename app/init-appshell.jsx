@@ -22,11 +22,6 @@ const { Navbar, NavbarToggler } = require('reactstrap');
 const { NavbarBrand, Nav, NavItem, NavLink } = require('reactstrap');
 const { UncontrolledDropdown, DropdownToggle } = require('reactstrap');
 const { DropdownMenu, DropdownItem } = require('reactstrap');
-const { Switch, withRouter } = require('react-router-dom');
-// workaround name collision in ReactRouterNavLink with ReactStrap
-const RRNavLink = require('react-router-dom').NavLink;
-//
-const { renderRoutes } = require('react-router-config');
 //
 const UNISYS = require('unisys/client');
 
@@ -45,94 +40,9 @@ const UNISYS = require('unisys/client');
     <RequiredComponent>  |     div       this is a child of a flexbox
 /*/
 const SETTINGS = require('settings');
-const AppDefault = require('view/AppDefault');
+const AppDefault = require('view/default/AppDefault');
 const NetCreate = require('view/netcreate/NetCreate');
-const DevUnisys = require('view/dev-unisys/DevUnisys');
-const DevDB = require('view/dev-db/DevDB');
-const DevReact = require('view/dev-react/DevReact');
-const DevSession = require('view/dev-session/DevSession');
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const Routes = [
-  {
-    path: '/',
-    exact: true,
-    component: NetCreate
-  },
-  {
-    path: '/edit',
-    component: NetCreate
-  },
-  {
-    path: '/dev-unisys',
-    component: DevUnisys
-  },
-  {
-    path: '/dev-db',
-    component: DevDB
-  },
-  {
-    path: '/dev-react',
-    component: DevReact
-  },
-  {
-    path: '/dev-session',
-    component: DevSession
-  },
-  {
-    path: '/simple',
-    component: props => {
-      return HTML(props);
-    }
-  },
-  {
-    path: '/vocabulary',
-    component: props => {
-      return HTML(props);
-    }
-  },
-  {
-    path: '*',
-    restricted: false,
-    component: NoMatch
-  }
-];
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Joshua added to disable Extras
-const isLocalHost = SETTINGS.EJSProp('client').ip === '127.0.0.1';
-
-/// 2. ROUTED FUNCTIONS ///////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-    Used by render()'s <Switch> to load a plain html page that is
-    located at app/htmldemos/<route>/<route.html>
-
-    index.html           | body          min-height: 100%
-    index.html           | div#app
-    init-appshell        |   div         display:flex, flex-flow:column nowrap,
-                                        width:100%, height:100vh
-    init-appshell        |     Navbar    position:fixed
-    --- COMPONENT BELOW ---
-    init-appshell.HTML() |     div       display:flex, flex-flow:column nowrap,
-                                        width:100%
-    init-appshell.HTML() |       iframe  flex:1 0 auto, border:0
-/*/
-function HTML(props) {
-  SETTINGS.ForceReloadOnNavigation();
-  let loc = props.location.pathname.substring(1);
-  loc = '/htmldemos/' + loc + '/' + loc + '.html';
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexFlow: 'column nowrap',
-        width: '100%',
-        height: '100%'
-      }}
-    >
-      <iframe style={{ flex: '1 0 auto', border: '0' }} src={loc} />
-    </div>
-  );
-}
+const HTMLFrame = require('view/html-frame/HTMLFrame');
 
 /// 3. NO ROUTE ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -156,8 +66,7 @@ function NoMatch(props) {
  */
 class AppShell extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /*/ constructor
-/*/ constructor(props) {
+  constructor(props) {
     super(props);
     this.toggle = this.toggle.bind(this);
     this.state = {
@@ -184,8 +93,9 @@ class AppShell extends UNISYS.Component {
    *  To add a new HTML, add the link to both the <Nav> and <Switch> staments.
    *  To add a new VIEW, load the component
    */
-  render() {
-    /// return component with matching routed view
+  render(props) {
+    const { route, routeProps } = SETTINGS.GetRouteInfoFromURL(window.location.href);
+    const isLocalHost = window.location.href.indexOf('localhost') > -1;
     return (
       <div
         style={{
@@ -244,17 +154,12 @@ class AppShell extends UNISYS.Component {
         <div style={{ height: '3.5em' }}>
           {/*/ add space underneath the fixed navbar /*/}
         </div>
-        <Switch>{renderRoutes(Routes)}</Switch>
+        <NetCreate />
       </div>
     );
   } // render()
 } // AppShell()
 
-/// EXPORT ROUTE INFO /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-AppShell.Routes = Routes;
-
 /// EXPORT REACT CLASS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// see https://tylermcginnis.com/react-router-programmatically-navigate/
-module.exports = withRouter(AppShell);
+module.exports = AppShell;

@@ -51,6 +51,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+const SETTINGS = require('settings');
 const React = require('react');
 const PROMPTS = require('system/util/prompts');
 const SESSION = require('unisys/common-session');
@@ -310,10 +311,57 @@ class SessionShell extends UNISYS.Component {
     // Subsequent changes to the URL (e.g. changing token directly in the url)
     // do not result in a second componentWillMount call.  These are handled
     // by the componentDidUpdate() call.
-    let token = this.props.match.params.token;
+
+    // <Route path="/edit/:token" exact={true} component={SessionShell} />
+    // <Route path="/edit" exact={true} component={SessionShell} />
+    // <Route path="/" exact={true} component={SessionShell} />
+
+    const { params } = SETTINGS.GetRouteInfoFromURL();
+    let { token } = params;
     let decoded = SESSION.DecodeToken(token, window.NC_CONFIG.dataset) || {};
     this.SetAppState('SESSION', decoded);
     this.previousIsValid = decoded.isValid;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  componentDidUpdate(prevProps) {
+    // SIDE EFFECT
+    // Check for changes in logged in status and
+    // trigger AppStateChange if necessary
+
+    const { params } = SETTINGS.GetRouteInfoFromURL();
+    let { token } = params;
+
+    if (!token) return; // don't bother to check if this was a result of changes from the form
+    let decoded = SESSION.DecodeToken(token, window.NC_CONFIG.dataset);
+    if (decoded.isValid !== this.previousIsValid) {
+      this.SetAppState('SESSION', decoded);
+      this.previousIsValid = decoded.isValid;
+    }
+  }
+
+  /// EVENT HANDLERS ////////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  handleChange(event) {
+    let token = event.target.value;
+    let decoded = SESSION.DecodeToken(token, window.NC_CONFIG.dataset);
+    let { classId, projId, hashedId, subId, groupId } = decoded;
+    console.log('decoded', decoded);
+    this.setState(decoded);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  onSubmit(event) {
+    event.preventDefault();
+    const BRUTAL_REDIRECT = true;
+    if (this.state.isValid) {
+      // force a page URL change
+      if (BRUTAL_REDIRECT) {
+        const redirect = `./#/edit/${this.state.token}`;
+        window.location = redirect;
+      } else {
+        const redirect = `./edit/${this.state.token}`;
+        this.props.history.push(redirect);
+      }
+    }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Main Render Function
@@ -338,8 +386,8 @@ class SessionShell extends UNISYS.Component {
       );
     }
 
-    let token = this.props.match.params.token;
-
+    const { params } = SETTINGS.GetRouteInfoFromURL();
+    let { token } = params;
     // no token so just render login
     if (!token) return this.renderLogin();
 
@@ -350,47 +398,6 @@ class SessionShell extends UNISYS.Component {
     } else {
       return this.renderLogin(token);
     }
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  componentDidUpdate(prevProps) {
-    // SIDE EFFECT
-    // Check for changes in logged in status and
-    // trigger AppStateChange if necessary
-
-    // Read token from props (because they are not saved in state)
-    // We have to decode again here because we're using props directly
-    let token = this.props.match.params.token;
-    if (!token) return; // don't bother to check if this was a result of changes from the form
-    let decoded = SESSION.DecodeToken(token, window.NC_CONFIG.dataset);
-    if (decoded.isValid !== this.previousIsValid) {
-      this.SetAppState('SESSION', decoded);
-      this.previousIsValid = decoded.isValid;
-    }
-  }
-
-  /// EVENT HANDLERS ////////////////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  handleChange(event) {
-    let token = event.target.value;
-    let decoded = SESSION.DecodeToken(token, window.NC_CONFIG.dataset);
-    let { classId, projId, hashedId, subId, groupId } = decoded;
-    this.setState(decoded);
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  onSubmit(event) {
-    event.preventDefault();
-    const BRUTAL_REDIRECT = true;
-    if (this.state.isValid) {
-      // force a page URL change
-      if (BRUTAL_REDIRECT) {
-        const redirect = `./#/edit/${this.state.token}`;
-        window.location = redirect;
-      } else {
-        const redirect = `./edit/${this.state.token}`;
-        this.props.history.push(redirect);
-      }
-    }
-    /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   }
 } // UNISYS.Component SessionShell
 

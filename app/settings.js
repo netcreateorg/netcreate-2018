@@ -18,7 +18,7 @@ let DATE = new Date();
 let RELOAD_CHECK = 0;
 let RELOAD_TIMER = null;
 
-/// MAIN GETTER/SETTER FUNCTION  //////////////////////////////////////////////
+/// MAIN GETTER SETTER FUNCTION  //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** settings.js returns a function as its module.exports value so
     syntax like let a = SETTINGS['key'] can be used.
@@ -33,6 +33,39 @@ let MOD = (a, b) => {
     S[a] = b;
     return b;
   }
+};
+
+/// ROUTE UTILITIES ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const ROUTES_PARAMS = {
+  '/': { scope: 'NetCreate' },
+  '/edit': { scope: 'NetCreate', plist: ['token'] },
+  '/simple': { scope: 'HTMLFrame' }
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Return matching routed information. Looks part after /#/ as route
+ *  information and returns the routing information for UNISYS routing
+ *  of components and setting UNISYS module scope (used for client exec)
+ */
+MOD.GetRouteInfoFromURL = (url = window.location.href) => {
+  const fn = 'GetRouteInfoFromURL:';
+  const routeParts = url.split('/#/');
+  let routeString = routeParts.length === 1 ? '' : routeParts[1];
+  const routeParameters = routeString.split('/');
+  const [route, ...params] = routeParameters;
+  const key = `/${route}`;
+  const routeInfo = ROUTES_PARAMS[key];
+  const { scope, plist = [] } = routeInfo || { element: NoMatch };
+  const dict = {};
+  for (let i = 0; i < plist.length; i++) {
+    const pkey = plist[i];
+    dict[pkey] = params[i];
+  }
+  return {
+    route: key,
+    scope,
+    params: dict
+  };
 };
 
 /// API ///////////////////////////////////////////////////////////////////////
@@ -80,7 +113,12 @@ MOD.IsAdmin = () => {
   const isLocalHost = MOD.EJSProp('client').ip === '127.0.0.1';
   const urlHasAdmin = location.href.includes('admin=true');
   //
-  return isLocalHost && urlHasAdmin;
+  return isLocalHost; // && urlHasAdmin;
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Joshua added to disable Extras in init-appshell.jsx */
+MOD.IsLocalHost = () => {
+  return MOD.EJSProp('client').ip === '127.0.0.1';
 };
 
 /// SERVER-PROVIDED PROPERTIES ////////////////////////////////////////////////

@@ -23,9 +23,6 @@ const UNISYS = require('unisys/client');
 class AppDefault extends React.Component {
   constructor() {
     super();
-    /* UNISYS LIFECYCLE INITIALIZATION */
-    // initialize UNISYS before declaring any hook functions
-    UNISYS.SystemInitialize('assets/htmldemos/d3forcedemo');
   }
   render() {
     return (

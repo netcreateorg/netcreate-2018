@@ -1252,7 +1252,8 @@ JSCLI.AddFunction(function ncMakeTokens(clsId, projId, dataset, numGroups) {
       1
     )}\n`;
   }
-  return out;
+  console.log(out);
+  return '';
 });
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
