@@ -113,7 +113,7 @@ MOD.IsAdmin = () => {
   const isLocalHost = MOD.EJSProp('client').ip === '127.0.0.1';
   const urlHasAdmin = location.href.includes('admin=true');
   //
-  return isLocalHost; // && urlHasAdmin;
+  return isLocalHost && urlHasAdmin;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Joshua added to disable Extras in init-appshell.jsx */
