@@ -69,7 +69,6 @@ const {
   Input,
   Label
 } = ReactStrap;
-const { Redirect } = require('react-router-dom');
 const UNISYS = require('unisys/client');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

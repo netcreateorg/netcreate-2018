@@ -19,7 +19,6 @@ require('babel-polyfill'); // enables regenerators for async/await
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const ReactDOM = require('react-dom');
-const { HashRouter } = require('react-router-dom');
 
 /// SYSTEM MODULES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -108,20 +107,14 @@ function m_RenderApp() {
     console.log('%cINIT %cReactDOM.render() begin', 'color:blue', 'color:auto');
   return new Promise((resolve, reject) => {
     try {
-      ReactDOM.render(
-        <HashRouter hashType="slash">
-          <AppShell />
-        </HashRouter>,
-        document.querySelector('#app-container'),
-        () => {
-          console.log(
-            '%cINIT %cReactDOM.render() complete',
-            'color:blue',
-            'color:auto'
-          );
-          resolve();
-        }
-      );
+      ReactDOM.render(<AppShell />, document.querySelector('#app-container'), () => {
+        console.log(
+          '%cINIT %cReactDOM.render() complete',
+          'color:blue',
+          'color:auto'
+        );
+        resolve();
+      });
     } catch (e) {
       console.error(
         'm_RenderApp() Lifecycle Error. Check phase execution order effect on data validity.\n',
