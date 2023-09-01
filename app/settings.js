@@ -161,7 +161,8 @@ MOD.ServerAppURL = suburl => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Joshua added to disable Extras in init-appshell.jsx */
 MOD.IsLocalHost = () => {
-  return MOD.EJSProp('client').ip === '127.0.0.1';
+  const ip = MOD.EJSProp('client').ip;
+  return ip.endsWith('127.0.0.1');
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Returns true is the NetCreate app should assume that an administrator is
