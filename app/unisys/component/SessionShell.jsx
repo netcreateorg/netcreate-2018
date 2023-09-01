@@ -184,27 +184,26 @@ class SessionShell extends UNISYS.Component {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** render must login (readonly)
+   *  see common-session.DecodeToken() for details on:
+   *    classId, projId, and hashedId are provided by the token
+   *    groupId is _calculated_ when all three parts are valid
+   *    subId is a string ID<NNN> where <NNN> are digits
    */
   renderLogin() {
     let { token, classId, projId, groupId, subId, hashedId, isValid } = this.state;
     if (token) token = token.toUpperCase();
     let formFeedback, tip, input;
-    tip = 'Type group ID';
-    if (classId) tip = 'Scanning for valid code...';
-    if (projId) tip = 'Waiting for valid code...';
-    if (groupId) tip = 'Waiting for extra ID...';
-    if (hashedId) {
-      if (hashedId.length >= 3) {
-        if (!groupId) tip = `'${token}' is an invalid code`;
-        else {
-          if (subId) tip = `Login in as GROUP ${groupId} ${subId}`;
-          else tip = `Login as GROUP ${groupId} or add -ID<num>`;
-        }
-      }
-    }
+    tip = 'type your login token';
+    if (classId) tip = 'token part [1/3]...';
+    if (projId) tip = 'token part [2/3]...';
+    // groupId isn't part of the token
+    // if (groupId) tip = 'Waiting for extra ID...';
+    if (hashedId) tip = 'token part [3/3]...';
+    // if groupId is defined, then the token is valid
     if (groupId) {
+      //
       if (subId === 0) {
-        tip = `e.g. ${classId}-${projId}-${hashedId} followed by -ID<num>`;
+        tip = `...optional ID number`;
         input = (
           <Input
             invalid
@@ -222,7 +221,8 @@ class SessionShell extends UNISYS.Component {
             <small>{tip}</small>
           </FormFeedback>
         );
-      } else {
+      } /* if subId!==0 */ else {
+        tip = 'CLICK LOGIN BUTTON';
         input = (
           <Input
             valid
@@ -241,7 +241,7 @@ class SessionShell extends UNISYS.Component {
           </FormFeedback>
         );
       }
-    } else {
+    } /* if not groupId*/ else {
       input = (
         <Input
           invalid
@@ -321,7 +321,6 @@ class SessionShell extends UNISYS.Component {
     // SIDE EFFECT
     // Check for changes in logged in status and
     // trigger AppStateChange if necessary
-
     const { routeProps } = SETTINGS.GetRouteInfoFromURL();
     let { token } = routeProps;
 
@@ -339,22 +338,16 @@ class SessionShell extends UNISYS.Component {
     let token = event.target.value;
     let decoded = SESSION.DecodeToken(token, window.NC_CONFIG.dataset);
     let { classId, projId, hashedId, subId, groupId } = decoded;
-    console.log('decoded', decoded);
     this.setState(decoded);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   onSubmit(event) {
     event.preventDefault();
-    const BRUTAL_REDIRECT = true;
     if (this.state.isValid) {
       // force a page URL change
-      if (BRUTAL_REDIRECT) {
-        const redirect = `./#/edit/${this.state.token}`;
-        window.location = redirect;
-      } else {
-        const redirect = `./edit/${this.state.token}`;
-        this.props.history.push(redirect);
-      }
+      const redirect = `./#/edit/${this.state.token}`;
+      window.location.replace(redirect);
+      window.location.reload();
     }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -51,9 +51,13 @@ SESUTIL.DecodeToken = function (token, dataset) {
   if (tokenBits[3]) subId = tokenBits[3].toUpperCase();
   // initialize hashid structure
   let salt = `${classId}${projId}${dataset}`;
-  let hashids = new HashIds(salt, HASH_MINLEN, HASH_ABET);
-  // try to decode the groupId
-  groupId = hashids.decode(hashedId)[0];
+  try {
+    let hashids = new HashIds(salt, HASH_MINLEN, HASH_ABET);
+    // try to decode the groupId
+    groupId = hashids.decode(hashedId)[0];
+  } catch (err) {
+    console.log('SESUTIL.DecodeToken: invalid token');
+  }
   // invalidate if groupId isn't an integer
   if (!Number.isInteger(groupId)) {
     if (DBG) console.error('invalid token');
