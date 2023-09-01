@@ -33,7 +33,6 @@
     "chokidar": "^3.5.3",
     "clean-css-brunch": "^2.10.0",
     "copycat-brunch": "^1.1.1",
-    "core-js": "^3.6.5",
     "ejs": "^3.1.9",
     "eslint": "^8.17.0",
     "eslint-config-prettier": "^8.5.0",
@@ -43,7 +42,6 @@
     "path": "^0.12.7",
     "peggy": "^3.0.2",
     "prettier": "^2.5.1",
-    "react-is": "^16.13.1",
     "terser-brunch": "^4.0.0",
     "tracer": "^1.1.5"
   },
@@ -72,7 +70,6 @@
     "react-autosuggest": "^10.1.0",
     "react-dom": "^16.4.2",
     "react-faux-dom": "^4.5.0",
-    "react-popper": "^0.7.4",
     "reactstrap": "^8.10.1",
     "rfdc": "^1.3.0",
     "shelljs": "^0.8.5",
