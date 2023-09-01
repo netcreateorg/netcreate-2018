@@ -95,7 +95,7 @@ class AppShell extends UNISYS.Component {
    */
   render(props) {
     const { route, routeProps } = SETTINGS.GetRouteInfoFromURL(window.location.href);
-    const isLocalHost = window.location.href.indexOf('localhost') > -1;
+    const isLocalHost = SETTINGS.IsLocalHost();
     return (
       <div
         style={{

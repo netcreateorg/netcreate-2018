@@ -49,23 +49,49 @@ const ROUTES_PARAMS = {
  */
 MOD.GetRouteInfoFromURL = (url = window.location.href) => {
   const fn = 'GetRouteInfoFromURL:';
-  const routeParts = url.split('/#/');
-  let routeString = routeParts.length === 1 ? '' : routeParts[1];
+  // routestring is everything after the leading /#/ (not same as URL.hash)
+  const hrefParts = url.split('/#/');
+  const hrefString = hrefParts.length === 1 ? '' : hrefParts[1];
+  // pluck querystring (e.g. ?admin=true) off the end
+  const stringParts = hrefString.split('?');
+  let routeString = '';
+  let queryString = '';
+  if (stringParts.length === 1) {
+    routeString = stringParts[0];
+  } else if (stringParts.length === 2) {
+    routeString = stringParts[0];
+    queryString = stringParts[1];
+  } else throw Error(`${fn} unexpected url format ${url}`);
+
+  // handle route
   const routeParameters = routeString.split('/');
   const [route, ...params] = routeParameters;
   const key = `/${route}`;
   const routeInfo = ROUTES_PARAMS[key];
   const { scope, plist = [] } = routeInfo || { element: NoMatch };
+
+  // build the queryVars dictionary
+  const settings = queryString.split('&');
+  const vars = {};
+  for (let i = 0; i < settings.length; i++) {
+    const setting = settings[i];
+    const [key, value] = setting.split('=');
+    vars[key] = value;
+  }
+  // build the routeProps dictionary
   const dict = {};
   for (let i = 0; i < plist.length; i++) {
     const pkey = plist[i];
     dict[pkey] = params[i];
   }
-  return {
+  // return RouteInfo
+  const result = {
     route: key,
     scope,
-    params: dict
+    routeProps: dict,
+    queryVars: vars
   };
+  return result;
 };
 
 /// API ///////////////////////////////////////////////////////////////////////
@@ -103,23 +129,6 @@ MOD.ForceReloadOnNavigation = () => {
 MOD.CurrentTime = () => {
   return DATE.toDateString();
 };
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Returns true is the NetCreate app should assume that an administrator is
- *  logged in. Administrators can edit templates. The check is very weak,
- *  relying on browsers running on localhost with the URL parameter.
- *  TODO: will be replacing with "real" login system for NetCreate 2.0.
- */
-MOD.IsAdmin = () => {
-  const isLocalHost = MOD.EJSProp('client').ip === '127.0.0.1';
-  const urlHasAdmin = location.href.includes('admin=true');
-  //
-  return isLocalHost && urlHasAdmin;
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Joshua added to disable Extras in init-appshell.jsx */
-MOD.IsLocalHost = () => {
-  return MOD.EJSProp('client').ip === '127.0.0.1';
-};
 
 /// SERVER-PROVIDED PROPERTIES ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -146,6 +155,26 @@ MOD.ServerAppURL = suburl => {
   let url = `${ubits.protocol}//${ubits.host}/${hash}`;
   if (typeof suburl === 'string') url += suburl;
   return url;
+};
+
+/// UTILITIES /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Joshua added to disable Extras in init-appshell.jsx */
+MOD.IsLocalHost = () => {
+  return MOD.EJSProp('client').ip === '127.0.0.1';
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Returns true is the NetCreate app should assume that an administrator is
+ *  logged in. Administrators can edit templates. The check is very weak,
+ *  relying on browsers running on localhost with the URL parameter.
+ *  TODO: will be replacing with "real" login system for NetCreate 2.0.
+ */
+MOD.IsAdmin = () => {
+  const isLocalHost = MOD.IsLocalHost();
+  const rinfo = MOD.GetRouteInfoFromURL().queryVars || {};
+  const urlHasAdmin = rinfo.admin === 'true';
+  //
+  return isLocalHost && urlHasAdmin;
 };
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////

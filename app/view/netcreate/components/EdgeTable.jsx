@@ -39,9 +39,7 @@ const UNISYS = require('unisys/client');
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
-const isLocalHost =
-  SETTINGS.EJSProp('client').ip === '127.0.0.1' ||
-  location.href.includes('admin=true');
+const isAdmin = SETTINGS.IsAdmin();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var UDATA = null;
 
@@ -600,7 +598,7 @@ class EdgeTable extends UNISYS.Component {
                 </th>
               ))}
               {/*
-              <th width="7%" hidden={!isLocalHost}>
+              <th width="7%" hidden={!isAdmin}>
                 <Button
                   size="sm"
                   onClick={() => this.setSortKey('Updated', FILTER.TYPES.STRING)}
@@ -669,7 +667,7 @@ class EdgeTable extends UNISYS.Component {
                   </td>
                 ))}
                 {/*
-                <td hidden={!isLocalHost} style={{ fontSize: '9px' }}>
+                <td hidden={!isAdmin} style={{ fontSize: '9px' }}>
                   {this.displayUpdated(edge)}
                 </td>
                 <td

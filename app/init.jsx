@@ -90,7 +90,7 @@ document.addEventListener('UNISYSDisconnect', event => {
 function m_SetLifecycleScope() {
   // set scope for UNISYS execution
   const url = window.location.href;
-  const { route, scope, params } = SETTINGS.GetRouteInfoFromURL(url);
+  const { scope } = SETTINGS.GetRouteInfoFromURL(url);
   if (scope) {
     if (DBG) console.log(`Lifecycle Module Scope is ${scope}`);
     UNISYS.SetScope(scope);

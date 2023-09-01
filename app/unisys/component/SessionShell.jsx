@@ -315,8 +315,8 @@ class SessionShell extends UNISYS.Component {
     // <Route path="/edit" exact={true} component={SessionShell} />
     // <Route path="/" exact={true} component={SessionShell} />
 
-    const { params } = SETTINGS.GetRouteInfoFromURL();
-    let { token } = params;
+    const { routeProps } = SETTINGS.GetRouteInfoFromURL();
+    let { token } = routeProps;
     let decoded = SESSION.DecodeToken(token, window.NC_CONFIG.dataset) || {};
     this.SetAppState('SESSION', decoded);
     this.previousIsValid = decoded.isValid;
@@ -327,8 +327,8 @@ class SessionShell extends UNISYS.Component {
     // Check for changes in logged in status and
     // trigger AppStateChange if necessary
 
-    const { params } = SETTINGS.GetRouteInfoFromURL();
-    let { token } = params;
+    const { routeProps } = SETTINGS.GetRouteInfoFromURL();
+    let { token } = routeProps;
 
     if (!token) return; // don't bother to check if this was a result of changes from the form
     let decoded = SESSION.DecodeToken(token, window.NC_CONFIG.dataset);
@@ -385,8 +385,8 @@ class SessionShell extends UNISYS.Component {
       );
     }
 
-    const { params } = SETTINGS.GetRouteInfoFromURL();
-    let { token } = params;
+    const { routeProps } = SETTINGS.GetRouteInfoFromURL();
+    let { token } = routeProps;
     // no token so just render login
     if (!token) return this.renderLogin();
 
