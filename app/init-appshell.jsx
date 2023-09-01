@@ -3,21 +3,14 @@
     init-appshell.jsx
     application shell loaded and rendered in init.jsx
 
-    These are the top-level React components ("view") that are mapped to
-    routes as seen in render() function's <Switch>. There are three styles:
-    (1) a loaded React 'view' that is built entirely with our modular app API
-      and displayed in this application shell.
-    (2) a plain .html file loaded into an IFRAME, useful for adding stand-alone
-      test code with access to the modular app API system, but not other web
-      apps (e.g. can use the data storage module)
-    (3) a NO ROUTE FOUND component function.
+    These are the top-level React components ("view").
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 /// REACT LIBRARIES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
-const { Alert, Collapse } = require('reactstrap');
+const { Collapse } = require('reactstrap');
 const { Navbar, NavbarToggler } = require('reactstrap');
 const { NavbarBrand, Nav, NavItem, NavLink } = require('reactstrap');
 const { UncontrolledDropdown, DropdownToggle } = require('reactstrap');
@@ -27,42 +20,15 @@ const UNISYS = require('unisys/client');
 
 /// 1. MAIN VIEWS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Used by render()'s <Switch> to load a React component (what we call a
-    'view' in the NetCreate app). The component should return its elements
-    wrapped in a div with the suggested flexbox pr
-
-    index.html           | body          min-height: 100%
-    index.html           | div#app
-    init-appshell        |   div         display:flex, flex-flow:column nowrap,
-                                        width:100%, height:100vh
-    init-appshell        |     Navbar    position:fixed
-    --- COMPONENT BELOW ---
-    <RequiredComponent>  |     div       this is a child of a flexbox
-/*/
 const SETTINGS = require('settings');
-const AppDefault = require('view/default/AppDefault');
 const NetCreate = require('view/netcreate/NetCreate');
-const HTMLFrame = require('view/html-frame/HTMLFrame');
-
-/// 3. NO ROUTE ///////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Used by render()'s <Switch> when there are no matching routes
-function NoMatch(props) {
-  let hash = props.location.pathname.substring(1);
-  return (
-    <Alert color="warning">
-      No Match for route <tt>#{hash}</tt>
-    </Alert>
-  );
-}
+// const AppDefault = require('view/default/AppDefault');
+// const HTMLFrame = require('view/html-frame/HTMLFrame');
 
 /// APPLICATION NAVBAR + ROUTER VIEW //////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** The application shell consists of a navbar implemented with Reactstrap
- *  components and a React view associated with the current route via
- *  ReactRouter <Switch> and <Route>.
- *  The AppShell class is exported as the main module object for use with
- *  require() statements (thanks to brunch magic)
+ *  components.
  */
 class AppShell extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -89,9 +55,7 @@ class AppShell extends UNISYS.Component {
     this.props.history.push(redirect);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Draw top navbar w/ menus. Add route information
-   *  To add a new HTML, add the link to both the <Nav> and <Switch> staments.
-   *  To add a new VIEW, load the component
+  /** Draw top navbar w/ menus and the <NetCreate> view
    */
   render(props) {
     const { route, routeProps } = SETTINGS.GetRouteInfoFromURL(window.location.href);

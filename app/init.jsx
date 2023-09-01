@@ -100,7 +100,6 @@ function m_SetLifecycleScope() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Wraps ReactDOM.render() in a Promise. Execution continues in <AppShell>
- *  and the routed view in AppShell.Routes
  */
 function m_RenderApp() {
   if (DBG)

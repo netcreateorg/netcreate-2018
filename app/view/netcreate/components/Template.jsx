@@ -22,10 +22,9 @@
   Conversely, if a Template is being edited, Import, Node and Edge editing
   will be disabled.
 
-  ##  BACKGROUND
+  ## BACKGROUND
 
-      Template data is loaded by `server-database` DB.InitializeDatabase call.
-
+    Template data is loaded by `server-database` DB.InitializeDatabase call.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -264,7 +263,6 @@ class Template extends UNISYS.Component {
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
   render() {
     const { disableEdit, isBeingEdited, tomlfile, tomlfileStatus, tomlfileErrors } =
       this.state;

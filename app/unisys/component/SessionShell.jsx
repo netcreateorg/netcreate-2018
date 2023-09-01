@@ -1,8 +1,8 @@
 if (window.NC_DBG) console.log(`inc ${module.id}`);
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    SessionShell handles route-based parameters in ReactRouter and updates
-    the SESSION manager with pertinent information
+    SessionShell handles route-based parameters, updating the SESSION manager
+    with pertinent information
 
     The component stores the credentials
       classId  : null,
@@ -13,8 +13,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 
     render() calls one of the following depending on the state of
     SESSION.DecodeToken( token ). It returns an object is isValid prop set.
-    The token is read from this.props.match.params.token, which is provided
-    by ReactRouter.
+    The token is by decoding the URL in location.href.
 
       renderLoggedIn( decoded ) contains an object with the decoded properties
       from the original string, and displays the login state
@@ -41,7 +40,7 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
        Changing the url does trigger:
        * render()
           render is triggered because the props for the token
-          passed by the Route change.
+          passed by the route change.
           And render does detect the correct login state.
           However, if this represents a change in login state,
           the change in state needs to be broadcast.
@@ -310,10 +309,6 @@ class SessionShell extends UNISYS.Component {
     // Subsequent changes to the URL (e.g. changing token directly in the url)
     // do not result in a second componentWillMount call.  These are handled
     // by the componentDidUpdate() call.
-
-    // <Route path="/edit/:token" exact={true} component={SessionShell} />
-    // <Route path="/edit" exact={true} component={SessionShell} />
-    // <Route path="/" exact={true} component={SessionShell} />
 
     const { routeProps } = SETTINGS.GetRouteInfoFromURL();
     let { token } = routeProps;
