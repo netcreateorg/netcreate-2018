@@ -146,7 +146,8 @@ class NCGraph extends UNISYS.Component {
   /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /**
-   */ constructGraph() {
+   */
+  constructGraph() {
     // first destroy any existing SVG graph elements
     const netgraph = document.getElementById('netgraph');
     if (netgraph) netgraph.remove();
@@ -158,21 +159,27 @@ class NCGraph extends UNISYS.Component {
       this.state.ncGraphRenderer.Deregister();
     }
     const ncGraphRenderer = new NCGraphRenderer(this.dom); // this.dom defined in render via ref
-    const nodeTypes = TEMPLATE.nodeDefs.type.options;
-    const edgeTypes = TEMPLATE.edgeDefs.type.options;
-    this.setState({ ncGraphRenderer, nodeTypes, edgeTypes });
-    this.forceUpdate(); // just once, needed to overcome shouldComponentUpdate override
+    try {
+      const nodeTypes = TEMPLATE.nodeDefs.type.options;
+      const edgeTypes = TEMPLATE.edgeDefs.type.options;
+      this.setState({ ncGraphRenderer, nodeTypes, edgeTypes });
+      this.forceUpdate(); // just once, needed to overcome shouldComponentUpdate override
+    } catch (err) {
+      console.warn('constructGraph error', err);
+    }
   }
 
   /// REACT LIFECYCLE ///////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /**
-   */ componentDidMount() {
+   */
+  componentDidMount() {
     this.constructGraph();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /**
-   */ componentWillUnMount() {
+   */
+  componentWillUnMount() {
     UDATA.AppStateChangeOff('VDATA', this.updateVData);
     UDATA.AppStateChangeOff('TEMPLATE', this.updateTemplate);
     UDATA.AppStateChangeOff('COLORMAP', this.updateColorMap);
@@ -182,7 +189,8 @@ class NCGraph extends UNISYS.Component {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /**
-   */ shouldComponentUpdate() {
+   */
+  shouldComponentUpdate() {
     // This prevents React from updating the component,
     // allowing D3 to handle the simulation animation updates
     // This is also necessary for D3 to handle the
@@ -191,7 +199,8 @@ class NCGraph extends UNISYS.Component {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /**
-   */ render() {
+   */
+  render() {
     const { nodeTypes, edgeTypes } = this.state;
     return (
       <div ref={dom => (this.dom = dom)} style={{ height: '100%' }}>

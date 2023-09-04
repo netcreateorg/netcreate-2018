@@ -84,7 +84,6 @@ UNISYS.RegisterMessagesPromise = (messages = []) => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: LIFECYCLE Hook() functions
  */
-
 UNISYS.Hook = (phase, f) => {
   if (typeof phase !== 'string') throw Error('arg1 is phase as string');
   if (typeof f !== 'function') throw Error('arg2 is function callback');
@@ -93,7 +92,6 @@ UNISYS.Hook = (phase, f) => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: System Initialize
  */
-
 UNISYS.SystemInitialize = module_id => {
   UNISYS.SetScope(module_id);
   SETTINGS.ForceReloadSingleApp();
@@ -123,7 +121,6 @@ UNISYS.ForceReloadOnNavigation = () => {
 /** API HELPER: return TRUE if passed module.id is within the current set
     scope
  */
-
 UNISYS.InScope = module_id => {
   let currentScope = LIFECYCLE.Scope();
   return module_id.includes(currentScope);
@@ -131,7 +128,6 @@ UNISYS.InScope = module_id => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: application startup
  */
-
 UNISYS.EnterApp = async () => {
   try {
     await LIFECYCLE.Execute('TEST_CONF'); // TESTCONFIG hook
@@ -150,7 +146,6 @@ UNISYS.EnterApp = async () => {
 /** API: call this when the view system's DOM has stabilized and is ready
     for manipulation by other code
  */
-
 UNISYS.SetupDOM = async () => {
   try {
     await LIFECYCLE.Execute('DOM_READY'); // GUI layout has finished composing
@@ -165,7 +160,6 @@ UNISYS.SetupDOM = async () => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: network startup
  */
-
 UNISYS.JoinNet = () => {
   return new Promise((resolve, reject) => {
     try {
@@ -182,7 +176,6 @@ UNISYS.JoinNet = () => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: configure system before run
  */
-
 UNISYS.SetupRun = async () => {
   try {
     await LIFECYCLE.Execute('RESET'); // RESET runtime datastructures
@@ -200,7 +193,6 @@ UNISYS.SetupRun = async () => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: handle periodic updates for a simulation-driven timestep
  */
-
 UNISYS.Run = async () => {
   r;
   try {
@@ -213,7 +205,6 @@ UNISYS.Run = async () => {
 /** API: do the Shutdown lifecycle
     NOTE ASYNC ARROW FUNCTION (necessary?)
  */
-
 UNISYS.BeforePause = async () => {
   await LIFECYCLE.Execute('PREPAUSE');
 };
@@ -221,7 +212,6 @@ UNISYS.BeforePause = async () => {
 /** API: do the Shutdown lifecycle
     NOTE ASYNC ARROW FUNCTION (necessary?)
  */
-
 UNISYS.Paused = async () => {
   await LIFECYCLE.Execute('PAUSE');
 };
@@ -238,7 +228,6 @@ UNISYS.PostPause = async () => {
 /** API: do the Shutdown lifecycle
     NOTE ASYNC ARROW FUNCTION (necessary?)
  */
-
 UNISYS.CleanupRun = async () => {
   await LIFECYCLE.Execute('STOP');
 };
@@ -246,7 +235,6 @@ UNISYS.CleanupRun = async () => {
 /** API: application offline
     NOTE ASYNC ARROW FUNCTION (necessary?)
  */
-
 UNISYS.ServerDisconnect = async () => {
   await LIFECYCLE.Execute('DISCONNECT');
 };
@@ -254,7 +242,6 @@ UNISYS.ServerDisconnect = async () => {
 /** API: application shutdown
     NOTE ASYNC ARROW FUNCTION (necessary?)
  */
-
 UNISYS.ExitApp = async () => {
   await LIFECYCLE.Execute('UNLOADASSETS');
   await LIFECYCLE.Execute('SHUTDOWN');
@@ -277,7 +264,6 @@ UNISYS.IsStandaloneMode = () => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** send a logging message
  */
-
 UNISYS.Log = (event, ...items) => {
   if (typeof event !== 'string') {
     console.error("UNISYS.Log( 'eventString', value, value, value... )");
@@ -288,7 +274,6 @@ UNISYS.Log = (event, ...items) => {
 /// REACT INTEGRATION /////////////////////////////////////////////////////////
 /** return the referene to the UNISYS extension of React.Component
  */
-
 UNISYS.Component = UniComponent;
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////

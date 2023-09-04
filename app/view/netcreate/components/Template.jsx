@@ -22,10 +22,9 @@
   Conversely, if a Template is being edited, Import, Node and Edge editing
   will be disabled.
 
-  ##  BACKGROUND
+  ## BACKGROUND
 
-      Template data is loaded by `server-database` DB.InitializeDatabase call.
-
+    Template data is loaded by `server-database` DB.InitializeDatabase call.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -143,7 +142,8 @@ class Template extends UNISYS.Component {
   // ClassName added in template-schema.GetTypeEditorSchema()
   disableOrigLabelFields() {
     const origLabelFields = document.getElementsByClassName('disabledField');
-    origLabelFields.forEach(f => f.setAttribute('disabled', 'disabled'));
+    // origLabelFields is a HTMLCollection, not an array
+    for (f of origLabelFields) f => f.setAttribute('disabled', 'disabled');
   }
 
   releaseOpenEditor() {
@@ -263,7 +263,6 @@ class Template extends UNISYS.Component {
 
   /// REACT LIFECYCLE METHODS ///////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
   render() {
     const { disableEdit, isBeingEdited, tomlfile, tomlfileStatus, tomlfileErrors } =
       this.state;

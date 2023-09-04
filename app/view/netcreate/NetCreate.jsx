@@ -45,7 +45,6 @@ const PR = PROMPTS.Pad('ACD');
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
-const { Route } = require('react-router-dom');
 const ReactStrap = require('reactstrap');
 const { Button } = ReactStrap;
 const NetGraph = require('./components/NetGraph');
@@ -182,9 +181,7 @@ class NetCreate extends UNISYS.Component {
             {disconnectMsg}&quot; to your administrator to restart the graph.
           </div>
         </div>
-        <Route path="/edit/:token" exact={true} component={SessionShell} />
-        <Route path="/edit" exact={true} component={SessionShell} />
-        <Route path="/" exact={true} component={SessionShell} />
+        <SessionShell />
         <div
           style={{
             display: 'flex',

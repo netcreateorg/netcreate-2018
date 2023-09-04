@@ -15,7 +15,8 @@ netcreate-config.js
 
 # Also ignore build system directories
 .npmignore
-/public
+/.parcel-cache
+/public*
 /node_modules
 
 # And don't commit personal log files or temp

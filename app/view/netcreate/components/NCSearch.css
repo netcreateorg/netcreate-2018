@@ -4,7 +4,7 @@
   grid-auto-columns: 100px;
   grid-auto-flow: column;
   column-gap: 10px;
-  margin-top: 20px;
+  margin-top: 38px; /* match navbar height */
   margin-bottom: 20px;
 }
 .ncsearch button {

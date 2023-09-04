@@ -19,11 +19,11 @@ require('babel-polyfill'); // enables regenerators for async/await
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const React = require('react');
 const ReactDOM = require('react-dom');
-const { HashRouter } = require('react-router-dom');
 
 /// SYSTEM MODULES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// demo: require system modules; this will likely be removed
+const SETTINGS = require('settings');
 const UNISYS = require('unisys/client');
 const AppShell = require('init-appshell');
 
@@ -83,55 +83,37 @@ document.addEventListener('UNISYSDisconnect', event => {
 
 /// LIFECYCLE HELPERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** helper to infer view module scope before module is routed lated (!)
+/** DEPRECATED? This may no longer actually be needed as it
+ *  helper to infer view module scope before module is routed lated (!)
+ *  scope is really the 'path' of the current route (e.g. #)
  */
 function m_SetLifecycleScope() {
   // set scope for UNISYS execution
-  let routes = AppShell.Routes;
-  // check #, and remove any trailing parameters in slashes
-  // we want the first one
-  let hashbits = window.location.hash.split('/');
-  let hash = hashbits[0];
-  let loc = '/' + hash.substring(1);
-  let matches = routes.filter(route => {
-    return route.path === loc;
-  });
-  if (matches.length) {
-    if (DBG) console.log(`Lifecycle Module Scope is ${hash}`);
-    let component = matches[0].component;
-    if (component.UMOD === undefined)
-      console.warn(
-        `WARNING: root view '${loc}' has no UMOD property, so can not set UNISYS scope`
-      );
-    let modscope = component.UMOD || '<undefined>/init.jsx';
-    UNISYS.SetScope(modscope);
+  const url = window.location.href;
+  const { scope } = SETTINGS.GetRouteInfoFromURL(url);
+  if (scope) {
+    if (DBG) console.log(`Lifecycle Module Scope is ${scope}`);
+    UNISYS.SetScope(scope);
   } else {
-    console.warn(`m_SetLifecycleScope() could not match scope ${loc}`);
+    console.warn(`m_SetLifecycleScope() could not match scope ${url}`);
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Wraps ReactDOM.render() in a Promise. Execution continues in <AppShell>
- *  and the routed view in AppShell.Routes
  */
 function m_RenderApp() {
   if (DBG)
     console.log('%cINIT %cReactDOM.render() begin', 'color:blue', 'color:auto');
   return new Promise((resolve, reject) => {
     try {
-      ReactDOM.render(
-        <HashRouter hashType="slash">
-          <AppShell />
-        </HashRouter>,
-        document.querySelector('#app-container'),
-        () => {
-          console.log(
-            '%cINIT %cReactDOM.render() complete',
-            'color:blue',
-            'color:auto'
-          );
-          resolve();
-        }
-      );
+      ReactDOM.render(<AppShell />, document.querySelector('#app-container'), () => {
+        console.log(
+          '%cINIT %cReactDOM.render() complete',
+          'color:blue',
+          'color:auto'
+        );
+        resolve();
+      });
     } catch (e) {
       console.error(
         'm_RenderApp() Lifecycle Error. Check phase execution order effect on data validity.\n',

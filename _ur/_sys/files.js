@@ -67,10 +67,20 @@ function IsFile(filepath) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function EnsureDir(dirpath) {
   try {
-    FSE.ensureDirSync(path);
+    FSE.ensureDirSync(dirpath);
     return true;
   } catch (err) {
-    TERM(`EnsureDir: <${path}> failed w/ error ${err}`);
+    TERM(`EnsureDir: <${dirpath}> failed w/ error ${err}`);
+    throw new Error(errmsg);
+  }
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function RemoveDir(dirpath) {
+  try {
+    if (IsDir(dirpath)) FSE.removeSync(dirpath);
+    return true;
+  } catch (err) {
+    TERM(`EnsureDir: <${dirpath}> failed w/ error ${err}`);
     throw new Error(errmsg);
   }
 }
@@ -153,6 +163,7 @@ module.exports = {
   IsDir,
   IsFile,
   EnsureDir,
+  RemoveDir,
   Files,
   Subdirs,
   //
