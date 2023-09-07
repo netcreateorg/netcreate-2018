@@ -33,7 +33,7 @@ const ReactStrap = require('reactstrap');
 const { Button } = ReactStrap;
 const NCGraphRenderer = require('./NCGraphRenderer');
 const UNISYS = require('unisys/client');
-import RENDERMGR from '../render-mgr';
+const RENDERMGR = require('../render-mgr');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
