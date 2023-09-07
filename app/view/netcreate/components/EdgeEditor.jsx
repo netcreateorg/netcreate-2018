@@ -191,10 +191,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-import { mdReact } from 'markdown-react-js';
-const mdplugins = {
-  emoji: require('markdown-it-emoji')
-};
+const mdReact = require('markdown-react-js');
+const mdEmoji = require('markdown-it-emoji');
 const React = require('react');
 const ReactStrap = require('reactstrap');
 const { Button, Col, Form, FormGroup, FormText, Input, Label } = ReactStrap;
@@ -1595,7 +1593,7 @@ class EdgeEditor extends UNISYS.Component {
       return mdReact({
         onIterate: this.markdownIterate,
         markdownOptions: { typographer: true, linkify: true },
-        plugins: [mdplugins.emoji]
+        plugins: [mdEmoji]
       })(text);
     }
   }

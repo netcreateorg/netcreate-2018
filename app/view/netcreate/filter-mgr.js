@@ -74,7 +74,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-import FILTER from './components/filter/FilterEnums';
+const FILTER = require('./components/filter/FilterEnums');
 const UNISYS = require('unisys/client');
 const clone = require('rfdc')();
 const UTILS = require('./nc-utils');

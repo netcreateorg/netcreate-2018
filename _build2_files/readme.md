@@ -1,4 +1,5 @@
-this is an alternate build system of new file organization leftover from the attempt for a quick conversion of source to replace brunch 2.x.
+This is an alternate build system of new file organization leftover from the attempt for a quick conversion of source to replace brunch 2.x.
+These files have been laboriously transformed to ESM, so I don't want to lose them. they 
 
 however, brunch 2.x is too weirdly shimmed to convert straightforwardly due to:
 

@@ -14,10 +14,10 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-import FILTER from './FilterEnums';
-import FilterGroup from './FilterGroup';
-import FocusFilter from './FocusFilter';
-import React from 'react';
+const FILTER = require('./FilterEnums');
+const FilterGroup = require('./FilterGroup');
+const FocusFilter = require('./FocusFilter');
+const React = require('react');
 const ReactStrap = require('reactstrap');
 const { Button, ButtonGroup, Input, Label, FormGroup } = ReactStrap;
 const UNISYS = require('unisys/client');
