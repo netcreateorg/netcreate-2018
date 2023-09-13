@@ -17,7 +17,9 @@ netcreate-config.js
 .npmignore
 /.parcel-cache
 /public*
+# the code-workspace file also hides node_modules from file list
 /node_modules
+/_ur/node_modules
 
 # And don't commit personal log files or temp
 *_log.md
