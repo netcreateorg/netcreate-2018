@@ -8,10 +8,8 @@
 # NetCreate ignored directories
 /runtime
 netcreate-config.js
+# /_ur/@ur
 
-# ignore assets/data?
-# not sure why this data is in the repo
-# /app/assets/data
 
 # Also ignore build system directories
 .npmignore

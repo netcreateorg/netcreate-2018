@@ -19,7 +19,7 @@ const FSE = require('fs-extra');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ROOT = PATH.join(__dirname, '../..');
 const ENTRY_JS = PATH.join(ROOT, '_ur/node/all-node.mts');
-const DISTDIR = PATH.join(ROOT, '_ur/dist');
+const DISTDIR = PATH.join(ROOT, '_ur/@ur');
 const OUT_JS = PATH.join(DISTDIR, 'ur-node.cjs');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const APP_PORT = 3000;
