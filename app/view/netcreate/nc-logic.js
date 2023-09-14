@@ -1192,8 +1192,8 @@ JSCLI.AddFunction(function ncPushDatabase(jsonFile) {
 /** Command: EMPTY THE DATABASE from default data
  */
 JSCLI.AddFunction(function ncEmptyDatabase() {
-  window.ncPushDatabase('nada.json');
-  return 'FYI: pushing empty database from assets/data/nada.json...reloading';
+  window.ncPushDatabase('_nclogic_resetdb.json');
+  return 'FYI: pushing empty database from assets/data/_nclogic_resetdb...reloading';
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Command: Unlock the database.  Used to recover from error conditions where
