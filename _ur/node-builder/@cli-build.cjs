@@ -14,6 +14,7 @@ const DBG = true;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const esbuild = require('esbuild');
 const { copy } = require('esbuild-plugin-copy');
+const { umdWrapper } = require('esbuild-plugin-umd-wrapper');
 const PATH = require('node:path');
 const FSE = require('fs-extra');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -31,6 +32,7 @@ function _short(path) {
 /** build the UR libraries for server and client */
 async function ESBuildLibrary() {
   //
+  FSE.removeSync(DISTDIR);
   FSE.ensureDir(DISTDIR);
   if (DBG) LOG('building ur/node bundle...');
   // build the server library for
@@ -44,18 +46,17 @@ async function ESBuildLibrary() {
   };
 
   /* build the server library for nodejs */
-  if (DBG) LOG('building ur/node-server CJS...');
-  await esbuild.build({
-    ...nodeBuild,
-    outfile: `${DISTDIR}/server.cjs`,
-    format: 'cjs'
-  });
-
   if (DBG) LOG('building ur/node-server ESM...');
   await esbuild.build({
     ...nodeBuild,
     outfile: `${DISTDIR}/server-esm.mjs`,
     format: 'esm'
+  });
+  if (DBG) LOG('building ur/node-server CJS...');
+  await esbuild.build({
+    ...nodeBuild,
+    outfile: `${DISTDIR}/server.cjs`,
+    format: 'cjs'
   });
 
   /* build the server library for nodejs */
@@ -67,17 +68,18 @@ async function ESBuildLibrary() {
     sourcemap: true
     // packages: 'external'
   };
-  if (DBG) LOG('building ur/browser-client IIFE...');
-  await esbuild.build({
-    ...browserBuild,
-    outfile: `${DISTDIR}/client.js`,
-    format: 'iife'
-  });
   if (DBG) LOG('building ur/browser-client ESM...');
   await esbuild.build({
     ...browserBuild,
     outfile: `${DISTDIR}/client-esm.js`,
     format: 'esm'
+  });
+  if (DBG) LOG('building ur/browser-client UMD...');
+  await esbuild.build({
+    ...browserBuild,
+    plugins: [umdWrapper()],
+    outfile: `${DISTDIR}/client-umd.js`,
+    format: 'umd' // esbuild-plugin-umd-wrapper
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -141,7 +143,6 @@ async function ESBuildWebApp() {
   // const proc_parse = await UR_Fork('parse', { input: proc_graph });
   // await ESBuildWebApp();
   await ESBuildLibrary();
-  // await ParcelBuildWebApp();
   LOG('parent process ended');
   process.exit(0);
 })();

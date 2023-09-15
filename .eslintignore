@@ -1,0 +1,3 @@
+# dont lint _dist folders
+ _ur/_dist/*
+ public/**/*.js
