@@ -1,8 +1,17 @@
 {
-  "name": "ur",
+  "name": "ursys",
   "version": "1.0.0",
   "description": "",
   "private": true,
+  "exports": {
+    "node": {
+      "import": "./_dist/server.mjs",
+      "require": "./_dist/server.cjs"
+    },
+    "browser": {
+      "import": "./_dist/client-esm.js"
+    }
+  },
   "devDependencies": {
     "@types/node": "^20.6.0",
     "esbuild": "^0.19.2",

@@ -6,7 +6,11 @@
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ClientTest = () => 'foo';
+const DBG = true;
+const LOG = console.log;
+function ClientTest() {
+  if (DBG) LOG('_ur/@client.ts: ClientTest successfully invoked');
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

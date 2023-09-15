@@ -17,10 +17,8 @@ const { copy } = require('esbuild-plugin-copy');
 const PATH = require('node:path');
 const FSE = require('fs-extra');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ROOT = PATH.join(__dirname, '../..');
-const ENTRY_JS = PATH.join(ROOT, '_ur/node/all-node.mts');
-const DISTDIR = PATH.join(ROOT, '_ur/@ur');
-const OUT_JS = PATH.join(DISTDIR, 'ur-node.cjs');
+const ROOT = PATH.join(__dirname, '../../');
+const DISTDIR = PATH.join(ROOT, '_ur/_dist');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const APP_PORT = 3000;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -30,32 +28,66 @@ function _short(path) {
   return path;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** build the UR libraries for server and client */
 async function ESBuildLibrary() {
   //
-  if (DBG) LOG('clearing', _short(DISTDIR));
   FSE.ensureDir(DISTDIR);
   if (DBG) LOG('building ur/node bundle...');
-  // build the webapp and stuff it into public
-  const context = await esbuild.build({
-    entryPoints: [ENTRY_JS],
+  // build the server library for
+  const nodeBuild = {
+    entryPoints: [`${ROOT}/_ur/node-server/@server.mts`],
     bundle: true,
     platform: 'node',
+    target: ['node18', 'esnext'],
     sourcemap: true,
-    packages: 'external',
-    outfile: OUT_JS
+    packages: 'external'
+  };
+
+  /* build the server library for nodejs */
+  if (DBG) LOG('building ur/node-server CJS...');
+  await esbuild.build({
+    ...nodeBuild,
+    outfile: `${DISTDIR}/server.cjs`,
+    format: 'cjs'
+  });
+
+  if (DBG) LOG('building ur/node-server ESM...');
+  await esbuild.build({
+    ...nodeBuild,
+    outfile: `${DISTDIR}/server-esm.mjs`,
+    format: 'esm'
+  });
+
+  /* build the server library for nodejs */
+  const browserBuild = {
+    entryPoints: [`${ROOT}/_ur/browser-client/@client.ts`],
+    bundle: true,
+    platform: 'browser',
+    target: ['esnext'],
+    sourcemap: true
+    // packages: 'external'
+  };
+  if (DBG) LOG('building ur/browser-client IIFE...');
+  await esbuild.build({
+    ...browserBuild,
+    outfile: `${DISTDIR}/client.js`,
+    format: 'iife'
+  });
+  if (DBG) LOG('building ur/browser-client ESM...');
+  await esbuild.build({
+    ...browserBuild,
+    outfile: `${DISTDIR}/client-esm.js`,
+    format: 'esm'
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 async function ESBuildWebApp() {
   // make sure PUBDIR exists
-  if (DBG) LOG('clearing', _short(PUBDIR));
-  RemoveDir(PUBDIR);
   EnsureDir(PUBDIR);
-
   if (DBG) LOG('building webapp from', _short(ENTRY_JS));
   // build the webapp and stuff it into public
   const context = await _context({
-    entryPoints: [ENTRY_JS],
+    entryPoints: [`${ROOT}/_ur/browser-client/@client.ts`],
     bundle: true,
     loader: { '.js': 'jsx' },
     target: 'es2020',

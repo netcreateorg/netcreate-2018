@@ -8,16 +8,18 @@
 # NetCreate ignored directories
 /runtime
 netcreate-config.js
-# /_ur/@ur
 
+# _ur package
+_dist
 
 # Also ignore build system directories
 .npmignore
 /.parcel-cache
 /public*
+
 # the code-workspace file also hides node_modules from file list
-/node_modules
-/_ur/node_modules
+node_modules
+.package-lock.json
 
 # And don't commit personal log files or temp
 *_log.md

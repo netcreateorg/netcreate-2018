@@ -11,7 +11,7 @@ fi
 # NODE_OPTIONS="--max-old-space-size=128"
 
 # Change the path below to the entry point of your node project
-PROJECT_PATH="./_ur/node-cli/ur-runner.cjs"
+PROJECT_PATH="./_ur/node-builder/@cli-build.cjs"
 
 # Explanation: 
 # 2>&1 redirects stderr to stdout so they're combined
