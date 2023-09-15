@@ -10,6 +10,6 @@
     "allowImportingTsExtensions": true, // see esbuild.github.io/content-types/#typescript-caveats
     "noEmit": true, // required for allowImportingTsExtensions
     // typeRoots do not make use of baseUrl
-    "typeRoots": ["./src/_types", "./node_modules/@types"]
+    "typeRoots": ["./_types", "./node_modules/@types"]
   }
 }

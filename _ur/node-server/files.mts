@@ -11,7 +11,7 @@
 import NDIR from 'node-dir';
 import FSE from 'fs-extra';
 import PATH from 'node:path';
-import { makeTerminalOut } from '../common/prompts.ts';
+import { makeTerminalOut } from '../common/prompts.js';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -15,9 +15,9 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DirExists, Files } from './files.mts';
 import UrModule from './class-urmodule.mts';
-import ERROR from '../common/error-mgr.ts';
+import ERROR from '../common/error-mgr.js';
 const { DIE } = ERROR;
-import { makeTerminalOut } from '../common/prompts.ts';
+import { makeTerminalOut } from '../common/prompts.js';
 
 /// RESTORE CJS CONVENIENCE MACROS ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

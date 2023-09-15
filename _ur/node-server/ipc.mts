@@ -26,9 +26,9 @@
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-import { makeTerminalOut } from '../common/prompts.ts';
+import { makeTerminalOut } from '../common/prompts.js';
 const TERM = makeTerminalOut(' URPC', 'TagGreen');
-import * as UR_EVENTS from '../common/declare-async.ts';
+import * as UR_EVENTS from '../common/declare-async.js';
 
 /// METHODS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
