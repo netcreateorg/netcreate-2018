@@ -12,29 +12,22 @@
 
 import { fork } from 'node:child_process';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { DirExists, Files } from './files.mts';
 import UrModule from './class-urmodule.mts';
 import ERROR from '../common/error-mgr.js';
-const { DIE } = ERROR;
-import { makeTerminalOut } from '../common/prompts.js';
-
-/// RESTORE CJS CONVENIENCE MACROS ////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// see blog.logrocket.com/alternatives-dirname-node-js-es-modules/
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
+import PROMPT from '../common/prompts.js';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const LOG = makeTerminalOut(' UPROC', 'TagCyan');
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const LOG = PROMPT.makeTerminalOut(' UPROC', 'TagCyan');
 const DBG = true;
+const { DIE } = ERROR;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const LAUNCH_PREFIX = '@';
-const URDIR = join(__dirname, '..');
+let URDIR = '';
 
 /// API METHODS ///////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: fork a module and setup its IPC
  *  @param {string} modname "moduleDir/@entryFile"
@@ -44,27 +37,30 @@ const URDIR = join(__dirname, '..');
  */
 async function UR_Fork(modname, opt = {}) {
   const fn = `UR_Fork ${modname}:`;
+  LOG(fn, 'starting');
   let child; // hold ur module instance
   //
-  const { input, output } = m_ParseOptions(opt);
+  const { input, output, cwd } = m_ParseOptions(opt);
+  if (cwd) URDIR = cwd;
+  if (URDIR.endsWith('/')) URDIR = URDIR.slice(0, -1);
   let { modpath, entry } = m_ParseModulePathString(modname, fn);
-  let forkPath = `${URDIR}/${modpath}`;
+  let forkPath = `${URDIR}${modpath}`;
   const entryFiles = await m_ReadModuleEntryFiles(modpath);
   if (entry) {
     if (!entryFiles.includes(entry))
-      DIE(fn, `error: %{entry} is not in ${URDIR}/${modpath}`);
+      DIE(fn, `error: %{entry} is not in ${URDIR}${modpath}`);
     /* SUCCESS */
     if (DBG) LOG(`launching '${forkPath}/${entry}'`);
     child = fork(entry, { cwd: forkPath });
     return child;
   }
   if (entryFiles.length === 0)
-    DIE(fn, `error: no @entry modules found in ${URDIR}/${modpath}`);
+    DIE(fn, `error: no @entry modules found in ${URDIR}${modpath}`);
 
   /* SUCCESS */
   entry = entryFiles[0];
   if (DBG) LOG(`launching '${modpath}/${entry}'`);
-  child = fork(entry, { cwd: `${URDIR}/${modpath}/` });
+  child = fork(entry, { cwd: `${URDIR}${modpath}/` });
   const urmod = new UrModule(child, { name: `${modpath}/${entry}` });
   return urmod;
 }
@@ -75,13 +71,12 @@ async function UR_Fork(modname, opt = {}) {
  *  possibilities the order is input stream, output stream, options. throws
  *  error and exits process on error
  *  @param {array} args 0,1,2,3 arguments to parse
- *  @returns {object} input, output if defined
+ *  @returns {object} input, output, cwd if defined
  */
 function m_ParseOptions(opt) {
   const fn = 'm_ParseOptions';
-  const { input, output } = opt;
+  const { input, output, cwd = '' } = opt;
   if (input) {
-    console.log('input', input);
     if (!(input instanceof UrModule))
       throw new Error(`${fn}: input must be UrModule instance or undefined`);
   }
@@ -89,9 +84,14 @@ function m_ParseOptions(opt) {
     if (!(output instanceof UrModule))
       throw new Error(`${fn}: output must be UrModule instance or undefined`);
   }
+  if (cwd) {
+    if (typeof cwd !== 'string')
+      throw new Error(`${fn}: cwd must be string or undefined`);
+  }
   return {
     input,
-    output
+    output,
+    cwd
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -211,6 +211,9 @@ const u_argType = arg => {
   return test;
 };
 
+function ProcTest() {
+  console.log('proc test');
+}
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { UR_Fork };
+export { UR_Fork, ProcTest };

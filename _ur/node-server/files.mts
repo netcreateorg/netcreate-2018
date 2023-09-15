@@ -11,11 +11,11 @@
 import NDIR from 'node-dir';
 import FSE from 'fs-extra';
 import PATH from 'node:path';
-import { makeTerminalOut } from '../common/prompts.js';
+import PROMPT from '../common/prompts.js';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const TERM = makeTerminalOut(' FILES', 'TagGreen');
+const TERM = PROMPT.makeTerminalOut(' FILES', 'TagGreen');
 const ERR_UR = 444;
 const DBG = false;
 
