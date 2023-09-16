@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   skeleton code for using yargs
