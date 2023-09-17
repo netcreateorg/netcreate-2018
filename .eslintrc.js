@@ -17,6 +17,16 @@ const config = {
     es6: true,
     node: true
   },
+  plugins: ['react', '@typescript-eslint', 'import'],
+  /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
+    Important: We use the official typescript-eslint/parser instead of the
+    default espree parser. This supercedes TSLINT as of 2019, and is supported
+    both by the Microsoft and ESLint teams.
+
+    The typescript parser handles the typescript superset syntax and creates a
+    compatible AST for ESLINT.
+  :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+  parser: '@typescript-eslint/parser',
   parserOptions: {
     'ecmaVersion': 2022,
     'sourceType': 'module'
@@ -26,10 +36,10 @@ const config = {
     something else (e.g. parser) that ESLINT can make use of.
     See: eslint.org/docs/user-guide/configuring#use-a-plugin
   :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-  plugins: ['react'],
   extends: [
     'eslint:recommended', // standard recommendations
     'plugin:react/recommended', // handle jsx syntax
+    'plugin:@typescript-eslint/eslint-recommended', // basic typescript rules
     'prettier' // prettier overrides
   ],
   globals: {
