@@ -4,6 +4,9 @@
 
   note: this has not been extensively bullet-proofed
 
+  TODO: ensure that most routines are synchronous, and label async functions
+  as such
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
@@ -15,7 +18,7 @@ import PROMPT from '../common/prompts.js';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const TERM = PROMPT.makeTerminalOut(' FILES', 'TagGreen');
+const LOG = PROMPT.makeTerminalOut(' FILES', 'TagGreen');
 const ERR_UR = 444;
 const DBG = false;
 
@@ -35,7 +38,7 @@ function DirExists(dirpath) {
   try {
     const stat = FSE.statSync(dirpath);
     if (stat.isFile()) {
-      TERM(`DirExists: ${dirpath} is a file, not a directory`);
+      LOG(`DirExists: ${dirpath} is a file, not a directory`);
       return false;
     }
     return stat.isDirectory();
@@ -50,7 +53,7 @@ function IsDir(dirpath) {
     if (stat.isDirectory()) return true;
     return false;
   } catch (e) {
-    TERM(`IsDir: ${dirpath} does not exist`);
+    LOG(`IsDir: ${dirpath} does not exist`);
     return false;
   }
 }
@@ -61,7 +64,7 @@ function IsFile(filepath) {
     if (stat.isFile()) return true;
     return false;
   } catch (e) {
-    TERM(`IsFile: ${filepath} does not exist`);
+    LOG(`IsFile: ${filepath} does not exist`);
     return false;
   }
 }
@@ -71,7 +74,7 @@ function EnsureDir(dirpath) {
     FSE.ensureDirSync(dirpath);
     return true;
   } catch (err) {
-    TERM(`EnsureDir: <${dirpath}> failed w/ error ${err}`);
+    LOG(`EnsureDir: <${dirpath}> failed w/ error ${err}`);
     throw new Error(err);
   }
 }
@@ -81,7 +84,7 @@ function RemoveDir(dirpath) {
     if (IsDir(dirpath)) FSE.removeSync(dirpath);
     return true;
   } catch (err) {
-    TERM(`EnsureDir: <${dirpath}> failed w/ error ${err}`);
+    LOG(`EnsureDir: <${dirpath}> failed w/ error ${err}`);
     throw new Error(err);
   }
 }
@@ -111,50 +114,56 @@ function GetDirContent(dirpath) {
 function Files(dirpath, opt = {}) {
   const result = GetDirContent(dirpath);
   if (DBG) {
-    if (result.files.length && result.files.length > 0) TERM('Files: success');
-    else TERM('Files: fail');
+    if (result.files.length && result.files.length > 0) LOG('Files: success');
+    else LOG('Files: fail');
   }
-  return result.files.map(p => PATH.basename(p));
+  const basenames = result.files.map(p => PATH.basename(p));
+  if (DBG) LOG(`found ${basenames.length} files in ${dirpath}`);
+  return basenames;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function Subdirs(dirpath) {
-  const result = await GetDirContent(dirpath);
+function Subdirs(dirpath) {
+  const result = GetDirContent(dirpath);
   return result.dirs;
 }
 
 /// FILE READING //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function ReadFile(filepath, opt = { encoding: 'utf8' }) {
+async function AsyncReadFile(filepath, opt?) {
+  opt = opt || {};
+  opt.encoding = opt.encoding || 'utf8';
   try {
     return await FSE.readFile(filepath, opt);
   } catch (err) {
-    TERM(`ReadFile: <${filepath}> failed w/ error ${err}`);
+    LOG(`AsyncReadFile: <${filepath}> failed w/ error ${err}`);
     throw new Error(err);
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function WriteFile(filepath, rawdata) {
+async function UnsafeWriteFile(filepath, rawdata) {
   let file = FSE.createWriteStream(filepath, { emitClose: true });
   file.write(rawdata);
-  file.on('error', () => TERM('error on write'));
+  file.on('error', () => LOG('error on write'));
   file.end(); // if this is missing, close event will never fire.
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function ReadJSON(filepath) {
-  const rawdata = await ReadFile(filepath);
+async function AsyncReadJSON(filepath) {
+  const rawdata = (await AsyncReadFile(filepath)) as any;
   return JSON.parse(rawdata);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function WriteJSON(filepath, obj) {
+async function AsyncWriteJSON(filepath, obj) {
   if (typeof obj !== 'string') obj = JSON.stringify(obj, null, 2);
-  await WriteFile(filepath, obj);
+  await UnsafeWriteFile(filepath, obj);
 }
+
+/// SYNCHRONOUS TESTS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function Test() {
-  const files = await Files(__dirname);
-  if (files.length && files.length > 0) TERM('FM.Files: success');
-  else TERM('Files: fail');
-  TERM(`found ${files.length} files`);
+function Test() {
+  const files = Files(__dirname);
+  if (files.length && files.length > 0) LOG('FM.Files: success');
+  else LOG('Files: fail');
+  LOG(`found ${files.length} files`);
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -169,9 +178,10 @@ export {
   Files,
   Subdirs,
   //
-  ReadFile,
-  ReadJSON,
-  WriteJSON,
+  AsyncReadFile,
+  UnsafeWriteFile,
+  AsyncReadJSON,
+  AsyncWriteJSON,
   //
   Test
 };

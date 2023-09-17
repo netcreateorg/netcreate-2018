@@ -55,7 +55,7 @@ class UrModule {
     const { input, output, name } = opt || {};
     if (typeof name === 'string') this.setName(name);
     //
-    LOG(`UrModule[${u_modname(this)}] constructing`);
+    LOG(`UrModule '${u_modname(this)}' constructing`);
     //
     if (mobj instanceof ChildProcess) {
       this.modType = 'fork';
@@ -75,7 +75,9 @@ class UrModule {
       console.log(this.error);
       throw new Error(this.error);
     }
+    LOG('linking');
     this.linkModules(input, output);
+    LOG('*** TODO *** process running goes here');
   }
 
   /** set the name of the module */

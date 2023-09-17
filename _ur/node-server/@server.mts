@@ -5,15 +5,30 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UrModule from './class-urmodule.mts';
-import * as Fork from './ur-proc.mts';
-import * as AppServer from './appserver.mts';
+import * as MODMGR from './urmod-mgr.mts';
+import * as APPSERV from './appserver.mts';
+import * as ENV from './env-node.mts';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+/// RUNTIME API ///////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** first time initialization */
+function Initialize(options: UR_InitOptions): void {
+  const { rootDir } = options;
+  ENV.SetRootPaths(rootDir);
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// do not use 'export default' for library entrypoints because esbuild will
-/// not convert the bundle to a commonjs module without .default appended
-/// e.g. require('server').default if you uses export default
-export { UrModule, Fork, AppServer };
+export {
+  // URSYS CONTROL
+  Initialize,
+  // MAIN MODULES
+  APPSERV, // application server
+  MODMGR, // ur module manager
+  ENV, // environment utilities and constants
+  // CLASSES
+  UrModule // ur module wrapper
+};

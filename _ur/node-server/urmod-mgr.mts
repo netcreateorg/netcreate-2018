@@ -12,8 +12,11 @@
 
 import { fork } from 'node:child_process';
 import { join } from 'node:path';
+// MTS
 import { DirExists, Files } from './files.mts';
 import UrModule from './class-urmodule.mts';
+import { DIR_URMODS, ShortPath as u_short } from './env-node.mts';
+// JS imports are assumed to be CJS and cannot be destructured
 import ERROR from '../common/error-mgr.js';
 import PROMPT from '../common/prompts.js';
 
@@ -28,7 +31,6 @@ let URDIR = '';
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: fork a module and setup its IPC
  *  @param {string} modname "moduleDir/@entryFile"
  *  @param input input file or stream
@@ -44,13 +46,15 @@ async function UR_Fork(modname, opt = {}) {
   if (cwd) URDIR = cwd;
   if (URDIR.endsWith('/')) URDIR = URDIR.slice(0, -1);
   let { modpath, entry } = m_ParseModulePathString(modname, fn);
-  let forkPath = `${URDIR}${modpath}`;
-  const entryFiles = await m_ReadModuleEntryFiles(modpath);
+  let forkPath = `${URDIR}/${modpath}`;
+  if (DBG) LOG('searching', u_short(forkPath), 'for modules');
+  const entryFiles = m_ReadModuleEntryFiles(modpath);
+  if (DBG) LOG('found entryfiles', entryFiles);
   if (entry) {
     if (!entryFiles.includes(entry))
       DIE(fn, `error: %{entry} is not in ${URDIR}${modpath}`);
     /* SUCCESS */
-    if (DBG) LOG(`launching '${forkPath}/${entry}'`);
+    if (DBG) LOG(`launching '${u_short(forkPath)}/${entry}'`);
     child = fork(entry, { cwd: forkPath });
     return child;
   }
@@ -75,7 +79,7 @@ async function UR_Fork(modname, opt = {}) {
  */
 function m_ParseOptions(opt) {
   const fn = 'm_ParseOptions';
-  const { input, output, cwd = '' } = opt;
+  let { input, output, cwd = '' } = opt;
   if (input) {
     if (!(input instanceof UrModule))
       throw new Error(`${fn}: input must be UrModule instance or undefined`);
@@ -87,6 +91,8 @@ function m_ParseOptions(opt) {
   if (cwd) {
     if (typeof cwd !== 'string')
       throw new Error(`${fn}: cwd must be string or undefined`);
+  } else {
+    cwd = DIR_URMODS;
   }
   return {
     input,
@@ -179,14 +185,17 @@ function m_ParseModulePathString(modname, fn = 'm_ParseModulePathString') {
  *  @param {string} modname format "moduleDir/[@entryFile]"
  *  @returns {string} path to the entryFile
  */
-async function m_ReadModuleEntryFiles(modname) {
-  const fn = 'm_ReadModuleEntryFiles';
+function m_ReadModuleEntryFiles(modname) {
+  const fn = 'm_ReadModuleEntryFiles:';
   const modulePath = join(URDIR, modname);
+  // if (DBG) LOG(fn, 'searching', u_short(modulePath), 'for entry files');
   if (!DirExists(modulePath)) {
+    console.log('error', modulePath);
     DIE(fn, 'error:', modname, `not found in ${URDIR} directory`);
   }
-  const files = await Files(modulePath);
+  const files = Files(modulePath);
   const entryFiles = files.filter(file => file.startsWith(LAUNCH_PREFIX));
+  // if (DBG) LOG(fn, 'found entry files', entryFiles);
   return entryFiles;
 }
 

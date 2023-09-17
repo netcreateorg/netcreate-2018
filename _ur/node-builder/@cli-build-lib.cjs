@@ -10,15 +10,12 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const esbuild = require('esbuild');
-const { copy } = require('esbuild-plugin-copy');
 const { umdWrapper } = require('esbuild-plugin-umd-wrapper');
-const PATH = require('node:path');
 const FSE = require('fs-extra');
 
 /// CONSTANTS AND DECLARATIONS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ROOT = PATH.join(__dirname, '../../');
-const DISTDIR = PATH.join(ROOT, '_ur/_dist');
+const { ROOT, DIR_PACKAGE } = require('./env-builder.cjs');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = true;
 const LOG = console.log;
@@ -33,8 +30,8 @@ function _short(path) {
 /** build the UR libraries for server and client */
 async function ESBuildLibrary() {
   //
-  FSE.removeSync(DISTDIR);
-  FSE.ensureDir(DISTDIR);
+  FSE.removeSync(DIR_PACKAGE);
+  FSE.ensureDir(DIR_PACKAGE);
   if (DBG) LOG('building ur/node bundle...');
   // build the server library for
   const nodeBuild = {
@@ -50,13 +47,13 @@ async function ESBuildLibrary() {
   if (DBG) LOG('building ur/node-server ESM...');
   await esbuild.build({
     ...nodeBuild,
-    outfile: `${DISTDIR}/server-esm.mjs`,
+    outfile: `${DIR_PACKAGE}/server-esm.mjs`,
     format: 'esm'
   });
   if (DBG) LOG('building ur/node-server CJS...');
   await esbuild.build({
     ...nodeBuild,
-    outfile: `${DISTDIR}/server.cjs`,
+    outfile: `${DIR_PACKAGE}/server.cjs`,
     format: 'cjs'
   });
 
@@ -72,14 +69,14 @@ async function ESBuildLibrary() {
   if (DBG) LOG('building ur/browser-client ESM...');
   await esbuild.build({
     ...browserBuild,
-    outfile: `${DISTDIR}/client-esm.js`,
+    outfile: `${DIR_PACKAGE}/client-esm.js`,
     format: 'esm'
   });
   if (DBG) LOG('building ur/browser-client UMD...');
   await esbuild.build({
     ...browserBuild,
     plugins: [umdWrapper()],
-    outfile: `${DISTDIR}/client-umd.js`,
+    outfile: `${DIR_PACKAGE}/client-umd.js`,
     format: 'umd' // esbuild-plugin-umd-wrapper
   });
 }

@@ -4,20 +4,17 @@
   designed to run inside of non-module nodejs legacy environment like
   the prototype version of NetCreate 2.0 (2023)
 
-  it depends on URSYS library being built previously
+  it depends on UR library being built previously
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const PATH = require('node:path');
-const FSE = require('fs-extra');
-const URSYS = require('../_dist/server.cjs');
+const UR = require('../_dist/server.cjs');
 
-/// CONSTANTS AND DECLARATIONS ///////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ROOT = PATH.join(__dirname, '../../');
-const PUBDIR = PATH.join(ROOT, 'public');
+/// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const APP_PORT = 3000;
+const { ROOT, DIR_URMODS } = require('./env-builder.cjs');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = true;
 const LOG = console.log;
@@ -80,11 +77,13 @@ async function ESBuildWebApp() {
 /** TEST **/
 (async () => {
   LOG('ur parent process started');
-  const MODPATH = PATH.join(__dirname, '../../_ur_mods');
   LOG('## forking parse');
-  LOG(Object.keys(URSYS)); //
-  URSYS.Fork.ProcTest();
-  URSYS.Fork.UR_Fork('parse', { cwd: MODPATH });
+  LOG(Object.keys(UR));
+  UR.Initialize({
+    rootDir: ROOT
+  });
+  UR.MODMGR.ProcTest();
+  UR.MODMGR.UR_Fork('parse', { cwd: DIR_URMODS });
   LOG('parent process ended');
   process.exit(0);
 })();
