@@ -7,7 +7,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { readFileSync } from 'node:fs';
-import { generate } from 'peggy';
+const { generate } = require('peggy'); // CJS library on node can do this
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,8 +46,8 @@ function m_Normalize(str) {
     return parts.join(delimiter);
   };
   for (let i = 0; i < lines.length; i++) {
-    lines[i] = processDelimited(lines[i], ',', { preserve: true });
-    lines[i] = processDelimited(lines[i], ':', { preserve: true });
+    lines[i] = processDelimited(lines[i], ',');
+    lines[i] = processDelimited(lines[i], ':');
   }
   normalizedStr = lines.join('\n').trim();
   return normalizedStr + '\n';
@@ -57,14 +57,14 @@ function f_Trace(obj, table) {
   const { type, rule, location } = obj;
   const { line: startLine, column: startCol } = location.start;
   const { column: endCol } = location.end;
-
+  let lastLine;
   if (lastLine !== startLine) {
     // console.log('');
     table.push({});
     lastLine = startLine;
   }
   // console.log(`rule:${rule} type:${type} L${startLine} `);
-  const ch = lines[startLine - 1][startCol - 1];
+  const ch = LINES[startLine - 1][startCol - 1];
   const dbg = {
     match: '',
     pos: `${startLine}:${startCol}`,
@@ -102,6 +102,7 @@ function InitializeParser() {
 function Parse(input) {
   INPUT = input;
   LINES = INPUT.split('\n');
+  let out;
   let table = [];
   try {
     out = PARSER.parse(INPUT, {

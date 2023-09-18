@@ -49,8 +49,8 @@ function normalizeForPEG(str) {
     return parts.join(delimiter);
   };
   for (let i = 0; i < lines.length; i++) {
-    lines[i] = processDelimited(lines[i], ',', { preserve: true });
-    lines[i] = processDelimited(lines[i], ':', { preserve: true });
+    lines[i] = processDelimited(lines[i], ',');
+    lines[i] = processDelimited(lines[i], ':');
   }
   normalizedStr = lines.join('\n').trim();
   return normalizedStr + '\n';
@@ -70,6 +70,7 @@ function ProcessGrammar(input) {
   let lines = input.split('\n');
   let table = [];
   let lastLine = 0;
+  let out;
   try {
     parser = generate(grammar, { trace: false });
     out = parser.parse(input, {
@@ -130,11 +131,12 @@ function TestDataExchange() {
 /// DATAEX CONTROL LOGIC //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** run control logic test **/
-process.on('message', controlMsg => {
+process.on('message', (controlMsg: any) => {
   const { dataex, data } = controlMsg;
-  LOG('received DATAEX:', controlMsg);
+  LOG('<<< received DATAEX:', controlMsg);
   if (dataex === '_CONFIG_REQ') {
     process.send({ dataex: '_CONFIG_ACK', data: { name: 'parse/@init' } });
     TestDataExchange();
   }
 });
+LOG('*** TODO: message dataex enabled...can we receive messages?');

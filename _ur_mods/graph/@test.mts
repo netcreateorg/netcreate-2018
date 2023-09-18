@@ -10,10 +10,10 @@ import { stdin as input, stdout as output } from 'node:process';
 import readline from 'node:readline';
 import { readFileSync } from 'node:fs';
 //
-import Graph from 'graphology';
-import { generate } from 'peggy';
-import { PreprocessDataText } from '../_sys/text';
-import { makeTerminalOut } from '../_sys/prompts';
+const Graph = require('graphology'); // CJS library requires this
+const { generate } = require('peggy');
+import { PreprocessDataText } from '../../_ur/common/text.js';
+import { makeTerminalOut } from '../../_ur/common/prompts.js';
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,7 +36,7 @@ function ParseGraphData(filename) {
 function Run() {
   const filename = 'test-ncgraphdata.txt';
   LOG(`.. loading ${filename}...`);
-  const graph = new Graph({ multi: true });
+  const graph = new Graph.default({ multi: true });
   let out = '';
   const results = ParseGraphData(filename);
   results.forEach(entry => {
@@ -59,7 +59,7 @@ function Run() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** run control logic test **/
 process.on('message', controlMsg => {
-  const { dataex, data } = controlMsg;
+  const { dataex, data } = controlMsg as any;
   LOG('received DATAEX:', controlMsg);
   if (dataex === '_CONFIG_REQ') {
     process.send({ dataex: '_CONFIG_ACK', data: { name: 'graph/@init' } });
