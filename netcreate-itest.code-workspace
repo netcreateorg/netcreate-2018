@@ -47,11 +47,25 @@
     "terminal.integrated.profiles.osx": {
       "x86 zsh": {
         "path": "/usr/bin/arch",
-        "args": ["-arch", "x86_64", "/bin/zsh"]
+        "args": [
+          "-arch",
+          "x86_64",
+          "/bin/zsh",
+          "-i",
+          "-c",
+          "export VSCODE_PROFILE='x86 zsh';source .vscode/zshrc; exec /bin/zsh"
+        ]
       },
       "arm64 zsh": {
         "path": "/usr/bin/arch",
-        "args": ["-arch", "arm64", "/bin/zsh"]
+        "args": [
+          "-arch",
+          "arm64",
+          "/bin/zsh",
+          "-i",
+          "-c",
+          "export VSCODE_PROFILE='arm zsh'; source .vscode/zshrc; exec /bin/zsh"
+        ]
       }
     },
     // this line will force use of the selected profile
