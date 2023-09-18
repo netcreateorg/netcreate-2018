@@ -1,3 +1,5 @@
-# dont lint _dist folders
- _ur/_dist/*
- public/**/*.js
+# if this doesn't seem to work, try using ignorePatterns in .eslintrc.js
+#  e.g. 
+#  ignorePatterns: ['**/_dist/*'],
+
+ 
