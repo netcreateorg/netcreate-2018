@@ -19,7 +19,8 @@ PROJECT_PATH="./_ur/node-builder"
 # Piping to 'cat' allows the output to maintain ANSI colors when printed to the terminal
 node $OPTS $PROJECT_PATH/@cli-build-lib.cjs 2>&1 | cat
 # Note: always have to build UR first, then you can run dependent tasks below
-node $OPTS $PROJECT_PATH/@cli-tests.cjs 2>&1 | cat
+node $OPTS $PROJECT_PATH/@cli-build-app.cjs 2>&1 | cat
+node $OPTS $PROJECT_PATH/@cli-dev-test.cjs 2>&1 | cat
 
 # alternative ts-node version 
 # node_modules/ts-node/dist/bin.js $DEBUG $PROJECT_PATH 2>&1 | cat

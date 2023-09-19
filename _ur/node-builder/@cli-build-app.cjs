@@ -76,14 +76,6 @@ async function ESBuildWebApp() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** TEST **/
 (async () => {
-  LOG('ur parent process started');
-  LOG('## forking parse');
-  LOG(Object.keys(UR));
-  UR.Initialize({
-    rootDir: ROOT
-  });
-  UR.MODMGR.ProcTest();
-  UR.MODMGR.UR_Fork('parse', { cwd: DIR_URMODS });
-  LOG('parent process ended');
-  process.exit(0);
+  LOG('## BUILD APP');
+  LOG('...unimplemented');
 })();

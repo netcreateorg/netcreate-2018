@@ -32,7 +32,7 @@ async function ESBuildLibrary() {
   //
   // FSE.removeSync(DIR_PACKAGE); // don't do this because brunch watch will break
   FSE.ensureDir(DIR_PACKAGE);
-  if (DBG) LOG('building ur/node bundle...');
+  if (DBG) LOG('.. building ur/node bundle...');
   // build the server library for
   const nodeBuild = {
     entryPoints: [`${ROOT}/_ur/node-server/@server.mts`],
@@ -44,13 +44,13 @@ async function ESBuildLibrary() {
   };
 
   /* build the server library for nodejs */
-  if (DBG) LOG('building ur/node-server ESM...');
+  if (DBG) LOG('.. building ur/node-server ESM...');
   await esbuild.build({
     ...nodeBuild,
     outfile: `${DIR_PACKAGE}/server-esm.mjs`,
     format: 'esm'
   });
-  if (DBG) LOG('building ur/node-server CJS...');
+  if (DBG) LOG('.. building ur/node-server CJS...');
   await esbuild.build({
     ...nodeBuild,
     outfile: `${DIR_PACKAGE}/server.cjs`,
@@ -66,13 +66,13 @@ async function ESBuildLibrary() {
     sourcemap: true
     // packages: 'external'
   };
-  if (DBG) LOG('building ur/browser-client ESM...');
+  if (DBG) LOG('.. building ur/browser-client ESM...');
   await esbuild.build({
     ...browserBuild,
     outfile: `${DIR_PACKAGE}/client-esm.js`,
     format: 'esm'
   });
-  if (DBG) LOG('building ur/browser-client UMD...');
+  if (DBG) LOG('.. building ur/browser-client UMD...');
   await esbuild.build({
     ...browserBuild,
     plugins: [umdWrapper()],
@@ -85,8 +85,6 @@ async function ESBuildLibrary() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** TEST **/
 (async () => {
-  LOG('ur parent process started');
+  LOG('## BUILD LIBS');
   await ESBuildLibrary();
-  LOG('parent process ended');
-  process.exit(0);
 })();
