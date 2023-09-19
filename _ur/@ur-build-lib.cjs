@@ -15,7 +15,7 @@ const FSE = require('fs-extra');
 
 /// CONSTANTS AND DECLARATIONS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const { ROOT, DIR_PACKAGE } = require('./env-builder.cjs');
+const { ROOT, DIR_PACKAGE } = require('./env-ur.cjs');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = true;
 const LOG = console.log;
@@ -32,7 +32,6 @@ async function ESBuildLibrary() {
   //
   // FSE.removeSync(DIR_PACKAGE); // don't do this because brunch watch will break
   FSE.ensureDir(DIR_PACKAGE);
-  if (DBG) LOG('.. building ur/node bundle...');
   // build the server library for
   const nodeBuild = {
     entryPoints: [`${ROOT}/_ur/node-server/@server.mts`],

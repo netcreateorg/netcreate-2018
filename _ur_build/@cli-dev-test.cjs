@@ -9,12 +9,12 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const PATH = require('node:path');
-const UR = require('../_dist/server.cjs');
+const UR = require('@ursys/netcreate');
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const APP_PORT = 3000;
-const { ROOT, DIR_URMODS } = require('./env-builder.cjs');
+const { ROOT, DIR_URMODS } = require('./env-build.cjs');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = true;
 const LOG = console.log;
@@ -24,6 +24,7 @@ const LOG = console.log;
 /** TEST **/
 (async () => {
   LOG('## DEV TESTS');
+  LOG('what keys are in imported UR?');
   LOG(Object.keys(UR));
   UR.Initialize({
     rootDir: ROOT

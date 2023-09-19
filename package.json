@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "dev": "brunch watch -s",
+    "build-libs": "npm run build --workspace _ur",
     "lint": "npm exec --workspaces -- npm run lint && eslint app/",
     "dev:inspect": "node --inspect brunch-server.js",
     "classroom": "brunch build -e classroom",

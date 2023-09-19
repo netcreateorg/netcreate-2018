@@ -1,9 +1,13 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Dependency-free environment detection for CJS
+  A dependency-free environment detection for CJS codebases
   
-  Because the builder has to build the URSYS library, it can
-  not import any of their utilities (e.g. files, env-node)
+  NOTES: The _ur_build directory contains several 'task utilities' written for
+  node as CommonJS. This is a requirement because the base project, NetCreate,
+  is stuck using it due to the legacy nature of the project: it predates
+  the use of ESM and the build system 'brunch' is not compatible with ESM.
+  We can not upgrade the build system because the source files themselves are
+  reliant on how brunch emulates a filesystem.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -14,7 +18,7 @@ const { statSync } = require('node:fs');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - -
 const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - -
-const ROOT = normalize(join(__dirname, '../../'));
+const ROOT = normalize(join(__dirname, '../'));
 
 /// UTILITY METHODS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
