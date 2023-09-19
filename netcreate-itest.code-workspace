@@ -8,9 +8,14 @@
   "settings": {
     // configure glob patterns for excluding files and folders.
     "files.exclude": {
+      "**/.editorconfig*": true,
+      "**/.eslint*": true,
       "**/.git": true,
-      "**/.DS_Store": true,
-      "**/node_modules": true
+      "**/.nvmrc": true,
+      "**/.prettier*": true,
+      "**/.vscode": true,
+      "**/node_modules": true,
+      "public/": true
     },
     "search.exclude": {
       "**/node_modules": true,
