@@ -34,7 +34,9 @@ To access the Import/Export and Template Editor, you will need to enable admin m
 * if on a remote, login with a login token and append `?admin=true` to the end of the URL (e.g. `192.168.1.100:3000/#/edit/TEST-TEST-GXK?admin=true`)
 
 
-## NETCREATE-ITEST (2.0) FEATURE SUMMARY
+## NETCREATE-ITEST (2.0) TARGET FEATURES
+
+_under development_
 
 MAJOR USER FEATURE REQUESTS
 

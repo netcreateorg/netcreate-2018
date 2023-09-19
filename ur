@@ -15,9 +15,10 @@ URCLI_BUILD="./_ur_build"
 DEBUG="--inspect-brk" # use --inspect-brk to break on first line
 OPTS="--trace-warnings" # use --trace-warnings to show deprecation warnings
 
-# always build library first
+# (1) always build library first
 node $OPTS $UR_BUILD/@ur-build-lib.cjs 2>&1 | cat
-# add additional tasks here (eventually can be command args)
+
+# (2) add additional tasks here (eventually can be command args)
 node $OPTS $URCLI_BUILD/@cli-build-app.cjs 2>&1 | cat
 node $OPTS $URCLI_BUILD/@cli-dev-test.cjs 2>&1 | cat
 
