@@ -34,6 +34,7 @@
 /// UNISYS INITIALIZE REQUIRES for REACT ROOT /////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS = require('unisys/client');
+const UR = require('@ursys/netcreate/');
 const SessionShell = require('unisys/component/SessionShell');
 
 /// DEBUG SWITCHES ////////////////////////////////////////////////////////////
@@ -106,6 +107,8 @@ class NetCreate extends UNISYS.Component {
 
     const UDATA = UNISYS.NewDataLink(this);
     UDATA.HandleMessage('DISCONNECT', this.onDisconnect);
+
+    UR.ClientTest();
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

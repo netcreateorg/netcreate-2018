@@ -2,6 +2,9 @@
 
   entrypoint for server
 
+  when making live changes, make sure that the ur builder is also running and
+  users of this library are watching for changes to the ur library
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UrModule from './class-urmodule.mts';

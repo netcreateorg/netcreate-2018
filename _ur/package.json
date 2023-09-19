@@ -1,12 +1,18 @@
 {
-  "name": "ursys",
-  "version": "1.0.0",
-  "description": "",
+  "name": "@ursys/netcreate",
+  "version": "0.1",
+  "description": "modular system for enhancing NetCreate 2.0 (ITEST)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/netcreateorg/netcreate-itest"
+  },
   "private": true,
   "scripts": {
     "lint": "eslint .",
     "clean": "rm -rf ./node_modules ./_dist"
   },
+  "browser": "./_dist/client-umd.js",
+  "main": "./_dist/server.cjs",
   "exports": {
     "node": {
       "import": "./_dist/server-esm.mjs",

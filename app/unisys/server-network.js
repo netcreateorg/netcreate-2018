@@ -4,7 +4,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = true;
+const DBG = false;
+const STAT = true;
 
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -66,10 +67,10 @@ UNET.InitializeNetwork = options => {
  */
 UNET.StartNetwork = () => {
   // create listener.
-  if (DBG) console.log(PR, `UNISYS NETWORK initialized on port ${mu_options.port}`);
+  if (STAT) console.log(PR, `UNISYS NETWORK initialized on port ${mu_options.port}`);
   mu_wss = new WSS(mu_options);
   mu_wss.on('listening', function () {
-    if (DBG) console.log(PR, `listening on port ${mu_options.port}`);
+    if (STAT) console.log(PR, `listening on port ${mu_options.port}`);
     mu_wss.on('connection', m_NewSocketConnected);
   });
 }; // end CreateNetwork()
@@ -209,7 +210,7 @@ function m_StartHeartbeat() {
   if (m_heartbeat_interval) return; // already started
   m_heartbeat_interval = setInterval(function sendHeartbeat() {
     mu_sockets.forEach((socket, key, map) => {
-      // if (DBG) console.log(PR, 'sending heartbeat to', socket.UADDR);
+      if (DBG) console.log(PR, 'sending heartbeat to', socket.UADDR);
       if (socket.readyState === socket.OPEN) {
         socket.send('ping', err => {
           if (err)
@@ -466,7 +467,7 @@ function m_SocketAdd(socket) {
   socket.UADDR = sid;
   // save socket
   mu_sockets.set(sid, socket);
-  if (DBG) console.log(PR, `socket ADD ${socket.UADDR} to network`);
+  if (STAT) console.log(PR, `socket ADD ${socket.UADDR} to network`);
   LOGGER.Write(socket.UADDR, 'joined network');
   if (DBG) m_ListSockets(`add ${sid}`);
 }
@@ -484,7 +485,7 @@ function m_GetNewUADDR(prefix = 'UADDR') {
 function m_SocketDelete(socket) {
   let uaddr = socket.UADDR;
   if (!mu_sockets.has(uaddr)) throw Error(DBG_SOCK_BADCLOSE);
-  if (DBG) console.log(PR, `socket DEL ${uaddr} from network`);
+  if (STAT) console.log(PR, `socket DEL ${uaddr} from network`);
   LOGGER.Write(socket.UADDR, 'left network');
   mu_sockets.delete(uaddr);
   // delete socket reference from previously registered handlers

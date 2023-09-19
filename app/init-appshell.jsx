@@ -17,8 +17,6 @@ const { UncontrolledDropdown, DropdownToggle } = require('reactstrap');
 const { DropdownMenu, DropdownItem } = require('reactstrap');
 //
 const UNISYS = require('unisys/client');
-const { ClientTest } = require('../_ur/_dist/client-esm');
-ClientTest();
 
 /// 1. MAIN VIEWS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

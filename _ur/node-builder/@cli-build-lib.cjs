@@ -30,7 +30,7 @@ function _short(path) {
 /** build the UR libraries for server and client */
 async function ESBuildLibrary() {
   //
-  FSE.removeSync(DIR_PACKAGE);
+  // FSE.removeSync(DIR_PACKAGE); // don't do this because brunch watch will break
   FSE.ensureDir(DIR_PACKAGE);
   if (DBG) LOG('building ur/node bundle...');
   // build the server library for

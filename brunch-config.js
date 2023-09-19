@@ -23,6 +23,8 @@
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const NC_CONFIG = require('./app-config/netcreate-config');
 const UDB = require('./app/unisys/server-database');
+let FIRST_RUN = true;
+const Warning = text => console.log(`\n\x1b[33;41m *** ${text} *** \x1b[0m\n`);
 
 // CommonJS module format
 // exports a configuration object
@@ -50,6 +52,10 @@ module.exports = {
         'styles/netc-app.css': [/^app/, /^node_modules/]
       }
     }
+  },
+  /** watch additional paths for changes and rebuild */
+  paths: {
+    watched: ['app', '_ur/_dist/', '_ur_mods/_dist']
   },
 
   /// PLUGIN CONFIGURATION //////////////////////////////////////////////////////
@@ -99,8 +105,22 @@ module.exports = {
   },
 
   hooks: {
-    onCompile() {
-      console.log(`\n*** NetCreate is running (dev mode) ***\n`);
+    onCompile(generatedFiles, changedAssets) {
+      if (FIRST_RUN) {
+        console.log(`\n--- compilation complete ---\n`);
+        FIRST_RUN = false;
+        return;
+      }
+      generatedFiles.forEach(f => {
+        const { sourceFiles } = f;
+        sourceFiles.forEach(sf => {
+          const { path } = sf;
+          if (path.includes('@ursys')) {
+            Warning('restart NetCreate server after modifying @ursys library code');
+            return;
+          }
+        });
+      });
     }
   },
 
