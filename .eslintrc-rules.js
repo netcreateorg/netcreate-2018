@@ -29,8 +29,8 @@ const CLASSROOM = {
 };
 /* turn off typescript recommendations */
 const HELP_TSJS = {
-  'no-undef': 'off', // TS handles this better; works with global types
-  'no-unused-vars': 'off',
+  // 'no-undef': 'off', // TS handles this better; works with global types
+  'no-unused-vars': 'warn',
   'no-shadow': 'off',
   'no-param-reassign': 'off',
   'object-curly-newline': 'off',
