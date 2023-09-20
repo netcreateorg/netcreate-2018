@@ -51,6 +51,7 @@ const u_short = path => {
 /// RUNTIME CALCULATIONS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: these are declared also in node-server/env-node.mts
+const DIR_APP = u_path('/app');
 const DIR_PUBLIC = u_path('/public');
 const DIR_UR = u_path('/_ur');
 const DIR_PACKAGE = u_path('/_ur/_dist');
@@ -62,7 +63,8 @@ const DIR_URMODS = u_path('/_ur_mods');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
   ROOT, // root of the project
-  DIR_PUBLIC, // path to PUBLIC directory for webapp
+  DIR_APP, // path of webbapp source code
+  DIR_PUBLIC, // path to PUBLIC directory for serving webapp
   DIR_UR, // path to _ur directory
   DIR_PACKAGE, // path to browser client code
   DIR_BDL_BROWSER, // path to node server code

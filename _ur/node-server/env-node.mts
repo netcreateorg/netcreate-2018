@@ -15,7 +15,7 @@ const DBG = false;
 let ROOT: string = ''; // root of the project
 let DIR_PUBLIC: string; // path to PUBLIC directory for webapp
 let DIR_UR: string; // path to _ur directory
-let DIR_PACKAGE: string; // path to browser client code
+let DIR_UR_DIST: string; // path to browser client code
 let DIR_BDL_BROWSER: string; // path to node server code
 let DIR_BDL_NODE: string; // path to _ur/dist directory for library out
 let DIR_URMODS: string; // path to _ur_mod directory
@@ -47,14 +47,14 @@ function SetRootPaths(path: string) {
     ROOT = path;
     DIR_PUBLIC = u_path('/public');
     DIR_UR = u_path('/_ur');
-    DIR_PACKAGE = u_path('/_ur/_dist');
+    DIR_UR_DIST = u_path('/_ur/_dist');
     DIR_BDL_BROWSER = u_path('/_ur/browser-client');
     DIR_BDL_NODE = u_path('/_ur/node-server');
     DIR_URMODS = u_path('/_ur_mods');
     if (DBG) {
       console.log(DIR_PUBLIC);
       console.log(DIR_UR);
-      console.log(DIR_PACKAGE);
+      console.log(DIR_UR_DIST);
       console.log(DIR_BDL_BROWSER);
       console.log(DIR_BDL_NODE);
       console.log(DIR_URMODS);
@@ -73,7 +73,7 @@ function GetPaths() {
     DIR_UR,
     DIR_BDL_BROWSER,
     DIR_BDL_NODE,
-    DIR_PACKAGE,
+    DIR_UR_DIST,
     DIR_URMODS
   };
 }
@@ -94,6 +94,6 @@ export {
   DIR_UR,
   DIR_BDL_BROWSER,
   DIR_BDL_NODE,
-  DIR_PACKAGE,
+  DIR_UR_DIST,
   DIR_URMODS
 };
