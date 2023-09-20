@@ -37,12 +37,14 @@ const u_hack_mapfiles = () => {
 let NC_CONFIG;
 if (!FSE.pathExistsSync('./app-config/netcreate-config.js')) {
   s_warn('NO PROJECT DEFINED');
-  console.log('`\x1b[1;33m');
-  console.log(`To set up a project named 'demo', type this command:`);
-  console.log(`  ${bl('./nc.js --dataset=demo')}`);
-  console.log(`\x1b[1;33mthen try again.\x1b[0m`);
   console.log('');
-  console.log(`See the wiki for more uses of the ${bl('./nc.js')} command.`);
+  console.log(`To set up a project named 'demo', type this command:`);
+  console.log('');
+  console.log(`  ${bl('./nc.js --dataset=demo')}`);
+  console.log('');
+  console.log(`This is the usual way users ${yl('start the server')} and`);
+  console.log(`${yl('select')} which project to serve; the ${bl('npm run dev')}`);
+  console.log(`method is a shortcut for developers.`);
   console.log('');
   process.exit(1);
 } else {
