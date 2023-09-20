@@ -54,7 +54,7 @@ const u_short = path => {
 const DIR_APP = u_path('/app');
 const DIR_PUBLIC = u_path('/public');
 const DIR_UR = u_path('/_ur');
-const DIR_PACKAGE = u_path('/_ur/_dist');
+const DIR_UR_DIST = u_path('/_ur/_dist');
 const DIR_BDL_BROWSER = u_path('/_ur/browser-client');
 const DIR_BDL_NODE = u_path('/_ur/node-server');
 const DIR_URMODS = u_path('/_ur_mods');
@@ -66,7 +66,7 @@ module.exports = {
   DIR_APP, // path of webbapp source code
   DIR_PUBLIC, // path to PUBLIC directory for serving webapp
   DIR_UR, // path to _ur directory
-  DIR_PACKAGE, // path to browser client code
+  DIR_UR_DIST, // path to browser client code
   DIR_BDL_BROWSER, // path to node server code
   DIR_BDL_NODE, // path to _ur/dist directory for library out
   DIR_URMODS, // path to _ur_mod directory
