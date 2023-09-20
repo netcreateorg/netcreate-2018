@@ -12,7 +12,7 @@
     "lint": "eslint .",
     "clean": "rm -rf ./node_modules ./_dist"
   },
-  "browser": "./_dist/client-umd.js",
+  "browser": "./_dist/client-cjs.js",
   "main": "./_dist/server.cjs",
   "exports": {
     "node": {
@@ -21,6 +21,7 @@
     },
     "browser": {
       "import": "./_dist/client-esm.js",
+      "require": "./_dist/client-cjs.js",
       "default": "./_dist/client-umd.js"
     }
   },

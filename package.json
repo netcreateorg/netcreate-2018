@@ -7,7 +7,7 @@
     "_ur_mods/"
   ],
   "scripts": {
-    "dev": "brunch watch -s",
+    "dev": "node ./_ur/@ur-build-lib.cjs && brunch w -s",
     "build-libs": "npm run build --workspace _ur",
     "lint": "npm exec --workspaces -- npm run lint && eslint app/",
     "dev:inspect": "node --inspect brunch-server.js",

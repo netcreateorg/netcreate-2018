@@ -2,20 +2,15 @@
 
   BRUNCH CONFIGURATION
 
-  Brunch is a "task runner" that performs the common operations for
-  developing webapps. Essentially it transforms your source files and
-  copies them to a 'public' directory, where a built-in webserver can
-  make them available to viewing in a browser by visiting localhost.
-  It also supports "plugins" to provide additional functions like source
-  code minification and transpiling other script languages into pure CSS
-  and Javascript. This is similar to other popular task runners like
-  Webpack, Grunt, and Gulp.
-
+  2018:
   We're using Brunch for NetCreate because  it has a 'minimal
   configuration' philosophy. Although you still do need to do some
   configuration (see below) it's a lot less confusing than either Grunt or
   Webpack, and is considerably less verbose than Gulp. Brunch is also a
   mature project (6+ years) so it is a fairly safe bet moving forward.
+
+  2023:
+  We are locked into Brunch due to issues changing to another build system.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -24,12 +19,12 @@
 const NC_CONFIG = require('./app-config/netcreate-config');
 const UDB = require('./app/unisys/server-database');
 let FIRST_RUN = true;
-const Warning = text => console.log(`\n\x1b[33;41m *** ${text} *** \x1b[0m\n`);
+const Warn = text => console.log(`\n\x1b[33;41m *** ${text} *** \x1b[0m\n`);
 
 // CommonJS module format
 // exports a configuration object
 module.exports = {
-  /// CONCATENATION /////////////////////////////////////////////////////////////
+  /// CONCATENATION ///////////////////////////////////////////////////////////
   /** Brunch intelligently combines source javascript, stylesheets, and
   templates into single files. It includes not only your source files in
   the app/ directory, but is smart enough to look in node_modules/ and
@@ -44,7 +39,8 @@ module.exports = {
     javascripts: {
       joinTo: {
         'scripts/netc-app.js': /^app/,
-        'scripts/netc-lib.js': /^(?!app)/
+        'scripts/ursys-lib.js': /^node_modules\/@ursys/,
+        'scripts/netc-lib.js': /^(?!app)(?!node_modules\/@ursys)/
       }
     },
     stylesheets: {
@@ -53,12 +49,13 @@ module.exports = {
       }
     }
   },
+  sourceMaps: true,
   /** watch additional paths for changes and rebuild */
   paths: {
     watched: ['app', '_ur/_dist/', '_ur_mods/_dist']
   },
 
-  /// PLUGIN CONFIGURATION //////////////////////////////////////////////////////
+  /// PLUGIN CONFIGURATION ////////////////////////////////////////////////////
   /** Brunch plugins generally work without configuration, but sometimes you need
   to do it, particularly for plugins that interface with other npm packages
   with their own configuration requirements (e.g. babel)
@@ -79,7 +76,7 @@ module.exports = {
     }
   },
 
-  /// SERVER CONFIGURATION //////////////////////////////////////////////////////
+  /// SERVER CONFIGURATION ////////////////////////////////////////////////////
   /** Brunch will use its internal server unless a brunch-server.js module is
   present. The module should return a function that accepts a config obj and
   a callback function that is invoked when the server is done initializing.
@@ -90,7 +87,7 @@ module.exports = {
     port: parseInt(NC_CONFIG.port)
   },
 
-  /// NPM INTEGRATION ///////////////////////////////////////////////////////////
+  /// NPM INTEGRATION /////////////////////////////////////////////////////////
   /** Brunch is aware of the node_modules directory but sometimes needs help to
   find the right source files to include in processing.
   */
@@ -116,7 +113,7 @@ module.exports = {
         sourceFiles.forEach(sf => {
           const { path } = sf;
           if (path.includes('@ursys')) {
-            Warning('restart NetCreate server after modifying @ursys library code');
+            Warn('restart NetCreate server after modifying @ursys library code');
             return;
           }
         });
@@ -124,16 +121,7 @@ module.exports = {
     }
   },
 
-  /// STORYBOOK COMPATIBILITY ///////////////////////////////////////////////////
-  /** Storybook uses spread operators, which are not supported in the current
-    version of brunch-babel.  Brunch doesn't need to compile storybook files
-    anyway because storybook has its own compile via webpack.  So ignore them.
-  */
-  conventions: {
-    ignored: [/\.stories.js$/]
-  },
-
-  /// OVERRIDES FOR PRODUCTION //////////////////////////////////////////////////
+  /// OVERRIDES FOR PRODUCTION ////////////////////////////////////////////////
   /** Brunch configuration settings default to development mode in the
     environment. You can override each env (e.g. production) after all other
     declarations are done.
