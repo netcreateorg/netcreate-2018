@@ -107,4 +107,4 @@ class FilterGroupProperties extends React.Component {
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default FilterGroupProperties;
+module.exports = FilterGroupProperties;

@@ -189,4 +189,4 @@ class SelectFilter extends React.Component {
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default SelectFilter;
+module.exports = SelectFilter;

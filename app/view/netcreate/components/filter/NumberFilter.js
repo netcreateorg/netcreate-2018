@@ -178,4 +178,4 @@ class NumberFilter extends React.Component {
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default NumberFilter;
+module.exports = NumberFilter;

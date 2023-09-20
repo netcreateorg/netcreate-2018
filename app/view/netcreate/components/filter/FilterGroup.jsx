@@ -82,4 +82,4 @@ function FilterGroup({ group, label, filters, filterAction, transparency }) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default FilterGroup;
+module.exports = FilterGroup;

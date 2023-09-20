@@ -175,4 +175,4 @@ class StringFilter extends React.Component {
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default StringFilter;
+module.exports = StringFilter;

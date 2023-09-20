@@ -107,4 +107,4 @@ class FocusFilter extends React.Component {
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default FocusFilter;
+module.exports = FocusFilter;
