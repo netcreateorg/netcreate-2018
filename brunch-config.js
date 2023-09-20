@@ -14,14 +14,14 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const NC_CONFIG = require('./app-config/netcreate-config');
 const FSE = require('fs-extra');
-const UDB = require('./app/unisys/server-database');
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** string utility to wrap text with linefeeds and ANSI warning colors */
-const s_warn = text => console.log(`\n\x1b[33;41m *** ${text} *** \x1b[0m\n`);
+const s_warn = text => console.log(`\x1b[33;41m *** ${text} *** \x1b[0m`);
+const bl = s => `\x1b[1;34m${s}\x1b[0m`;
+const yl = s => `\x1b[1;33m${s}\x1b[0m`;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** utility to correct problems with sourcemaps:true overwriting ursys map */
 const u_hack_mapfiles = () => {
@@ -31,6 +31,27 @@ const u_hack_mapfiles = () => {
   console.log(`MAP HACK - replaced 'ursys-lib.js.map' with 'client-cjs.js.map' to`);
   console.log(`           fix incorrect sourcemap attribution by brunch`);
 };
+
+/// CHECK FOR NC_CONFIG ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let NC_CONFIG;
+if (!FSE.pathExistsSync('./app-config/netcreate-config.js')) {
+  s_warn('NO PROJECT DEFINED');
+  console.log('`\x1b[1;33m');
+  console.log(`To set up a project named 'demo', type this command:`);
+  console.log(`  ${bl('./nc.js --dataset=demo')}`);
+  console.log(`\x1b[1;33mthen try again.\x1b[0m`);
+  console.log('');
+  console.log(`See the wiki for more uses of the ${bl('./nc.js')} command.`);
+  console.log('');
+  process.exit(1);
+} else {
+  NC_CONFIG = require('./app-config/netcreate-config');
+}
+
+/// CONTINUE LOADING DEPENDENT LIBS ///////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const UDB = require('./app/unisys/server-database');
 
 /// RUNTIME DECLARATIONS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
