@@ -11,6 +11,7 @@ import UrModule from './class-urmodule.mts';
 import * as MODMGR from './urmod-mgr.mts';
 import * as APPSERV from './appserver.mts';
 import * as ENV from './env-node.mts';
+import * as FILES from './files.mts';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,6 +33,7 @@ export {
   APPSERV, // application server
   MODMGR, // ur module manager
   ENV, // environment utilities and constants
+  FILES, // file utilities
   // CLASSES
   UrModule // ur module wrapper
 };

@@ -14,8 +14,7 @@
       "**/.nvmrc": true,
       "**/.prettier*": true,
       "**/.vscode": true,
-      "**/node_modules": true,
-      "public/": true
+      "**/node_modules": true
     },
     "search.exclude": {
       "**/node_modules": true,

@@ -69,6 +69,7 @@ class NetCreate extends UNISYS.Component {
   constructor() {
     super();
     UNISYS.ForceReloadOnNavigation();
+    UR.ClientTest();
     this.state = {
       isConnected: true,
       isLoggedIn: false,
@@ -107,8 +108,6 @@ class NetCreate extends UNISYS.Component {
 
     const UDATA = UNISYS.NewDataLink(this);
     UDATA.HandleMessage('DISCONNECT', this.onDisconnect);
-
-    UR.ClientTest();
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

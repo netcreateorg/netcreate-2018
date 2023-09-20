@@ -19,7 +19,7 @@ var DEFS = require('./common-defs');
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPTS = require('../system/util/prompts');
-const PR = PROMPTS.Pad('SRV-NET');
+const PR = PROMPTS.Pad('SRV_NET');
 const ERR = PROMPTS.Pad('!!!');
 const ERR_SS_EXISTS = 'socket server already created';
 const ERR_NULL_SOCKET = 'require valid socket';
@@ -66,11 +66,10 @@ UNET.InitializeNetwork = options => {
     has started listening, initializing the UNISYS NETWORK socket listener.
  */
 UNET.StartNetwork = () => {
-  // create listener.
-  if (STAT) console.log(PR, `UNISYS NETWORK initialized on port ${mu_options.port}`);
+  // create listener
   mu_wss = new WSS(mu_options);
   mu_wss.on('listening', function () {
-    if (STAT) console.log(PR, `listening on port ${mu_options.port}`);
+    if (STAT) console.log(PR, `UNISYS NETWORK active on on port ${mu_options.port}`);
     mu_wss.on('connection', m_NewSocketConnected);
   });
 }; // end CreateNetwork()

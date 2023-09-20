@@ -22,10 +22,15 @@ const EXEC = require('child_process').exec;
 const PROMPTS = require('./app/system/util/prompts');
 const PR = PROMPTS.Pad('APP_SERV');
 const DP = PROMPTS.Stars(3);
-const GIT = PROMPTS.Pad('GIT');
+const WR = s => `${PR} ${DP} \x1b[1;34m${s}\x1b[0m`;
+const BL = s => `\x1b[1;34m${s}\x1b[0m`;
+const YL = s => `\x1b[1;33m${s}\x1b[0m`;
+const ERR = s => `\x1b[33;41m ${s} \x1b[0m`;
+
 var UKEY_IDX = 0;
 const USRV_START = new Date(Date.now()).toISOString();
 const NC_CONFIG = require('./app-config/netcreate-config');
+const { ERROR } = require('sqlite3');
 
 let NODE_VER;
 try {
@@ -126,14 +131,14 @@ module.exports = (config, callback) => {
   APP.listen(config.port, function () {
     // setup prompts
     console.log(PR);
-    console.log(PR, DP, 'GO TO ONE OF THESE URLS in CHROME WEB BROWSER', DP);
-    console.log(PR, DP, 'MAINAPP - http://localhost:' + config.port);
+    console.log(WR('GO TO ONE OF THESE URLS in CHROME WEB BROWSER'));
+    console.log(WR('MAINAPP - http://localhost:' + config.port));
 
     let ipOverride = NC_CONFIG.ip;
     if (ipOverride) {
-      console.log(PR, DP, 'CLIENTS - http://' + ipOverride + ':' + config.port);
+      console.log(WR('CLIENTS - http://' + ipOverride + ':' + config.port));
     } else {
-      console.log(PR, DP, 'CLIENTS - http://' + IP.address() + ':' + config.port);
+      console.log(WR('CLIENTS - http://' + IP.address() + ':' + config.port));
     }
 
     console.log(PR);
@@ -141,13 +146,11 @@ module.exports = (config, callback) => {
     EXEC('git symbolic-ref --short -q HEAD', (error, stdout, stderr) => {
       if (error) {
         // console.error(BP,'git symbolic-ref query error',error);
-        console.log(PR, 'GIT STATUS:');
-        console.log(PR, '.. You are running a <detached> branch');
+        console.log(PR, `${BL('GIT STATUS:')} running ${BL('<detached> branch')}`);
       }
       if (stdout) {
-        stdout = stdout.trim();
-        console.log(PR, 'GIT STATUS:');
-        console.log(PR, '.. You are running the "' + stdout + '" branch');
+        const br = `${stdout.trim()}`;
+        console.log(PR, `${BL('GIT STATUS:')} running branch ${BL(br)}`);
       }
     });
     // check architecture
@@ -172,9 +175,9 @@ module.exports = (config, callback) => {
       if (stdout) {
         stdout = stdout.trim();
         if (stdout !== NODE_VER) {
-          console.log(PR, '*** NODE VERSION MISMATCH ***');
-          console.log(PR, '.. expected', NODE_VER, 'got', stdout);
-          console.log(PR, '.. did you remember to run nvm use?');
+          console.log(PR, ERR('NODE VERSION MISMATCH'));
+          console.log(PR, `.. expected ${NODE_VER} got ${YL(stdout)}`);
+          console.log(PR, `.. did you remember to run ${BL('nvm use')}?`);
           // eslint-disable-next-line no-process-exit
           process.exit(100);
         }
