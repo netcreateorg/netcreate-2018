@@ -14,27 +14,31 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-/// LOAD LIBRARIES ////////////////////////////////////////////////////////////
-/// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const NC_CONFIG = require('./app-config/netcreate-config');
+const FSE = require('fs-extra');
 const UDB = require('./app/unisys/server-database');
-let FIRST_RUN = true;
-const Warn = text => console.log(`\n\x1b[33;41m *** ${text} *** \x1b[0m\n`);
 
-// CommonJS module format
-// exports a configuration object
+/// UTILITIES /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** string utility to wrap text with linefeeds and ANSI warning colors */
+const s_warn = text => console.log(`\n\x1b[33;41m *** ${text} *** \x1b[0m\n`);
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** utility to correct problems with sourcemaps:true overwriting ursys map */
+const u_hack_mapfiles = () => {
+  const src = `${__dirname}/_ur/_dist/client-cjs.js.map`;
+  const dst = `${__dirname}/public/scripts/ursys-lib.js.map`;
+  FSE.copySync(src, dst);
+  console.log(`MAP HACK - replaced 'ursys-lib.js.map' with 'client-cjs.js.map' to`);
+  console.log(`           fix incorrect sourcemap attribution by brunch`);
+};
+
+/// RUNTIME DECLARATIONS //////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let FIRST_RUN = true;
+
+/// BRUNCH CONFIGURATION //////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  /// CONCATENATION ///////////////////////////////////////////////////////////
-  /** Brunch intelligently combines source javascript, stylesheets, and
-  templates into single files. It includes not only your source files in
-  the app/ directory, but is smart enough to look in node_modules/ and
-  vendor/ directories. The joinTo property allows multiple ways to define
-  all the sources you want combined into the named file.
-  - - -
-  NOTE: brunch includes ONLY files referred to by require() statements
-  NOTE: app, vendor, public are relative to this config file
-  NOTE: any directory is fair game for pattern matching
-  */
   files: {
     javascripts: {
       joinTo: {
@@ -50,21 +54,9 @@ module.exports = {
     }
   },
   sourceMaps: true,
-  /** watch additional paths for changes and rebuild */
-  paths: {
-    watched: ['app', '_ur/_dist/', '_ur_mods/_dist']
-  },
-
-  /// PLUGIN CONFIGURATION ////////////////////////////////////////////////////
-  /** Brunch plugins generally work without configuration, but sometimes you need
-  to do it, particularly for plugins that interface with other npm packages
-  with their own configuration requirements (e.g. babel)
-  */
   plugins: {
     babel: {
-      // brunch-babel plugin requires additional babel settings to enable jsx processing
-      // npm i --save-dev babel babel-preset-env babel-preset-react
-      // npm i --save-dev babel-brunch@github:babel/babel-brunch
+      ignore: [/^node_modules\/@ursys/],
       presets: ['env', 'react']
     },
     autoReload: { enabled: true },
@@ -75,35 +67,23 @@ module.exports = {
       'htmldemos': ['app-htmldemos']
     }
   },
-
-  /// SERVER CONFIGURATION ////////////////////////////////////////////////////
-  /** Brunch will use its internal server unless a brunch-server.js module is
-  present. The module should return a function that accepts a config obj and
-  a callback function that is invoked when the server is done initializing.
-  It should return an object with a close() method (as ExpressJS app does)
-  */
   server: {
     // viewing url is http://localhost:3000 by default, unless overridden by nc.js
     port: parseInt(NC_CONFIG.port)
   },
-
-  /// NPM INTEGRATION /////////////////////////////////////////////////////////
-  /** Brunch is aware of the node_modules directory but sometimes needs help to
-  find the right source files to include in processing.
-  */
   npm: {
     styles: {
-      /// include these css files in the stylesheets joinTo
+      /// also include these css files in the stylesheets joinTo
       bootstrap: ['dist/css/bootstrap.min.css']
     },
     globals: {
       jquery: 'jquery'
     }
   },
-
   hooks: {
     onCompile(generatedFiles, changedAssets) {
       if (FIRST_RUN) {
+        u_hack_mapfiles(); // sneakily copy dist directory to public scripts
         console.log(`\n--- compilation complete ---\n`);
         FIRST_RUN = false;
         return;
@@ -113,7 +93,7 @@ module.exports = {
         sourceFiles.forEach(sf => {
           const { path } = sf;
           if (path.includes('@ursys')) {
-            Warn('restart NetCreate server after modifying @ursys library code');
+            s_warn('restart NetCreate server after modifying @ursys library code');
             return;
           }
         });
@@ -121,11 +101,9 @@ module.exports = {
     }
   },
 
-  /// OVERRIDES FOR PRODUCTION ////////////////////////////////////////////////
-  /** Brunch configuration settings default to development mode in the
-    environment. You can override each env (e.g. production) after all other
-    declarations are done.
-  */
+  /// OVERRIDES FOR PRODUCTION /////////////////
+  /// invoke with 'brunch -e classroom build -s'
+
   overrides: {
     // env 'classroom' is set by npm start / npm run start
     classroom: {

@@ -63,7 +63,7 @@ async function ESBuildLibrary() {
     bundle: true,
     platform: 'browser',
     target: ['esnext'],
-    sourcemap: 'inline' // needed for survive brunch
+    sourcemap: true
   };
   if (DBG) LOG('.. building ur/browser-client ESM...');
   await esbuild.build({
