@@ -32,8 +32,5 @@
     "fs-extra": "^11.1.1",
     "node-dir": "^0.1.17"
   },
-  "dependencies": {
-    "graphology": "^0.25.4",
-    "peggy": "^3.0.2"
-  }
+  "dependencies": {}
 }

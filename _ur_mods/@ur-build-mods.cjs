@@ -15,7 +15,7 @@ const FSE = require('fs-extra');
 
 /// CONSTANTS AND DECLARATIONS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const { ROOT, DIR_UR_DIST } = require('./env-ur.cjs');
+const { ROOT, DIR_URMODS, DIR_URMODS_DIST } = require('./env-ur-mods.cjs');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = true;
 const LOG = console.log;
@@ -28,14 +28,14 @@ function _short(path) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** build the UR libraries for server and client */
-async function ESBuildLibrary() {
+async function ESBuildModules() {
   //
   // FSE.removeSync(DIR_UR_DIST); // don't do this because brunch watch will break
-  FSE.ensureDir(DIR_UR_DIST);
+  FSE.ensureDir(DIR_URMODS_DIST);
 
   /** SERVER CLIENT SHARED BUILD SETTINGS **/
   const nodeBuild = {
-    entryPoints: [`${ROOT}/_ur/node-server/@server.mts`],
+    entryPoints: [`${DIR_URMODS}/@mod-server.mts`],
     bundle: true,
     platform: 'node',
     target: ['node18', 'esnext'],
@@ -44,44 +44,44 @@ async function ESBuildLibrary() {
   };
 
   /* build the server library for nodejs */
-  if (DBG) LOG('.. building ur/node-server ESM...');
+  if (DBG) LOG('.. building ur_mods-server ESM...');
   await esbuild.build({
     ...nodeBuild,
-    outfile: `${DIR_UR_DIST}/server-esm.mjs`,
+    outfile: `${DIR_URMODS_DIST}/mod-server-esm.mjs`,
     format: 'esm'
   });
-  if (DBG) LOG('.. building ur/node-server CJS...');
+  if (DBG) LOG('.. building ur_mods-server CJS...');
   await esbuild.build({
     ...nodeBuild,
-    outfile: `${DIR_UR_DIST}/server.cjs`,
+    outfile: `${DIR_URMODS_DIST}/mod-server.cjs`,
     format: 'cjs'
   });
 
   /** BROWSER CLIENT SHARED BUILD SETTINGS **/
   const browserBuild = {
-    entryPoints: [`${ROOT}/_ur/browser-client/@client.ts`],
+    entryPoints: [`${DIR_URMODS}/@mod-client.ts`],
     bundle: true,
     platform: 'browser',
     target: ['esnext'],
     sourcemap: true
   };
-  if (DBG) LOG('.. building ur/browser-client ESM...');
+  if (DBG) LOG('.. building ur_mods-client ESM...');
   await esbuild.build({
     ...browserBuild,
-    outfile: `${DIR_UR_DIST}/client-esm.js`,
+    outfile: `${DIR_URMODS_DIST}/mod-client-esm.js`,
     format: 'esm'
   });
-  if (DBG) LOG('.. building ur/browser-client CJS...');
+  if (DBG) LOG('.. building ur_mods-client CJS...');
   await esbuild.build({
     ...browserBuild,
-    outfile: `${DIR_UR_DIST}/client-cjs.js`,
+    outfile: `${DIR_URMODS_DIST}/mod-client-cjs.js`,
     format: 'cjs'
   });
-  if (DBG) LOG('.. building ur/browser-client UMD...');
+  if (DBG) LOG('.. building ur_mods-client UMD...');
   await esbuild.build({
     ...browserBuild,
     plugins: [umdWrapper()],
-    outfile: `${DIR_UR_DIST}/client-umd.js`,
+    outfile: `${DIR_URMODS_DIST}/mod-client-umd.js`,
     format: 'umd' // esbuild-plugin-umd-wrapper
   });
 }
@@ -90,7 +90,7 @@ async function ESBuildLibrary() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** TEST **/
 (async () => {
-  LOG('## BUILD LIBS');
-  await ESBuildLibrary();
-  LOG('## END BUILD LIBS\n');
+  LOG('## BUILD MODS');
+  await ESBuildModules();
+  LOG('## END BUILD MODS\n');
 })();

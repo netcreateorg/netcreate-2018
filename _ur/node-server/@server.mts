@@ -12,6 +12,8 @@ import * as MODMGR from './urmod-mgr.mts';
 import * as APPSERV from './appserver.mts';
 import * as ENV from './env-node.mts';
 import * as FILES from './files.mts';
+// cjs-style modules
+import PROMPTS from '../common/prompts.js';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,6 +28,7 @@ function Initialize(options: UR_InitOptions): void {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const { makeStyleFormatter } = PROMPTS;
 export {
   // URSYS CONTROL
   Initialize,
@@ -35,5 +38,7 @@ export {
   ENV, // environment utilities and constants
   FILES, // file utilities
   // CLASSES
-  UrModule // ur module wrapper
+  UrModule, // ur module wrapper
+  // COMMON UTILS
+  makeStyleFormatter as MakeLogger // prompt style formatter
 };
