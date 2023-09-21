@@ -17,7 +17,7 @@ const FSE = require('fs-extra');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { ROOT, DIR_URMODS, DIR_URMODS_DIST } = require('./env-ur-mods.cjs');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
+const DBG = false;
 const LOG = console.log;
 
 /// ESBUILD API ///////////////////////////////////////////////////////////////
@@ -92,5 +92,5 @@ async function ESBuildModules() {
 (async () => {
   LOG('## BUILD MODS');
   await ESBuildModules();
-  LOG('## END BUILD MODS\n');
+  if (DBG) LOG('## END BUILD MODS\n');
 })();

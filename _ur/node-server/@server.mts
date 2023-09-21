@@ -14,6 +14,7 @@ import * as ENV from './env-node.mts';
 import * as FILES from './files.mts';
 // cjs-style modules
 import PROMPTS from '../common/prompts.js';
+const { makeTerminalOut: MakeLogger } = PROMPTS;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -40,5 +41,5 @@ export {
   // CLASSES
   UrModule, // ur module wrapper
   // COMMON UTILS
-  makeStyleFormatter as MakeLogger // prompt style formatter
+  MakeLogger // prompt style formatter
 };

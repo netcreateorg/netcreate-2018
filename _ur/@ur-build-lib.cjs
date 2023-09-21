@@ -17,7 +17,7 @@ const FSE = require('fs-extra');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { ROOT, DIR_UR_DIST } = require('./env-ur.cjs');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
+const DBG = false;
 const LOG = console.log;
 
 /// ESBUILD API ///////////////////////////////////////////////////////////////
@@ -44,13 +44,13 @@ async function ESBuildLibrary() {
   };
 
   /* build the server library for nodejs */
-  if (DBG) LOG('.. building ur/node-server ESM...');
+  if (DBG) LOG('.. building ur-server ESM...');
   await esbuild.build({
     ...nodeBuild,
     outfile: `${DIR_UR_DIST}/server-esm.mjs`,
     format: 'esm'
   });
-  if (DBG) LOG('.. building ur/node-server CJS...');
+  if (DBG) LOG('.. building ur-server CJS...');
   await esbuild.build({
     ...nodeBuild,
     outfile: `${DIR_UR_DIST}/server.cjs`,
@@ -65,19 +65,19 @@ async function ESBuildLibrary() {
     target: ['esnext'],
     sourcemap: true
   };
-  if (DBG) LOG('.. building ur/browser-client ESM...');
+  if (DBG) LOG('.. building ur-client ESM...');
   await esbuild.build({
     ...browserBuild,
     outfile: `${DIR_UR_DIST}/client-esm.js`,
     format: 'esm'
   });
-  if (DBG) LOG('.. building ur/browser-client CJS...');
+  if (DBG) LOG('.. building ur-client CJS...');
   await esbuild.build({
     ...browserBuild,
     outfile: `${DIR_UR_DIST}/client-cjs.js`,
     format: 'cjs'
   });
-  if (DBG) LOG('.. building ur/browser-client UMD...');
+  if (DBG) LOG('.. building ur-client UMD...');
   await esbuild.build({
     ...browserBuild,
     plugins: [umdWrapper()],
@@ -92,5 +92,5 @@ async function ESBuildLibrary() {
 (async () => {
   LOG('## BUILD LIBS');
   await ESBuildLibrary();
-  LOG('## END BUILD LIBS\n');
+  if (DBG) LOG('## END BUILD LIBS\n');
 })();

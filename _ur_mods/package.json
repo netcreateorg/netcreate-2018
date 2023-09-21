@@ -7,15 +7,17 @@
     "lint": "eslint .",
     "clean": "rm -rf ./node_modules ./_dist"
   },
+  "browser": "./_dist/mod-client-cjs.js",
+  "main": "./_dist/mod-server.cjs",
   "exports": {
     "node": {
-      "import": "./_dist/modules-server-esm.mjs",
-      "require": "./_dist/modules-server.cjs"
+      "import": "./_dist/mod-server-esm.mjs",
+      "require": "./_dist/mod-server.cjs"
     },
     "browser": {
-      "import": "./_dist/modules-client-esm.js",
-      "require": "./_dist/modules-client-cjs.js",
-      "default": "./_dist/modules-client-umd.js"
+      "import": "./_dist/mod-client-esm.js",
+      "require": "./_dist/mod-client-cjs.js",
+      "default": "./_dist/mod-client-umd.js"
     }
   },
   "devDependencies": {

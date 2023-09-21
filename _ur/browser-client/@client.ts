@@ -7,11 +7,13 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import PROMPT from '../common/prompts'; // this is a .js file
+// cjs-style modules
+import PROMPTS from '../common/prompts.js';
+const { makeStyleFormatter: MakeLogger } = PROMPTS;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = PROMPT.makeStyleFormatter('UR', 'TagCyan');
+const PR = MakeLogger('UR', 'TagCyan');
 
 /// TEST METHODS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -22,4 +24,4 @@ function ClientTest() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { ClientTest };
+export { ClientTest, MakeLogger };

@@ -7,7 +7,7 @@
     "_ur_mods/"
   ],
   "scripts": {
-    "dev": "node ./_ur/@ur-build-lib.cjs && brunch w -s",
+    "dev": "node ./_ur/@ur-build-lib.cjs && node ./_ur_mods/@ur-build-mods.cjs && brunch w -s",
     "build-libs": "npm run build --workspace _ur",
     "lint": "npm exec --workspaces -- npm run lint && eslint app/",
     "dev:inspect": "node --inspect brunch-server.js",
@@ -59,6 +59,7 @@
   },
   "dependencies": {
     "@ursys/netcreate": "file:./_ur",
+    "@ursys/nc-modules": "file:./_ur_mods",
     "@iarna/toml": "^2.2.5",
     "@json-editor/json-editor": "^2.10.1",
     "babel-polyfill": "^6.26.0",

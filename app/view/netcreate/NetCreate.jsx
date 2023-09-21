@@ -35,6 +35,7 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UNISYS = require('unisys/client');
 const UR = require('@ursys/netcreate/');
+const URMOD = require('@ursys/nc-modules');
 const SessionShell = require('unisys/component/SessionShell');
 
 /// DEBUG SWITCHES ////////////////////////////////////////////////////////////
@@ -70,6 +71,7 @@ class NetCreate extends UNISYS.Component {
     super();
     UNISYS.ForceReloadOnNavigation();
     UR.ClientTest();
+    URMOD.ModuleClientTest();
     this.state = {
       isConnected: true,
       isLoggedIn: false,
