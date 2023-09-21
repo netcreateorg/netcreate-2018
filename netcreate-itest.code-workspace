@@ -38,13 +38,25 @@
     // langauge specific overrides
     "[javascript]": {
       "editor.renderWhitespace": "all",
-      "editor.detectIndentation": false,
+      "editor.detectIndentation": true,
       "editor.insertSpaces": true,
       "editor.tabSize": 2
     },
     "[javascriptreact]": {
       "editor.renderWhitespace": "all",
-      "editor.detectIndentation": false,
+      "editor.detectIndentation": true,
+      "editor.insertSpaces": true,
+      "editor.tabSize": 2
+    },
+    "[typescript]": {
+      "editor.renderWhitespace": "all",
+      "editor.detectIndentation": true,
+      "editor.insertSpaces": true,
+      "editor.tabSize": 2
+    },
+    "[typescriptreact]": {
+      "editor.renderWhitespace": "all",
+      "editor.detectIndentation": true,
       "editor.insertSpaces": true,
       "editor.tabSize": 2
     },
