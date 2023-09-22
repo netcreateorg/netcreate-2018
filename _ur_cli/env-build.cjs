@@ -2,7 +2,7 @@
 
   A dependency-free environment detection for CJS codebases
   
-  NOTES: The _ur_build directory contains several 'task utilities' written for
+  NOTES: The _ur_cli directory contains several 'task utilities' written for
   node as CommonJS. This is a requirement because the base project, NetCreate,
   is stuck using it due to the legacy nature of the project: it predates
   the use of ESM and the build system 'brunch' is not compatible with ESM.

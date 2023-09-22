@@ -31,6 +31,7 @@
   "devDependencies": {
     "@babel/core": "^7.11.1",
     "@types/fs-extra": "^11.0.2",
+    "@types/lokijs": "^1.5.10",
     "@types/node": "^20.6.0",
     "@types/node-dir": "^0.0.34",
     "@typescript-eslint/eslint-plugin": "^6.7.0",
@@ -55,13 +56,14 @@
     "path": "^0.12.7",
     "prettier": "^2.5.1",
     "terser-brunch": "^4.0.0",
-    "tracer": "^1.1.5"
+    "tracer": "^1.1.5",
+    "ts-node": "^10.9.1"
   },
   "dependencies": {
-    "@ursys/netcreate": "file:./_ur",
-    "@ursys/nc-modules": "file:./_ur_mods",
     "@iarna/toml": "^2.2.5",
     "@json-editor/json-editor": "^2.10.1",
+    "@ursys/nc-modules": "file:./_ur_mods",
+    "@ursys/netcreate": "file:./_ur",
     "babel-polyfill": "^6.26.0",
     "bootstrap": "^4.6.2",
     "classnames": "^2.3.2",

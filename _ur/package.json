@@ -28,9 +28,11 @@
   "devDependencies": {
     "esbuild": "^0.19.2",
     "esbuild-plugin-copy": "^2.1.1",
-    "esbuild-plugin-umd-wrapper": "^1.0.7",
-    "fs-extra": "^11.1.1",
-    "node-dir": "^0.1.17"
+    "esbuild-plugin-umd-wrapper": "^1.0.7"
   },
-  "dependencies": {}
+  "dependencies": {
+    "fs-extra": "^11.1.1",
+    "node-dir": "^0.1.17",
+    "lokijs": "^1.5.12"
+  }
 }

@@ -29,8 +29,8 @@ const LOG = console.log;
   UR.Initialize({
     rootDir: ROOT
   });
-  // UR.MODMGR.ProcTest();
-  // UR.MODMGR.UR_Fork('parse', { cwd: DIR_URMODS });
+  UR.MODMGR.ProcTest();
+  UR.MODMGR.UR_Fork('parse', { cwd: DIR_URMODS });
   // there is an error somewhere that is causing
   // process.exit(0);
 })();

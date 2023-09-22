@@ -15,7 +15,7 @@ const FSE = require('fs-extra');
 
 /// CONSTANTS AND DECLARATIONS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const { ROOT, DIR_UR_DIST } = require('./env-ur.cjs');
+const { ROOT, DIR_UR_DIST } = require('./env-build.cjs');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 const LOG = console.log;

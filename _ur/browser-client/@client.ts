@@ -9,11 +9,11 @@
 
 // cjs-style modules
 import PROMPTS from '../common/prompts.js';
-const { makeStyleFormatter: MakeLogger } = PROMPTS;
+const { makeStyleFormatter } = PROMPTS;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = MakeLogger('UR', 'TagCyan');
+const PR = makeStyleFormatter('UR', 'TagCyan');
 
 /// TEST METHODS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -24,4 +24,4 @@ function ClientTest() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { ClientTest, MakeLogger };
+export { ClientTest, makeStyleFormatter as PrefixStyler };
