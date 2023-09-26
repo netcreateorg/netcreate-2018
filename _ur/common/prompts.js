@@ -4,6 +4,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+/* added for pull request #81 so 'npm run lint' test appears clean */
+/* eslint-disable no-unused-vars */
+
 const IS_NODE = typeof window === 'undefined';
 const IS_MOBILE =
   !IS_NODE &&

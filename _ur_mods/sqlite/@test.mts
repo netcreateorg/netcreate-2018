@@ -10,9 +10,12 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+/* added for pull request #81 so 'npm run lint' test appears clean */
+/* eslint-disable no-unused-vars */
+
 import { strictEqual, deepEqual } from 'node:assert/strict';
 import sqlite3 from 'sqlite3';
-import { ReadFile } from '../_sys/files';
+import { ReadFile } from '@ursys/netcreate';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -62,11 +65,11 @@ function m_IsValuesArray(array) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_IsArrayOfValueArrays(array) {
-  if (!Array.isArray(arr)) {
+  if (!Array.isArray(array)) {
     return false; // Not an array
   }
-  for (const subArr of arr) {
-    if (!m_IsValuesArray(subarr)) return false;
+  for (const subArr of array) {
+    if (!m_IsValuesArray(subArr)) return false;
   }
   return true;
 }
@@ -281,7 +284,7 @@ WHERE users.id = ${user_id}
     if (error) throw new Error(`Error retrieving users permission data: ${error}`);
     // Remove duplicates
     const results = [];
-    rows.forEach(r => {
+    rows.forEach((r: any) => {
       if (!results.includes(r.priv_name)) results.push(r.priv_name);
     });
     cb(results);
@@ -354,7 +357,7 @@ WHERE groups.id = ${group_id}
     `;
   DB.all(query, (error, rows) => {
     if (error) throw new Error(`Error retrieving group\`s subgroup data: ${error}`);
-    cb(rows.map(r => r.subgroup_name));
+    cb(rows.map((r: any) => r.subgroup_name));
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

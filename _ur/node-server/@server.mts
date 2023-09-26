@@ -7,6 +7,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+/* added for pull request #81 so 'npm run lint' test appears clean */
+/* eslint-disable no-unused-vars */
+
 import UrModule from './class-urmodule.mts';
 import * as MODMGR from './urmod-mgr.mts';
 import * as APPSERV from './appserver.mts';

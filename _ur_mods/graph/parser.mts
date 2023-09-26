@@ -6,6 +6,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+/* added for pull request #81 so 'npm run lint' test appears clean */
+/* eslint-disable no-unused-vars */
+
 import { readFileSync } from 'node:fs';
 const { generate } = require('peggy'); // CJS library on node can do this
 

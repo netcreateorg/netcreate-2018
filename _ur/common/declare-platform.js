@@ -42,6 +42,7 @@ function m_DetectModuleSystem() {
     }
   } else if (window !== undefined) {
     // Check for Browser environment
+    // eslint-disable-next-line no-undef
     if (typeof define === 'function' && define.amd) {
       INFO.browser = ['AMD', 'Browser - AMD maybe through UMD import'];
     } else if (document.currentScript && document.currentScript.type === 'module') {

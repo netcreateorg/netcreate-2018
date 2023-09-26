@@ -7,7 +7,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-// cjs-style modules
+// note: cjs-style modules in 'common' can not be destructured on import
 import PROMPTS from '../common/prompts.js';
 const { makeStyleFormatter } = PROMPTS;
 
@@ -17,7 +17,7 @@ const PR = makeStyleFormatter('UR', 'TagCyan');
 
 /// TEST METHODS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ClientTest() {
+function ClientTest(): void {
   console.log(...PR('System Integration of new URSYS module successful!'));
   // console.log(...PR('@ursys/netcreate integration...works?'));
 }
