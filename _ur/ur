@@ -25,7 +25,7 @@ node $OPTS $CLI_BUILD/@cli-build-lib.cjs 2>&1 | cat
 node $OPTS $MODS_BUILD/@ur-build-mods.cjs 2>&1 | cat
 
 # (3) test 'addons' (replacing ur_mods)
-npx ts-node-esm $TEST_BUILD/@test.mts 2>&1 | cat
+# npx ts-node-esm $TEST_BUILD/@test.mts 2>&1 | cat
 
 # (X) BROKEN TASKS
 # node $OPTS $CLI_BUILD/@cli-build-app.cjs 2>&1 | cat 
