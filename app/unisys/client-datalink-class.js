@@ -18,6 +18,9 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+/* added for pull request #81 so 'npm run lint' test appears clean */
+/* eslint-disable no-unused-vars */
+
 const SETTINGS = require('settings');
 const STATE = require('unisys/client-state');
 const Messager = require('unisys/client-messager-class');

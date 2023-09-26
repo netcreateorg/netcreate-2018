@@ -5,20 +5,16 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const SETTINGS = require('settings');
 const UNISYS = require('unisys/client');
-const PROMPTS = require('system/util/prompts');
-const PR = PROMPTS.Pad('JSCLI');
+// const PROMPTS = require('system/util/prompts');
 
 /// CONSTANTS & DECLARATIONS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
 const SHOW_DOM = true;
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let JSCLI = UNISYS.NewModule(module.id);
-let UDATA = UNISYS.NewDataLink(JSCLI);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let CMD = [];
 

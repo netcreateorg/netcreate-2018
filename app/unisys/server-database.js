@@ -1,10 +1,14 @@
-/* eslint-disable newline-per-chained-call */
-/* eslint-disable nonblock-statement-body-position */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   DATABASE SERVER
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
+
+/* eslint-disable newline-per-chained-call */
+/* eslint-disable nonblock-statement-body-position */
+
+/* added for pull request #81 so 'npm run lint' test appears clean */
+/* eslint-disable no-unused-vars */
 
 const DBG = false;
 

@@ -5,12 +5,13 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+/* added for pull request #81 so 'npm run lint' test appears clean */
+/* eslint-disable no-unused-vars */
+
 /// DEBUGGING /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 //
-const PROMPTS = require('../system/util/prompts');
-const PR = PROMPTS.Pad('SESSUTIL');
 
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

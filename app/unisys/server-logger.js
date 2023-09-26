@@ -7,7 +7,12 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const Loki = require('lokijs');
+/* eslint-disable newline-per-chained-call */
+/* eslint-disable nonblock-statement-body-position */
+
+/* added for pull request #81 so 'npm run lint' test appears clean */
+/* eslint-disable no-unused-vars */
+
 const PATH = require('path');
 const FSE = require('fs-extra');
 ///

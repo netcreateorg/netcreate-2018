@@ -32,7 +32,7 @@ const M_INIT = 'init';
 const M_ONLINE = 'online';
 const M_STANDALONE = 'offline';
 const M_CLOSED = 'closed';
-const M_ERROR = 'error';
+// const M_ERROR = 'error';
 var m_mode = M_INIT;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPTS = require('../system/util/prompts');
@@ -43,7 +43,7 @@ const ERR_BAD_PROP = ERR + PR + 'property argument must be a string';
 const ERR_ERR_BAD_CSTR = ERR + PR + 'constructor args are string, object';
 const ERR_BAD_SOCKET = ERR + PR + 'sender object must implement send()';
 const ERR_DUPE_TRANS = ERR + PR + 'this packet transaction is already registered!';
-const ERR_NO_GLOB_UADDR = ERR + PR + 'packet sending attempted before UADDR is set!';
+// const ERR_NO_GLOB_UADDR = ERR + PR + 'packet sending attempted before UADDR is set!';
 const ERR_UNKNOWN_TYPE = ERR + PR + 'packet type is unknown:';
 const ERR_NOT_PACKET = ERR + PR + 'passed object is not a NetMessage';
 const ERR_UNKNOWN_RMODE = ERR + PR + 'packet routine mode is unknown:';

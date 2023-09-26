@@ -42,7 +42,7 @@ REFLECT.FunctionName = function (depth = 1) {
  */
 REFLECT.InspectModule = function (str) {
   throw Error(
-    `REFLECT.InspectModule() needs to be rewritten for brunch-style modules.`
+    `REFLECT.InspectModule() needs to be rewritten for brunch-style modules. ${str}`
   );
 };
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
