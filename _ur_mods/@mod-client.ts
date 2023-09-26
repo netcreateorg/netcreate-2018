@@ -5,11 +5,11 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import * as UR from '@ursys/netcreate'; // this is a .js file
-const { MakeLogger } = UR;
+const { PrefixStyler } = UR;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = MakeLogger('URMOD', 'TagPink');
+const PR = PrefixStyler('URMOD', 'TagPink');
 
 /// TEST METHODS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
