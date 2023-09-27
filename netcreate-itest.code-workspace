@@ -61,32 +61,51 @@
       "editor.tabSize": 2
     },
     "terminal.integrated.profiles.osx": {
-      "x86 zsh": {
+      "x86 macos": {
         "path": "/usr/bin/arch",
         "args": [
           "-arch",
           "x86_64",
-          "/bin/zsh",
+          "${env:SHELL}",
           "-i",
           "-c",
-          "export VSCODE_PROFILE='x86 zsh';source .vscode/zshrc; exec /bin/zsh"
+          "export VSCODE_PROFILE='x86 shell';source .vscode/check_env; exec ${env:SHELL}"
         ]
       },
-      "arm64 zsh": {
+      "arm64 macos": {
         "path": "/usr/bin/arch",
         "args": [
           "-arch",
           "arm64",
-          "/bin/zsh",
+          "${env:SHELL}",
           "-i",
           "-c",
-          "export VSCODE_PROFILE='arm zsh'; source .vscode/zshrc; exec /bin/zsh"
+          "export VSCODE_PROFILE='arm64 shell'; source .vscode/check_env; exec ${env:SHELL}"
+        ]
+      },
+      "generic macos": {
+        "path": "${env:SHELL}",
+        "args": [
+          "-i",
+          "-c",
+          "export VSCODE_PROFILE='generic bash'; source .vscode/check_env; exec ${env:SHELL}"
+        ]
+      }
+    },
+    "terminal.integrated.profiles.linux": {
+      "generic linux": {
+        "path": "${env:SHELL}",
+        "args": [
+          "-i",
+          "-c",
+          "export VSCODE_PROFILE='generic bash'; source .vscode/check_env; exec ${env:SHELL}"
         ]
       }
     },
     // this line will force use of the selected profile
     // it's only needed when running pre-v14 versions of NodeJS
     // to force Intel386 on Apple Silicon processors
-    "terminal.integrated.defaultProfile.osx": "x86 zsh"
+    "terminal.integrated.defaultProfile.osx": "x86 macos",
+    "terminal.integrated.defaultProfile.linux": "generic linux"
   }
 }

@@ -15,10 +15,10 @@ BOLD="\e[1m"    # normal bold
 # Check if NVM_DIR is defined
 if [ -z "$NVM_DIR" ]; then
   echo ""
-  echo "zshrc: ${ALRT}NVM does not appear to be installed${NRML}"
-  echo "       Does your ${INFO}~/.zshrc${NRML} have the ${INFO}export NVM_DIR${NRML} lines?"
+  echo "vsenv: ${ALRT}NVM does not appear to be installed${NRML}"
+  echo "       Does your ${INFO}~/.zshrc${NRML} have ${INFO}export NVM_DIR${NRML} lines?"
   echo ""
-  echo "       If you haven't installed nvm, please follow the instructions"
+  echo "       If you haven't installed nvm yet, please follow the instructions"
   echo "       on the NetCreate wiki."
   echo "       If you are using 'bash' as your default shell, you can copy "
   echo "       these lines to your .zshrc file so nvm will also work in zsh."
@@ -31,19 +31,20 @@ fi
 if [ -n "$NVM_DIR" ] && [ -s "./.nvmrc" ] && [ -d "./.vscode" ]; then
   NODE_VERSION=$(cat ./.nvmrc)
   str_out="(nvm)";
-  str_alias=$(nvm alias default $NODE_VERSION)
-  str_use=$(nvm use $NODE_VERSION)
+  str_alias=$(nvm alias default "$NODE_VERSION")
+  str_use=$(nvm use "$NODE_VERSION")
   if [ -n "$str_use" ]; then
     str_out="$str_out current version"
   fi
   if [ -n "$str_alias" ]; then
     str_out="$str_out and alias"
   fi
-  echo "\nzshrc: VISUAL STUDIO CODE INTEGRATED TERMINAL DETECTED"
+  echo ""
+  echo "vsenv: VISUAL STUDIO CODE INTEGRATED TERMINAL DETECTED"
   echo   "       ${str_out} detected setting: node ${INFO}$NODE_VERSION${NRML}"
   CURRENT_VERSION=$(node --version)
   if [ "$CURRENT_VERSION" != "$NODE_VERSION" ] && [ -n "$str_alias" ]; then
-    echo "zshrc: ${BOLD}kill/restart VSCODE for nvm alias default to take effect!${NRML}"
+    echo "vsenv: ${BOLD}kill/restart VSCODE for nvm alias default to take effect!${NRML}"
     echo "       this shell is using version ${INFO}$CURRENT_VERSION${NRML} until you do"
     echo "       alternatively, type ${ALRT}nvm use $NODE_VERSION${NRML} to use it now"
   fi

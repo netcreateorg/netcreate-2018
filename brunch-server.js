@@ -128,6 +128,7 @@ module.exports = (config, callback) => {
   });
 
   /// START APP SERVER //////////////////////////////////////////////////////////
+
   APP.listen(config.port, function () {
     // setup prompts
     console.log(PR);
@@ -141,7 +142,9 @@ module.exports = (config, callback) => {
       console.log(WR('CLIENTS - http://' + IP.address() + ':' + config.port));
     }
 
+    /// ENVIRONMENT CHECKING ///
     console.log(PR);
+
     // git branch information
     EXEC('git symbolic-ref --short -q HEAD', (error, stdout, stderr) => {
       if (error) {
@@ -159,12 +162,12 @@ module.exports = (config, callback) => {
         stdout = stdout.trim();
         if (stdout !== 'i386') {
           console.log(PR, `ARCHITECTURE: ${stdout}`);
-          console.log(PR, '.. Expected i386. Operation may be unstable!');
+          console.log(PR, YL('NOTICE: NETCREATE TESTED ON X86 NODEJS LIBRARIES'));
           console.log(
             PR,
-            '.. For arm64 on mac, launch a Rosetta-compatible shell by running'
+            YL('.. For Mac ARM64 launch a Rosetta-compatible shell by running')
           );
-          console.log(PR, `.. 'arch -x86_64 /bin/zsh'`);
+          console.log(PR, `   ${YL('arch -x86_64 /bin/zsh')}`);
         } else {
           console.log(PR, `ARCHITECTURE: ${stdout}`);
         }
@@ -184,11 +187,19 @@ module.exports = (config, callback) => {
         console.log(PR, 'NODE VERSION:', stdout, 'OK');
       }
     });
-    // now start the UNISYS network
+    // running inside of visual studio code workspace
+    if (!process.env.VSCODE_PROFILE) {
+      console.log(PR, YL('NOTICE: CODE-WORKSPACE NOT LOADED'));
+      console.log(PR, YL('.. skipped version environment checks'));
+    } else {
+      console.log(PR, `VSCODE TERMINAL: ${BL(process.env.VSCODE_PROFILE)}`);
+    }
+
+    /// START URSYS NETWORK SOCKETS ///
+
     UNISYS.RegisterHandlers();
     UNISYS.StartNetwork();
     // invoke brunch callback
-    console.log(PR, 'brunch-server.js returning control to brunch');
     callback();
   }).on('error', function (err) {
     let errstring = `### NETCREATE STARTUP ERROR: '${err.errno}'\n`;
