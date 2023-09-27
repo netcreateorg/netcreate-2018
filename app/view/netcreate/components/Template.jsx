@@ -143,6 +143,8 @@ class Template extends UNISYS.Component {
   disableOrigLabelFields() {
     const origLabelFields = document.getElementsByClassName('disabledField');
     // origLabelFields is a HTMLCollection, not an array
+    // FISHY FIX...is the use of arrow function here correct? The arrow function
+    // arg 'f' is shadowing the 'const f' in the for...of...
     for (const f of origLabelFields) f => f.setAttribute('disabled', 'disabled');
   }
 
