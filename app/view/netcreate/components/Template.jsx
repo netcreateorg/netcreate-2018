@@ -143,7 +143,7 @@ class Template extends UNISYS.Component {
   disableOrigLabelFields() {
     const origLabelFields = document.getElementsByClassName('disabledField');
     // origLabelFields is a HTMLCollection, not an array
-    for (f of origLabelFields) f => f.setAttribute('disabled', 'disabled');
+    for (const f of origLabelFields) f => f.setAttribute('disabled', 'disabled');
   }
 
   releaseOpenEditor() {
