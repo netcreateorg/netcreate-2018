@@ -12,6 +12,10 @@
 const esbuild = require('esbuild');
 const { umdWrapper } = require('esbuild-plugin-umd-wrapper');
 const FSE = require('fs-extra');
+// build-lib can not use URSYS library because it's BUILDING it!
+// so we yoink the routines out of the source directly
+const PROMPTS = require('../_ur/common/prompts');
+const PR = `${PROMPTS.padString('UR_MODS', 8)} -`;
 
 /// CONSTANTS AND DECLARATIONS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -43,14 +47,16 @@ async function ESBuildModules() {
     packages: 'external'
   };
 
+  if (!DBG) LOG(PR, 'building @ursys modules...');
+
   /* build the server library for nodejs */
-  if (DBG) LOG('.. building ur_mods-server ESM...');
+  if (DBG) LOG(PR, 'building ur_mods-server ESM...');
   await esbuild.build({
     ...nodeBuild,
     outfile: `${DIR_URMODS_DIST}/mod-server-esm.mjs`,
     format: 'esm'
   });
-  if (DBG) LOG('.. building ur_mods-server CJS...');
+  if (DBG) LOG(PR, 'building ur_mods-server CJS...');
   await esbuild.build({
     ...nodeBuild,
     outfile: `${DIR_URMODS_DIST}/mod-server.cjs`,
@@ -65,19 +71,19 @@ async function ESBuildModules() {
     target: ['esnext'],
     sourcemap: true
   };
-  if (DBG) LOG('.. building ur_mods-client ESM...');
+  if (DBG) LOG(PR, 'building ur_mods-client ESM...');
   await esbuild.build({
     ...browserBuild,
     outfile: `${DIR_URMODS_DIST}/mod-client-esm.js`,
     format: 'esm'
   });
-  if (DBG) LOG('.. building ur_mods-client CJS...');
+  if (DBG) LOG(PR, 'building ur_mods-client CJS...');
   await esbuild.build({
     ...browserBuild,
     outfile: `${DIR_URMODS_DIST}/mod-client-cjs.js`,
     format: 'cjs'
   });
-  if (DBG) LOG('.. building ur_mods-client UMD...');
+  if (DBG) LOG(PR, 'building ur_mods-client UMD...');
   await esbuild.build({
     ...browserBuild,
     plugins: [umdWrapper()],
@@ -90,7 +96,5 @@ async function ESBuildModules() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** TEST **/
 (async () => {
-  LOG('## BUILD MODS');
   await ESBuildModules();
-  if (DBG) LOG('## END BUILD MODS\n');
 })();

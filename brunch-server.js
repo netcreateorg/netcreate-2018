@@ -145,15 +145,18 @@ module.exports = (config, callback) => {
     /// ENVIRONMENT CHECKING ///
     console.log(PR);
 
+    //  shell information
+    console.log(PR, `shell is ${BL(process.env.SHELL)}`);
+
     // git branch information
     EXEC('git symbolic-ref --short -q HEAD', (error, stdout, stderr) => {
       if (error) {
         // console.error(BP,'git symbolic-ref query error',error);
-        console.log(PR, `${BL('GIT STATUS:')} running ${BL('<detached> branch')}`);
+        console.log(PR, `git branch is ${BL('<detached> branch')}`);
       }
       if (stdout) {
         const br = `${stdout.trim()}`;
-        console.log(PR, `${BL('GIT STATUS:')} running branch ${BL(br)}`);
+        console.log(PR, `git branch is ${BL(br)}`);
       }
     });
     // check architecture
@@ -167,9 +170,10 @@ module.exports = (config, callback) => {
             PR,
             YL('.. For Mac ARM64 launch a Rosetta-compatible shell by running')
           );
-          console.log(PR, `   ${YL('arch -x86_64 /bin/zsh')}`);
+          const cmd = `arch -x86_64 ${process.env.SHELL}`;
+          console.log(PR, `   ${YL(cmd)}`);
         } else {
-          console.log(PR, `ARCHITECTURE: ${stdout}`);
+          console.log(PR, `architecture is ${stdout}`);
         }
       }
     });
@@ -184,7 +188,7 @@ module.exports = (config, callback) => {
           // eslint-disable-next-line no-process-exit
           process.exit(100);
         }
-        console.log(PR, 'NODE VERSION:', stdout, 'OK');
+        console.log(PR, 'nodejs version is', stdout);
       }
     });
     // running inside of visual studio code workspace
@@ -192,7 +196,7 @@ module.exports = (config, callback) => {
       console.log(PR, YL('NOTICE: CODE-WORKSPACE NOT LOADED'));
       console.log(PR, YL('.. skipped version environment checks'));
     } else {
-      console.log(PR, `VSCODE TERMINAL: ${BL(process.env.VSCODE_PROFILE)}`);
+      console.log(PR, `vscode terminal profile is ${BL(process.env.VSCODE_PROFILE)}`);
     }
 
     /// START URSYS NETWORK SOCKETS ///

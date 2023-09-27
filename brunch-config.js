@@ -107,7 +107,7 @@ module.exports = {
     onCompile(generatedFiles, changedAssets) {
       if (FIRST_RUN) {
         u_hack_mapfiles(); // sneakily copy dist directory to public scripts
-        console.log(`\n--- compilation complete ---\n`);
+        console.log(`\n--- compilation complete - appserver is online ---\n`);
         FIRST_RUN = false;
         return;
       }

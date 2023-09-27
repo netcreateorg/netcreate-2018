@@ -50,6 +50,9 @@ let m_locked_nodes; // map key = nodeID, value = uaddr initiating the lock
 let m_locked_edges; // map key = nodeID, value = uaddr initiating the lock
 let TEMPLATE;
 let m_open_editors = []; // array of template, node, or edge editors
+/// formatting
+const BL = s => `\x1b[1;34m${s}\x1b[0m`;
+const YL = s => `\x1b[1;33m${s}\x1b[0m`;
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -84,9 +87,12 @@ DB.InitializeDatabase = function (options = {}) {
   db_file = m_GetValidDBFilePath(dataset);
   FS.ensureDirSync(PATH.dirname(db_file));
   if (!FS.existsSync(db_file)) {
-    console.log(PR, `NO EXISTING DATABASE ${db_file}, so creating BLANK DATABASE...`);
+    console.log(
+      PR,
+      YL(`NOTICE: NO EXISTING DATABASE ${db_file}, so creating BLANK DATABASE...`)
+    );
   }
-  console.log(PR, `LOADING DATABASE ${db_file}`);
+  // console.log(PR, YL(`loading dataset`), `${BL(db_file)}...`);
   let ropt = {
     autoload: true,
     autoloadCallback: f_DatabaseInitialize,
@@ -161,7 +167,9 @@ DB.InitializeDatabase = function (options = {}) {
     }
     console.log(
       PR,
-      `DATABASE LOADED! m_max_nodeID '${m_max_nodeID}', m_max_edgeID '${m_max_edgeID}'`
+      'dataset loaded',
+      BL(db_file),
+      `m_max_nodeID '${m_max_nodeID}', m_max_edgeID '${m_max_edgeID}'`
     );
     m_db.saveDatabase();
 
@@ -404,7 +412,7 @@ function m_LoadTOMLTemplate(templateFilePath) {
       // NOTE: We are not modifying the template permanently, only temporarily inserting definitions so the system can validate
 
       TEMPLATE = json;
-      console.log(PR, 'TEMPLATE LOADED', templateFilePath);
+      console.log(PR, 'template loaded', BL(templateFilePath));
 
       resolve({ Loaded: true });
     });

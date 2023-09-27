@@ -75,7 +75,7 @@ UNET.StartNetwork = () => {
   // create listener
   mu_wss = new WSS(mu_options);
   mu_wss.on('listening', function () {
-    if (STAT) console.log(PR, `UNISYS NETWORK active on on port ${mu_options.port}`);
+    if (STAT) console.log(PR, `unisys network is active on port ${mu_options.port}`);
     mu_wss.on('connection', m_NewSocketConnected);
   });
 }; // end CreateNetwork()
