@@ -80,7 +80,7 @@ TM.SetMeta = function (meta, value) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TM.MetaString = function () {
   let o = '';
-  let e = Object.entries(m_meta_info).forEach(([k, v]) => {
+  Object.entries(m_meta_info).forEach(([k, v]) => {
     o += `${k}:${v} `;
   });
   return o;
@@ -270,7 +270,7 @@ function m_TestResults() {
   let pEntries = Object.entries(PASSED);
   let padding = 0;
   // find longest string
-  pEntries.forEach(([key, value]) => {
+  pEntries.forEach(([key]) => {
     if (key.length > padding) padding = key.length;
   });
   // scan test results

@@ -28,7 +28,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const SETTINGS = require('settings');
-import FILTER from './filter/FilterEnums';
+const FILTER = require('./filter/FilterEnums');
 const React = require('react');
 const ReactStrap = require('reactstrap');
 const { BUILTIN_FIELDS_EDGE } = require('system/util/enum');

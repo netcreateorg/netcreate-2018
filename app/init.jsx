@@ -31,7 +31,7 @@ const AppShell = require('init-appshell');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// When the DOM is loaded, initialize UNISYS
 document.addEventListener('DOMContentLoaded', () => {
-  console.group('init.jsx bootstrap');
+  console.groupCollapsed('init.jsx bootstrap');
   console.log(
     '%cINIT %cDOMContentLoaded. Starting UNISYS Lifecycle!',
     'color:blue',

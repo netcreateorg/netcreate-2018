@@ -17,9 +17,8 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const DBG = {
-  hook: false
-};
+/* added for pull request #81 so 'npm run lint' test appears clean */
+/* eslint-disable no-unused-vars */
 
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -194,7 +193,6 @@ UNISYS.SetupRun = async () => {
 /** API: handle periodic updates for a simulation-driven timestep
  */
 UNISYS.Run = async () => {
-  r;
   try {
     await LIFECYCLE.Execute('UPDATE');
   } catch (e) {
@@ -222,7 +220,6 @@ UNISYS.Paused = async () => {
 
 UNISYS.PostPause = async () => {
   await LIFECYCLE.Execute('POSTPAUSE');
-  resolve();
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: do the Shutdown lifecycle

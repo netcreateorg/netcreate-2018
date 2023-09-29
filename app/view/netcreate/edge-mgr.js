@@ -14,11 +14,6 @@
 
 const UNISYS = require('unisys/client');
 
-/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
-const PR = 'edge-mgr: ';
-
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var MOD = UNISYS.NewModule(module.id);

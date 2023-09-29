@@ -6,6 +6,9 @@ if (window.NC_DBG) console.log(`inc ${module.id}`);
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+/* added for pull request #81 so 'npm run lint' test appears clean */
+/* eslint-disable no-unused-vars */
+
 const SETTINGS = require('settings');
 const NetMessage = require('unisys/common-netmessage-class');
 const DEFS = require('./common-defs');

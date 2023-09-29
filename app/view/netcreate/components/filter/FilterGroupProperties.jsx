@@ -4,8 +4,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import FILTER from './FilterEnums';
-import React from 'react';
+const FILTER = require('./FilterEnums');
+const React = require('react');
 const ReactStrap = require('reactstrap');
 const { Form, FormGroup, Input, Label } = ReactStrap;
 const UNISYS = require('unisys/client');
@@ -107,4 +107,4 @@ class FilterGroupProperties extends React.Component {
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default FilterGroupProperties;
+module.exports = FilterGroupProperties;

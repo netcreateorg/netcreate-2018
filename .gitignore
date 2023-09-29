@@ -9,20 +9,22 @@
 /runtime
 netcreate-config.js
 
-# ignore assets/data?
-# not sure why this data is in the repo
-# /app/assets/data
+# _ur package
+_dist
 
 # Also ignore build system directories
 .npmignore
 /.parcel-cache
 /public*
-/node_modules
+
+# the code-workspace file also hides node_modules from file list
+**/node_modules/*
+.package-lock.json
 
 # And don't commit personal log files or temp
 *_log.md
 *.log
-/tmp*
+tmp-*
 
 # And don't commit .zip archives either
 *.zip

@@ -1,0 +1,36 @@
+{
+  "name": "@ursys/nc-addons",
+  "version": "0.1",
+  "description": "Modules for enhancing NetCreate ITEST",
+  "private": true,
+  "scripts": {
+    "lint": "eslint .",
+    "clean": "rm -rf ./node_modules ./_dist"
+  },
+  "browser": "./_dist/addons-client-cjs.js",
+  "main": "./_dist/addons-server.cjs",
+  "exports": {
+    "node": {
+      "import": "./_dist/addons-server-esm.mjs",
+      "require": "./_dist/addons-server.cjs"
+    },
+    "browser": {
+      "import": "./_dist/addons-client-esm.js",
+      "require": "./_dist/addons-client-cjs.js",
+      "default": "./_dist/addons-client-umd.js"
+    }
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.2",
+    "esbuild-plugin-copy": "^2.1.1",
+    "esbuild-plugin-umd-wrapper": "^1.0.7",
+    "fs-extra": "^11.1.1",
+    "node-dir": "^0.1.17"
+  },
+  "dependencies": {
+    "@ursys/netcreate": "file:../_ur",
+    "graphology": "^0.25.4",
+    "peggy": "^3.0.2",
+    "lokijs": "^1.5.12"
+  }
+}

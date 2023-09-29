@@ -8,8 +8,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const TOML = require('@iarna/toml');
-const SETTINGS = require('settings');
-const SESSION = require('unisys/common-session');
 const UNISYS = require('unisys/client');
 const PROMPTS = require('system/util/prompts');
 const PR = PROMPTS.Pad('Datastore');
@@ -18,9 +16,6 @@ const NetMessage = require('unisys/common-netmessage-class');
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = { load: true };
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const HASH_ABET = 'ABCDEFGHIJKLMNPQRSTVWXYZ23456789';
-const HASH_MINLEN = 3;
 
 /// INITIALIZE MODULE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -57,7 +52,7 @@ DSTOR.Hook('INITIALIZE', () => {
   UDATA.HandleMessage('DB_MERGE', DSTOR.MergeServerDB);
 
   UDATA.OnAppStateChange('SESSION', function (decodedData) {
-    let { isValid, token } = decodedData;
+    let { isValid } = decodedData;
     console.log(PR, 'Handling SESSION', isValid || '[NO LOGIN TOKEN]');
     if (isValid) DSTOR.SetSessionGroupID(decodedData);
   });

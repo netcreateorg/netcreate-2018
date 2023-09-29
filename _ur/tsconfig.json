@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es2022", // dynamic imports, top level await
+    "module": "nodenext", // ignored by esbuild, but used by VSCODE typescript
+    "moduleResolution": "nodenext", // option: leave blank if "module" set to this
+    "baseUrl": "./",
+    "paths": {},
+    "isolatedModules": true, // see esbuild.github.io/content-types/#typescript-caveats
+    "esModuleInterop": true, // see esbuild.github.io/content-types/#typescript-caveats
+    //
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true, // see esbuild.github.io/content-types/#typescript-caveats
+    "noEmit": true, // see esbuild.github.io/content-types/#typescript-caveats
+    // typeRoots do not make use of baseUrl
+    "typeRoots": ["./_types", "./node_modules/@types", "../node_modules/@types"]
+  }
+}

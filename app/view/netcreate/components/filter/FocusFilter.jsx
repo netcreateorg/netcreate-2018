@@ -9,7 +9,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-import React from 'react';
+const React = require('react');
 const ReactStrap = require('reactstrap');
 const { Form, FormGroup, Input, Label } = ReactStrap;
 const UNISYS = require('unisys/client');
@@ -107,4 +107,4 @@ class FocusFilter extends React.Component {
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default FocusFilter;
+module.exports = FocusFilter;

@@ -68,7 +68,7 @@ MOD.GetRouteInfoFromURL = (url = window.location.href) => {
   const [route, ...params] = routeParameters;
   const key = `/${route}`;
   const routeInfo = ROUTES_PARAMS[key];
-  const { scope, plist = [] } = routeInfo || { element: NoMatch };
+  const { scope, plist = [] } = routeInfo || {};
 
   // build the queryVars dictionary
   const settings = queryString.split('&');
@@ -151,7 +151,7 @@ MOD.ServerHostIP = () => {
 MOD.ServerAppURL = suburl => {
   let ubits = new URL(window.location);
   let hash = ubits.hash.split('/')[0];
-  let serverip = MOD.ServerHostIP();
+  // let serverip = MOD.ServerHostIP();
   let url = `${ubits.protocol}//${ubits.host}/${hash}`;
   if (typeof suburl === 'string') url += suburl;
   return url;

@@ -4,12 +4,12 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import FILTER from './FilterEnums';
-import FilterGroupProperties from './FilterGroupProperties';
-import NumberFilter from './NumberFilter';
-import React from 'react';
-import SelectFilter from './SelectFilter';
-import StringFilter from './StringFilter';
+const FILTER = require('./FilterEnums');
+const FilterGroupProperties = require('./FilterGroupProperties');
+const NumberFilter = require('./NumberFilter');
+const React = require('react');
+const SelectFilter = require('./SelectFilter');
+const StringFilter = require('./StringFilter');
 const ReactStrap = require('reactstrap');
 const { Input, Label } = ReactStrap;
 
@@ -82,4 +82,4 @@ function FilterGroup({ group, label, filters, filterAction, transparency }) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default FilterGroup;
+module.exports = FilterGroup;
