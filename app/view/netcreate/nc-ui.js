@@ -25,6 +25,17 @@ const VIEWMODE = {
 const MOD = UNISYS.NewModule(module.id);
 const UDATA = UNISYS.NewDataLink(MOD);
 
+/// UTILITIES /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function DateFormatted() {
+  var today = new Date();
+  var year = String(today.getFullYear());
+  var date = today.getMonth() + 1 + '/' + today.getDate() + '/' + year.substr(2, 4);
+  var time = today.toTimeString().substr(0, 5);
+  var dateTime = time + ' on ' + date;
+  return dateTime;
+}
+
 /// INPUT FORM CHANGE HANDLERS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** This processes the form data before passing it on to the parent handler.
@@ -281,6 +292,7 @@ function m_RenderOptionsInput(key, value, defs, cb, helpText) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
   VIEWMODE,
+  DateFormatted,
   RenderTabSelectors,
   RenderAttributesTabView,
   RenderAttributesTabEdit,

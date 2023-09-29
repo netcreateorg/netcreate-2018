@@ -97,6 +97,7 @@ class NCEdge extends UNISYS.Component {
     this.UIDeselectEdge = this.UIDeselectEdge.bind(this);
     this.UICancelEditMode = this.UICancelEditMode.bind(this);
     this.UIDisableEditMode = this.UIDisableEditMode.bind(this);
+    this.UIDeleteEdge = this.UIDeleteEdge.bind(this);
     this.UIInputUpdate = this.UIInputUpdate.bind(this);
     this.UIEnableSourceTargetSelect = this.UIEnableSourceTargetSelect.bind(this);
     this.UISourceTargetInputUpdate = this.UISourceTargetInputUpdate.bind(this);
@@ -731,6 +732,12 @@ class NCEdge extends UNISYS.Component {
     });
   }
 
+  UIDeleteEdge() {
+    const { id } = this.state;
+    this.UIDisableEditMode();
+    this.AppCall('DB_UPDATE', { edgeID: id }); // Calling DB_UPDATE with `edgeID` will remove the edge
+  }
+
   UIInputUpdate(key, value) {
     if (BUILTIN_FIELDS_EDGE.includes(key)) {
       const data = {};
@@ -919,7 +926,10 @@ class NCEdge extends UNISYS.Component {
               </div>
             </div>
             {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
-            <div className="controlbar">
+            <div className="controlbar" style={{ justifyContent: 'space-between' }}>
+              <button className="cancelbtn" onClick={this.UIDeleteEdge}>
+                Delete
+              </button>
               <button className="cancelbtn" onClick={this.UICancelEditMode}>
                 Cancel
               </button>
