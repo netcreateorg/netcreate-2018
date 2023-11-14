@@ -173,7 +173,7 @@ class InfoPanel extends UNISYS.Component {
     } = this.state;
     //send flag in with tableheight
     return (
-      <div>
+      <div className="--InfoPanel">
         <div
           id="tabpanel"
           style={{
@@ -299,18 +299,6 @@ class InfoPanel extends UNISYS.Component {
         </div>
       </div>
     );
-  }
-
-  sendGA(actionType, url) {
-    let googlea = NC_CONFIG.googlea;
-    if (googlea != '0') {
-      ga('send', {
-        hitType: 'event',
-        eventCategory: 'Tab',
-        eventAction: actionType,
-        eventLabel: '' + url
-      });
-    }
   }
 } // class InfoPanel
 

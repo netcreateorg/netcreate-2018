@@ -163,9 +163,11 @@ class NetCreate extends UNISYS.Component {
     let hideGraph = 'visible';
     if (this.state.requireLogin && !isLoggedIn) hideGraph = 'hidden';
 
+    // note: the navbar is in init-appshell.jsx
     return (
-      <div>
+      <div className="--NetCreate">
         <div
+          className="--NetCreate_Fixed_Top"
           hidden={this.state.isConnected}
           style={{
             width: '100%',
@@ -179,14 +181,19 @@ class NetCreate extends UNISYS.Component {
             zIndex: '3000'
           }}
         >
-          <div style={{ color: '#fff', width: '100%', textAlign: 'center' }}>
+          <div
+            className="--NetCreate_Fixed_Top_SaveAlert"
+            style={{ color: '#fff', width: '100%', textAlign: 'center' }}
+          >
             <b>{disconnectMsg}!</b> Your changes will not be saved! Please report
             &quot;
             {disconnectMsg}&quot; to your administrator to restart the graph.
           </div>
         </div>
         <SessionShell />
+
         <div
+          className="--NetCreate_Rows"
           style={{
             display: 'flex',
             flexFlow: 'row nowrap',
@@ -197,6 +204,7 @@ class NetCreate extends UNISYS.Component {
           }}
         >
           <div
+            className="--NetCreate_Columns"
             id="left"
             style={{
               backgroundColor: '#EEE',
@@ -207,21 +215,27 @@ class NetCreate extends UNISYS.Component {
               marginTop: '38px'
             }}
           >
-            <div style={{ display: 'flex', flexFlow: 'column nowrap' }}>
+            {/*** LEFT EDITOR COLUMN ***************/}
+            <div
+              className="--NetCreate_Column_Left"
+              style={{ display: 'flex', flexFlow: 'column nowrap' }}
+            >
               <NCSearch />
               <NCNode />
               {/* <Search /> */}
               {/* <NodeSelector /> */}
             </div>
           </div>
+          {/*** CENTER NETVIEW COLUMN***************/}
           <div
+            className="--NetCreate_Column_NetView"
             id="middle"
             style={{ backgroundColor: '#fcfcfc', flex: '3 0 60%', marginTop: '38px' }}
           >
             <InfoPanel />
-            {/* Deprecated d3simplenetgraph: <NetGraph /> */}
             <NCGraph />
             <div
+              className="--NetCreate_Column_Break_Info"
               style={{
                 fontSize: '10px',
                 position: 'fixed',
@@ -240,9 +254,11 @@ class NetCreate extends UNISYS.Component {
               an accessible format.
             </div>
           </div>
+          {/*** RIGHT VIEW COLUMN ***************/}
           {layoutFiltersOpen ? (
             // OPEN
             <div
+              className="--NetCreate_Column_Filters_Open"
               id="right"
               style={{
                 marginTop: '38px',
@@ -270,6 +286,7 @@ class NetCreate extends UNISYS.Component {
           ) : (
             // CLOSED
             <div
+              className="--NetCreate_Column_Filters_Closed"
               id="right"
               style={{
                 marginTop: '38px',

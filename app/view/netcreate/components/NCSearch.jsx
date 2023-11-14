@@ -109,7 +109,7 @@ class NCSearch extends UNISYS.Component {
     const newNodeBtnDisabled = !isLoggedIn || value === '';
     const key = 'search'; // used for source/target, placeholder for search
     return (
-      <div className="ncsearch">
+      <div className="--NCSearch ncsearch">
         <NCAutoSuggest
           statekey={key}
           value={value}
