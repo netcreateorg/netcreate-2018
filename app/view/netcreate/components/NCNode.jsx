@@ -579,7 +579,6 @@ class NCNode extends UNISYS.Component {
     } else {
       const { attributes } = this.state;
       attributes[key] = value;
-      console.log('updating attributes', attributes);
       this.setState({ attributes }, () => this.SetBackgroundColor());
     }
   }

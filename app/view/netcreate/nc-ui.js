@@ -12,6 +12,8 @@
 
 const React = require('react');
 const UNISYS = require('unisys/client');
+const MD = require('markdown-it')();
+const MDPARSE = require('html-react-parser').default;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -37,6 +39,20 @@ function DateFormatted() {
 }
 
 /// INPUT FORM CHANGE HANDLERS ////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** This processes the form data before passing it on to the parent handler.
+ *  The callback function is generally an input state update method in
+ *  NCNode or NCEdge
+ *  Emulates m_UIStringInputUpdate but adds error checking on markdown text.
+ *  @param {Object} event
+ *  @param {function} cb Callback function
+ */
+function m_UIMarkdownInputUpdate(event, cb) {
+  console.warn("WARNNIG: Markdown text is not being error checked!  Use with caution!")
+  const key = event.target.id;
+  const value = event.target.value;
+  if (typeof cb === 'function') cb(key, value);
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** This processes the form data before passing it on to the parent handler.
  *  The callback function is generally an input state update method in
@@ -73,6 +89,32 @@ function m_UISelectInputUpdate(event, cb) {
   const value = event.target.value;
   if (typeof cb === 'function') cb(key, value);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Insert a URL into the current input
+ *  This processes the form data before passing it on to the parent handler.
+ *  The callback function is generally an input state update method in
+ *  NCNode or NCEdge
+ *  @param {Object} event
+ *  @param {function} cb Callback function
+ */
+function m_UIInsertImageURL(url, parentId, cb) {
+  const inputEl = document.getElementById(parentId);
+  const selectionStart = inputEl.selectionStart;
+  const currentValue = String(inputEl.value);
+  // fake an event to emulate m_UIStringInputUpdate so markdown is treated as string
+  const event = {
+    target: {
+      id: parentId,
+      value: currentValue.substring(0, selectionStart)
+        + `![image](${url})`
+        + currentValue.substring(selectionStart)
+    }
+  }
+  m_UIMarkdownInputUpdate(event, cb);
+}
+function m_UICancelInsertImageURL() {
+  // FUTURE ENHANCEMENT: Allow removing URL???
+}
 
 /// LAYOUT RENDERERS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -108,7 +150,16 @@ function RenderAttributesTabView(state, defs) {
   const items = [];
   Object.keys(attributes).forEach(k => {
     items.push(RenderLabel(k, defs[k].displayLabel, defs[k].help));
-    items.push(RenderStringValue(k, attributes[k]));
+    const type = defs[k].type;
+    switch (type) {
+      case 'markdown':
+        items.push(RenderMarkdownValue(k, attributes[k]));
+        break;
+      case 'string':
+      default:
+        items.push(RenderStringValue(k, attributes[k]));
+        break;
+    }
   });
 
   // degrees hack -- `degrees` is a built-in field, but is displayed in attributes
@@ -130,6 +181,9 @@ function RenderAttributesTabEdit(state, defs, onchange) {
     const value = attributes[k] || ''; // catch `undefined` or React will complain about changing from uncontrolled to controlled
     const helpText = defs[k].help;
     switch (type) {
+      case 'markdown':
+        items.push(RenderMarkdownInput(k, value, onchange, helpText));
+        break;
       case 'string':
         items.push(RenderStringInput(k, value, onchange, helpText));
         break;
@@ -199,10 +253,48 @@ function RenderLabel(key, label, helpText) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function RenderMarkdownValue(key, value) {
+  const val = String(value);
+  return (
+    <div id={key} key={`${key}value`} className="viewvalue">
+      {MDPARSE(MD.render(val))}
+    </div>
+  );
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RenderStringValue(key, value) {
   return (
     <div id={key} key={`${key}value`} className="viewvalue">
       {value}
+    </div>
+  );
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * Markdown String Input
+ * There are two levels of callbacks necessary here.
+ * 1. The `onChange` handler (in this module) processes the input's onChange event, and...
+ * 2. ...then passes the resulting value to the `cb` function in the parent module.
+ * @param {string} key
+ * @param {string} value
+ * @param {function} cb
+ * @returns
+ */
+function RenderMarkdownInput(key, value, cb, helpText) {
+  const rows = String(value).length > 35 ? 3 : 1;
+  return (
+    <div key={`${key}div`}>
+      <div className="help">{helpText}</div>
+      <textarea
+        id={key}
+        key={`${key}input`}
+        type="string"
+        value={value}
+        onChange={event => m_UIMarkdownInputUpdate(event, cb)}
+        autoComplete="off" // turn off Chrome's default autocomplete, which conflicts
+        className={rows > 1 ? `long` : ''}
+        rows={rows}
+      />
     </div>
   );
 }
@@ -299,6 +391,8 @@ module.exports = {
   RenderProvenanceTabView,
   RenderProvenanceTabEdit,
   RenderLabel,
+  RenderMarkdownValue,
   RenderStringValue,
+  RenderMarkdownInput,
   RenderStringInput
 };
