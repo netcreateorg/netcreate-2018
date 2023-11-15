@@ -27,13 +27,14 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const SETTINGS = require('settings');
-const FILTER = require('./filter/FilterEnums');
 const React = require('react');
 const ReactStrap = require('reactstrap');
+const MD = require('markdown-it')();
+const MDPARSE = require('html-react-parser').default;
+const SETTINGS = require('settings');
+const FILTER = require('./filter/FilterEnums');
 const { BUILTIN_FIELDS_EDGE } = require('system/util/enum');
 const { Button } = ReactStrap;
-const MarkdownNote = require('./MarkdownNote');
 const UNISYS = require('unisys/client');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -663,7 +664,9 @@ class EdgeTable extends UNISYS.Component {
                 </td>
                 {attributes.map(a => (
                   <td hidden={edgeDefs[a].hidden} key={`${edge.id}${a}`}>
-                    {edge[a]}
+                    {edgeDefs[a].type === 'markdown'
+                      ? MDPARSE(MD.render(edge[a]))
+                      : edge[a]}
                   </td>
                 ))}
                 {/*
