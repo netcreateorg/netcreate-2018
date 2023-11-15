@@ -122,6 +122,12 @@
 .nccomponent .warning {
   color: red;
 }
+.nccomponent .help {
+  font-size: 10px;
+  font-style: italic;
+  line-height: 18px;
+  opacity: 0.7;
+}
 
 /* Layout Components */
 .nccomponent.ncedge {
@@ -268,4 +274,11 @@
 }
 .nccomponent .controlbar .deleteinput.invalid {
   border: 5px double red;
+}
+
+.nccomponent .stylebutton {
+  border-radius: 2px;
+  font-size: 10px;
+  background-color: transparent;
+  margin-left: 0;
 }

@@ -28,9 +28,24 @@
   z-index: 110;
 }
 
+.dialog h1,
+.dialog .label {
+  font-size: 10px;
+}
+
+.dialog .label {
+  color: #0008;
+}
+
+.dialog .preview {
+  border: 1px solid #0008;
+}
+
 .dialog .dialogmessage {
+  text-align: left;
   margin-bottom: 25px;
 }
+
 .dialog .dialogcontrolbar {
   display: flex;
   justify-content: right;

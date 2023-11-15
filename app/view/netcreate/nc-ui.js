@@ -14,6 +14,7 @@ const React = require('react');
 const UNISYS = require('unisys/client');
 const MD = require('markdown-it')();
 const MDPARSE = require('html-react-parser').default;
+const NCDialogInsertImageURL = require('./components/NCDialogInsertImageURL');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -285,6 +286,10 @@ function RenderMarkdownInput(key, value, cb, helpText) {
   return (
     <div key={`${key}div`}>
       <div className="help">{helpText}</div>
+      <button
+        className="stylebutton"
+        onClick={() => UDATA.LocalCall("IMAGE_URL_DIALOG_OPEN")}
+      >Insert Image URL...</button>
       <textarea
         id={key}
         key={`${key}input`}
@@ -294,6 +299,13 @@ function RenderMarkdownInput(key, value, cb, helpText) {
         autoComplete="off" // turn off Chrome's default autocomplete, which conflicts
         className={rows > 1 ? `long` : ''}
         rows={rows}
+      />
+      <NCDialogInsertImageURL
+        message="Paste image URL:"
+        okmessage="Insert"
+        onOK={url => m_UIInsertImageURL(url, key, cb)}
+        cancelmessage="Cancel"
+        onCancel={m_UICancelInsertImageURL}
       />
     </div>
   );
