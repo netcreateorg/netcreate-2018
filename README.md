@@ -15,7 +15,7 @@ npm ci
 # create default netcreate.config file
 ./nc.js --dataset=testproject
 ```
-This will start up the app server. View the webapp by visiting `localhost#3000`. The IP address of the server is reported in console if you need to test from remote computer.
+This will start up the app server. View the webapp by visiting `localhost:3000`. The IP address of the server is reported in console if you need to test from remote computer.
 
 ### Subsequent Runs
 ```
