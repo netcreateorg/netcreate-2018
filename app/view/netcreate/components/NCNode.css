@@ -227,9 +227,6 @@
   padding: 10px 5px 5px 5px;
   background-color: #fff8;
 }
-.nccomponent .tabcontainer .tabview .edges {
-  text-align: center;
-}
 .nccomponent .provenance label {
   line-height: 12px;
   margin-bottom: 0.25rem; /* override bootstrap */

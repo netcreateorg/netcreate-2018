@@ -220,7 +220,7 @@ function RenderStringInput(key, value, cb, helpText) {
   const rows = String(value).length > 35 ? 3 : 1;
   return (
     <div key={`${key}div`}>
-      {helpText}
+      <div className="help">{helpText}</div>
       <textarea
         id={key}
         key={`${key}input`}
@@ -246,7 +246,7 @@ function RenderStringInput(key, value, cb, helpText) {
 function m_RenderNumberInput(key, value, cb, helpText) {
   return (
     <div key={`${key}div`}>
-      {helpText}
+      <div className="help">{helpText}</div>
       <input
         id={key}
         key={`${key}input`}
@@ -271,7 +271,7 @@ function m_RenderOptionsInput(key, value, defs, cb, helpText) {
   const options = defs[key].options;
   return (
     <div key={`${key}div`}>
-      {helpText}
+      <div className="help">{helpText}</div>
       <select
         id={key}
         key={`${key}select`}
