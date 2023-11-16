@@ -68,14 +68,12 @@ class NCDialogInsertImageURL extends React.Component {
   m_UIOnOK() {
     const { url } = this.state;
     const { onOK } = this.props;
-    this.setState({ isOpen: false });
-    onOK && onOK(url);
+    this.setState({ isOpen: false }, () => onOK && onOK(url));
   }
 
   m_UIOnCancel() {
     const { onCancel } = this.props;
-    this.setState({ isOpen: false });
-    onCancel && onCancel();
+    this.setState({ isOpen: false }, () => onCancel && onCancel());
   }
 
   render() {
@@ -97,21 +95,21 @@ class NCDialogInsertImageURL extends React.Component {
       <div className="dialog">
         <div className="screen"></div>
         <div className="dialogwindow">
-          <div className="dialogmessage">
-            <h1>ADD IMAGE URL</h1>
-            <hr />
-            <div className="label">PREVIEW:</div>
-            <div className="preview">
-              <img src={url} alt="Pasted Image URL" />
+          <div className="dialogcontent">
+            <h1 className="dialogtitle">ADD IMAGE URL</h1>
+            <div className="dialogmessage">
+              <div className="dialogpreview">
+                <div className="label">PREVIEW:</div>
+                <img src={url} alt="Pasted Image URL Preview" />
+              </div>
+              <div>{message}</div>
+              <input onChange={this.m_UIInputChange} />
             </div>
-            <hr />
-            <div>{message}</div>
-            <input onChange={this.m_UIInputChange} />
-          </div>
-          <div className="dialogcontrolbar">
-            {CancelBtn}
-            {`\u00a0`}
-            {OKBtn}
+            <div className="dialogcontrolbar">
+              {CancelBtn}
+              {`\u00a0`}
+              {OKBtn}
+            </div>
           </div>
         </div>
       </div>
