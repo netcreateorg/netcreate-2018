@@ -288,7 +288,7 @@ function RenderMarkdownInput(key, value, cb, helpText) {
       <div className="help">{helpText}</div>
       <button
         className="stylebutton"
-        onClick={() => UDATA.LocalCall("IMAGE_URL_DIALOG_OPEN")}
+        onClick={() => UDATA.LocalCall("IMAGE_URL_DIALOG_OPEN", { id: key })}
       >Insert Image URL...</button>
       <textarea
         id={key}
@@ -301,6 +301,7 @@ function RenderMarkdownInput(key, value, cb, helpText) {
         rows={rows}
       />
       <NCDialogInsertImageURL
+        id={key}
         message="Paste image URL:"
         okmessage="Insert"
         onOK={url => m_UIInsertImageURL(url, key, cb)}

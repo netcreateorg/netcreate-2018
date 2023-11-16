@@ -56,8 +56,9 @@ class NCDialogInsertImageURL extends React.Component {
     UDATA.UnhandleMessage('IMAGE_URL_DIALOG_OPEN', this.m_UIOpenDialog);
   }
 
-  m_UIOpenDialog() {
-    this.setState({ isOpen: true });
+  m_UIOpenDialog(data) {
+    const { id } = this.props;
+    if (id === data.id) this.setState({ isOpen: true });
   }
 
   m_UIInputChange(event) {
@@ -80,6 +81,7 @@ class NCDialogInsertImageURL extends React.Component {
   render() {
     const { isOpen, url } = this.state;
     const {
+      id,
       message = 'Are you sure?',
       okmessage = 'OK',
       cancelmessage = 'Cancel',
