@@ -13,6 +13,8 @@
 const React = require('react');
 const UNISYS = require('unisys/client');
 const MD = require('markdown-it')();
+const MDEMOJI = require('markdown-it-emoji');
+MD.use(MDEMOJI);
 const MDPARSE = require('html-react-parser').default;
 const NCDialogInsertImageURL = require('./components/NCDialogInsertImageURL');
 
@@ -40,7 +42,9 @@ function DateFormatted() {
 }
 
 /** Converts a markdown string to HTML
- *  And does extra HACK processing as needed, e.g. add `_blank` to `a` tags.
+ *  And does extra HACK processing as needed:
+ *  -- Supports emojis
+ *  -- add `_blank` to `a` tags.
  */
 function MarkDownify(str) {
   const htmlString = MD.render(str);
