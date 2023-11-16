@@ -39,6 +39,17 @@ function DateFormatted() {
   return dateTime;
 }
 
+/** Converts a markdown string to HTML
+ *  And does extra HACK processing as needed, e.g. add `_blank` to `a` tags.
+ */
+function MarkDownify(str) {
+  const htmlString = MD.render(str);
+  // HACK!!! MDPARSE does not give us direct access to the dom elements, so just
+  // hack it by adding to the parsed html string
+  const hackedHtmlString = htmlString.replace(/<a href/g, `<a target="_blank" href`);
+  return MDPARSE(hackedHtmlString);
+}
+
 /// INPUT FORM CHANGE HANDLERS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** This processes the form data before passing it on to the parent handler.
@@ -258,7 +269,7 @@ function RenderMarkdownValue(key, value) {
   const val = String(value);
   return (
     <div id={key} key={`${key}value`} className="viewvalue">
-      {MDPARSE(MD.render(val))}
+      {MarkDownify(val)}
     </div>
   );
 }
