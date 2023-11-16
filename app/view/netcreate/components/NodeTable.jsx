@@ -27,8 +27,7 @@
 
 const React = require('react');
 const ReactStrap = require('reactstrap');
-const MD = require('markdown-it')();
-const MDPARSE = require('html-react-parser').default;
+const NCUI = require('../nc-ui');
 const SETTINGS = require('settings');
 const FILTER = require('./filter/FilterEnums');
 const { BUILTIN_FIELDS_NODE } = require('system/util/enum');
@@ -544,7 +543,7 @@ class NodeTable extends UNISYS.Component {
                 {attributes.map(a => (
                   <td hidden={nodeDefs[a].hidden} key={`${node.id}${a}`}>
                     {nodeDefs[a].type === 'markdown'
-                      ? MDPARSE(MD.render(node[a]))
+                      ? NCUI.Markdownify(node[a])
                       : node[a]}
                   </td>
                 ))}

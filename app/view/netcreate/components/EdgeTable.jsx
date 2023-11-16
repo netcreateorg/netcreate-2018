@@ -29,8 +29,7 @@
 
 const React = require('react');
 const ReactStrap = require('reactstrap');
-const MD = require('markdown-it')();
-const MDPARSE = require('html-react-parser').default;
+const NCUI = require('../nc-ui');
 const SETTINGS = require('settings');
 const FILTER = require('./filter/FilterEnums');
 const { BUILTIN_FIELDS_EDGE } = require('system/util/enum');
@@ -665,7 +664,7 @@ class EdgeTable extends UNISYS.Component {
                 {attributes.map(a => (
                   <td hidden={edgeDefs[a].hidden} key={`${edge.id}${a}`}>
                     {edgeDefs[a].type === 'markdown'
-                      ? MDPARSE(MD.render(edge[a]))
+                      ? NCUI.Markdownify(edge[a])
                       : edge[a]}
                   </td>
                 ))}

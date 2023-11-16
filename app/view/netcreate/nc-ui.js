@@ -46,7 +46,7 @@ function DateFormatted() {
  *  -- Supports emojis
  *  -- add `_blank` to `a` tags.
  */
-function MarkDownify(str) {
+function Markdownify(str) {
   const htmlString = MD.render(str);
   // HACK!!! MDPARSE does not give us direct access to the dom elements, so just
   // hack it by adding to the parsed html string
@@ -273,7 +273,7 @@ function RenderMarkdownValue(key, value) {
   const val = String(value);
   return (
     <div id={key} key={`${key}value`} className="viewvalue">
-      {MarkDownify(val)}
+      {Markdownify(val)}
     </div>
   );
 }
@@ -413,6 +413,7 @@ function m_RenderOptionsInput(key, value, defs, cb, helpText) {
 module.exports = {
   VIEWMODE,
   DateFormatted,
+  Markdownify,
   RenderTabSelectors,
   RenderAttributesTabView,
   RenderAttributesTabEdit,
