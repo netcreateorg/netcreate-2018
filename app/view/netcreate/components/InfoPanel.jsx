@@ -64,6 +64,28 @@ class InfoPanel extends UNISYS.Component {
     UDATA.HandleMessage('UI_CLOSE_MORE', this.CloseMore);
   } // constructor
 
+  /// GOOGLE ANALYTICS EVENT LOGGING ////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** legacy google analytics event logging method inserted by Joshua. This
+   *  method of google analytics that may no longer work in 2023 because the
+   *  "universal analytics" api has been deprecated for GA4. See the code
+   *  inserted into index.ejs to see how the googlea property was injected
+   *  through the use of the nc.js CLI configurator */
+  sendGA(actionType, url) {
+    if (window.ga === undefined) return;
+    if (window.NC_CONFIG && window.NC_CONFIG.googlea) {
+      const googlea = window.NC_CONFIG.googlea;
+      if (googlea != '0') {
+        window.ga('send', {
+          hitType: 'event',
+          eventCategory: 'Tab',
+          eventAction: actionType,
+          eventLabel: '' + url
+        });
+      }
+    }
+  }
+
   /// UI EVENT HANDLERS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /**
@@ -173,7 +195,7 @@ class InfoPanel extends UNISYS.Component {
     } = this.state;
     //send flag in with tableheight
     return (
-      <div>
+      <div className="--InfoPanel">
         <div
           id="tabpanel"
           style={{
@@ -299,18 +321,6 @@ class InfoPanel extends UNISYS.Component {
         </div>
       </div>
     );
-  }
-
-  sendGA(actionType, url) {
-    let googlea = NC_CONFIG.googlea;
-    if (googlea != '0') {
-      ga('send', {
-        hitType: 'event',
-        eventCategory: 'Tab',
-        eventAction: actionType,
-        eventLabel: '' + url
-      });
-    }
   }
 } // class InfoPanel
 

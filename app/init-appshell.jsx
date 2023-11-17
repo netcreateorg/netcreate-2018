@@ -62,6 +62,7 @@ class AppShell extends UNISYS.Component {
     const isLocalHost = SETTINGS.IsLocalHost();
     return (
       <div
+        className="--AppShell"
         style={{
           display: 'flex',
           flexFlow: 'column nowrap',
@@ -70,6 +71,7 @@ class AppShell extends UNISYS.Component {
         }}
       >
         <Navbar
+          className="--AppShell_Navbar"
           fixed="top"
           light
           expand="md"

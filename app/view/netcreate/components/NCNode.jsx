@@ -630,7 +630,7 @@ class NCNode extends UNISYS.Component {
     const defs = UDATA.AppState('TEMPLATE').nodeDefs;
     const bgcolor = backgroundColor + '44'; // hack opacity
     return (
-      <div className="nccomponent">
+      <div className="--NCNode_View nccomponent">
         <div className="view" style={{ background: bgcolor }}>
           {/* BUILT-IN - - - - - - - - - - - - - - - - - */}
           <div className="titlebar">
@@ -638,7 +638,7 @@ class NCNode extends UNISYS.Component {
             <div className="nodenumber">#{id}</div>
           </div>
           {/* TABS - - - - - - - - - - - - - - - - - - - */}
-          <div className="tabcontainer">
+          <div className="--NCNode_View_Tabs tabcontainer">
             {NCUI.RenderTabSelectors(TABS, this.state, this.UISelectTab)}
             <div className="tabview">
               {uSelectedTab === TABS.ATTRIBUTES &&
@@ -649,7 +649,7 @@ class NCNode extends UNISYS.Component {
             </div>
           </div>
           {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
-          <div className="controlbar">
+          <div className="--NCNode_View_Controls controlbar">
             {!editBtnHide && uSelectedTab !== TABS.EDGES && (
               <button
                 id="editbtn"
@@ -700,7 +700,7 @@ class NCNode extends UNISYS.Component {
     const duplicateWarning = UDATA.AppState('TEMPLATE').duplicateWarning;
     const isDuplicate = matchingNodeLabels && matchingNodeLabels.includes(label);
     return (
-      <div>
+      <div className="--NCNode_Edit">
         <div className="screen"></div>
         <div className="nccomponent">
           <div

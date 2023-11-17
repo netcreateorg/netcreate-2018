@@ -203,7 +203,11 @@ class NCGraph extends UNISYS.Component {
   render() {
     const { nodeTypes, edgeTypes } = this.state;
     return (
-      <div ref={dom => (this.dom = dom)} style={{ height: '100%' }}>
+      <div
+        className="--NCGraph"
+        ref={dom => (this.dom = dom)}
+        style={{ height: '100%' }}
+      >
         <div style={{ margin: '10px 0 0 10px' }}>
           <div className="tooltipAnchor">
             <span style={{ fontSize: '9px' }}>

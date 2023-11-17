@@ -262,7 +262,11 @@ class SessionShell extends UNISYS.Component {
     }
 
     return (
-      <Form onSubmit={this.onSubmit} style={NAV_LOGIN_STYLE}>
+      <Form
+        className="--SessionShell_Login"
+        onSubmit={this.onSubmit}
+        style={NAV_LOGIN_STYLE}
+      >
         <FormGroup row>
           <InputGroup>
             <InputGroupAddon addonType="prepend">
