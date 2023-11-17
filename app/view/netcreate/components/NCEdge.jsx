@@ -28,11 +28,15 @@ const { EDITORTYPE, BUILTIN_FIELDS_EDGE } = require('system/util/enum');
 const NCUI = require('../nc-ui');
 const NCAutoSuggest = require('./NCAutoSuggest');
 const NCDialog = require('./NCDialog');
+const SETTINGS = require('settings');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 const PR = 'NCEdge';
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const isAdmin = SETTINGS.IsAdmin();
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const TABS = {
   // Also used as labels
   ATTRIBUTES: 'ATTRIBUTES',
@@ -844,8 +848,17 @@ class NCEdge extends UNISYS.Component {
               </button>
             )}
           </div>
-          {uEditLockMessage && (
-            <div className="message warning">{uEditLockMessage}</div>
+          {!uEditBtnHide && uEditLockMessage && (
+            <div className="message warning" style={{ marginTop: '1em' }}>
+              <p>{uEditLockMessage}</p>
+              <p hidden={!isAdmin}>
+                <b>ADMINISTRATOR ONLY</b>: If you are absolutely sure this is an
+                error, you can force the unlock.
+                <button onClick={this.UIDisableEditMode} style={{ marginLeft: 0 }}>
+                  Force Unlock
+                </button>
+              </p>
+            </div>
           )}
         </div>
       </div>
