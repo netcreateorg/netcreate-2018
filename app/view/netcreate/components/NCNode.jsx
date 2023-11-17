@@ -649,6 +649,18 @@ class NCNode extends UNISYS.Component {
             </div>
           </div>
           {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
+          {!editBtnHide && editLockMessage && (
+            <div className="message warning" style={{ marginTop: '1em' }}>
+              <p>{editLockMessage}</p>
+              <p hidden={!isAdmin}>
+                <b>ADMINISTRATOR ONLY</b>: If you are absolutely sure this is an
+                error, you can force the unlock.
+                <button onClick={this.UIDisableEditMode} style={{ marginLeft: 0 }}>
+                  Force Unlock
+                </button>
+              </p>
+            </div>
+          )}
           <div className="--NCNode_View_Controls controlbar">
             {!editBtnHide && uSelectedTab !== TABS.EDGES && (
               <button
@@ -660,9 +672,6 @@ class NCNode extends UNISYS.Component {
               </button>
             )}
           </div>
-          {editLockMessage && (
-            <div className="message warning">{editLockMessage}</div>
-          )}
           {isAdmin && !editBtnDisable && !uHideDeleteNodeButton && (
             <div className="controlbar deletenode">
               <div className="message">
