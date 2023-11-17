@@ -506,23 +506,29 @@ class EdgeTable extends UNISYS.Component {
     }
     const { tableHeight } = this.props;
     const styles = `thead, tbody { font-size: 0.8em }
-                      .table {
-                        display: table; /* override bootstrap for fixed header */
-                        border-spacing: 0;
-                      }
-                      .table th {
-                        position: -webkit-sticky;
-                        position: sticky;
-                        top: 0;
-                        background-color: #eafcff;
-                        border-top: none;
-                      }
-                      xtbody { overflow: auto; }
-                      .btn-sm { font-size: 0.6rem; padding: 0.1rem 0.2rem }
-                      `;
-    const attributes = Object.keys(edgeDefs).filter(
+                    .table {
+                      display: table; /* override bootstrap for fixed header */
+                      border-spacing: 0;
+                    }
+                    .table th {
+                      position: -webkit-sticky;
+                      position: sticky;
+                      top: 0;
+                      background-color: #eafcff;
+                      border-top: none;
+                    }
+                    xtbody { overflow: auto; }
+                    .btn-sm { font-size: 0.6rem; padding: 0.1rem 0.2rem }
+                    `;
+    let attributes = Object.keys(edgeDefs).filter(
       k => !BUILTIN_FIELDS_EDGE.includes(k)
     );
+
+    // show 'type' between 'source' and 'target' if `type` has been defined
+    // if it isn't defined, just show attribute fields after `source` and 'target`
+    const hasTypeField = edgeDefs['type'];
+    if (hasTypeField) attributes = attributes.filter(a => a !== 'type');
+
     return (
       <div
         onMouseLeave={() => this.onHighlightNode(undefined)}
@@ -570,14 +576,18 @@ class EdgeTable extends UNISYS.Component {
                   {edgeDefs.source.displayLabel} {this.sortSymbol('source')}
                 </Button>
               </th>
-              {/* <th hidden={edgeDefs.type.hidden} width="10%">
-                <Button
-                  size="sm"
-                  onClick={() => this.setSortKey('Relationship', edgeDefs.type.type)}
-                >
-                  {edgeDefs.type.displayLabel} {this.sortSymbol('Relationship')}
-                </Button>
-              </th> */}
+              {hasTypeField && (
+                <th hidden={edgeDefs.type.hidden} width="10%">
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      this.setSortKey('Relationship', edgeDefs.type.type)
+                    }
+                  >
+                    {edgeDefs.type.displayLabel} {this.sortSymbol('Relationship')}
+                  </Button>
+                </th>
+              )}
               <th hidden={!DBG}>Target ID</th>
               <th width="10%">
                 <Button
@@ -649,7 +659,7 @@ class EdgeTable extends UNISYS.Component {
                     {edge.sourceLabel}
                   </a>
                 </td>
-                {/* <td hidden={edgeDefs.type.hidden}>{edge.type}</td> */}
+                {hasTypeField && <td hidden={edgeDefs.type.hidden}>{edge.type}</td>}
                 {/* Cast to string for edge.target where target is undefined */}
                 <td hidden={!DBG}>{String(edge.target)}</td>
                 <td>

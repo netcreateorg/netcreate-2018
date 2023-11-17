@@ -162,16 +162,16 @@ class NCNode extends UNISYS.Component {
       // isAdmin: false,
       previousState: {},
       // UI State
-      editBtnDisable: false,
-      editBtnHide: false,
+      uEditBtnDisable: false,
+      uEditBtnHide: false,
       uViewMode: VIEWMODE.VIEW,
       uSelectedTab: TABS.ATTRIBUTES,
       selectedEdgeId: null,
-      backgroundColor: 'transparent',
-      isLockedByDB: false, // shows db lock message next to Edit Node button
-      isLockedByTemplate: false,
-      isLockedByImport: false,
-      editLockMessage: '',
+      uBackgroundColor: 'transparent',
+      uIsLockedByDB: false, // shows db lock message next to Edit Node button
+      uIsLockedByTemplate: false,
+      uIsLockedByImport: false,
+      uEditLockMessage: '',
       uHideDeleteNodeButton: TEMPLATE.hideDeleteNodeButton,
       uReplacementNodeId: '',
       uIsValidReplacementNodeID: true,
@@ -231,34 +231,34 @@ class NCNode extends UNISYS.Component {
     const nodeIsLocked = data.lockedNodes.includes(id);
     this.setState(
       {
-        isLockedByDB: nodeIsLocked,
-        isLockedByTemplate: data.templateBeingEdited,
-        isLockedByImport: data.importActive
+        uIsLockedByDB: nodeIsLocked,
+        uIsLockedByTemplate: data.templateBeingEdited,
+        uIsLockedByImport: data.importActive
       },
       () => this.UpdatePermissions()
     );
   }
   UpdatePermissions() {
-    const { isLoggedIn, isLockedByDB, isLockedByTemplate, isLockedByImport } =
+    const { isLoggedIn, uIsLockedByDB, uIsLockedByTemplate, uIsLockedByImport } =
       this.state;
     const TEMPLATE = UDATA.AppState('TEMPLATE');
-    let editLockMessage = '';
-    let editBtnDisable = false;
-    let editBtnHide = true;
-    if (isLoggedIn) editBtnHide = false;
-    if (isLockedByDB) {
-      editBtnDisable = true;
-      editLockMessage += TEMPLATE.nodeIsLockedMessage;
+    let uEditLockMessage = '';
+    let uEditBtnDisable = false;
+    let uEditBtnHide = true;
+    if (isLoggedIn) uEditBtnHide = false;
+    if (uIsLockedByDB) {
+      uEditBtnDisable = true;
+      uEditLockMessage += TEMPLATE.nodeIsLockedMessage;
     }
-    if (isLockedByTemplate) {
-      editBtnDisable = true;
-      editLockMessage += TEMPLATE.templateIsLockedMessage;
+    if (uIsLockedByTemplate) {
+      uEditBtnDisable = true;
+      uEditLockMessage += TEMPLATE.templateIsLockedMessage;
     }
-    if (isLockedByImport) {
-      editBtnDisable = true;
-      editLockMessage += TEMPLATE.importIsLockedMessage;
+    if (uIsLockedByImport) {
+      uEditBtnDisable = true;
+      uEditLockMessage += TEMPLATE.importIsLockedMessage;
     }
-    this.setState({ editBtnDisable, editBtnHide, editLockMessage });
+    this.setState({ uEditBtnDisable, uEditBtnHide, uEditLockMessage });
   }
   ClearSelection() {
     this.ResetState();
@@ -329,7 +329,7 @@ class NCNode extends UNISYS.Component {
         this.IsNodeLocked(nodeIsLocked => {
           this.setState(
             {
-              isLockedByDB: nodeIsLocked
+              uIsLockedByDB: nodeIsLocked
             },
             () => this.UpdatePermissions()
           );
@@ -451,7 +451,7 @@ class NCNode extends UNISYS.Component {
       this.UnlockNode(() => {
         this.setState({
           uViewMode: VIEWMODE.VIEW,
-          isLockedByDB: false
+          uIsLockedByDB: false
         });
       });
     });
@@ -474,7 +474,7 @@ class NCNode extends UNISYS.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// HELPER METHODS
   /**
-   * Sets the background color of the node editor via `backgroundColor` state.
+   * Sets the background color of the node editor via `uBackgroundColor` state.
    * Currently the background color is determined by the template node type
    * color mapping.  This will eventually be replaced with a color manager.
    */
@@ -482,8 +482,8 @@ class NCNode extends UNISYS.Component {
     const { attributes } = this.state;
     const type = attributes && attributes.type;
     const COLORMAP = UDATA.AppState('COLORMAP');
-    const backgroundColor = COLORMAP.nodeColorMap[type] || '#555555';
-    this.setState({ backgroundColor });
+    const uBackgroundColor = COLORMAP.nodeColorMap[type] || '#555555';
+    this.setState({ uBackgroundColor });
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -500,7 +500,7 @@ class NCNode extends UNISYS.Component {
    */
   UIRequestEditNode() {
     this.LockNode(lockSuccess => {
-      this.setState({ isLockedByDB: !lockSuccess }, () => {
+      this.setState({ uIsLockedByDB: !lockSuccess }, () => {
         if (lockSuccess) this.EnableEditMode();
       });
     });
@@ -566,7 +566,7 @@ class NCNode extends UNISYS.Component {
     this.UnlockNode(() => {
       this.setState({
         uViewMode: VIEWMODE.VIEW,
-        isLockedByDB: false
+        uIsLockedByDB: false
       });
       UDATA.NetCall('SRV_RELEASE_EDIT_LOCK', { editor: EDITORTYPE.NODE });
     });
@@ -617,10 +617,10 @@ class NCNode extends UNISYS.Component {
   RenderView() {
     const {
       uSelectedTab,
-      backgroundColor,
-      editBtnDisable,
-      editBtnHide,
-      editLockMessage,
+      uBackgroundColor,
+      uEditBtnDisable,
+      uEditBtnHide,
+      uEditLockMessage,
       uHideDeleteNodeButton,
       uReplacementNodeId,
       uIsValidReplacementNodeID,
@@ -628,7 +628,7 @@ class NCNode extends UNISYS.Component {
       label
     } = this.state;
     const defs = UDATA.AppState('TEMPLATE').nodeDefs;
-    const bgcolor = backgroundColor + '44'; // hack opacity
+    const bgcolor = uBackgroundColor + '44'; // hack opacity
     return (
       <div className="--NCNode_View nccomponent">
         <div className="view" style={{ background: bgcolor }}>
@@ -649,21 +649,30 @@ class NCNode extends UNISYS.Component {
             </div>
           </div>
           {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
+          {!uEditBtnHide && uEditLockMessage && (
+            <div className="message warning" style={{ marginTop: '1em' }}>
+              <p>{uEditLockMessage}</p>
+              <p hidden={!isAdmin}>
+                <b>ADMINISTRATOR ONLY</b>: If you are absolutely sure this is an
+                error, you can force the unlock.
+                <button onClick={this.UIDisableEditMode} style={{ marginLeft: 0 }}>
+                  Force Unlock
+                </button>
+              </p>
+            </div>
+          )}
           <div className="--NCNode_View_Controls controlbar">
-            {!editBtnHide && uSelectedTab !== TABS.EDGES && (
+            {!uEditBtnHide && uSelectedTab !== TABS.EDGES && (
               <button
                 id="editbtn"
                 onClick={this.UIRequestEditNode}
-                disabled={editBtnDisable}
+                disabled={uEditBtnDisable}
               >
                 Edit
               </button>
             )}
           </div>
-          {editLockMessage && (
-            <div className="message warning">{editLockMessage}</div>
-          )}
-          {isAdmin && !editBtnDisable && !uHideDeleteNodeButton && (
+          {isAdmin && !uEditBtnDisable && !uHideDeleteNodeButton && (
             <div className="controlbar deletenode">
               <div className="message">
                 Re-link edges to this Node ID (leave blank to delete edge)
@@ -691,9 +700,9 @@ class NCNode extends UNISYS.Component {
   }
 
   RenderEdit() {
-    const { uSelectedTab, backgroundColor, matchingNodeLabels, label } = this.state;
+    const { uSelectedTab, uBackgroundColor, matchingNodeLabels, label } = this.state;
     const defs = UDATA.AppState('TEMPLATE').nodeDefs;
-    const bgcolor = backgroundColor + '66'; // hack opacity
+    const bgcolor = uBackgroundColor + '66'; // hack opacity
     const matchList = matchingNodeLabels
       ? matchingNodeLabels.map(l => <div key={l}>{l}</div>)
       : undefined;
@@ -707,7 +716,7 @@ class NCNode extends UNISYS.Component {
             className="edit"
             style={{
               background: bgcolor,
-              borderColor: backgroundColor
+              borderColor: uBackgroundColor
             }}
           >
             {/* BUILT-IN - - - - - - - - - - - - - - - - - */}
@@ -754,8 +763,8 @@ class NCNode extends UNISYS.Component {
     const {
       uSelectedTab,
       selectedEdgeId,
-      editBtnDisable,
-      editBtnHide,
+      uEditBtnDisable,
+      uEditBtnHide,
       id,
       label,
       edges
@@ -784,7 +793,7 @@ class NCNode extends UNISYS.Component {
                 <button
                   className="edgebutton"
                   onClick={() => this.UIViewEdge(e.id)}
-                  style={{ backgroundColor: bgcolor }}
+                  style={{ uBackgroundColor: bgcolor }}
                 >
                   {id === e.source ? me : sourceNode.label}
                   &nbsp;<span title={e.type}>{ARROW_RIGHT}</span>&nbsp;
@@ -794,11 +803,11 @@ class NCNode extends UNISYS.Component {
             );
           }
         })}
-        {!editBtnHide && uSelectedTab === TABS.EDGES && (
+        {!uEditBtnHide && uSelectedTab === TABS.EDGES && (
           <button
             className="addedgebutton"
             onClick={this.UIAddEdge}
-            disabled={editBtnDisable}
+            disabled={uEditBtnDisable}
           >
             New Edge
           </button>

@@ -67,14 +67,20 @@ class NCSearch extends UNISYS.Component {
     this.setState({ isLoggedIn: decoded.isValid });
   }
 
-  UIOnChange(key, value) {
+  /**
+   * The callback function (cb) is used to restore the selection point
+   * otherwise the `value` state update will leave the cursor at the end of the field.
+   */
+  UIOnChange(key, value, cb) {
     // Pass the input value (node label search string) to UDATA
     // which will in turn pass the searchLabel back to the SEARCH
     // state handler in the constructor, which will in turn set the state
     // of the input value to be passed on to AutoSuggest
     this.AppCall('SOURCE_SEARCH', { searchString: value });
-    // Update current input value
-    this.setState({ value });
+    // Update current input value and restore the cursor position
+    this.setState({ value }, () => {
+      if (typeof cb === 'function') cb();
+    });
   }
 
   UIOnSelect(key, value, id) {

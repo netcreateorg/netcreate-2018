@@ -78,8 +78,8 @@
 /* HTML Component Subtypes */
 .nccomponent button.cancelbtn {
   background-color: transparent;
-  border-color: #999;
-  color: #666;
+  border-color: #0004;
+  color: #0006;
 }
 .nccomponent button.sourcetargetbtn {
   border-radius: 15px;
