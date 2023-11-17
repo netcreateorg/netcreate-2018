@@ -25,13 +25,13 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-const SETTINGS = require('settings');
-const FILTER = require('./filter/FilterEnums');
 const React = require('react');
 const ReactStrap = require('reactstrap');
+const NCUI = require('../nc-ui');
+const SETTINGS = require('settings');
+const FILTER = require('./filter/FilterEnums');
 const { BUILTIN_FIELDS_NODE } = require('system/util/enum');
 const { Button } = ReactStrap;
-const MarkdownNote = require('./MarkdownNote');
 const UNISYS = require('unisys/client');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -542,7 +542,9 @@ class NodeTable extends UNISYS.Component {
                 </td>
                 {attributes.map(a => (
                   <td hidden={nodeDefs[a].hidden} key={`${node.id}${a}`}>
-                    {node[a]}
+                    {nodeDefs[a].type === 'markdown'
+                      ? NCUI.Markdownify(node[a])
+                      : node[a]}
                   </td>
                 ))}
                 {/*

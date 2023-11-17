@@ -8,7 +8,7 @@
   justify-content: center;
   align-items: center;
   text-align: center;
-  z-index: 100;
+  z-index: 2000;
 }
 
 .dialog .screen {
@@ -18,19 +18,50 @@
   right: 0;
   bottom: 0;
   background-color: #0006;
-  z-index: 101;
+  z-index: 2001;
 }
 
 .dialog .dialogwindow {
   position: relative;
+  max-width: 90%;
+  max-height: 80%;
+  overflow: hidden;
   background-color: white;
   padding: 25px;
-  z-index: 110;
+  z-index: 2010;
+}
+
+.dialog .dialogcontent {
+  display: grid;
+  grid-template-rows: 25px auto 25px;
+  text-align: left;
 }
 
 .dialog .dialogmessage {
   margin-bottom: 25px;
 }
+
+.dialog h1,
+.dialog .label {
+  font-size: 10px;
+}
+
+.dialog .label {
+  color: #0008;
+}
+
+.dialog .dialogpreview {
+  margin: 5px 0 20px 0;
+}
+
+.dialog img {
+  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  max-height: 250px;
+  background-color: blue;
+}
+
 .dialog .dialogcontrolbar {
   display: flex;
   justify-content: right;
