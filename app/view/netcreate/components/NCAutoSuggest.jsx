@@ -79,6 +79,11 @@ class NCAutoSuggest extends UNISYS.Component {
     const { onChange } = this.props;
     const key = event.target.id;
     const value = event.target.value;
+
+    // save the selection cursor position
+    const selstart = event.target.selectionStart;
+    const inputEl = event.target;
+
     let isValidNode = false;
     UDATA.LocalCall('FIND_MATCHING_NODES', { searchString: value }).then(data => {
       const matches =
@@ -89,7 +94,12 @@ class NCAutoSuggest extends UNISYS.Component {
             })
           : undefined;
       this.setState({ matches, isValidNode });
-      if (typeof onChange === 'function') onChange(key, value);
+      if (typeof onChange === 'function')
+        onChange(key, value, () => {
+          // restore  selection cursor position
+          inputEl.selectionStart = selstart;
+          inputEl.selectionEnd = selstart;
+        });
     });
   }
   /**
