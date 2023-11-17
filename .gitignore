@@ -25,6 +25,7 @@ _dist
 *_log.md
 *.log
 tmp-*
+*_nocommit
 
 # And don't commit .zip archives either
 *.zip
