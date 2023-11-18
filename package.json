@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "dev": "node ./_ur_cli/@cli-build-lib.cjs && node ./_ur_mods/@ur-build-mods.cjs && brunch w -s",
-    "build-libs": "npm run build --workspace _ur",
+    "build-libs": "node ./_ur_cli/@cli-build-lib.cjs",
     "lint": "npm exec --workspaces -- npm run lint && eslint app/",
     "dev:inspect": "node --inspect brunch-server.js",
     "classroom": "brunch build -e classroom",

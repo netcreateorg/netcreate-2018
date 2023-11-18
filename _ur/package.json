@@ -8,7 +8,7 @@
   },
   "private": true,
   "scripts": {
-    "build-libs": "node @ur-build-lib.cjs",
+    "build-libs": "node ../_ur_cli/@cli-build-lib.cjs",
     "lint": "eslint .",
     "clean": "rm -rf ./node_modules ./_dist"
   },
