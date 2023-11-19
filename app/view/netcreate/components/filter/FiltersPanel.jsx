@@ -33,6 +33,7 @@ class FiltersPanel extends UNISYS.Component {
     super();
 
     this.UpdateFilterDefs = this.UpdateFilterDefs.bind(this);
+    this.UpdateFilteredNCData = this.UpdateFilteredNCData.bind(this);
     this.LookupFilterHelp = this.LookupFilterHelp.bind(this);
     this.OnClearBtnClick = this.OnClearBtnClick.bind(this);
     this.SelectFilterAction = this.SelectFilterAction.bind(this);
@@ -50,14 +51,22 @@ class FiltersPanel extends UNISYS.Component {
       edges: FILTERDEFS.edges,
       filterAction: FILTER.ACTION.FADE,
       focusSourceLabel: undefined,
-      focusRange: undefined
+      focusRange: undefined,
+      statsSummary: ''
     };
     UDATA.OnAppStateChange('FILTERDEFS', this.UpdateFilterDefs);
+    UDATA.OnAppStateChange('FILTEREDNCDATA', this.UpdateFilteredNCData);
   } // constructor
 
+  componentDidMount() {
+    // update filter stats on load
+    const FILTEREDNCDATA = UDATA.AppState('FILTEREDNCDATA');
+    this.UpdateFilteredNCData(FILTEREDNCDATA);
+  }
+
   componentWillUnmount() {
-    // console.error('TBD: gracefully unsubscribe!')
     UDATA.AppStateChangeOff('FILTERDEFS', this.UpdateFilterDefs);
+    UDATA.AppStateChangeOff('FILTEREDNCDATA', this.UpdateFilteredNCData);
   }
 
   UpdateFilterDefs(data) {
@@ -74,6 +83,10 @@ class FiltersPanel extends UNISYS.Component {
         focusRange: data.focus && data.focus.range ? data.focus.range : undefined
       };
     });
+  }
+
+  UpdateFilteredNCData(data = { stats: {} }) {
+    this.setState({ statsSummary: data.stats.statsSummary });
   }
 
   LookupFilterHelp(filterAction) {
@@ -96,7 +109,7 @@ class FiltersPanel extends UNISYS.Component {
   }
 
   render() {
-    const { filterAction, focusRange, focusSourceLabel } = this.state;
+    const { filterAction, focusRange, focusSourceLabel, statsSummary } = this.state;
     const defs = [this.state.nodes, this.state.edges];
 
     // Can we assume TEMPLATE is already loaded by the time we render?
@@ -219,6 +232,16 @@ class FiltersPanel extends UNISYS.Component {
             Clear Filters
           </Button>
         </div>
+        <Label
+          className="small text-muted"
+          style={{
+            fontStyle: 'italic',
+            padding: '0.5em 0 0 0.5em',
+            marginBottom: '0'
+          }}
+        >
+          {statsSummary}
+        </Label>
       </div>
     );
   }

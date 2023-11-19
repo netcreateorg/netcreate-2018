@@ -307,19 +307,21 @@ function m_FilterDefine(data) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Walk down the list of filters and apply them all
  *  @param {Object} data A UDATA pkt {defs}
+ *  @returns {string} Summary of the filter statistics
  */
 function m_FiltersApply() {
-  const FILTEREDNCDATA = UDATA.AppState('NCDATA');
+  const NCDATA = UDATA.AppState('NCDATA');
   const FILTERDEFS = UDATA.AppState('FILTERDEFS');
+  const FILTEREDNCDATA = { nodes: [...NCDATA.nodes] };
 
   // skip if FILTERDEFS has not been defined yet
   if (Object.keys(FILTERDEFS).length < 1) return;
 
   // stuff 'sourceLabel' and 'targetLabel' into edges for quicker filtering
   // otherwise we have to constantly look up the node label
-  FILTEREDNCDATA.edges = FILTEREDNCDATA.edges.map(e => {
-    const source = FILTEREDNCDATA.nodes.find(n => n.id === e.source);
-    const target = FILTEREDNCDATA.nodes.find(n => n.id === e.target);
+  FILTEREDNCDATA.edges = NCDATA.edges.map(e => {
+    const source = NCDATA.nodes.find(n => n.id === e.source);
+    const target = NCDATA.nodes.find(n => n.id === e.target);
     e.sourceLabel = source ? source.label : 'deleted';
     e.targetLabel = target ? target.label : 'deleted';
     return e;
@@ -337,9 +339,14 @@ function m_FiltersApply() {
   UTILS.RecalculateAllEdgeSizes(FILTEREDNCDATA);
   UTILS.RecalculateAllNodeDegrees(FILTEREDNCDATA);
 
+  // Calculate Stats and Send with FILTEREDNCDATA
+  FILTEREDNCDATA.stats = m_UpdateFilterStats(NCDATA, FILTEREDNCDATA, FILTERDEFS.filterAction);
+
   // Update FILTEREDNCDATA
   UDATA.SetAppState('FILTEREDNCDATA', FILTEREDNCDATA);
   // edge-mgr handles this call and updates VDATA, which is rendered by d3-simplenetgraph
+
+  return FILTEREDNCDATA.stats.statsSummary;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_ClearFilters() {
@@ -348,7 +355,23 @@ function m_ClearFilters() {
   UDATA.SetAppState('FILTERDEFS', FILTERDEFS);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_UpdateFilterSummary() {
+function m_UpdateFilterStats(NCDATA, FILTEREDNCDATA, filterAction) {
+  const nodeCount = NCDATA.nodes.length;
+  const edgeCount = NCDATA.edges.length;
+  let filteredNodeCount, filteredEdgeCount;
+  if (filterAction === FILTER.ACTION.FADE) {
+    filteredNodeCount = nodeCount - FILTEREDNCDATA.nodes.filter(n => !n.filteredTransparency > 0).length
+    filteredEdgeCount = edgeCount - FILTEREDNCDATA.edges.filter(e => !e.filteredTransparency > 0).length
+  } else {
+    filteredNodeCount = FILTEREDNCDATA.nodes.length;
+    filteredEdgeCount = FILTEREDNCDATA.edges.length;
+  }
+  const statsSummary = `Showing ${filteredNodeCount}/${nodeCount} nodes, ${filteredEdgeCount}/${edgeCount} edges`
+
+  return { nodeCount, edgeCount, filteredNodeCount, filteredEdgeCount, statsSummary }
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_UpdateFilterSummary(statsSummary) {
   const FILTERDEFS = UDATA.AppState('FILTERDEFS');
 
   // skip if FILTERDEFS has not been defined yet
@@ -362,16 +385,16 @@ function m_UpdateFilterSummary() {
   const edgeSummary = m_FiltersToString(FILTERDEFS.edges.filters);
   let summary = '';
   if (nodeSummary || edgeSummary)
-    summary = `${typeSummary} ${nodeSummary ? 'NODES: ' : ''}${nodeSummary} ${
-      edgeSummary ? 'EDGES: ' : ''
-    }${edgeSummary}`;
+    summary = `${typeSummary} ${nodeSummary ? 'NODES: ' : ''}${nodeSummary} ${edgeSummary ? 'EDGES: ' : ''
+      }${edgeSummary}`;
+  if (summary) summary += ' ' + statsSummary;
 
   UDATA.LocalCall('FILTER_SUMMARY_UPDATE', { filtersSummary: summary });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_UpdateFilters() {
-  m_FiltersApply();
-  m_UpdateFilterSummary();
+  const statsSummary = m_FiltersApply();
+  m_UpdateFilterSummary(statsSummary);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_FiltersToString(filters) {
