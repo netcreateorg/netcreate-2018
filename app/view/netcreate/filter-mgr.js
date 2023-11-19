@@ -488,7 +488,9 @@ function m_NodeIsFiltered(node, FILTERDEFS) {
     return false; // remove from array
   } else if (filterAction === FILTER.ACTION.FADE) {
     if (!keepNode) {
-      node.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
+      // for filtering fades, we actually want to set it to 0 not default filtered value
+      // because we're REMOVING the filtered item
+      node.filteredTransparency = 0;
     }
     return true; // don't filter out
   } else if (filterAction === FILTER.ACTION.REDUCE) {
@@ -628,7 +630,9 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDNCD
     return false; // remove from array
   } else if (filterAction === FILTER.ACTION.FADE) {
     if (!keepEdge) {
-      edge.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
+      // for filtering fades, we actually want to set it to 0 not default filtered value
+      // because we're REMOVING the filtered item
+      edge.filteredTransparency = 0;
     }
     return true; // always keep in array
   } else if (filterAction === FILTER.ACTION.REDUCE) {
