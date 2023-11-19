@@ -96,7 +96,7 @@ class NumberFilter extends React.Component {
   OnChangeValue(e) {
     this.setState(
       {
-        value: e.target.value
+        value: Number(e.target.value)
       },
       this.TriggerChangeHandler
     );
