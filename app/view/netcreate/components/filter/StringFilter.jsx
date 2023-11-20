@@ -78,12 +78,10 @@ class StringFilter extends React.Component {
   }
 
   OnChangeOperator(e) {
-    this.setState(
-      {
-        operator: e.target.value
-      },
-      this.TriggerChangeHandler
-    );
+    const newstate = { operator: e.target.value };
+    // clear value if NO_OP
+    if (e.target.value === FILTER.OPERATORS.NO_OP.key) newstate.value = '';
+    this.setState(newstate, this.TriggerChangeHandler);
   }
 
   OnChangeValue(e) {

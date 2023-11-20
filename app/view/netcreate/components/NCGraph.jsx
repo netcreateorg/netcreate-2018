@@ -206,7 +206,7 @@ class NCGraph extends UNISYS.Component {
       <div
         className="--NCGraph"
         ref={dom => (this.dom = dom)}
-        style={{ height: '100%' }}
+        style={{ height: '100%', position: 'relative' }}
       >
         <div style={{ margin: '10px 0 0 10px' }}>
           <div className="tooltipAnchor">

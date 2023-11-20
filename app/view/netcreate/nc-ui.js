@@ -46,7 +46,7 @@ function DateFormatted() {
  *  -- Supports emojis
  *  -- add `_blank` to `a` tags.
  */
-function Markdownify(str) {
+function Markdownify(str = '') {
   const htmlString = MD.render(str);
   // HACK!!! MDPARSE does not give us direct access to the dom elements, so just
   // hack it by adding to the parsed html string
@@ -269,7 +269,7 @@ function RenderLabel(key, label, helpText) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RenderMarkdownValue(key, value) {
+function RenderMarkdownValue(key, value = '') {
   const val = String(value);
   return (
     <div id={key} key={`${key}value`} className="viewvalue">
