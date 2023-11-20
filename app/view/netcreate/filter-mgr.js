@@ -357,14 +357,15 @@ function m_ClearFilters() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_UpdateFilterStats(NCDATA, FILTEREDNCDATA, filterAction) {
   const FILTERDEFS = UDATA.AppState('FILTERDEFS');
-  const { transparency } = FILTERDEFS.edges;
+  const { transparency: transparencyNode } = FILTERDEFS.nodes;
+  const { transparency: transparencyEdge } = FILTERDEFS.edges;
 
   const nodeCount = NCDATA.nodes.length;
   const edgeCount = NCDATA.edges.length;
   let filteredNodeCount, filteredEdgeCount;
   if (filterAction === FILTER.ACTION.FADE) {
-    filteredNodeCount = nodeCount - FILTEREDNCDATA.nodes.filter(n => n.filteredTransparency <= transparency).length
-    filteredEdgeCount = edgeCount - FILTEREDNCDATA.edges.filter(e => e.filteredTransparency <= transparency).length
+    filteredNodeCount = nodeCount - FILTEREDNCDATA.nodes.filter(n => n.filteredTransparency <= transparencyNode).length
+    filteredEdgeCount = edgeCount - FILTEREDNCDATA.edges.filter(e => e.filteredTransparency <= transparencyEdge).length
   } else {
     filteredNodeCount = FILTEREDNCDATA.nodes.length;
     filteredEdgeCount = FILTEREDNCDATA.edges.length;
