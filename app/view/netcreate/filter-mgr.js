@@ -356,12 +356,15 @@ function m_ClearFilters() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_UpdateFilterStats(NCDATA, FILTEREDNCDATA, filterAction) {
+  const FILTERDEFS = UDATA.AppState('FILTERDEFS');
+  const { transparency } = FILTERDEFS.edges;
+
   const nodeCount = NCDATA.nodes.length;
   const edgeCount = NCDATA.edges.length;
   let filteredNodeCount, filteredEdgeCount;
   if (filterAction === FILTER.ACTION.FADE) {
-    filteredNodeCount = nodeCount - FILTEREDNCDATA.nodes.filter(n => !n.filteredTransparency > 0).length
-    filteredEdgeCount = edgeCount - FILTEREDNCDATA.edges.filter(e => !e.filteredTransparency > 0).length
+    filteredNodeCount = nodeCount - FILTEREDNCDATA.nodes.filter(n => n.filteredTransparency <= transparency).length
+    filteredEdgeCount = edgeCount - FILTEREDNCDATA.edges.filter(e => e.filteredTransparency <= transparency).length
   } else {
     filteredNodeCount = FILTEREDNCDATA.nodes.length;
     filteredEdgeCount = FILTEREDNCDATA.edges.length;
@@ -511,9 +514,7 @@ function m_NodeIsFiltered(node, FILTERDEFS) {
     return false; // remove from array
   } else if (filterAction === FILTER.ACTION.FADE) {
     if (!keepNode) {
-      // for filtering fades, we actually want to set it to 0 not default filtered value
-      // because we're REMOVING the filtered item
-      node.filteredTransparency = 0;
+      node.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
     }
     return true; // don't filter out
   } else if (filterAction === FILTER.ACTION.REDUCE) {
@@ -653,9 +654,7 @@ function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDNCD
     return false; // remove from array
   } else if (filterAction === FILTER.ACTION.FADE) {
     if (!keepEdge) {
-      // for filtering fades, we actually want to set it to 0 not default filtered value
-      // because we're REMOVING the filtered item
-      edge.filteredTransparency = 0;
+      edge.filteredTransparency = transparency; // set the transparency value ... right now it is inefficient to set this at the node / edge level, but that's more flexible
     }
     return true; // always keep in array
   } else if (filterAction === FILTER.ACTION.REDUCE) {
