@@ -222,7 +222,7 @@ function m_ImportFilters() {
       group: 'edges', // this needs to be passed to StringFilter
       label: 'Edge Filters',
       filters: m_ReplaceSourceTargetIdsWithStrings(m_ImportPrompts(edgeDefs)),
-      transparency: 0.03 // Default transparency form for Highlight should be 0.03, not template default which is usu 0.3
+      transparency: 0.2 // Default transparency form for Highlight should be 0.2, not template default which is usu 0.7
     },
     focus: {
       source: undefined, // nothing focused by default
