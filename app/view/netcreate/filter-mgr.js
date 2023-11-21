@@ -519,10 +519,7 @@ function m_MatchNumber(operator, filterVal, objVal) {
 
 /// NODE FILTERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Side effect:
- *  FILTEREDNCDATA.nodes are updated with `isFilteredOut` flags.
- * @param {Array} filters
- */
+/** Side effect: FILTEREDNCDATA.nodes are updated with a new `filterTransparency`. */
 function m_FiltersApplyToNodes(FILTERDEFS, FILTEREDNCDATA) {
   RemovedNodes = [];
 
@@ -554,7 +551,6 @@ function m_NodeIsFiltered(node, FILTERDEFS) {
   });
 
   // 2. Decide based on filterAction
-  node.isFiltered = false; // always reset if not HIGHLIGHT
   node.filteredTransparency = NODE_DEFAULT_TRANSPARENCY; // always reset if not HIGHLIGHT
   if (filterAction === FILTER.ACTION.FILTER) {
     // not using highlight, so restore transparency
@@ -639,7 +635,8 @@ function m_FiltersApplyToEdges(FILTERDEFS, FILTEREDNCDATA) {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Side effect: Sets `isFiltered`
+/**
+ *  Side effect: FILTEREDNCDATA.edges are updated with a new `filterTransparency`.
  */
 function m_EdgeIsFiltered(edge, filters, transparency, filterAction, FILTEREDNCDATA) {
   // let all_no_op = true; // all filters are no_op
