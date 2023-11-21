@@ -194,7 +194,7 @@
   overflow-wrap: anywhere; /* prevents form extending into graph */
 }
 .nccomponent .formview .viewvalue img {
-  max-height: 100px;
+  max-width: 225px;
 }
 .nccomponent .formview div.targetarrow {
   margin-top: -5px;
