@@ -410,6 +410,7 @@ class NCEdge extends UNISYS.Component {
    * already locked, so we can't edit.
    */
   EditEdge() {
+    if (!this.IsLoggedIn()) return;
     this.LockEdge(lockSuccess => {
       this.setState({ uIsLockedByDB: !lockSuccess }, () => {
         if (lockSuccess) this.EnableEditMode();
