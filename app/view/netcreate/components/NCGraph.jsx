@@ -249,9 +249,9 @@ class NCGraph extends UNISYS.Component {
         <div
           style={{
             position: 'absolute',
-            bottom: '40px',
+            bottom: '5px',
             marginLeft: '10px',
-            marginBottom: '15px',
+            marginBottom: '0px',
             fontSize: '10px'
           }}
         >
