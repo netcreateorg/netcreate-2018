@@ -480,7 +480,7 @@ class NCNode extends UNISYS.Component {
    */
   SetBackgroundColor() {
     const { attributes } = this.state;
-    const type = attributes && attributes.type;
+    const type = (attributes && attributes.type) || ''; // COLORMAP uses "" for undefined
     const COLORMAP = UDATA.AppState('COLORMAP');
     const uBackgroundColor = COLORMAP.nodeColorMap[type] || '#555555';
     this.setState({ uBackgroundColor });
