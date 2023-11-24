@@ -162,7 +162,10 @@ class NetCreate extends UNISYS.Component {
 
     // note: the navbar is in init-appshell.jsx
     return (
-      <div className="--NetCreate">
+      <div
+        className="--NetCreate"
+        style={{ display: 'flex', flexFlow: 'column', height: '100%' }}
+      >
         <div
           className="--NetCreate_Fixed_Top"
           hidden={this.state.isConnected}
@@ -195,7 +198,7 @@ class NetCreate extends UNISYS.Component {
             display: 'flex',
             flexFlow: 'row nowrap',
             width: '100%',
-            height: '100vh',
+            height: '100%',
             overflow: 'hidden',
             visibility: hideGraph
           }}
@@ -208,7 +211,8 @@ class NetCreate extends UNISYS.Component {
               flex: '1 1 25%',
               maxWidth: '400px',
               padding: '10px',
-              overflow: 'scroll',
+              overflowY: 'scroll',
+              overflowX: 'auto',
               marginTop: '38px'
             }}
           >
@@ -227,29 +231,16 @@ class NetCreate extends UNISYS.Component {
           <div
             className="--NetCreate_Column_NetView"
             id="middle"
-            style={{ backgroundColor: '#fcfcfc', flex: '3 0 60%', marginTop: '38px' }}
+            style={{
+              backgroundColor: '#fcfcfc',
+              flex: '3 0 60%',
+              marginTop: '38px',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
           >
             <InfoPanel />
             <NCGraph />
-            <div
-              className="--NetCreate_Column_Break_Info"
-              style={{
-                fontSize: '10px',
-                position: 'fixed',
-                left: '0px',
-                bottom: '0px',
-                right: '0px',
-                zIndex: '1500',
-                color: '#aaa',
-                backgroundColor: '#eee',
-                padding: '5px 10px'
-              }}
-            >
-              Please contact Professor Kalani Craig, Institute for Digital Arts &
-              Humanities at (812) 856-5721 (BH) or craigkl@indiana.edu with questions
-              or concerns and/or to request information contained on this website in
-              an accessible format.
-            </div>
           </div>
           {/*** RIGHT VIEW COLUMN ***************/}
           {layoutFiltersOpen ? (
@@ -301,6 +292,25 @@ class NetCreate extends UNISYS.Component {
               </Button>
             </div>
           )}
+        </div>
+        <div
+          className="--NetCreate_Column_Break_Info"
+          style={{
+            fontSize: '10px',
+            // position: 'fixed',
+            left: '0px',
+            bottom: '0px',
+            right: '0px',
+            zIndex: '1500',
+            color: '#aaa',
+            backgroundColor: '#eee',
+            padding: '5px 10px'
+          }}
+        >
+          Please contact Professor Kalani Craig, Institute for Digital Arts &
+          Humanities at (812) 856-5721 (BH) or craigkl@indiana.edu with questions or
+          concerns and/or to request information contained on this website in an
+          accessible format.
         </div>
       </div>
     ); // end return

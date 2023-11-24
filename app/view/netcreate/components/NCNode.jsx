@@ -480,7 +480,7 @@ class NCNode extends UNISYS.Component {
    */
   SetBackgroundColor() {
     const { attributes } = this.state;
-    const type = attributes && attributes.type;
+    const type = (attributes && attributes.type) || ''; // COLORMAP uses "" for undefined
     const COLORMAP = UDATA.AppState('COLORMAP');
     const uBackgroundColor = COLORMAP.nodeColorMap[type] || '#555555';
     this.setState({ uBackgroundColor });
@@ -499,6 +499,8 @@ class NCNode extends UNISYS.Component {
    * already locked, so we can't edit.
    */
   UIRequestEditNode() {
+    const { isLoggedIn } = this.state;
+    if (!isLoggedIn) return;
     this.LockNode(lockSuccess => {
       this.setState({ uIsLockedByDB: !lockSuccess }, () => {
         if (lockSuccess) this.EnableEditMode();
