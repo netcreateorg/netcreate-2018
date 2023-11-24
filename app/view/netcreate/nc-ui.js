@@ -64,7 +64,9 @@ function Markdownify(str = '') {
  *  @param {function} cb Callback function
  */
 function m_UIMarkdownInputUpdate(event, cb) {
-  console.warn("WARNNIG: Markdown text is not being error checked!  Use with caution!")
+  console.warn(
+    'WARNNIG: Markdown text is not being error checked!  Use with caution!'
+  );
   const key = event.target.id;
   const value = event.target.value;
   if (typeof cb === 'function') cb(key, value);
@@ -121,11 +123,12 @@ function m_UIInsertImageURL(url, parentId, cb) {
   const event = {
     target: {
       id: parentId,
-      value: currentValue.substring(0, selectionStart)
-        + `![image](${url})`
-        + currentValue.substring(selectionStart)
+      value:
+        currentValue.substring(0, selectionStart) +
+        `![image](${url})` +
+        currentValue.substring(selectionStart)
     }
-  }
+  };
   m_UIMarkdownInputUpdate(event, cb);
 }
 function m_UICancelInsertImageURL() {
@@ -204,10 +207,10 @@ function RenderAttributesTabEdit(state, defs, onchange) {
         items.push(RenderStringInput(k, value, onchange, helpText));
         break;
       case 'number':
-        items.push(m_RenderNumberInput(k, value, onchange));
+        items.push(m_RenderNumberInput(k, value, onchange, helpText));
         break;
       case 'select':
-        items.push(m_RenderOptionsInput(k, value, defs, onchange));
+        items.push(m_RenderOptionsInput(k, value, defs, onchange, helpText));
         break;
       default:
         items.push(RenderStringValue(k, value, onchange)); // display unsupported type
@@ -303,8 +306,10 @@ function RenderMarkdownInput(key, value, cb, helpText) {
       <div className="help">{helpText}</div>
       <button
         className="stylebutton"
-        onClick={() => UDATA.LocalCall("IMAGE_URL_DIALOG_OPEN", { id: key })}
-      >Insert Image URL...</button>
+        onClick={() => UDATA.LocalCall('IMAGE_URL_DIALOG_OPEN', { id: key })}
+      >
+        Insert Image URL...
+      </button>
       <textarea
         id={key}
         key={`${key}input`}
