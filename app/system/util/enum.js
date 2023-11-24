@@ -32,7 +32,9 @@ ENUM.BUILTIN_FIELDS_EDGE = [
   'degrees',
   'created',
   'updated',
-  'revision'
+  'revision',
+  'sourceLabel', // used internally for filters
+  'targetLabel' // used internally for filters
 ];
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////

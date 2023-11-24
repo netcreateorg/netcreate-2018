@@ -68,18 +68,16 @@ A few notes:
 
 #### How are Nodes/Edges hidden?
 
-Programmatically, any node or edge that is filtered is marked with a `isFilteredOut` flag.  If `isFilteredOut` is true, the object is hidden.  If `isFilteredOut` is absent or is false, the object is displayed.
+There are three types of filtering:
+* Fade -- Show matches, fade others
+* Reduce -- Show matches, remove others and recalculate sizes
+* Focus -- Show only nodes connected to the selected node within a designated range
 
-Hiding is simply done by setting the opacity of the node or edge.  Nodes and edges are not actually removed from the graph.
+Programmatically, how a node or edge is filtered depends on the filter type.
 
-
-
-### Storyboard
-
-With the Filtering system, we introduce a new development toolkit [storybook.js](https://storybook.js.org/).  This is primarily used for the basic component development and data architecture design.  
-
-* It is not yet fully integrated with the UNISYS architecture.
-* It is not yet fully integrated with bootstrap/css, so components are not displayed using the site's settings.
-
-To run storybook, use `npm run storybook`.
+* Faded nodes/edges have their `.filteredTransparency` value set to either:
+  a. the default transparency level defined in the template (usually 1.0 for nodes, and 0.7 for edges), or
+  b. the transparency level set in the FiltersPane (usually 0.2)
+* Reduced nodes/edges are completely removed the visible data in the table and graph (FILTEREDD3DATA)
+* Focused nodes are also completely removed.
 

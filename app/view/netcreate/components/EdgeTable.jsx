@@ -633,7 +633,7 @@ class EdgeTable extends UNISYS.Component {
                 key={i}
                 style={{
                   color: edge.isFiltered ? 'red' : 'black',
-                  opacity: edge.isFiltered ? edge.filteredTransparency : 1
+                  opacity: edge.filteredTransparency
                 }}
               >
                 <td hidden={!DBG}>{edge.id}</td>

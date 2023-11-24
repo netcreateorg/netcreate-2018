@@ -118,7 +118,7 @@ class AppShell extends UNISYS.Component {
           </Collapse>
         </Navbar>
         {/* <div style={{ height: '3.5em' }}> */}
-          {/*/ add space underneath the fixed navbar /*/}
+        {/*/ add space underneath the fixed navbar /*/}
         {/* </div> */}
         <NetCreate />
       </div>
