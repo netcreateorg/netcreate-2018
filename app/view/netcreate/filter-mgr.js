@@ -188,6 +188,29 @@ function m_ImportFilters() {
   NODE_DEFAULT_TRANSPARENCY = TEMPLATE.nodeDefaultTransparency;
   EDGE_DEFAULT_TRANSPARENCY = TEMPLATE.edgeDefaultTransparency;
 
+  /** HACK Source / Target Filter Definitions
+      Source and Target are normally built-in numeric id fields.
+      But for filtering we want to use the corresponding source/target labels as strings.
+      In m_FiltersDefine we are already injecting `sourceLabel` and `targetLabel` into the edge objects
+      to facilitate filtering (saves an extra lookup).  So we can just repurpose the filter definitions
+      to use sourceLabel and targetLabel.  The tricky part is hiding and re-ordering the numeric id filters.
+  */
+  edgeDefs.sourceLabel = {
+    displayLabel: 'Source',
+    exportLabel: 'Source Label',
+    help: 'Source label',
+    hidden: false,
+    type: 'string'
+  };
+  edgeDefs.targetLabel = {
+    displayLabel: 'Target',
+    exportLabel: 'Target Label',
+    help: 'Target label',
+    hidden: false,
+    type: 'string'
+  };
+  /* END HACK */
+
   let fdefs = {
     nodes: {
       group: 'nodes', // this needs to be passed to StringFilter
@@ -198,7 +221,7 @@ function m_ImportFilters() {
     edges: {
       group: 'edges', // this needs to be passed to StringFilter
       label: 'Edge Filters',
-      filters: m_ImportPrompts(edgeDefs),
+      filters: m_ReplaceSourceTargetIdsWithStrings(m_ImportPrompts(edgeDefs)),
       transparency: 0.03 // Default transparency form for Highlight should be 0.03, not template default which is usu 0.3
     },
     focus: {
@@ -270,6 +293,29 @@ function m_ImportPrompts(prompts) {
   }
   return filters;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Used to replace the `source` and `target` numeric id filter definitions
+ *  with `sourceLabel` and `targetLabel` string defintions.
+ *  m_ImportPrompts converts the edgeDefs object to an array
+ *  We then insert sourceLabel and targetLabel in place of source and target
+ *  and then remove the now extraneous sourceLabel and targetLabel definitions.
+ *  This is a hacky brute force solution but it gives us better control over
+ *  the field order.
+ */
+function m_ReplaceSourceTargetIdsWithStrings(filters) {
+  const reorderedFilters = [...filters];
+  // Replace `source` with 'sourceLabel'
+  const sourceIndex = 1; // force seccond item // reorderedFilters.findIndex(f => f.key === 'source');
+  const sourceLabelIndex = reorderedFilters.findIndex(f => f.key === 'sourceLabel');
+  reorderedFilters.splice(sourceIndex, 1, reorderedFilters[sourceLabelIndex]);
+  reorderedFilters.splice(sourceLabelIndex, 1);
+  // and 'target' with 'targetLabel'
+  const targetIndex = 2; // force third item // reorderedFilters.findIndex(f => f.key === 'target');
+  const targetLabelIndex = reorderedFilters.findIndex(f => f.key === 'targetLabel');
+  reorderedFilters.splice(targetIndex, 1, reorderedFilters[targetLabelIndex]);
+  reorderedFilters.splice(targetLabelIndex, 1);
+  return reorderedFilters;
+}
 
 /// UDATA HANDLERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -317,6 +363,7 @@ function m_FiltersApply() {
   // skip if FILTERDEFS has not been defined yet
   if (Object.keys(FILTERDEFS).length < 1) return;
 
+  // sourceLabel, targetLabel are available
   // stuff 'sourceLabel' and 'targetLabel' into edges for quicker filtering
   // otherwise we have to constantly look up the node label
   FILTEREDNCDATA.edges = NCDATA.edges.map(e => {

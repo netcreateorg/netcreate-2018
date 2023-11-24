@@ -410,6 +410,7 @@ class NCEdge extends UNISYS.Component {
    * already locked, so we can't edit.
    */
   EditEdge() {
+    if (!this.IsLoggedIn()) return;
     this.LockEdge(lockSuccess => {
       this.setState({ uIsLockedByDB: !lockSuccess }, () => {
         if (lockSuccess) this.EnableEditMode();
@@ -623,7 +624,7 @@ class NCEdge extends UNISYS.Component {
    */
   SetBackgroundColor() {
     const { attributes } = this.state;
-    const type = attributes && attributes.type;
+    const type = (attributes && attributes.type) || ''; // COLORMAP uses "" for undefined
     const COLORMAP = UDATA.AppState('COLORMAP');
     const uBackgroundColor = COLORMAP.edgeColorMap[type] || '#555555';
     this.setState({ uBackgroundColor });
