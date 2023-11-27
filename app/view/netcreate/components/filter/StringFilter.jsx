@@ -34,6 +34,9 @@
   The `id` variable allows us to potentially support multiple search filters
   using the same key, e.g. we could have two 'Label' filters.
 
+  In order to retain the input selection cursor between state updates, we use
+  a secondary state `inputval` that retains the cursor position.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const FILTER = require('./FilterEnums');
@@ -70,7 +73,8 @@ class StringFilter extends React.Component {
 
     this.state = {
       operator: FILTER.OPERATORS.NO_OP, // Used locally to define result
-      value: '' // Used locally to define result
+      inputval: '', // Used to maintain input caret position
+      value: '' // Used to define the final result
     };
 
     /// Initialize UNISYS DATA LINK for REACT
@@ -84,13 +88,14 @@ class StringFilter extends React.Component {
     this.setState(newstate, this.TriggerChangeHandler);
   }
 
-  OnChangeValue(e) {
-    this.setState(
-      {
-        value: e.target.value
-      },
-      this.TriggerChangeHandler
-    );
+  OnChangeValue(event) {
+    const value = event.target.value;
+    // First update the input field, retaining cursor position
+    this.setState({ inputval: value }, () => {
+      // Then send the result
+      // this.setState({ value }, () => this.TriggerChangeHandler());
+      this.setState({ value }, this.TriggerChangeHandler);
+    });
   }
 
   TriggerChangeHandler() {
@@ -119,6 +124,7 @@ class StringFilter extends React.Component {
   }
 
   render() {
+    const { inputval } = this.state;
     const { filterAction } = this.props;
     const { id, key, keylabel, operator, value } = this.props.filter;
     return (
@@ -154,7 +160,7 @@ class StringFilter extends React.Component {
           </Input>
           <Input
             type="text"
-            value={value}
+            value={inputval}
             placeholder="..."
             style={{ maxWidth: '12em', height: '1.5em' }}
             onChange={this.OnChangeValue}
