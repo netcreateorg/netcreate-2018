@@ -137,14 +137,8 @@ class NumberFilter extends React.Component {
           <Label
             size="sm"
             className="small text-muted"
-            style={{
-              fontSize: '0.75em',
-              lineHeight: '1em',
-              width: `6em`,
-              justifyContent: 'flex-end'
-            }}
           >
-            {keylabel}&nbsp;
+            {keylabel}
           </Label>
           <Input
             type="select"
