@@ -470,11 +470,31 @@ function m_OperatorToString(operator) {
 
 /// UTILITY FUNCTIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_MatchString(pin, haystack, contains = true) {
-  pin = NCLOGIC.EscapeRegexChars(pin.trim());
-  const regex = new RegExp(/*'^'+*/ pin, 'i');
+/**
+ *  Match strings, allowing use of `&&` and `||`
+ *  * Matches strings in a flat list of pairs, starting with ORs
+ *  * Does not support grouping
+ *  * Operator precedence: ORs are evaluated first, follwed by ANDs.
+ *  * Extra spaces will be trimmed.
+ *  @param {string} needle aka "needle" in the haystack
+ *  @param {*} haystack
+ *  @param {*} contains
+ *  @returns booleean
+ */
+function m_MatchString(needle, haystack, contains = true) {
+
+  function clean(str) { return NCLOGIC.EscapeRegexChars(String(str).trim()); };
+
+  const ANDNeedles = String(needle).split('&&');
+  const ORNeedleArrs = ANDNeedles.map(ands => String(ands).split(/\|\|/).map(str => String(str).trim()));
+  // For each set of OR Array matches, evaluate the pair
+  const ORResults = ORNeedleArrs.map(pair => pair.reduce((a, b) => a || m_MatchStringSnippet(clean(b), haystack, contains), false));
+  return ORResults.reduce((a, b) => a && b, true)
+}
+function m_MatchStringSnippet(needle, haystack, contains = true) {
+  const regex = new RegExp(/*'^'+*/ needle, 'i');
   let matches;
-  if (pin === '') {
+  if (needle === '') {
     // empty string matches everything
     matches = true;
   } else if (contains) {
