@@ -470,6 +470,8 @@ function m_OperatorToString(operator) {
 
 /// UTILITY FUNCTIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function clean(str) { return NCLOGIC.EscapeRegexChars(String(str).trim()); };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  *  Match strings, allowing use of `&&` and `||`
  *  * Matches strings in a flat list of pairs, starting with ORs
@@ -482,14 +484,12 @@ function m_OperatorToString(operator) {
  *  @returns booleean
  */
 function m_MatchString(needle, haystack, contains = true) {
-
-  function clean(str) { return NCLOGIC.EscapeRegexChars(String(str).trim()); };
-
   const ANDNeedles = String(needle).split('&&');
   const ORNeedleArrs = ANDNeedles.map(ands => String(ands).split(/\|\|/).map(str => String(str).trim()));
   // For each set of OR Array matches, evaluate the pair
-  const ORResults = ORNeedleArrs.map(pair => pair.reduce((a, b) => a || m_MatchStringSnippet(clean(b), haystack, contains), false));
-  return ORResults.reduce((a, b) => a && b, true)
+  const ResultsOR = ORNeedleArrs.map(pair => pair.reduce((a, b) => a || m_MatchStringSnippet(clean(b), haystack, true), false));
+  const ResultsAND = ResultsOR.reduce((a, b) => a && b, true);
+  return contains ? ResultsAND : !ResultsAND;
 }
 function m_MatchStringSnippet(needle, haystack, contains = true) {
   const regex = new RegExp(/*'^'+*/ needle, 'i');
