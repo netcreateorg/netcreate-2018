@@ -79,22 +79,13 @@ class FilterGroupProperties extends React.Component {
         <br />
         <Form inline className="filter-item" key={group} onSubmit={this.OnSubmit}>
           <FormGroup>
-            <Label
-              size="sm"
-              className="small text-muted"
-              style={{
-                fontSize: '0.75em',
-                lineHeight: '1em',
-                width: `5em`,
-                marginLeft: '0em'
-              }}
-            >
+            <Label size="sm" className="small text-muted">
               Transparency&nbsp;
             </Label>
             <Input
               type="text"
               value={transparency}
-              style={{ maxWidth: '9em', height: '1.5em', marginLeft: '1em' }}
+              style={{ maxWidth: '9em', height: '1.5em' }}
               onChange={this.OnChangeValue}
               bsSize="sm"
             />

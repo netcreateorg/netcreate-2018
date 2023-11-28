@@ -1,3 +1,12 @@
 .filter-group hr {
   margin: 0.5rem 0 0 0;
 }
+
+.filter-item.form-inline label {
+  font-size: 0.75em;
+  line-height: 1em;
+  width: 6em;
+  justify-content: flex-end;
+  text-align: right;
+  padding-right: 4px;
+}
