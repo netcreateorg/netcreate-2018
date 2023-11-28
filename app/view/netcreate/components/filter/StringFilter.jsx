@@ -132,17 +132,8 @@ class StringFilter extends React.Component {
             https://getbootstrap.com/docs/4.5/utilities/flex/
          */}
         <FormGroup className="flex-nowrap">
-          <Label
-            size="sm"
-            className="small text-muted"
-            style={{
-              fontSize: '0.75em',
-              lineHeight: '1em',
-              width: `6em`,
-              justifyContent: 'flex-end'
-            }}
-          >
-            {keylabel}&nbsp;
+          <Label size="sm" className="small text-muted">
+            {keylabel}
           </Label>
           <Input
             type="select"
