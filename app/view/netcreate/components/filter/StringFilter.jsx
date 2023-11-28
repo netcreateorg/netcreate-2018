@@ -93,7 +93,6 @@ class StringFilter extends React.Component {
     // First update the input field, retaining cursor position
     this.setState({ inputval: value }, () => {
       // Then send the result
-      // this.setState({ value }, () => this.TriggerChangeHandler());
       this.setState({ value }, this.TriggerChangeHandler);
     });
   }
