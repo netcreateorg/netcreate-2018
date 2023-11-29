@@ -91,7 +91,7 @@ class NCNode extends UNISYS.Component {
     this.ClearSelection = this.ClearSelection.bind(this);
     this.UpdateSelection = this.UpdateSelection.bind(this);
     this.SelectEdgeAndEdit = this.SelectEdgeAndEdit.bind(this);
-    this.SeselectEdge = this.SeselectEdge.bind(this);
+    this.SelectEdge = this.SelectEdge.bind(this);
     // DATA LOADING
     this.LoadNode = this.LoadNode.bind(this);
     this.LoadEdges = this.LoadEdges.bind(this);
@@ -133,7 +133,7 @@ class NCNode extends UNISYS.Component {
     UDATA.HandleMessage('EDIT_PERMISSIONS_UPDATE', this.SetPermissions);
     UDATA.HandleMessage('NODE_EDIT', this.UIRequestEditNode); // Node Table request
     UDATA.HandleMessage('EDGE_SELECT_AND_EDIT', this.SelectEdgeAndEdit);
-    UDATA.HandleMessage('EDGE_DESELECT', this.SeselectEdge);
+    UDATA.HandleMessage('EDGE_DESELECT', this.SelectEdge);
   }
 
   componentDidMount() {
@@ -288,7 +288,7 @@ class NCNode extends UNISYS.Component {
       });
     });
   }
-  SeselectEdge() {
+  SelectEdge() {
     this.setState({ selectedEdgeId: null });
   }
 
