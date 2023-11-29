@@ -57,12 +57,12 @@ var UDATA = null;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const OPERATORS = [
   FILTER.OPERATORS.NO_OP,
-  FILTER.OPERATORS.GT,
-  FILTER.OPERATORS.GT_EQ,
+  FILTER.OPERATORS.EQ,
+  FILTER.OPERATORS.NOT_EQ,
   FILTER.OPERATORS.LT,
   FILTER.OPERATORS.LT_EQ,
-  FILTER.OPERATORS.EQ,
-  FILTER.OPERATORS.NOT_EQ
+  FILTER.OPERATORS.GT,
+  FILTER.OPERATORS.GT_EQ
 ];
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
