@@ -74,6 +74,7 @@ class NumberFilter extends React.Component {
     onChangeHandler
   }) {
     super();
+    this.m_ClearFilters = this.m_ClearFilters.bind(this);
     this.OnChangeOperator = this.OnChangeOperator.bind(this);
     this.OnChangeValue = this.OnChangeValue.bind(this);
     this.TriggerChangeHandler = this.TriggerChangeHandler.bind(this);
@@ -87,12 +88,24 @@ class NumberFilter extends React.Component {
 
     /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
+    UDATA.HandleMessage('FILTER_CLEAR', this.m_ClearFilters);
+  }
+
+  componentWillUnmount() {
+    UDATA.UnhandleMessage('FILTER_CLEAR', this.m_ClearFilters);
+  }
+
+  m_ClearFilters() {
+    this.setState({ inputval: '' });
   }
 
   OnChangeOperator(e) {
     const newstate = { operator: e.target.value };
     // clear value if NO_OP
-    if (e.target.value === FILTER.OPERATORS.NO_OP.key) newstate.value = '';
+    if (e.target.value === FILTER.OPERATORS.NO_OP.key) {
+      newstate.inputval = '';
+      newstate.value = '';
+    }
     this.setState(newstate, this.TriggerChangeHandler);
   }
 
