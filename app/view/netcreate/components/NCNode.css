@@ -259,8 +259,8 @@
 
 .nccomponent .controlbar {
   display: flex;
-  justify-content: flex-end;
-  align-items: top;
+  justify-content: space-between;
+  align-items: baseline;
   padding: 10px 0 0 0;
 }
 
@@ -285,4 +285,10 @@
   font-size: 10px;
   background-color: transparent;
   margin-left: 0;
+}
+.nccomponent .citationbutton {
+  align-self: flex-start;
+  margin-left: 0;
+  border-color: #0002;
+  color: #0006;
 }
