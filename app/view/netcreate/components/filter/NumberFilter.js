@@ -39,6 +39,10 @@
   The `id` variable allows us to potentially support multiple search filters
   using the same key, e.g. we could have two 'Label' filters.
 
+  In order to retain the input selection cursor between state updates, we use
+  a secondary state `inputval` that retains the cursor position.
+
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const FILTER = require('./FilterEnums');
@@ -53,12 +57,12 @@ var UDATA = null;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const OPERATORS = [
   FILTER.OPERATORS.NO_OP,
-  FILTER.OPERATORS.GT,
-  FILTER.OPERATORS.GT_EQ,
+  FILTER.OPERATORS.EQ,
+  FILTER.OPERATORS.NOT_EQ,
   FILTER.OPERATORS.LT,
   FILTER.OPERATORS.LT_EQ,
-  FILTER.OPERATORS.EQ,
-  FILTER.OPERATORS.NOT_EQ
+  FILTER.OPERATORS.GT,
+  FILTER.OPERATORS.GT_EQ
 ];
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
@@ -70,6 +74,7 @@ class NumberFilter extends React.Component {
     onChangeHandler
   }) {
     super();
+    this.m_ClearFilters = this.m_ClearFilters.bind(this);
     this.OnChangeOperator = this.OnChangeOperator.bind(this);
     this.OnChangeValue = this.OnChangeValue.bind(this);
     this.TriggerChangeHandler = this.TriggerChangeHandler.bind(this);
@@ -77,27 +82,41 @@ class NumberFilter extends React.Component {
 
     this.state = {
       operator: FILTER.OPERATORS.NO_OP, // Used locally to define result
-      value: '' // Used locally to define result
+      inputval: '', // Used to maintain input caret position
+      value: '' // Used to define the final result
     };
 
     /// Initialize UNISYS DATA LINK for REACT
     UDATA = UNISYS.NewDataLink(this);
+    UDATA.HandleMessage('FILTER_CLEAR', this.m_ClearFilters);
+  }
+
+  componentWillUnmount() {
+    UDATA.UnhandleMessage('FILTER_CLEAR', this.m_ClearFilters);
+  }
+
+  m_ClearFilters() {
+    this.setState({ inputval: '' });
   }
 
   OnChangeOperator(e) {
     const newstate = { operator: e.target.value };
     // clear value if NO_OP
-    if (e.target.value === FILTER.OPERATORS.NO_OP.key) newstate.value = '';
+    if (e.target.value === FILTER.OPERATORS.NO_OP.key) {
+      newstate.inputval = '';
+      newstate.value = '';
+    }
     this.setState(newstate, this.TriggerChangeHandler);
   }
 
-  OnChangeValue(e) {
-    this.setState(
-      {
-        value: Number(e.target.value)
-      },
-      this.TriggerChangeHandler
-    );
+  OnChangeValue(event) {
+    const value = Number(event.target.value);
+    // First update the input field, retaining cursor position
+    this.setState({ inputval: value }, () => {
+      // Then send the result
+      this.setState({ value }, this.TriggerChangeHandler);
+    });
+
   }
 
   TriggerChangeHandler() {
@@ -126,6 +145,7 @@ class NumberFilter extends React.Component {
   }
 
   render() {
+    const { inputval } = this.state;
     const { filterAction } = this.props;
     const { id, key, keylabel, operator, value } = this.props.filter;
     return (
@@ -154,8 +174,8 @@ class NumberFilter extends React.Component {
             ))}
           </Input>
           <Input
-            type="text"
-            value={value}
+            type="number"
+            value={inputval}
             placeholder="..."
             style={{ maxWidth: '12em', height: '1.5em', padding: '0' }}
             onChange={this.OnChangeValue}

@@ -45,6 +45,7 @@ FILTER.TYPES.NUMBER = 'number';
 FILTER.TYPES.SELECT = 'select';
 FILTER.TYPES.NODE = 'node'; // edge source / target
 FILTER.TYPES.DATE = 'date';
+FILTER.TYPES.MARKDOWN = 'markdown';
 FILTER.TYPES.HIDDEN = 'hidden';
 // Special Edge Keys mapped to node objects
 // Used by m_IsEdgeMatchedByFilter to find node labels
@@ -59,12 +60,12 @@ FILTER.OPERATORS.CONTAINS = { key: 'CONTAINS', label: 'contains' };
 FILTER.OPERATORS.NOT_CONTAINS = { key: 'NOT_CONTAINS', label: 'does not contain' };
 FILTER.OPERATORS.IS_EMPTY = { key: 'IS_EMPTY', label: 'is empty' };
 FILTER.OPERATORS.IS_NOT_EMPTY = { key: 'IS_NOT_EMPTY', label: 'is not empty' };
+FILTER.OPERATORS.EQ = { key: 'EQ', label: '=' };
+FILTER.OPERATORS.NOT_EQ = { key: 'NOT_EQ', label: `\u2260` };
 FILTER.OPERATORS.GT = { key: 'GT', label: '>' };
 FILTER.OPERATORS.GT_EQ = { key: 'GT_EQ', label: '>=' };
 FILTER.OPERATORS.LT = { key: 'LT', label: '<' };
 FILTER.OPERATORS.LT_EQ = { key: 'LT_EQ', label: '<=' };
-FILTER.OPERATORS.EQ = { key: 'EQ', label: '=' };
-FILTER.OPERATORS.NOT_EQ = { key: 'NOT_EQ', label: `\u2260` };
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

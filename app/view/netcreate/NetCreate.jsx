@@ -197,6 +197,7 @@ class NetCreate extends UNISYS.Component {
           style={{
             display: 'flex',
             flexFlow: 'row nowrap',
+            backgroundColor: '#EEE',
             width: '100%',
             height: '100%',
             overflow: 'hidden',
@@ -243,55 +244,46 @@ class NetCreate extends UNISYS.Component {
             <NCGraph />
           </div>
           {/*** RIGHT VIEW COLUMN ***************/}
-          {layoutFiltersOpen ? (
-            // OPEN
+          <div
+            className="--NetCreate_Column_Filters_Open"
+            id="right"
+            style={{
+              marginTop: '38px',
+              padding: '0 5px',
+              backgroundColor: '#6c757d',
+              borderTopLeftRadius: layoutFiltersOpen ? '10px' : '0',
+              paddingBottom: '25px' // avoid footer
+            }}
+          >
             <div
-              className="--NetCreate_Column_Filters_Open"
-              id="right"
               style={{
-                marginTop: '38px',
-                padding: '0 5px',
-                backgroundColor: '#6c757d',
-                borderTopLeftRadius: '10px',
-                paddingBottom: '25px' // avoid footer
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'end',
-                  height: '100%',
-                  overflow: 'hidden'
-                }}
-              >
-                <Button onClick={this.onFilterBtnClick} style={{ width: '90px' }}>
-                  {FILTER.PANEL_LABEL} &gt;
-                </Button>
-                <FiltersPanel />
-              </div>
-            </div>
-          ) : (
-            // CLOSED
-            <div
-              className="--NetCreate_Column_Filters_Closed"
-              id="right"
-              style={{
-                marginTop: '38px',
-                paddingTop: '0px',
-                backgroundColor: '#6c757d',
-                width: '10px',
-                height: '100%'
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'end',
+                width: layoutFiltersOpen ? '100%' : '0',
+                height: layoutFiltersOpen ? '100%' : 'inherit',
+                overflow: 'hidden'
               }}
             >
               <Button
                 onClick={this.onFilterBtnClick}
-                style={{ width: '90px', float: 'right' }}
+                style={{
+                  width: '90px',
+                  borderTopLeftRadius: '10px',
+                  paddingBottom: '10px',
+                  backgroundColor: '#6c757d',
+                  border: 'none',
+                  boxShadow: 'none',
+                  position: layoutFiltersOpen ? 'inherit' : 'absolute'
+                }}
               >
-                &lt; {FILTER.PANEL_LABEL}
+                {!layoutFiltersOpen && `< `}
+                {FILTER.PANEL_LABEL}
+                {layoutFiltersOpen && ` >`}
               </Button>
+              <FiltersPanel hidden={!layoutFiltersOpen} />
             </div>
-          )}
+          </div>
         </div>
         <div
           className="--NetCreate_Column_Break_Info"
