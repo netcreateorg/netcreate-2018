@@ -244,6 +244,7 @@ function m_ImportPrompts(prompts) {
   for (const [key, prompt] of Object.entries(prompts)) {
     let operator;
     switch (prompt.type) {
+      case FILTER.TYPES.MARKDOWN:
       case FILTER.TYPES.STRING:
         operator = FILTER.OPERATORS.NO_OP.key; // default to no_op
         break;

@@ -35,6 +35,7 @@ The available types are:
 * "number"
 * "select" -- Drop down menu
 * "node" -- Special type for edge "source" and "target" setting.
+* "markdown" -- Special string subtype that renders markdown as "string" in view mode
 
 Each type has specific operations associated with it, e.g. "string" supports "contains" and "not contains", whereas "number" supports ">" and "!=" etc. 
 
