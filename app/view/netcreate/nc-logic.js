@@ -498,11 +498,15 @@ MOD.Hook('INITIALIZE', () => {
   UDATA.HandleMessage('NODE_CREATE', data => {
     // provenance
     const session = UDATA.AppState('SESSION');
-    const timestamp = new Date().toLocaleDateString('en-US');
-    const provenance_str = `Added by ${session.token} on ${timestamp}`;
+    const timestamp = new Date().toLocaleString('en-US');
+    const provenance = `Added by ${session.token} on ${timestamp}`;
 
     return DATASTORE.PromiseNewNodeID().then(newNodeID => {
-      const node = { id: newNodeID, label: data.label, provenance: provenance_str };
+      const node = {
+        id: newNodeID, label: data.label, provenance,
+        created: timestamp,
+        revision: -1
+      };
       return UDATA.LocalCall('DB_UPDATE', { node }).then(() => {
         NCDATA.nodes.push(node);
         UDATA.SetAppState('NCDATA', NCDATA);
@@ -613,6 +617,11 @@ MOD.Hook('INITIALIZE', () => {
    *  @param {string} data.nodeId
    */
   UDATA.HandleMessage('EDGE_CREATE', data => {
+    // provenance
+    const session = UDATA.AppState('SESSION');
+    const timestamp = new Date().toLocaleString('en-US');
+    const provenance = `Added by ${session.token} on ${timestamp}`;
+
     // call server to retrieve an unused edge ID
     return DATASTORE.PromiseNewEdgeID().then(newEdgeID => {
       // Add it to local state for now
@@ -620,7 +629,10 @@ MOD.Hook('INITIALIZE', () => {
         id: newEdgeID,
         source: data.nodeId,
         target: undefined,
-        attributes: {}
+        attributes: {},
+        provenance,
+        created: timestamp,
+        revision: -1
       };
       return UDATA.LocalCall('DB_UPDATE', { edge }).then(() => {
         console.log('...DB_UPDATE node is now', edge);

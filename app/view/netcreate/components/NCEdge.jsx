@@ -76,6 +76,7 @@ class NCEdge extends UNISYS.Component {
     this.ReqLoadEdge = this.ReqLoadEdge.bind(this);
     // DATA LOADING
     this.LoadEdge = this.LoadEdge.bind(this);
+    this.DeleteEdge = this.DeleteEdge.bind(this);
     this.LoadAttributes = this.LoadAttributes.bind(this);
     this.LockEdge = this.LockEdge.bind(this);
     this.UnlockEdge = this.UnlockEdge.bind(this);
@@ -163,9 +164,9 @@ class NCEdge extends UNISYS.Component {
       targetId: null,
       attributes: [],
       provenance: [],
-      // created: undefined,
-      // updated: undefined,
-      // revision: 0
+      created: undefined,
+      updated: undefined,
+      revision: 0,
 
       // SYSTEM STATE
       // isLoggedIn: false, // don't clear session state!
@@ -317,11 +318,11 @@ class NCEdge extends UNISYS.Component {
         id: edge.id,
         sourceId: edge.source,
         targetId: edge.target,
-        attributes: attributes
-        // provenance: edge.provenance,
-        // created: edge.created,
-        // updated: edge.updated,
-        // revision: edge.revision
+        attributes: attributes,
+        provenance: edge.provenance,
+        created: edge.created,
+        updated: edge.updated,
+        revision: edge.revision
       },
       () => this.UpdateDerivedValues()
     );
@@ -595,12 +596,30 @@ class NCEdge extends UNISYS.Component {
   /// DATA SAVING
   ///
   SaveEdge() {
-    const { id, sourceId, targetId, attributes, provenance } = this.state;
+    const {
+      id,
+      sourceId,
+      targetId,
+      attributes,
+      provenance,
+      created,
+      updated,
+      revision
+    } = this.state;
+
+    // update revision number
+    const updatedRevision = revision + 1;
+    // update time stamp
+    const timestamp = new Date().toLocaleString('en-US');
+
     const edge = {
       id,
       source: sourceId,
       target: targetId,
-      provenance
+      provenance,
+      created,
+      updated: timestamp,
+      revision: updatedRevision
     };
     Object.keys(attributes).forEach(k => (edge[k] = attributes[k]));
     this.AppCall('DB_UPDATE', { edge }).then(() => {
@@ -612,10 +631,16 @@ class NCEdge extends UNISYS.Component {
         this.setState({
           uViewMode: NCUI.VIEWMODE.VIEW,
           uIsLockedByDB: false,
-          uSelectSourceTarget: undefined
+          uSelectSourceTarget: undefined,
+          updated: edge.updated,
+          revision: edge.revision
         });
       });
     });
+  }
+  DeleteEdge() {
+    const { id } = this.state;
+    this.AppCall('DB_UPDATE', { edgeID: id }); // Calling DB_UPDATE with `edgeID` will remove the edge
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -710,7 +735,15 @@ class NCEdge extends UNISYS.Component {
   }
 
   UICancelEditMode() {
-    const { previousState } = this.state;
+    const { revision, previousState } = this.state;
+
+    // if user is cancelling a newly created unsaved edge, delete the edge instead
+    if (revision < 0) {
+      this.UIDisableEditMode();
+      this.DeleteEdge();
+      return;
+    }
+
     // restore previous state
     this.setState(
       {
@@ -742,9 +775,8 @@ class NCEdge extends UNISYS.Component {
   }
 
   UIDeleteEdge() {
-    const { id } = this.state;
     this.UIDisableEditMode();
-    this.AppCall('DB_UPDATE', { edgeID: id }); // Calling DB_UPDATE with `edgeID` will remove the edge
+    this.DeleteEdge();
   }
 
   UIInputUpdate(key, value) {
@@ -909,6 +941,7 @@ class NCEdge extends UNISYS.Component {
     const {
       sourceId,
       targetId,
+      revision,
       uSelectedTab,
       uSelectSourceTarget,
       uBackgroundColor,
@@ -979,9 +1012,11 @@ class NCEdge extends UNISYS.Component {
             </div>
             {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
             <div className="controlbar" style={{ justifyContent: 'space-between' }}>
-              <button className="cancelbtn" onClick={this.UIDeleteEdge}>
-                Delete
-              </button>
+              {revision > -1 && (
+                <button className="cancelbtn" onClick={this.UIDeleteEdge}>
+                  Delete
+                </button>
+              )}
               <button className="cancelbtn" onClick={this.UICancelEditMode}>
                 Cancel
               </button>

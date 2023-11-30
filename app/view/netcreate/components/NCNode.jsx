@@ -110,7 +110,7 @@ class NCNode extends UNISYS.Component {
     this.UIRequestEditNode = this.UIRequestEditNode.bind(this);
     this.UIReplacementNodeIdUpdate = this.UIReplacementNodeIdUpdate.bind(this);
     this.UIAddEdge = this.UIAddEdge.bind(this);
-    this.EnableEditMode = this.EnableEditMode.bind(this);
+    this.UIEnableEditMode = this.UIEnableEditMode.bind(this);
     this.UICancelEditMode = this.UICancelEditMode.bind(this);
     this.UIDisableEditMode = this.UIDisableEditMode.bind(this);
     this.UIInputUpdate = this.UIInputUpdate.bind(this);
@@ -160,6 +160,17 @@ class NCNode extends UNISYS.Component {
   ResetState() {
     const TEMPLATE = this.AppState('TEMPLATE');
     this.setState({
+      // NODE DEFS
+      id: null,
+      label: '',
+      degrees: null,
+      attributes: [],
+      provenance: [],
+      created: undefined,
+      updated: undefined,
+      revision: 0,
+      // EDGES
+      edges: [], // selected nodes' edges not ALL edges
       // SYSTEM STATE
       // isLoggedIn: false, // don't clear session state!
       // isAdmin: false,
@@ -178,18 +189,7 @@ class NCNode extends UNISYS.Component {
       uHideDeleteNodeButton: TEMPLATE.hideDeleteNodeButton,
       uReplacementNodeId: '',
       uIsValidReplacementNodeID: true,
-      uShowCitationDialog: false,
-      // NODE DEFS
-      id: null,
-      label: '',
-      degrees: null,
-      attributes: [],
-      provenance: [],
-      created: undefined,
-      updated: undefined,
-      revision: 0,
-      // EDGES
-      edges: [] // selected nodes' edges not ALL edges
+      uShowCitationDialog: false
     });
   }
 
@@ -445,7 +445,19 @@ class NCNode extends UNISYS.Component {
     const { id, label, attributes, provenance, created, updated, revision } =
       this.state;
 
-    const node = { id, label, provenance, created, updated, revision };
+    // update revision number
+    const updatedRevision = revision + 1;
+    // update time stamp
+    const timestamp = new Date().toLocaleString('en-US');
+
+    const node = {
+      id,
+      label,
+      provenance,
+      created,
+      updated: timestamp,
+      revision: updatedRevision
+    };
     Object.keys(attributes).forEach(k => (node[k] = attributes[k]));
 
     // write data to database
@@ -455,7 +467,9 @@ class NCNode extends UNISYS.Component {
       this.UnlockNode(() => {
         this.setState({
           uViewMode: VIEWMODE.VIEW,
-          uIsLockedByDB: false
+          uIsLockedByDB: false,
+          updated: node.updated,
+          revision: node.revision
         });
       });
     });
@@ -508,7 +522,7 @@ class NCNode extends UNISYS.Component {
     if (!isLoggedIn) return;
     this.LockNode(lockSuccess => {
       this.setState({ uIsLockedByDB: !lockSuccess }, () => {
-        if (lockSuccess) this.EnableEditMode();
+        if (lockSuccess) this.UIEnableEditMode();
       });
     });
   }
@@ -539,7 +553,7 @@ class NCNode extends UNISYS.Component {
     });
   }
 
-  EnableEditMode() {
+  UIEnableEditMode() {
     const { uSelectedTab, label, attributes, provenance } = this.state;
     // If user was on Edges tab while requesting edit (e.g. from Node Table), then
     // switch to Attributes tab first.
@@ -557,7 +571,15 @@ class NCNode extends UNISYS.Component {
   }
 
   UICancelEditMode() {
-    const { previousState } = this.state;
+    const { revision, previousState } = this.state;
+
+    // if user is cancelling a newly created unsaved node, delete the node instead
+    if (revision < 0) {
+      this.UIDisableEditMode();
+      this.DeleteNode();
+      return;
+    }
+
     // restore previous state
     this.setState(
       {
