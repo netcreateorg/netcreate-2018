@@ -498,7 +498,7 @@ MOD.Hook('INITIALIZE', () => {
   UDATA.HandleMessage('NODE_CREATE', data => {
     // provenance
     const session = UDATA.AppState('SESSION');
-    const timestamp = new Date().toLocaleDateString('en-US');
+    const timestamp = new Date().toLocaleString('en-US');
     const provenance_str = `Added by ${session.token} on ${timestamp}`;
 
     return DATASTORE.PromiseNewNodeID().then(newNodeID => {
