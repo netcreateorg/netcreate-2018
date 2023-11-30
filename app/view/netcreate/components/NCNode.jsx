@@ -642,11 +642,16 @@ class NCNode extends UNISYS.Component {
       id,
       label
     } = this.state;
-    const defs = UDATA.AppState('TEMPLATE').nodeDefs;
+    const TEMPLATE = UDATA.AppState('TEMPLATE');
+    const defs = TEMPLATE.nodeDefs;
+    const uShowCitationButton = TEMPLATE.citation && !TEMPLATE.citation.hidden;
     const bgcolor = uBackgroundColor + '44'; // hack opacity
     const citation =
-      `NetCreate ${this.AppState('TEMPLATE').name} network, ` +
+      `NetCreate ${TEMPLATE.name} network, ` +
       `Node: "${label}" (ID ${id}). ` +
+      (TEMPLATE.citation && TEMPLATE.citation.text
+        ? `${TEMPLATE.citation.text}. `
+        : '') +
       `Last accessed at ${NCUI.DateFormatted()}.`;
 
     return (
@@ -682,13 +687,16 @@ class NCNode extends UNISYS.Component {
             </div>
           )}
           <div className="--NCNode_View_Controls controlbar">
-            <button
-              id="citationbtn"
-              className="citationbutton"
-              onClick={this.UICitationShow}
-            >
-              Cite Node
-            </button>
+            {uShowCitationButton && (
+              <button
+                id="citationbtn"
+                className="citationbutton"
+                onClick={this.UICitationShow}
+              >
+                Cite Node
+              </button>
+            )}
+            <div style={{ flexGrow: 1 }}></div>
             {!uEditBtnHide && uSelectedTab !== TABS.EDGES && (
               <button
                 id="editbtn"

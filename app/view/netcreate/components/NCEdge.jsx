@@ -815,12 +815,17 @@ class NCEdge extends UNISYS.Component {
       dTargetNode = { label: undefined }
     } = this.state;
     const bgcolor = uBackgroundColor + '66'; // hack opacity
-    const defs = UDATA.AppState('TEMPLATE').edgeDefs;
+    const TEMPLATE = UDATA.AppState('TEMPLATE');
+    const defs = TEMPLATE.edgeDefs;
+    const uShowCitationButton = TEMPLATE.citation && !TEMPLATE.citation.hidden;
     const disableSourceTargetInView = true;
     const citation =
-      `NetCreate ${this.AppState('TEMPLATE').name} network, ` +
+      `NetCreate ${TEMPLATE.name} network, ` +
       `Edge: (ID ${id}), ` +
       `from "${dSourceNode.label}" to "${dTargetNode.label}". ` +
+      (TEMPLATE.citation && TEMPLATE.citation.text
+        ? `${TEMPLATE.citation.text}. `
+        : '') +
       `Last accessed at ${NCUI.DateFormatted()}.`;
 
     return (
@@ -859,13 +864,16 @@ class NCEdge extends UNISYS.Component {
           </div>
           {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
           <div className="controlbar">
-            <button
-              id="citationbtn"
-              className="citationbutton"
-              onClick={this.UICitationShow}
-            >
-              Cite Edge
-            </button>
+            {uShowCitationButton && (
+              <button
+                id="citationbtn"
+                className="citationbutton"
+                onClick={this.UICitationShow}
+              >
+                Cite Edge
+              </button>
+            )}
+            <div style={{ flexGrow: 1 }}></div>
             {!uEditBtnHide && uSelectedTab !== TABS.EDGES && (
               <button
                 id="editbtn"
