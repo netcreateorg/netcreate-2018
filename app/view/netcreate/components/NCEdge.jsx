@@ -974,7 +974,7 @@ class NCEdge extends UNISYS.Component {
             </div>
             {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
             <div className="controlbar" style={{ justifyContent: 'space-between' }}>
-              {revision > 0 && (
+              {revision > -1 && (
                 <button className="cancelbtn" onClick={this.UIDeleteEdge}>
                   Delete
                 </button>
