@@ -566,7 +566,14 @@ class NCNode extends UNISYS.Component {
   }
 
   UICancelEditMode() {
-    const { previousState } = this.state;
+    const { revision, previousState } = this.state;
+
+    // if user is cancelling a newly created unsaved node, delete the node instead
+    if (revision < 0) {
+      this.DeleteNode();
+      return;
+    }
+
     // restore previous state
     this.setState(
       {
