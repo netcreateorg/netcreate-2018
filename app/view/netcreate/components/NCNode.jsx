@@ -188,7 +188,7 @@ class NCNode extends UNISYS.Component {
       uEditLockMessage: '',
       uHideDeleteNodeButton: TEMPLATE.hideDeleteNodeButton,
       uReplacementNodeId: '',
-      uIsValidReplacementNodeID: true
+      uIsValidReplacementNodeID: true,
       uShowCitationDialog: false
     });
   }
