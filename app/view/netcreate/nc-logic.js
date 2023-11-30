@@ -502,7 +502,11 @@ MOD.Hook('INITIALIZE', () => {
     const provenance_str = `Added by ${session.token} on ${timestamp}`;
 
     return DATASTORE.PromiseNewNodeID().then(newNodeID => {
-      const node = { id: newNodeID, label: data.label, provenance: provenance_str };
+      const node = {
+        id: newNodeID, label: data.label, provenance: provenance_str,
+        created: timestamp,
+        revision: -1
+      };
       return UDATA.LocalCall('DB_UPDATE', { node }).then(() => {
         NCDATA.nodes.push(node);
         UDATA.SetAppState('NCDATA', NCDATA);
