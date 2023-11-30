@@ -499,11 +499,11 @@ MOD.Hook('INITIALIZE', () => {
     // provenance
     const session = UDATA.AppState('SESSION');
     const timestamp = new Date().toLocaleString('en-US');
-    const provenance_str = `Added by ${session.token} on ${timestamp}`;
+    const provenance = `Added by ${session.token} on ${timestamp}`;
 
     return DATASTORE.PromiseNewNodeID().then(newNodeID => {
       const node = {
-        id: newNodeID, label: data.label, provenance: provenance_str,
+        id: newNodeID, label: data.label, provenance,
         created: timestamp,
         revision: -1
       };
