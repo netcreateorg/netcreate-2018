@@ -28,6 +28,7 @@ const { EDITORTYPE, BUILTIN_FIELDS_EDGE } = require('system/util/enum');
 const NCUI = require('../nc-ui');
 const NCAutoSuggest = require('./NCAutoSuggest');
 const NCDialog = require('./NCDialog');
+const NCDialogCitation = require('./NCDialogCitation');
 const SETTINGS = require('settings');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -107,6 +108,8 @@ class NCEdge extends UNISYS.Component {
     this.UIEnableSourceTargetSelect = this.UIEnableSourceTargetSelect.bind(this);
     this.UISourceTargetInputUpdate = this.UISourceTargetInputUpdate.bind(this);
     this.UISourceTargetInputSelect = this.UISourceTargetInputSelect.bind(this);
+    this.UICitationShow = this.UICitationShow.bind(this);
+    this.UICitationClose = this.UICitationClose.bind(this);
     // RENDERERS -- Main
     this.RenderView = this.RenderView.bind(this);
     this.RenderEdit = this.RenderEdit.bind(this);
@@ -182,6 +185,7 @@ class NCEdge extends UNISYS.Component {
       uEditLockMessage: '',
       uNewNodeKey: undefined,
       uNewNodeLabel: undefined,
+      uShowCitationDialog: false,
 
       // DERIVED VALUES 'd'
       dSourceNode: undefined,
@@ -819,6 +823,14 @@ class NCEdge extends UNISYS.Component {
     this.ValidateSourceTarget(key, value, id);
   }
 
+  UICitationShow(event) {
+    event.stopPropagation();
+    this.setState({ uShowCitationDialog: true });
+  }
+  UICitationClose() {
+    this.setState({ uShowCitationDialog: false });
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// RENDER METHODS
   RenderView() {
@@ -829,12 +841,25 @@ class NCEdge extends UNISYS.Component {
       uEditBtnDisable,
       uEditBtnHide,
       uEditLockMessage,
+      uShowCitationDialog,
+      id,
       dSourceNode = { label: undefined },
       dTargetNode = { label: undefined }
     } = this.state;
     const bgcolor = uBackgroundColor + '66'; // hack opacity
-    const defs = UDATA.AppState('TEMPLATE').edgeDefs;
+    const TEMPLATE = UDATA.AppState('TEMPLATE');
+    const defs = TEMPLATE.edgeDefs;
+    const uShowCitationButton = TEMPLATE.citation && !TEMPLATE.citation.hidden;
     const disableSourceTargetInView = true;
+    const citation =
+      `NetCreate ${TEMPLATE.name} network, ` +
+      `Edge: (ID ${id}), ` +
+      `from "${dSourceNode.label}" to "${dTargetNode.label}". ` +
+      (TEMPLATE.citation && TEMPLATE.citation.text
+        ? `${TEMPLATE.citation.text}. `
+        : '') +
+      `Last accessed at ${NCUI.DateFormatted()}.`;
+
     return (
       <div className={`nccomponent ncedge ${animateHeight}`}>
         <div
@@ -871,6 +896,16 @@ class NCEdge extends UNISYS.Component {
           </div>
           {/* CONTROL BAR - - - - - - - - - - - - - - - - */}
           <div className="controlbar">
+            {uShowCitationButton && (
+              <button
+                id="citationbtn"
+                className="citationbutton"
+                onClick={this.UICitationShow}
+              >
+                Cite Edge
+              </button>
+            )}
+            <div style={{ flexGrow: 1 }}></div>
             {!uEditBtnHide && uSelectedTab !== TABS.EDGES && (
               <button
                 id="editbtn"
@@ -894,6 +929,9 @@ class NCEdge extends UNISYS.Component {
             </div>
           )}
         </div>
+        {uShowCitationDialog && (
+          <NCDialogCitation message={citation} onClose={this.UICitationClose} />
+        )}
       </div>
     );
   }

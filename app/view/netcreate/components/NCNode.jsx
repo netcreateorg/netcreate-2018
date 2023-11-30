@@ -43,6 +43,7 @@ const EDGEMGR = require('../edge-mgr'); // handles edge synthesis
 const { EDITORTYPE, BUILTIN_FIELDS_NODE } = require('system/util/enum');
 const NCUI = require('../nc-ui');
 const NCEdge = require('./NCEdge');
+const NCDialogCitation = require('./NCDialogCitation');
 const SETTINGS = require('settings');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -116,6 +117,8 @@ class NCNode extends UNISYS.Component {
     this.UILabelInputUpdate = this.UILabelInputUpdate.bind(this);
     this.UIViewEdge = this.UIViewEdge.bind(this);
     this.UIEditEdge = this.UIEditEdge.bind(this);
+    this.UICitationShow = this.UICitationShow.bind(this);
+    this.UICitationClose = this.UICitationClose.bind(this);
     // RENDERERS -- Main
     this.RenderView = this.RenderView.bind(this);
     this.RenderEdit = this.RenderEdit.bind(this);
@@ -186,6 +189,7 @@ class NCNode extends UNISYS.Component {
       uHideDeleteNodeButton: TEMPLATE.hideDeleteNodeButton,
       uReplacementNodeId: '',
       uIsValidReplacementNodeID: true
+      uShowCitationDialog: false
     });
   }
 
@@ -508,6 +512,7 @@ class NCNode extends UNISYS.Component {
     this.setState({ uSelectedTab });
     if (event.target.value !== TABS.EDGES) UDATA.LocalCall('EDGE_DESELECT');
   }
+
   /**
    * If `lockNode` is not successful, then that means the node was
    * already locked, so we can't edit.
@@ -636,6 +641,13 @@ class NCNode extends UNISYS.Component {
     );
   }
 
+  UICitationShow() {
+    this.setState({ uShowCitationDialog: true });
+  }
+  UICitationClose() {
+    this.setState({ uShowCitationDialog: false });
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// RENDER METHODS
   RenderView() {
@@ -648,11 +660,22 @@ class NCNode extends UNISYS.Component {
       uHideDeleteNodeButton,
       uReplacementNodeId,
       uIsValidReplacementNodeID,
+      uShowCitationDialog,
       id,
       label
     } = this.state;
-    const defs = UDATA.AppState('TEMPLATE').nodeDefs;
+    const TEMPLATE = UDATA.AppState('TEMPLATE');
+    const defs = TEMPLATE.nodeDefs;
+    const uShowCitationButton = TEMPLATE.citation && !TEMPLATE.citation.hidden;
     const bgcolor = uBackgroundColor + '44'; // hack opacity
+    const citation =
+      `NetCreate ${TEMPLATE.name} network, ` +
+      `Node: "${label}" (ID ${id}). ` +
+      (TEMPLATE.citation && TEMPLATE.citation.text
+        ? `${TEMPLATE.citation.text}. `
+        : '') +
+      `Last accessed at ${NCUI.DateFormatted()}.`;
+
     return (
       <div className="--NCNode_View nccomponent">
         <div className="view" style={{ background: bgcolor }}>
@@ -686,6 +709,16 @@ class NCNode extends UNISYS.Component {
             </div>
           )}
           <div className="--NCNode_View_Controls controlbar">
+            {uShowCitationButton && (
+              <button
+                id="citationbtn"
+                className="citationbutton"
+                onClick={this.UICitationShow}
+              >
+                Cite Node
+              </button>
+            )}
+            <div style={{ flexGrow: 1 }}></div>
             {!uEditBtnHide && uSelectedTab !== TABS.EDGES && (
               <button
                 id="editbtn"
@@ -719,6 +752,9 @@ class NCNode extends UNISYS.Component {
             </div>
           )}
         </div>
+        {uShowCitationDialog && (
+          <NCDialogCitation message={citation} onClose={this.UICitationClose} />
+        )}
       </div>
     );
   }

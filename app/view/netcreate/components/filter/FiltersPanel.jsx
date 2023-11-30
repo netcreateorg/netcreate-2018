@@ -109,6 +109,7 @@ class FiltersPanel extends UNISYS.Component {
   }
 
   render() {
+    const { hidden } = this.props;
     const { filterAction, focusRange, focusSourceLabel, statsSummary } = this.state;
     const defs = [this.state.nodes, this.state.edges];
 
@@ -148,10 +149,10 @@ class FiltersPanel extends UNISYS.Component {
       <div
         className="filterPanel"
         style={{
+          display: hidden ? 'none' : 'flex',
           overflow: 'hidden',
           margin: '6px 0',
           padding: '5px',
-          display: 'flex',
           flexDirection: 'column',
           backgroundColor: '#EEE',
           zIndex: '2000'

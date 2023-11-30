@@ -37,8 +37,9 @@ function FilterGroup({ group, label, filters, filterAction, transparency }) {
       </div>
       {filters.map(filter => {
         switch (filter.type) {
-          case FILTER.TYPES.STRING:
+          case FILTER.TYPES.MARKDOWN:
           case FILTER.TYPES.NODE:
+          case FILTER.TYPES.STRING:
             return (
               <StringFilter
                 key={filter.id}

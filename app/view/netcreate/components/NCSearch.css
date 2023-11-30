@@ -1,9 +1,6 @@
 .ncsearch {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-auto-columns: 100px;
-  grid-auto-flow: column;
-  column-gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
   margin-top: 38px; /* match navbar height */
   margin-bottom: 20px;
 }

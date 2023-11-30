@@ -11,8 +11,6 @@
       onSelect={this.handleSelection}
     />
 
-  This will look up matching nodes via FIND_MATCHING_NODES nc-logic request.
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const React = require('react');

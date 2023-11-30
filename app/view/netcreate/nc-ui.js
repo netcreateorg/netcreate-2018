@@ -35,8 +35,8 @@ const UDATA = UNISYS.NewDataLink(MOD);
 function DateFormatted() {
   var today = new Date();
   var year = String(today.getFullYear());
-  var date = today.getMonth() + 1 + '/' + today.getDate() + '/' + year.substr(2, 4);
-  var time = today.toTimeString().substr(0, 5);
+  var date = today.getMonth() + 1 + '/' + today.getDate() + '/' + year.substring(2, 4);
+  var time = today.toTimeString().substring(0, 5);
   var dateTime = time + ' on ' + date;
   return dateTime;
 }
