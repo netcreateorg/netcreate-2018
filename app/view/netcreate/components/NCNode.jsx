@@ -441,7 +441,19 @@ class NCNode extends UNISYS.Component {
     const { id, label, attributes, provenance, created, updated, revision } =
       this.state;
 
-    const node = { id, label, provenance, created, updated, revision };
+    // update revision number
+    const updatedRevision = revision + 1;
+    // update time stamp
+    const timestamp = new Date().toLocaleString('en-US');
+
+    const node = {
+      id,
+      label,
+      provenance,
+      created,
+      updated: timestamp,
+      revision: updatedRevision
+    };
     Object.keys(attributes).forEach(k => (node[k] = attributes[k]));
 
     // write data to database
@@ -451,7 +463,9 @@ class NCNode extends UNISYS.Component {
       this.UnlockNode(() => {
         this.setState({
           uViewMode: VIEWMODE.VIEW,
-          uIsLockedByDB: false
+          uIsLockedByDB: false,
+          updated: node.updated,
+          revision: node.revision
         });
       });
     });
