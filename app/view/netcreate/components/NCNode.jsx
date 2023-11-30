@@ -570,6 +570,7 @@ class NCNode extends UNISYS.Component {
 
     // if user is cancelling a newly created unsaved node, delete the node instead
     if (revision < 0) {
+      this.UIDisableEditMode();
       this.DeleteNode();
       return;
     }
