@@ -146,7 +146,7 @@ DB.InitializeDatabase = function (options = {}) {
     // remap duplicate NODE IDs
     dupeNodes.forEach(obj => {
       m_max_nodeID += 1;
-      LOGGER.Write(PR, `# rewriting duplicate nodeID ${obj.id} to ${m_max_nodeID}`);
+      LOGGER.WriteRLog({}, PR, `# rewriting duplicate nodeID ${obj.id} to ${m_max_nodeID}`);
       obj.id = m_max_nodeID;
     });
 
@@ -580,13 +580,12 @@ DB.PKT_GetDatabase = function (pkt) {
   if (DBG)
     console.log(
       PR,
-      `PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${
-        edges.length
+      `PKT_GetDatabase ${pkt.Info()} (loaded ${nodes.length} nodes, ${edges.length
       } edges)`
     );
   m_MigrateNodes(nodes);
   m_MigrateEdges(edges);
-  LOGGER.Write(pkt.Info(), `getdatabase`);
+  LOGGER.WriteRLog(pkt.InfoObj(), `getdatabase`);
   return { d3data: { nodes, edges }, template: TEMPLATE };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -606,7 +605,7 @@ DB.PKT_SetDatabase = function (pkt) {
   console.log(PR, `PKT_SetDatabase complete. Data available on next get.`);
   m_db.close();
   DB.InitializeDatabase();
-  LOGGER.Write(pkt.Info(), `setdatabase`);
+  LOGGER.WriteRLog(pkt.InfoObj(), `setdatabase`);
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -624,7 +623,7 @@ DB.PKT_InsertDatabase = function (pkt) {
   console.log(PR, `PKT_InsertDatabase complete. Data available on next get.`);
   m_db.close();
   DB.InitializeDatabase();
-  LOGGER.Write(pkt.Info(), `setdatabase`);
+  LOGGER.WriteRLog(pkt.InfoObj(), `setdatabase`);
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -659,7 +658,7 @@ DB.PKT_MergeDatabase = function (pkt) {
     m_db.saveDatabase(err => {
       if (err) reject(new Error('rejected'));
       DB.InitializeDatabase();
-      LOGGER.Write(pkt.Info(), `mergedatabase`);
+      LOGGER.WriteRLog(pkt.InfoObj(), `mergedatabase`);
       resolve({ OK: true });
     })
   );
@@ -679,7 +678,7 @@ DB.PKT_UpdateDatabase = function (pkt) {
   EDGES.update(edges);
   console.log(PR, `PKT_UpdateDatabase complete. Disk db file updated.`);
   m_db.saveDatabase();
-  LOGGER.Write(pkt.Info(), `updatedatabase`);
+  LOGGER.WriteRLog(pkt.InfoObj(), `updatedatabase`);
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -916,7 +915,7 @@ DB.PKT_Update = function (pkt) {
         node.id = m_GetNewNodeID();
       }
 
-      LOGGER.Write(pkt.Info(), `insert node`, node.id, JSON.stringify(node));
+      LOGGER.WriteRLog(pkt.InfoObj(), `insert node`, node.id, JSON.stringify(node));
       DB.AppendNodeLog(node, pkt); // log GroupId to node stored in database
       NODES.insert(node);
       // Return the updated record -- needed to update metadata
@@ -924,8 +923,7 @@ DB.PKT_Update = function (pkt) {
       if (!updatedNode)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
-            node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'insert', node: updatedNode };
@@ -939,7 +937,7 @@ DB.PKT_Update = function (pkt) {
               node
             )}`
           );
-        LOGGER.Write(pkt.Info(), `update node`, node.id, JSON.stringify(node));
+        LOGGER.WriteRLog(pkt.InfoObj(), `update node`, node.id, JSON.stringify(node));
         DB.AppendNodeLog(n, pkt); // log GroupId to node stored in database
         Object.assign(n, node);
       });
@@ -948,15 +946,14 @@ DB.PKT_Update = function (pkt) {
       if (!updatedNode)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
-            node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'update', node: updatedNode };
     } else {
       if (DBG)
         console.log(PR, `WARNING: multiple nodeID ${node.id} x${matches.length}`);
-      LOGGER.Write(pkt.Info(), `ERROR`, node.id, 'duplicate node id');
+      LOGGER.WriteRLog(pkt.InfoObj(), `ERROR`, node.id, 'duplicate node id');
       retval = { op: 'error-multinodeid' };
     }
     // Always update m_max_nodeID
@@ -982,7 +979,7 @@ DB.PKT_Update = function (pkt) {
         edge.id = m_GetNewEdgeID();
       }
 
-      LOGGER.Write(pkt.Info(), `insert edge`, edge.id, JSON.stringify(edge));
+      LOGGER.WriteRLog(pkt.InfoObj(), `insert edge`, edge.id, JSON.stringify(edge));
       DB.AppendEdgeLog(edge, pkt); // log GroupId to edge stored in database
       EDGES.insert(edge);
       // Return the updated record -- needed to update metadata
@@ -990,8 +987,7 @@ DB.PKT_Update = function (pkt) {
       if (!updatedEdge)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
-            node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'insert', edge: updatedEdge };
@@ -1001,11 +997,10 @@ DB.PKT_Update = function (pkt) {
         if (DBG)
           console.log(
             PR,
-            `PKT_Update ${pkt.SourceGroupID()} UPDATE edgeID ${
-              edge.id
+            `PKT_Update ${pkt.SourceGroupID()} UPDATE edgeID ${edge.id
             } ${JSON.stringify(edge)}`
           );
-        LOGGER.Write(pkt.Info(), `update edge`, edge.id, JSON.stringify(edge));
+        LOGGER.WriteRLog(pkt.InfoObj(), `update edge`, edge.id, JSON.stringify(edge));
         DB.AppendEdgeLog(e, pkt); // log GroupId to edge stored in database
         Object.assign(e, edge);
       });
@@ -1014,14 +1009,13 @@ DB.PKT_Update = function (pkt) {
       if (!updatedEdge)
         console.log(
           PR,
-          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${
-            node.id
+          `PKT_Update ${pkt.Info()} could not find node after update!  This should not happen! ${node.id
           } ${JSON.stringify(node)}`
         );
       retval = { op: 'update', edge: updatedEdge };
     } else {
       console.log(PR, `WARNING: multiple edgeID ${edge.id} x${matches.length}`);
-      LOGGER.Write(pkt.Info(), `ERROR`, node.id, 'duplicate edge id');
+      LOGGER.WriteRLog(pkt.InfoObj(), `ERROR`, node.id, 'duplicate edge id');
       retval = { op: 'error-multiedgeid' };
     }
     // Always update m_max_edgeID
@@ -1034,7 +1028,7 @@ DB.PKT_Update = function (pkt) {
     nodeID = m_CleanID(`${pkt.Info()} nodeID`, nodeID);
     if (DBG) console.log(PR, `PKT_Update ${pkt.Info()} DELETE nodeID ${nodeID}`);
     // Log first so it's apparent what is triggering the edge changes
-    LOGGER.Write(pkt.Info(), `delete node`, nodeID);
+    LOGGER.WriteRLog(pkt.InfoObj(), `delete node`, nodeID);
 
     // handle edges
     let edgesToProcess = EDGES.where(e => {
@@ -1049,11 +1043,11 @@ DB.PKT_Update = function (pkt) {
     if (replacementNodeID !== -1) {
       // re-link edges to replacementNodeID...
       EDGES.findAndUpdate({ source: nodeID }, e => {
-        LOGGER.Write(pkt.Info(), `relinking edge`, e.id, `to`, replacementNodeID);
+        LOGGER.WriteRLog(pkt.InfoObj(), `relinking edge`, e.id, `to`, replacementNodeID);
         e.source = replacementNodeID;
       });
       EDGES.findAndUpdate({ target: nodeID }, e => {
-        LOGGER.Write(pkt.Info(), `relinking edge`, e.id, `to`, replacementNodeID);
+        LOGGER.WriteRLog(pkt.InfoObj(), `relinking edge`, e.id, `to`, replacementNodeID);
         e.target = replacementNodeID;
       });
     } else {
@@ -1061,15 +1055,15 @@ DB.PKT_Update = function (pkt) {
       let sourceEdges = EDGES.find({ source: nodeID });
       EDGES.findAndRemove({ source: nodeID });
       if (sourceEdges.length)
-        LOGGER.Write(
-          pkt.Info(),
+        LOGGER.WriteRLog(
+          pkt.InfoObj(),
           `deleting ${sourceEdges.length} sources matching ${nodeID}`
         );
       let targetEdges = EDGES.find({ target: nodeID });
       EDGES.findAndRemove({ target: nodeID });
       if (targetEdges.length)
-        LOGGER.Write(
-          pkt.Info(),
+        LOGGER.WriteRLog(
+          pkt.InfoObj(),
           `deleting ${targetEdges.length} targets matching ${nodeID}`
         );
     }
@@ -1082,7 +1076,7 @@ DB.PKT_Update = function (pkt) {
   if (edgeID !== undefined) {
     edgeID = m_CleanID(`${pkt.Info()} edgeID`, edgeID);
     if (DBG) console.log(PR, `PKT_Update ${pkt.Info()} DELETE edgeID ${edgeID}`);
-    LOGGER.Write(pkt.Info(), `delete edge`, edgeID);
+    LOGGER.WriteRLog(pkt.InfoObj(), `delete edge`, edgeID);
     EDGES.findAndRemove({ id: edgeID });
     return { op: 'delete', edgeID };
   }
@@ -1409,7 +1403,7 @@ function m_MigrateEdges(edges) {
 function m_CleanObjID(prompt, obj) {
   if (typeof obj.id === 'string') {
     let int = parseInt(obj.id, 10);
-    LOGGER.Write(PR, `! ${prompt} "${obj.id}" is string; converting to ${int}`);
+    LOGGER.WriteRLog({}, PR, `! ${prompt} "${obj.id}" is string; converting to ${int}`);
     obj.id = int;
   }
   return obj;
@@ -1417,16 +1411,16 @@ function m_CleanObjID(prompt, obj) {
 function m_CleanEdgeEndpoints(prompt, edge) {
   if (typeof edge.source === 'string') {
     let int = parseInt(edge.source, 10);
-    LOGGER.Write(
-      PR,
+    LOGGER.WriteRLog(
+      {}, PR,
       `  edge ${prompt} source "${edge.source}" is string; converting to ${int}`
     );
     edge.source = int;
   }
   if (typeof edge.target === 'string') {
     let int = parseInt(edge.target, 10);
-    LOGGER.Write(
-      PR,
+    LOGGER.WriteRLog(
+      {}, PR,
       `  edge ${prompt} target "${edge.target}" is string; converting to ${int}`
     );
     edge.target = int;
@@ -1436,7 +1430,7 @@ function m_CleanEdgeEndpoints(prompt, edge) {
 function m_CleanID(prompt, id) {
   if (typeof id === 'string') {
     let int = parseInt(id, 10);
-    LOGGER.Write(PR, `! ${prompt} "${id}" is string; converting to number ${int}`);
+    LOGGER.WriteRLog({}, PR, `! ${prompt} "${id}" is string; converting to number ${int}`);
     id = int;
   }
   return id;

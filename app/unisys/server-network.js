@@ -252,9 +252,9 @@ function m_ResetPongTimer(uaddr) {
         uaddr,
         'pong not received before time ran out -- CONNECTION DEAD!'
       );
-    LOGGER.Write(
+    LOGGER.WriteRLog(
+      { uaddr },
       PR,
-      uaddr,
       'pong not received before time ran out -- CLIENT CONNECTION DEAD!'
     );
     DB.RequestUnlock(uaddr);
@@ -454,8 +454,7 @@ function m_PromiseRemoteHandlers(pkt) {
     if (verbose) {
       console.log(
         'make_resolver_func:',
-        `PKT: ${srcPkt.Type()} '${srcPkt.Message()}' from ${srcPkt.Info()} to d_uaddr:${d_uaddr} dispatch to d_sock.UADDR:${
-          d_sock.UADDR
+        `PKT: ${srcPkt.Type()} '${srcPkt.Message()}' from ${srcPkt.Info()} to d_uaddr:${d_uaddr} dispatch to d_sock.UADDR:${d_sock.UADDR
         }`
       );
     }
@@ -473,7 +472,7 @@ function m_SocketAdd(socket) {
   // save socket
   mu_sockets.set(sid, socket);
   if (STAT) console.log(PR, `socket ADD ${socket.UADDR} to network`);
-  LOGGER.Write(socket.UADDR, 'joined network');
+  LOGGER.WriteRLog({ uaddr: socket.UADDR }, 'joined network');
   if (DBG) m_ListSockets(`add ${sid}`);
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -491,7 +490,7 @@ function m_SocketDelete(socket) {
   let uaddr = socket.UADDR;
   if (!mu_sockets.has(uaddr)) throw Error(DBG_SOCK_BADCLOSE);
   if (STAT) console.log(PR, `socket DEL ${uaddr} from network`);
-  LOGGER.Write(socket.UADDR, 'left network');
+  LOGGER.WriteRLog({ uaddr: socket.UADDR }, 'left network');
   mu_sockets.delete(uaddr);
   // delete socket reference from previously registered handlers
   let rmesgs = m_socket_msgs_list.get(uaddr);
