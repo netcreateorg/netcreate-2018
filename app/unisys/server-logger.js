@@ -58,10 +58,19 @@ FSE.ensureDir(dir, function (err) {
   var logname = str_TimeDatedFilename('log') + '.txt';
   var pathname = dir + '/' + logname;
   fs_log = FSE.createWriteStream(pathname);
-  LogLine(
+
+  // Show Research Log Field Names
+  const fieldnames = [
+    'Date', 'Time', 'NetName', 'Addr', 'Token', 'Action', 'DataID', 'DataDetail'
+  ];
+  let fields = fieldnames.join(LOG_DELIMITER);
+  fields += '\n';
+  fs_log.write(fields);
+
+  LogResearchLine({},
     `NETCREATE APPSERVER SESSION LOG for ${str_DateStamp()} ${str_TimeStamp()}`
   );
-  LogLine('---');
+  LogResearchLine({}, '---');
 });
 
 /// LOGGING FUNCTIONS /////////////////////////////////////////////////////////
@@ -93,7 +102,6 @@ function LogLine(...args) {
 function LogResearchLine(info = { uaddr: '', group: '' }, ...args) {
   if (!fs_log) return;
 
-  // var out = str_TimeStamp() + LOG_DELIMITER;
   var out = str_ShortDateStamp() + LOG_DELIMITER;
   out += str_TimeStamp() + LOG_DELIMITER;
   out += NC_CONFIG.dataset + LOG_DELIMITER;
