@@ -18,7 +18,9 @@
   background-color: #ccc;
   cursor: pointer;
 }
-
+.matchlist .id {
+  color: #3334;
+}
 .helptop {
   position: absolute;
   bottom: 120%;
