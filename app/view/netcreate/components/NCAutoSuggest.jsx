@@ -106,17 +106,21 @@ class NCAutoSuggest extends UNISYS.Component {
    * User has clicked an item in the matchlist, selecting one of the autosuggest items
    * @param {Object} event
    * @param {string} key Usually either `source` or `target`
-   * @param {string} value
+   * @param {number} id
    */
-  m_UISelect(event, key, value) {
+  m_UISelect(event, key, id) {
     event.preventDefault(); // catch click to close matchlist
     event.stopPropagation();
     const { onSelect } = this.props;
     const { matches } = this.state;
-    const matchedNode = matches ? matches.find(n => n.label === value) : undefined;
+    const matchedNode = matches ? matches.find(n => n.id === id) : undefined;
     this.setState({ isValidNode: matchedNode, matches: [], higlightedLine: -1 }); // clear matches
     if (typeof onSelect === 'function')
-      onSelect(key, value, matchedNode ? matchedNode.id : undefined); // callback function NCEdge.uiSourceTargetInputUpdate
+      onSelect(
+        key,
+        matchedNode ? matchedNode.value : undefined,
+        matchedNode ? matchedNode.id : undefined
+      ); // callback function NCEdge.uiSourceTargetInputUpdate
   }
   /**
    * Handle key strokes
@@ -174,9 +178,9 @@ class NCAutoSuggest extends UNISYS.Component {
               key={`${n.label}${i}`}
               value={n.label}
               className={higlightedLine === i ? 'highlighted' : ''}
-              onClick={event => this.m_UISelect(event, statekey, n.label)}
+              onClick={event => this.m_UISelect(event, statekey, n.id)}
             >
-              {n.label}
+              {n.label} <span className="id">#{n.id}</span>
             </div>
           ))
         : undefined;
