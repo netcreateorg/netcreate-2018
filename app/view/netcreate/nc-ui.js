@@ -339,9 +339,12 @@ function RenderMarkdownInput(key, value, cb, helpText) {
  * @param {string} key
  * @param {string} value
  * @param {function} cb
+ * @param {string} helpText
+ * @param {function} onFocus Handles showing autosuggest matchlist
+ * @param {function} onBlur Handles hiding autosuggest matchlist
  * @returns
  */
-function RenderStringInput(key, value, cb, helpText) {
+function RenderStringInput(key, value, cb, helpText, onFocus, onBlur) {
   const rows = String(value).length > 35 ? 3 : 1;
   return (
     <div key={`${key}div`}>
@@ -352,6 +355,8 @@ function RenderStringInput(key, value, cb, helpText) {
         type="string"
         value={value}
         onChange={event => m_UIStringInputUpdate(event, cb)}
+        onFocus={() => typeof onFocus === 'function' && onFocus()}
+        onBlur={() => typeof onBlur === 'function' && onBlur()}
         autoComplete="off" // turn off Chrome's default autocomplete, which conflicts
         className={rows > 1 ? `long` : ''}
         rows={rows}

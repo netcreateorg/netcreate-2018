@@ -190,6 +190,7 @@ class NCNode extends UNISYS.Component {
       uHideDeleteNodeButton: TEMPLATE.hideDeleteNodeButton,
       uReplacementNodeId: '',
       uIsValidReplacementNodeID: true,
+      uShowMatchlist: false,
       uShowCitationDialog: false
     });
   }
@@ -795,15 +796,17 @@ class NCNode extends UNISYS.Component {
                 label,
                 this.UILabelInputUpdate,
                 '',
+                () => this.setState({ uShowMatchlist: true }),
+                () => this.setState({ uShowMatchlist: false })
               )}
               {uShowMatchlist && matchList && (
-              <div className="matchlist">
-                {isDuplicate && (
-                  <div className="message warning">{duplicateWarning}</div>
-                )}
-                {matchList}
-              </div>
-            )}
+                <div className="matchlist">
+                  {isDuplicate && (
+                    <div className="message warning">{duplicateWarning}</div>
+                  )}
+                  {matchList}
+                </div>
+              )}
             </div>
             {/* TABS - - - - - - - - - - - - - - - - - - - */}
             <div className="tabcontainer">
