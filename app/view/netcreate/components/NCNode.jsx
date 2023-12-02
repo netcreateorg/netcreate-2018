@@ -105,6 +105,7 @@ class NCNode extends UNISYS.Component {
     this.DeleteNode = this.DeleteNode.bind(this);
     // HELPER METHODS
     this.SetBackgroundColor = this.SetBackgroundColor.bind(this);
+    this.UpdateMatchingList = this.UpdateMatchingList.bind(this);
     // UI HANDLERS
     this.UISelectTab = this.UISelectTab.bind(this);
     this.UIRequestEditNode = this.UIRequestEditNode.bind(this);
@@ -329,6 +330,7 @@ class NCNode extends UNISYS.Component {
       },
       () => {
         this.SetBackgroundColor();
+        this.UpdateMatchingList(node.label);
         this.LoadEdges(node.id);
         this.IsNodeLocked(nodeIsLocked => {
           this.setState(
@@ -504,6 +506,14 @@ class NCNode extends UNISYS.Component {
     this.setState({ uBackgroundColor });
   }
 
+  UpdateMatchingList(value) {
+    const { id } = this.state;
+    UDATA.LocalCall('FIND_MATCHING_NODES', { searchString: value }).then(data => {
+      const matchingNodes = data.nodes.filter(n => n.id !== id); // don't include self
+      this.setState({ matchingNodes });
+    });
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// UI EVENT HANDLERS
 
@@ -616,13 +626,7 @@ class NCNode extends UNISYS.Component {
     data[key] = value;
     console.warn('Labelinput', key, value);
     this.setState(data);
-    UDATA.LocalCall('FIND_MATCHING_NODES', { searchString: value }).then(data => {
-      const foundLabels =
-        data.nodes && data.nodes.length > 0
-          ? data.nodes.map(d => d.label)
-          : undefined;
-      this.setState({ matchingNodeLabels: foundLabels });
-    });
+    this.UpdateMatchingList(value);
   }
 
   UIViewEdge(edgeId) {
@@ -760,14 +764,19 @@ class NCNode extends UNISYS.Component {
   }
 
   RenderEdit() {
-    const { uSelectedTab, uBackgroundColor, matchingNodeLabels, label } = this.state;
+    const { uSelectedTab, uBackgroundColor, uShowMatchlist, matchingNodes, label } =
+      this.state;
     const defs = UDATA.AppState('TEMPLATE').nodeDefs;
     const bgcolor = uBackgroundColor + '66'; // hack opacity
-    const matchList = matchingNodeLabels
-      ? matchingNodeLabels.map(l => <div key={l}>{l}</div>)
+    const matchList = matchingNodes
+      ? matchingNodes.map(n => (
+          <div key={`${n.label}${n.id}`} value={n.id}>
+            {n.label} <span className="id">#{n.id}</span>
+          </div>
+        ))
       : undefined;
+    const isDuplicate = matchingNodes && matchingNodes.find(n => n.label === label);
     const duplicateWarning = UDATA.AppState('TEMPLATE').duplicateWarning;
-    const isDuplicate = matchingNodeLabels && matchingNodeLabels.includes(label);
     return (
       <div className="--NCNode_Edit">
         <div className="screen"></div>
@@ -781,10 +790,13 @@ class NCNode extends UNISYS.Component {
           >
             {/* BUILT-IN - - - - - - - - - - - - - - - - - */}
             <div className="nodelabel">
-              {NCUI.RenderStringInput('label', label, this.UILabelInputUpdate)}
-            </div>
-            {/* <div className="nodelabel">{this.renderLabelInput('label', label)}</div> */}
-            {matchList && (
+              {NCUI.RenderStringInput(
+                'label',
+                label,
+                this.UILabelInputUpdate,
+                '',
+              )}
+              {uShowMatchlist && matchList && (
               <div className="matchlist">
                 {isDuplicate && (
                   <div className="message warning">{duplicateWarning}</div>
@@ -792,6 +804,7 @@ class NCNode extends UNISYS.Component {
                 {matchList}
               </div>
             )}
+            </div>
             {/* TABS - - - - - - - - - - - - - - - - - - - */}
             <div className="tabcontainer">
               {NCUI.RenderTabSelectors(TABS, this.state, this.UISelectTab)}
