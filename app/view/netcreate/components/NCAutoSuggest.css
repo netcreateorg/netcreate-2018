@@ -29,3 +29,14 @@
   background-color: #ff0c;
   font-size: 12px;
 }
+
+/* NC Node */
+.nodelabel > .matchlist {
+  max-width: 300px;
+  box-shadow: 4px 4px 6px 1px rgba(0, 0, 0, 0.1);
+  margin-top: -10px;
+}
+.nodelabel > .matchlist div:hover {
+  background-color: transparent;
+  cursor: default;
+}
