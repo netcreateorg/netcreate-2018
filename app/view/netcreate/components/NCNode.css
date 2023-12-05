@@ -119,6 +119,14 @@
 .nccomponent .message {
   font-size: 12px;
 }
+.nccomponent .nodelabel .message {
+  font-size: 10px;
+  font-style: italic;
+  font-weight: normal;
+  line-height: 12px;
+  margin-top: -6px;
+  opacity: 0.7;
+}
 .nccomponent .warning {
   color: red;
 }
@@ -187,6 +195,7 @@
   opacity: 0.7;
   text-align: right;
 }
+
 .nccomponent .formview .viewvalue {
   padding-left: 10px;
   text-align: left;

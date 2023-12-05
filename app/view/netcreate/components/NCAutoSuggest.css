@@ -36,6 +36,11 @@
   box-shadow: 4px 4px 6px 1px rgba(0, 0, 0, 0.1);
   margin-top: -10px;
 }
+.nodelabel > .matchlist .warning {
+  line-height: 14px;
+  padding-top: 4px;
+  padding-bottom: 8px;
+}
 .nodelabel > .matchlist div:hover {
   background-color: transparent;
   cursor: default;

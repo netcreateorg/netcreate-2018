@@ -801,12 +801,11 @@ class NCNode extends UNISYS.Component {
               )}
               {uShowMatchlist && matchList && (
                 <div className="matchlist">
-                  {isDuplicate && (
-                    <div className="message warning">{duplicateWarning}</div>
-                  )}
+                  {isDuplicate && <div className="warning">{duplicateWarning}</div>}
                   {matchList}
                 </div>
               )}
+              {isDuplicate && <div className="message">{duplicateWarning}</div>}
             </div>
             {/* TABS - - - - - - - - - - - - - - - - - - - */}
             <div className="tabcontainer">
