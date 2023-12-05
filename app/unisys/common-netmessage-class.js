@@ -231,6 +231,19 @@ class NetMessage {
     }
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** return an informational Object about the packet useful for logging
+   *  Used to provide a predictable format for Research Logging
+   */
+  InfoObj(key) {
+    switch (key) {
+      case 'src': /* falls-through */
+      default:
+        return this.SourceGroupID()
+          ? { uaddr: this.SourceAddress(), group: this.SourceGroupID() }
+          : { uaddr: this.SourceAddress(), group: undefined };
+    }
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   MakeNewID() {
     let idStr = (++m_id_counter).toString();
     this.id = m_id_prefix + idStr.padStart(5, '0');

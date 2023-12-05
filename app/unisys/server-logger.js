@@ -58,10 +58,19 @@ FSE.ensureDir(dir, function (err) {
   var logname = str_TimeDatedFilename('log') + '.txt';
   var pathname = dir + '/' + logname;
   fs_log = FSE.createWriteStream(pathname);
-  LogLine(
+
+  // Show Research Log Field Names
+  const fieldnames = [
+    'Date', 'Time', 'NetName', 'Addr', 'Token', 'Action', 'DataID', 'DataDetail'
+  ];
+  let fields = fieldnames.join(LOG_DELIMITER);
+  fields += '\n';
+  fs_log.write(fields);
+
+  LogResearchLine({},
     `NETCREATE APPSERVER SESSION LOG for ${str_DateStamp()} ${str_TimeStamp()}`
   );
-  LogLine('---');
+  LogResearchLine({}, '---');
 });
 
 /// LOGGING FUNCTIONS /////////////////////////////////////////////////////////
@@ -71,8 +80,33 @@ FSE.ensureDir(dir, function (err) {
 function LogLine(...args) {
   if (!fs_log) return;
 
-  var out = str_TimeStamp() + LOG_DELIMITER;
+  var out = str_ShortDateStamp() + LOG_DELIMITER;
+  out += str_TimeStamp() + LOG_DELIMITER;
   out += NC_CONFIG.dataset + LOG_DELIMITER;
+  var c = args.length;
+  // arguments are delimited
+  if (c) {
+    for (let i = 0; i < c; i++) {
+      if (i > 0) out += LOG_DELIMITER;
+      out += args[i];
+    }
+  }
+  out += '\n';
+  fs_log.write(out);
+}
+
+/** Log a standard structured log message for research
+ *  Guarantees a predictable column order with
+ *    date, time, network, uaddr, group
+ */
+function LogResearchLine(info = { uaddr: '', group: '' }, ...args) {
+  if (!fs_log) return;
+
+  var out = str_ShortDateStamp() + LOG_DELIMITER;
+  out += str_TimeStamp() + LOG_DELIMITER;
+  out += NC_CONFIG.dataset + LOG_DELIMITER;
+  out += (info.uaddr || '-') + LOG_DELIMITER;
+  out += (info.group || '-') + LOG_DELIMITER;
   var c = args.length;
   // arguments are delimited
   if (c) {
@@ -104,6 +138,15 @@ function str_DateStamp() {
   return yyyy + '/' + mm + '/' + dd + ' ' + day;
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function str_ShortDateStamp() {
+  var date = new Date();
+  var mm = ('0' + (date.getMonth() + 1)).slice(-2);
+  var dd = ('0' + date.getDate()).slice(-2);
+  var day = e_weekday[date.getDay()];
+  var yyyy = date.getFullYear();
+  return yyyy + '/' + mm + '/' + dd;
+}
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function str_TimeDatedFilename(...args) {
   // construct filename
   var date = new Date();
@@ -129,14 +172,22 @@ let LOG = {};
  */
 LOG.PKT_LogEvent = function (pkt) {
   let { event, items } = pkt.Data();
+  const uaddr = pkt.SourceAddress();
+  const group = pkt.SourceGroupID(); // leave blank if empty for network events
   if (DBG) console.log(PR, pkt.Info(), event, ...items);
-  LogLine(pkt.Info(), event || '-', ...items);
+  LogResearchLine({ uaddr, group }, event || '-', ...items);
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Write to log as delimited arguments
  */
 LOG.Write = LogLine;
+/** API: Write to Researcher log as delimited arguments
+ *  Research logs alway start with date, time, network, uaddr, group
+ */
+LOG.WriteRLog = function (info = { uaddr: '', group: '' }, ...args) {
+  LogResearchLine(info, ...args);
+}
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
