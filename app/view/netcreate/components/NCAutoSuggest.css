@@ -10,10 +10,16 @@
 .matchlist div {
   padding: 0 10px;
 }
+
+/* line hover is handled via javascript
+   to support highlighting the current
+   node.  Do not use this css hover.
 .matchlist div:hover {
   background-color: #ddd;
   cursor: pointer;
-}
+} 
+*/
+
 .matchlist div.highlighted {
   background-color: #ccc;
   cursor: pointer;
