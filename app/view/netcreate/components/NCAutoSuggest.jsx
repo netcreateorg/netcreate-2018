@@ -5,7 +5,7 @@
   USE:
 
     <NCAutoSuggest
-      statekey={key}
+      parentKey={key}
       value={value}
       onChange={this.handleInputUpdate}
       onSelect={this.handleSelection}
@@ -14,7 +14,8 @@
   PROPS
 
     onChange(key, value) -- returns `key` and `value` for the input field
-    onSelect(key, valuem, id) -- returns `key` and `value` for the final submission
+
+    onSelect(parentKey, value, id) -- returns `state` and `value` for the final submission
                                   as well as the matching id
 
   This will look up matching nodes via FIND_MATCHING_NODES nc-logic request.
@@ -25,7 +26,8 @@
 
   It can be used in a NCNode or NCEdge
 
-  `statekey` provides a unique key for source/target selection
+  `parentKey` provides a unique key to determine whether this NCAutoSuggest
+  component is being used for a `search`, a `source`, or a `target` selection
 
   Replaces the AutoComplete and AutoSuggest components.
 
@@ -105,10 +107,10 @@ class NCAutoSuggest extends UNISYS.Component {
   /**
    * User has clicked an item in the matchlist, selecting one of the autosuggest items
    * @param {Object} event
-   * @param {string} key Usually either `source` or `target`
    * @param {number} id
+   * @param {string} parentKey Either `search`, `source` or `target`
    */
-  m_UISelect(event, key, id) {
+  m_UISelect(event, parentKey, value) {
     event.preventDefault(); // catch click to close matchlist
     event.stopPropagation();
     const { onSelect } = this.props;
@@ -117,9 +119,9 @@ class NCAutoSuggest extends UNISYS.Component {
     this.setState({ isValidNode: matchedNode, matches: [], higlightedLine: -1 }); // clear matches
     if (typeof onSelect === 'function')
       onSelect(
-        key,
         matchedNode ? matchedNode.value : undefined,
         matchedNode ? matchedNode.id : undefined
+        parentKey,
       ); // callback function NCEdge.uiSourceTargetInputUpdate
   }
   /**
@@ -131,7 +133,7 @@ class NCAutoSuggest extends UNISYS.Component {
    */
   m_UIKeyDown(event) {
     const { matches, higlightedLine } = this.state;
-    const { statekey, value, onSelect } = this.props;
+    const { parentKey, value, onSelect } = this.props;
     const keystroke = event.key;
     const lastLine = matches ? matches.length : -1;
     let newHighlightedLine = higlightedLine;
@@ -170,7 +172,7 @@ class NCAutoSuggest extends UNISYS.Component {
 
   render() {
     const { matches, higlightedLine, isValidNode } = this.state;
-    const { statekey, value, onSelect } = this.props;
+    const { parentKey, value, onSelect } = this.props;
     const matchList =
       matches && matches.length > 0
         ? matches.map((n, i) => (
@@ -178,7 +180,7 @@ class NCAutoSuggest extends UNISYS.Component {
               key={`${n.label}${i}`}
               value={n.label}
               className={higlightedLine === i ? 'highlighted' : ''}
-              onClick={event => this.m_UISelect(event, statekey, n.id)}
+              onClick={event => this.m_UISelect(event, parentKey, n.id)}
             >
               {n.label} <span className="id">#{n.id}</span>
             </div>
@@ -188,8 +190,8 @@ class NCAutoSuggest extends UNISYS.Component {
       <div style={{ position: 'relative', flexGrow: '1' }}>
         <div className="helptop">Click on a node, or type a node name</div>
         <input
-          id={statekey}
-          key={`${statekey}input`}
+          id={parentKey}
+          key={`${parentKey}input`}
           value={value}
           type="string"
           className={!isValidNode ? 'invalid' : ''}
