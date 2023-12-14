@@ -24,12 +24,16 @@
   text input.  Any partial node labels will display as a list of popup
   menu options.
 
-  It can be used in a NCNode or NCEdge
+  It can be used in a NCSearch or NCEdge
+  (NOTE NCNode does not not use NCAutoSuggest, but displays a matchlist using
+  a mechanism similar to NCAutoSuggest -- the key difference is that NCNode's
+  matchlist is simply a static display list to let you know which nodes match
+  the current input field, and does NOT support selecting a match.)
 
   `parentKey` provides a unique key to determine whether this NCAutoSuggest
   component is being used for a `search`, a `source`, or a `target` selection
 
-  Replaces the AutoComplete and AutoSuggest components.
+  Replaces the deprecated AutoComplete and AutoSuggest components.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -53,9 +57,12 @@ class NCAutoSuggest extends UNISYS.Component {
     this.state = {
       matches: [], // {id, label}
       higlightedLine: -1,
-      isValidNode: true
+      isValidNode: true,
+      uShowMatchlist: false
     };
 
+    this.m_UIInputFocus = this.m_UIInputFocus.bind(this);
+    this.m_UIInputClick = this.m_UIInputClick.bind(this);
     this.m_UIUpdate = this.m_UIUpdate.bind(this);
     this.m_UISelect = this.m_UISelect.bind(this);
     this.m_UIKeyDown = this.m_UIKeyDown.bind(this);
@@ -75,6 +82,27 @@ class NCAutoSuggest extends UNISYS.Component {
   }
 
   /**
+   * User has clicked inside the input field to set selection point
+   * This is needed to restore the selection point after a blur
+   * `focus` fires before `click`
+   */
+  m_UIInputFocus(event) {
+    event.target.select();
+    this.m_UIUpdate(event);
+  }
+
+  /**
+   * User has clicked in the input field, so update and show the matchlist
+   * and catch the event to prevent the document click handler from firing other actions
+   */
+  m_UIInputClick(event) {
+    event.preventDefault(); // this prevents the document click handler from closing the matchlist
+    event.stopPropagation();
+    this.setState({ uShowMatchlist: true });
+  }
+
+  /**
+   * User has typed in the input field, or the field is getting focus again.
    * This processes the form data before passing it on to the parent handler.
    * The callback function is generally an input state update method in
    * NCNode or NCEdge
@@ -84,7 +112,6 @@ class NCAutoSuggest extends UNISYS.Component {
     const { onChange } = this.props;
     const key = event.target.id;
     const value = event.target.value;
-
     // save the selection cursor position
     const selstart = event.target.selectionStart;
     const inputEl = event.target;
@@ -98,7 +125,7 @@ class NCAutoSuggest extends UNISYS.Component {
               return { id: d.id, label: d.label };
             })
           : undefined;
-      this.setState({ matches, isValidNode });
+      this.setState({ matches, isValidNode, uShowMatchlist: true });
       if (typeof onChange === 'function')
         onChange(key, value, () => {
           // restore  selection cursor position
@@ -108,30 +135,37 @@ class NCAutoSuggest extends UNISYS.Component {
     });
   }
   /**
-   * User has clicked an item in the matchlist, selecting one of the autosuggest items
+   * User has clicked an item in the matchlist,
+   * or selected an item by typing ENTER
+   * selecting one of the autosuggest items
    * @param {Object} event
-   * @param {number} id
    * @param {string} parentKey Either `search`, `source` or `target`
+   * @param {string} value The autosuggest input value
    */
   m_UISelect(event, parentKey, value) {
     event.preventDefault(); // catch click to close matchlist
     event.stopPropagation();
     const { onSelect } = this.props;
     const { matches } = this.state;
-    const matchedNode = matches ? matches.find(n => n.id === id) : undefined;
-    this.setState({ isValidNode: matchedNode, matches: [], higlightedLine: -1 }); // clear matches
+    const matchedNodeViaID = matches ? matches.find(n => n.id === value) : undefined;
+    this.setState({
+      isValidNode: matchedNodeViaID,
+      matches: [],
+      higlightedLine: -1,
+      uShowMatchlist: false
+    }); // clear matches
     if (typeof onSelect === 'function')
       onSelect(
-        matchedNode ? matchedNode.value : undefined,
-        matchedNode ? matchedNode.id : undefined
         parentKey,
+        matchedNodeViaID ? undefined : value, // either value...
+        matchedNodeViaID ? matchedNodeViaID.id : undefined // ...or id, not both
       ); // callback function NCEdge.uiSourceTargetInputUpdate
   }
   /**
    * Handle key strokes
-   * --  Hitting up/down arrow will select the higlight
-   * --  Hitting Esc will cancel the autosuggest, also hitting Tab will prevent selecting the next field
-   * --  Hitting Enter will select the item
+   * --  Typing UP/DOWN arrow will select the higlight
+   * --  Typing ESC will cancel the autosuggest, also hitting Tab will prevent selecting the next field
+   * --  Typing ENTER will select the item
    * @param {Object} event
    */
   m_UIKeyDown(event) {
@@ -141,12 +175,14 @@ class NCAutoSuggest extends UNISYS.Component {
     const lastLine = matches ? matches.length : -1;
     let newHighlightedLine = higlightedLine;
     if (keystroke === 'Enter') {
-      let selectedValue = value;
       if (higlightedLine > -1) {
-        // there is highlight, so select that
-        selectedValue = matches[higlightedLine].label;
+        // there is highlight, so select that using the id in the matchlist
+        const id = matches[higlightedLine].id;
+        this.m_UISelect(event, parentKey, id); // user selects current highlight
+      } else if (value !== '') {
+        // Create a new node -- see also NCSearch
+        this.m_UISelect(event, parentKey, value); // user selects current highlight
       }
-      this.m_UISelect(event, statekey, selectedValue); // user selects current highlight
     }
     if (keystroke === 'Escape' || keystroke === 'Tab') {
       event.preventDefault(); // prevent tab key from going to the next field
@@ -160,16 +196,10 @@ class NCAutoSuggest extends UNISYS.Component {
       newHighlightedLine > -1 &&
       lastLine > 0
     ) {
-      newHighlightedLine = Math.min(lastLine - 1, Math.max(0, newHighlightedLine));
-      this.setState({ higlightedLine: newHighlightedLine });
-      const highlightedNode = matches[newHighlightedLine];
-      UDATA.LocalCall('AUTOSUGGEST_HILITE_NODE', { nodeId: highlightedNode.id });
+      this.m_UIHighlightLine(newHighlightedLine);
     }
   }
 
-  m_UIClickOutside(event) {
-    if (!event.defaultPrevented) {
-      this.setState({ matches: [], higlightedLine: -1 }); // close autosuggest
   m_UIMouseHighlightLine(event, line) {
     this.m_UIHighlightLine(line);
   }
@@ -179,11 +209,25 @@ class NCAutoSuggest extends UNISYS.Component {
     // We want to keep the matchlist open even if you move the mouse
     // outside of the line.
   }
-    }
+
+  m_UIHighlightLine(line) {
+    const { matches } = this.state;
+    const lastLine = matches ? matches.length : -1;
+    line = Math.min(lastLine - 1, Math.max(0, line));
+    this.setState({ higlightedLine: line, uShowMatchlist: true });
+    const highlightedNode = matches[line];
+    UDATA.LocalCall('AUTOSUGGEST_HILITE_NODE', { nodeId: highlightedNode.id });
+  }
+
+  // Clicking outside of the matchlist should close the autosuggest
+  m_UIClickOutside(event) {
+    if (event.defaultPrevented)
+      return; // clicking on the input field or the matchlist catches the click and prevents inadvertently closing the matchlist
+    else this.setState({ matches: [], higlightedLine: -1, uShowMatchlist: false }); // close matchlist
   }
 
   render() {
-    const { matches, higlightedLine, isValidNode } = this.state;
+    const { matches, higlightedLine, isValidNode, uShowMatchlist } = this.state;
     const { parentKey, value, onSelect } = this.props;
     const matchList =
       matches && matches.length > 0
@@ -199,6 +243,7 @@ class NCAutoSuggest extends UNISYS.Component {
             </div>
           ))
         : undefined;
+
     return (
       <div style={{ position: 'relative', flexGrow: '1' }}>
         <div className="helptop">Click on a node, or type a node name</div>
@@ -210,12 +255,17 @@ class NCAutoSuggest extends UNISYS.Component {
           className={!isValidNode ? 'invalid' : ''}
           onChange={this.m_UIUpdate}
           onKeyDown={this.m_UIKeyDown}
-          onFocus={e => e.target.select()}
+          onFocus={this.m_UIInputFocus}
+          onClick={this.m_UIInputClick}
           autoComplete="off" // turn off Chrome's default autocomplete, which conflicts
         />
         <br />
-        {matchList && (
-          <div id="matchlist" className="matchlist">
+        {uShowMatchlist && matchList && (
+          <div
+            id="matchlist"
+            className="matchlist"
+            onMouseLeave={this.m_UIMouseUnhighlightLine}
+          >
             {matchList}
           </div>
         )}
