@@ -59,6 +59,9 @@ class NCAutoSuggest extends UNISYS.Component {
     this.m_UIUpdate = this.m_UIUpdate.bind(this);
     this.m_UISelect = this.m_UISelect.bind(this);
     this.m_UIKeyDown = this.m_UIKeyDown.bind(this);
+    this.m_UIMouseHighlightLine = this.m_UIMouseHighlightLine.bind(this);
+    this.m_UIMouseUnhighlightLine = this.m_UIMouseUnhighlightLine.bind(this);
+    this.m_UIHighlightLine = this.m_UIHighlightLine.bind(this);
     this.m_UIClickOutside = this.m_UIClickOutside.bind(this);
 
     document.addEventListener('click', this.m_UIClickOutside);
@@ -167,6 +170,15 @@ class NCAutoSuggest extends UNISYS.Component {
   m_UIClickOutside(event) {
     if (!event.defaultPrevented) {
       this.setState({ matches: [], higlightedLine: -1 }); // close autosuggest
+  m_UIMouseHighlightLine(event, line) {
+    this.m_UIHighlightLine(line);
+  }
+  m_UIMouseUnhighlightLine(event) {
+    // Placeholder for future functionality
+    // Catch the event, but don't do anything.
+    // We want to keep the matchlist open even if you move the mouse
+    // outside of the line.
+  }
     }
   }
 
@@ -181,6 +193,7 @@ class NCAutoSuggest extends UNISYS.Component {
               value={n.label}
               className={higlightedLine === i ? 'highlighted' : ''}
               onClick={event => this.m_UISelect(event, parentKey, n.id)}
+              onMouseEnter={event => this.m_UIMouseHighlightLine(event, i)}
             >
               {n.label} <span className="id">#{n.id}</span>
             </div>
