@@ -15,8 +15,10 @@
 
     onChange(key, value) -- returns `key` and `value` for the input field
 
-    onSelect(parentKey, value, id) -- returns `state` and `value` for the final submission
-                                  as well as the matching id
+    onSelect(parentKey, value, id)
+        -- returns `state` and `value` for the final submission as well as the
+           matching id.  `value` is then passed back to NCAutoSuggest as the
+           search field input value.
 
   This will look up matching nodes via FIND_MATCHING_NODES nc-logic request.
 
@@ -64,7 +66,8 @@ class NCAutoSuggest extends UNISYS.Component {
     this.m_UIInputFocus = this.m_UIInputFocus.bind(this);
     this.m_UIInputClick = this.m_UIInputClick.bind(this);
     this.m_UIUpdate = this.m_UIUpdate.bind(this);
-    this.m_UISelect = this.m_UISelect.bind(this);
+    this.m_UISelectByLabel = this.m_UISelectByLabel.bind(this);
+    this.m_UISelectById = this.m_UISelectById.bind(this);
     this.m_UIKeyDown = this.m_UIKeyDown.bind(this);
     this.m_UIMouseHighlightLine = this.m_UIMouseHighlightLine.bind(this);
     this.m_UIMouseUnhighlightLine = this.m_UIMouseUnhighlightLine.bind(this);
@@ -142,7 +145,7 @@ class NCAutoSuggest extends UNISYS.Component {
    * @param {string} parentKey Either `search`, `source` or `target`
    * @param {string} value The autosuggest input value
    */
-  m_UISelect(event, parentKey, value) {
+  m_UISelectByLabel(event, parentKey, value) {
     event.preventDefault(); // catch click to close matchlist
     event.stopPropagation();
     const { onSelect } = this.props;
@@ -154,13 +157,36 @@ class NCAutoSuggest extends UNISYS.Component {
       higlightedLine: -1,
       uShowMatchlist: false
     }); // clear matches
-    if (typeof onSelect === 'function')
+    if (typeof onSelect === 'function') {
       onSelect(
         parentKey,
-        matchedNodeViaID ? undefined : value, // either value...
+        value,
         matchedNodeViaID ? matchedNodeViaID.id : undefined // ...or id, not both
       ); // callback function NCEdge.uiSourceTargetInputUpdate
+    }
   }
+
+  m_UISelectById(event, parentKey, id) {
+    event.preventDefault(); // catch click to close matchlist
+    event.stopPropagation();
+    const { onSelect, value } = this.props;
+    const { matches } = this.state;
+    const matchedNodeViaID = matches ? matches.find(n => n.id === id) : undefined;
+    this.setState({
+      isValidNode: matchedNodeViaID,
+      matches: [],
+      higlightedLine: -1,
+      uShowMatchlist: false
+    }); // clear matches
+    if (typeof onSelect === 'function') {
+      onSelect(
+        parentKey,
+        value, // show the current input field value
+        matchedNodeViaID ? matchedNodeViaID.id : undefined // ...or `id`, not both
+      ); // callback function NCEdge.uiSourceTargetInputUpdate
+    }
+  }
+
   /**
    * Handle key strokes
    * --  Typing UP/DOWN arrow will select the higlight
@@ -175,13 +201,14 @@ class NCAutoSuggest extends UNISYS.Component {
     const lastLine = matches ? matches.length : -1;
     let newHighlightedLine = higlightedLine;
     if (keystroke === 'Enter') {
-      if (higlightedLine > -1) {
+      if (higlightedLine > -1 && matches) {
+        // make sure matches exists, b/c hitting Enter with a typo can end up with bad match
         // there is highlight, so select that using the id in the matchlist
         const id = matches[higlightedLine].id;
-        this.m_UISelect(event, parentKey, id); // user selects current highlight
+        this.m_UISelectById(event, parentKey, id); // user selects current highlight
       } else if (value !== '') {
         // Create a new node -- see also NCSearch
-        this.m_UISelect(event, parentKey, value); // user selects current highlight
+        this.m_UISelectByLabel(event, parentKey, value); // user selects current highlight
       }
     }
     if (keystroke === 'Escape' || keystroke === 'Tab') {
@@ -236,14 +263,13 @@ class NCAutoSuggest extends UNISYS.Component {
               key={`${n.label}${i}`}
               value={n.label}
               className={higlightedLine === i ? 'highlighted' : ''}
-              onClick={event => this.m_UISelect(event, parentKey, n.id)}
+              onClick={event => this.m_UISelectByLabel(event, parentKey, n.id)}
               onMouseEnter={event => this.m_UIMouseHighlightLine(event, i)}
             >
               {n.label} <span className="id">#{n.id}</span>
             </div>
           ))
         : undefined;
-
     return (
       <div style={{ position: 'relative', flexGrow: '1' }}>
         <div className="helptop">Click on a node, or type a node name</div>

@@ -490,35 +490,27 @@ class NCEdge extends UNISYS.Component {
   ValidateSourceTarget(key, label, id) {
     // if we have an id, then the selected source/target is an existing node
     // but we should probably validate it anyway?
+    let keyType, searchString;
     if (id) {
       // find node by 'id'
-      console.error('NCEdge: Finding node by label', label);
-      UDATA.LocalCall('FIND_NODE_BY_PROP', {
-        key: 'id',
-        searchString: id
-      }).then(data => {
-        if (data.nodes.length > 0) {
-          const node = data.nodes[0];
-          this.ThenSaveSourceTarget(key, node);
-        } else {
-          this.OfferToCreateNewNode(key, label);
-        }
-      });
+      keyType = 'id';
+      searchString = id;
     } else {
       // find node by 'label'
-      console.error('NCEdge: Creating node by label', label);
-      UDATA.LocalCall('FIND_NODE_BY_PROP', {
-        key: 'label',
-        searchString: label
-      }).then(data => {
-        if (data.nodes.length > 0) {
-          const node = data.nodes[0];
-          this.ThenSaveSourceTarget(key, node);
-        } else {
-          this.OfferToCreateNewNode(key, label);
-        }
-      });
+      keyType = 'label';
+      searchString = label;
     }
+    UDATA.LocalCall('FIND_NODE_BY_PROP', {
+      key: keyType,
+      searchString
+    }).then(data => {
+      if (data.nodes.length > 0) {
+        const node = data.nodes[0];
+        this.ThenSaveSourceTarget(key, node);
+      } else {
+        this.OfferToCreateNewNode(key, label);
+      }
+    });
   }
   /**
    * User has input a new node name that doesn't match an existing node
