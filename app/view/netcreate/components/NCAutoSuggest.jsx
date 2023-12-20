@@ -263,7 +263,7 @@ class NCAutoSuggest extends UNISYS.Component {
               key={`${n.label}${i}`}
               value={n.label}
               className={higlightedLine === i ? 'highlighted' : ''}
-              onClick={event => this.m_UISelectByLabel(event, parentKey, n.id)}
+              onClick={event => this.m_UISelectById(event, parentKey, n.id)}
               onMouseEnter={event => this.m_UIMouseHighlightLine(event, i)}
             >
               {n.label} <span className="id">#{n.id}</span>
