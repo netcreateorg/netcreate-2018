@@ -481,40 +481,36 @@ class NCEdge extends UNISYS.Component {
    * User has selected a new source or target
    * validate it to make sure it exists
    * if it doesn't, offer to create a new one
+   * Uses either `id` or `value` to find the node
+   *
    * @param {string} key 'source' or 'target'
-   * @param {string} value
+   * @param {string} label
    * @param {number} id
    */
-  ValidateSourceTarget(key, value, id) {
+  ValidateSourceTarget(key, label, id) {
     // if we have an id, then the selected source/target is an existing node
     // but we should probably validate it anyway?
+    let keyType, searchString;
     if (id) {
       // find node by 'id'
-      UDATA.LocalCall('FIND_NODE_BY_PROP', {
-        key: 'id',
-        searchString: id
-      }).then(data => {
-        if (data.nodes.length > 0) {
-          const node = data.nodes[0];
-          this.ThenSaveSourceTarget(key, node);
-        } else {
-          this.OfferToCreateNewNode(key, value);
-        }
-      });
+      keyType = 'id';
+      searchString = id;
     } else {
       // find node by 'label'
-      UDATA.LocalCall('FIND_NODE_BY_PROP', {
-        key: 'label',
-        searchString: value
-      }).then(data => {
-        if (data.nodes.length > 0) {
-          const node = data.nodes[0];
-          this.ThenSaveSourceTarget(key, node);
-        } else {
-          this.OfferToCreateNewNode(key, value);
-        }
-      });
+      keyType = 'label';
+      searchString = label;
     }
+    UDATA.LocalCall('FIND_NODE_BY_PROP', {
+      key: keyType,
+      searchString
+    }).then(data => {
+      if (data.nodes.length > 0) {
+        const node = data.nodes[0];
+        this.ThenSaveSourceTarget(key, node);
+      } else {
+        this.OfferToCreateNewNode(key, label);
+      }
+    });
   }
   /**
    * User has input a new node name that doesn't match an existing node
@@ -816,11 +812,12 @@ class NCEdge extends UNISYS.Component {
    * User has selected a node with NCAutoSuggest, either
    * - Clicking on a suggested node
    * - Hitting Enter with the form field showing either a valid node or a new node
-   * @param {string} key
-   * @param {string} value
+   * @param {string} key is 'id' or 'label'
+   * @param {string} label
+   * @param {number} id
    */
-  UISourceTargetInputSelect(key, value, id) {
-    this.ValidateSourceTarget(key, value, id);
+  UISourceTargetInputSelect(key, label, id) {
+    this.ValidateSourceTarget(key, label, id);
   }
 
   UICitationShow(event) {
@@ -1040,9 +1037,10 @@ class NCEdge extends UNISYS.Component {
    * - Displaying the source / target name in the view/edit panel
    * - Click on Source or Target to select a new one
    * - Showing a focus ring (outline) after having secondarily selected a source/target
-   * @param {string} key
+   * @param {string} key 'source' or 'target'
    * @param {string} value
    * @param {boolean} disabled Used by renderView to disable source/target selection buttons
+   *                           when it isn't being edited
    * @returns {jsx}
    */
   RenderSourceTargetButton(key, value, disabled) {
@@ -1057,7 +1055,7 @@ class NCEdge extends UNISYS.Component {
     if (!disabled && (uSelectSourceTarget === key || value === undefined)) {
       return (
         <NCAutoSuggest
-          statekey={key}
+          parentKey={key}
           value={value}
           onChange={this.UISourceTargetInputUpdate}
           onSelect={this.UISourceTargetInputSelect}
@@ -1065,7 +1063,7 @@ class NCEdge extends UNISYS.Component {
       );
     } else {
       color = key === 'source' ? dSourceNodeColor : dTargetNodeColor;
-      // Ssecondary selection?
+      // Secondary selection?
       const SELECTION = UDATA.AppState('SELECTION');
       let isSecondarySelection = false;
       if (key === 'source') {

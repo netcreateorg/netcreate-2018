@@ -258,7 +258,7 @@ MOD.TEMPLATE = {
       description:
         'Warning message to display if user is trying to create a node that already exists.',
       default:
-        'You’re entering a duplicate node.  Do you want to View the Existing node, or Continue creating?'
+        'NOTE: At least one other node has the same name. Use search or the node table to check the others.'
     },
     'nodeIsLockedMessage': {
       type: 'string',

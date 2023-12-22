@@ -84,12 +84,13 @@ class NCSearch extends UNISYS.Component {
   }
 
   UIOnSelect(key, value, id) {
+    const { isLoggedIn } = this.state;
     // match existing vs create new
     this.setState({ value }, () => {
       if (id) {
         // open existing node
         UDATA.LocalCall('D3_SELECT_NODE', { nodeIDs: [id] });
-      } else {
+      } else if (isLoggedIn) {
         // create a new node
         this.UINewNode();
       }
@@ -112,17 +113,22 @@ class NCSearch extends UNISYS.Component {
   ///
   render() {
     const { value, isLoggedIn } = this.state;
-    const newNodeBtnDisabled = !isLoggedIn || value === '';
-    const key = 'search'; // used for source/target, placeholder for search
+    const newNodeBtnHidden = !isLoggedIn;
+    const newNodeBtnDisabled = value === '';
+    const key = 'search'; // used for search/source/target, placeholder for search
     return (
       <div className="--NCSearch ncsearch">
         <NCAutoSuggest
-          statekey={key}
+          parentKey={key}
           value={value}
           onChange={this.UIOnChange}
           onSelect={this.UIOnSelect}
         />
-        <button disabled={newNodeBtnDisabled} onClick={this.UINewNode}>
+        <button
+          hidden={newNodeBtnHidden}
+          disabled={newNodeBtnDisabled}
+          onClick={this.UINewNode}
+        >
           New Node
         </button>
       </div>
