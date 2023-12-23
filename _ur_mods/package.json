@@ -1,0 +1,35 @@
+{
+  "name": "@ursys/nc-modules",
+  "version": "0.1",
+  "description": "modular system for enhancing NetCreate 2.0 (ITEST)",
+  "private": true,
+  "scripts": {
+    "lint": "eslint .",
+    "clean": "rm -rf ./node_modules ./_dist"
+  },
+  "browser": "./_dist/mod-client-cjs.js",
+  "main": "./_dist/mod-server.cjs",
+  "exports": {
+    "node": {
+      "import": "./_dist/mod-server-esm.mjs",
+      "require": "./_dist/mod-server.cjs"
+    },
+    "browser": {
+      "import": "./_dist/mod-client-esm.js",
+      "require": "./_dist/mod-client-cjs.js",
+      "default": "./_dist/mod-client-umd.js"
+    }
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.2",
+    "esbuild-plugin-copy": "^2.1.1",
+    "esbuild-plugin-umd-wrapper": "^1.0.7",
+    "fs-extra": "^11.1.1",
+    "node-dir": "^0.1.17"
+  },
+  "dependencies": {
+    "@ursys/netcreate": "file:../_ur",
+    "graphology": "^0.25.4",
+    "peggy": "^3.0.2"
+  }
+}

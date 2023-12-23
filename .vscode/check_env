@@ -1,0 +1,55 @@
+# The following script is invoked on Apple OSX machines
+# in the .code-workspace setting "terminal.integrated.profiles.osx"
+
+#
+# (1) Ensure NVM Version is Obeyed in Shell
+#
+NODE_PREFERRED="v18.16.0"
+
+# ANSI Terminal Colors
+ALRT="\e[33;1m" # yellow
+INFO="\e[34;1m" # blue
+NRML="\e[0m"    # normal
+BOLD="\e[1m"    # normal bold
+
+# Check if NVM_DIR is defined
+if [ -z "$NVM_DIR" ]; then
+  echo ""
+  echo "vsenv: ${ALRT}NVM does not appear to be installed${NRML}"
+  echo "       Does your ${INFO}~/.zshrc${NRML} have ${INFO}export NVM_DIR${NRML} lines?"
+  echo ""
+  echo "       If you haven't installed nvm yet, please follow the instructions"
+  echo "       on the NetCreate wiki."
+  echo "       If you are using 'bash' as your default shell, you can copy "
+  echo "       these lines to your .zshrc file so nvm will also work in zsh."
+  return
+fi
+
+
+# Check if shell is opening inside a VSCODE integrated terminal
+# is NVM is installed, there is a .nvmrc file and a .vscode directory?
+if [ -n "$NVM_DIR" ] && [ -s "./.nvmrc" ] && [ -d "./.vscode" ]; then
+  NODE_VERSION=$(cat ./.nvmrc)
+  str_out="(nvm)";
+  str_alias=$(nvm alias default "$NODE_VERSION")
+  str_use=$(nvm use "$NODE_VERSION")
+  if [ -n "$str_use" ]; then
+    str_out="$str_out current version"
+  fi
+  if [ -n "$str_alias" ]; then
+    str_out="$str_out and alias"
+  fi
+  echo ""
+  echo "vsenv: VISUAL STUDIO CODE INTEGRATED TERMINAL DETECTED"
+  echo   "       ${str_out} detected setting: node ${INFO}$NODE_VERSION${NRML}"
+  CURRENT_VERSION=$(node --version)
+  if [ "$CURRENT_VERSION" != "$NODE_VERSION" ] && [ -n "$str_alias" ]; then
+    echo "vsenv: ${BOLD}kill/restart VSCODE for nvm alias default to take effect!${NRML}"
+    echo "       this shell is using version ${INFO}$CURRENT_VERSION${NRML} until you do"
+    echo "       alternatively, type ${ALRT}nvm use $NODE_VERSION${NRML} to use it now"
+  fi
+else
+  nvm use $NODE_PREFERRED > /dev/null 2>&1
+  nvm alias default $NODE_PREFERRED > /dev/null 2>&1
+  echo "zshrc: setting default node $NODE_PREFERRED"
+fi

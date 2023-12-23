@@ -1,0 +1,223 @@
+name = "Untitled Project"
+description = "No Description"
+requireLogin = false
+hideDeleteNodeButton = false
+allowLoggedInUserToImport = false
+nodeSizeDefault = 5
+nodeSizeMax = 50
+edgeSizeDefault = 1
+edgeSizeMax = 25
+filterFade = "Fade"
+filterFadeHelp = "Show matches, Fade others"
+filterReduce = "Reduce"
+filterReduceHelp = "Show matches, Reduce (remove) others & recalculate sizes"
+filterFocus = "Focus"
+filterFocusHelp = "Show only nodes connected to the selected node within range"
+duplicateWarning = "NOTE: At least one other node has the same name. Use search or the node table to check the others."
+nodeIsLockedMessage = "This node is currently being edited by someone else, please try again later."
+edgeIsLockedMessage = "This edge is currently being edited by someone else, please try again later."
+templateIsLockedMessage = "The template is currently being edited, please try again later."
+importIsLockedMessage = "Data is currently being imported, please try again later."
+nodeDefaultTransparency = 1
+edgeDefaultTransparency = 0.7
+searchColor = "#008800"
+sourceColor = "#FFa500"
+
+[citation]
+text = "No citation set"
+hidden = false
+
+[nodeDefs.id]
+type = "number"
+displayLabel = "Id"
+exportLabel = "ID"
+help = "System-generated unique id number"
+includeInGraphTooltip = true
+hidden = false
+
+[nodeDefs.label]
+type = "string"
+displayLabel = "label"
+exportLabel = "Label"
+help = "Display name of the node"
+includeInGraphTooltip = true
+hidden = false
+
+[nodeDefs.type]
+type = "select"
+displayLabel = "Type"
+exportLabel = "NodeType"
+help = "Select a category"
+includeInGraphTooltip = true
+hidden = false
+
+  [[nodeDefs.type.options]]
+  color = "#eeeeee"
+  label = ""
+
+[nodeDefs.notes]
+type = "string"
+displayLabel = "Notes"
+exportLabel = "Notes"
+help = "General purpose notes text field"
+includeInGraphTooltip = true
+hidden = false
+
+[nodeDefs.info]
+type = "number"
+displayLabel = "Number"
+exportLabel = "Info"
+help = "Some number comparison"
+includeInGraphTooltip = true
+hidden = false
+
+[nodeDefs.provenance]
+type = "string"
+displayLabel = "Provenance"
+exportLabel = "Provenance"
+help = "Who created this?  (aka Provenance)"
+includeInGraphTooltip = true
+hidden = false
+
+[nodeDefs.comments]
+type = "string"
+displayLabel = "Comments"
+exportLabel = "Comments"
+help = 'Enter "<comment> -- <name> <date>"'
+includeInGraphTooltip = true
+hidden = false
+
+[nodeDefs.degrees]
+type = "number"
+displayLabel = "Degrees"
+exportLabel = "Degrees"
+help = "Number of edges connected to this node"
+includeInGraphTooltip = true
+hidden = false
+
+[nodeDefs.created]
+displayLabel = "Created"
+exportLabel = "Created"
+includeInGraphTooltip = true
+help = "Date and time node was created"
+hidden = false
+
+[nodeDefs.updated]
+displayLabel = "Updated"
+exportLabel = "Updated"
+includeInGraphTooltip = true
+help = "Date and time node was last modified"
+hidden = false
+
+[nodeDefs.revision]
+displayLabel = "Revision"
+exportLabel = "Revision"
+includeInGraphTooltip = true
+help = "Number of times this node has been revised"
+hidden = true
+
+[edgeDefs.id]
+type = "number"
+displayLabel = "Id"
+exportLabel = "ID"
+help = "System-generated unique id number"
+hidden = false
+
+[edgeDefs.source]
+type = "number"
+displayLabel = "Source"
+exportLabel = "Source"
+help = "Edge source node"
+hidden = false
+
+[edgeDefs.target]
+type = "number"
+displayLabel = "Target"
+exportLabel = "Target"
+help = "Edge target node"
+hidden = false
+
+[edgeDefs.type]
+type = "select"
+displayLabel = "Type"
+exportLabel = "EdgeType"
+help = "Type of edge connection"
+hidden = false
+
+  [[edgeDefs.type.options]]
+  color = "#eeeeee"
+  label = ""
+
+[edgeDefs.notes]
+type = "string"
+displayLabel = "Notes"
+exportLabel = "Notes"
+help = "Significance of the connection"
+hidden = false
+
+[edgeDefs.info]
+type = "number"
+displayLabel = "Date"
+exportLabel = "Date"
+help = '"YYYY-MM-DD" format"'
+hidden = false
+
+[edgeDefs.weight]
+type = "number"
+defaultValue = 1
+displayLabel = "Weight"
+exportLabel = "Weight"
+help = "Weight of edge"
+includeInGraphTooltip = true
+isRequired = true
+hidden = false
+
+[edgeDefs.provenance]
+type = "string"
+displayLabel = "Provenance"
+exportLabel = "Provenance"
+help = "Who created this?  (aka Provenance)"
+hidden = false
+
+[edgeDefs.comments]
+type = "string"
+displayLabel = "Comments"
+exportLabel = "Comments"
+help = 'Enter "<comment> -- <name> <date>"'
+includeInGraphTooltip = true
+hidden = false
+
+[edgeDefs.citation]
+type = "string"
+displayLabel = "Citation"
+exportLabel = "Citation"
+help = 'Source Book.Chapter (e.g. "Part 2 06.03")'
+hidden = false
+
+[edgeDefs.category]
+type = "string"
+displayLabel = "Category"
+exportLabel = "Category"
+help = "Category (deprecated)"
+hidden = true
+
+[edgeDefs.created]
+displayLabel = "Created"
+exportLabel = "Created"
+includeInGraphTooltip = true
+help = "Date and time edge was created"
+hidden = false
+
+[edgeDefs.updated]
+displayLabel = "Updated"
+exportLabel = "Updated"
+includeInGraphTooltip = true
+help = "Date and time edge was last modified"
+hidden = false
+
+[edgeDefs.revision]
+displayLabel = "Revision"
+exportLabel = "Revision"
+includeInGraphTooltip = true
+help = "Number of times this edge has been revised"
+hidden = true

@@ -1,0 +1,35 @@
+.ncsearch {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 1em;
+  margin-bottom: 20px;
+}
+.ncsearch button {
+  background-color: #fff6;
+  border-radius: 5px;
+  border-color: #0006;
+  border-width: 1px;
+  border-style: solid;
+  color: #333;
+  margin-left: 0.5em;
+}
+.ncsearch button:disabled {
+  background-color: #fff3;
+  border-color: #0003;
+  color: #3333;
+  cursor: not-allowed;
+}
+.ncsearch input {
+  width: 100%;
+  padding: 0 5px;
+  font-size: 16px;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+}
+
+/* override help */
+.ncsearch .helptop {
+  position: unset;
+  background-color: transparent;
+}

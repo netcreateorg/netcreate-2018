@@ -5,20 +5,34 @@
 # or operating system, you probably want to add a global ignore instead:
 #   git config --global core.excludesfile ~/.gitignore
 
-# Ignore npm packaging
-/.node_modules
-/node_modules
+# NetCreate ignored directories
+/runtime
+netcreate-config.js
 
-# Ignore all logfiles and tempfiles.
+# _ur package
+_dist
+
+# Also ignore build system directories
+.npmignore
+/.parcel-cache
+/public*
+
+# the code-workspace file also hides node_modules from file list
+**/node_modules
+.package-lock.json
+
+# And don't commit personal log files or temp
+*_log.md
 *.log
-/tmp
+tmp-*
+*_nocommit
+
+# And don't commit .zip archives either
+*.zip
 
 # Ignore all generated files
 npm-debug.log
 *.tmproj
-
-# Ignore generated files in output folder
-/public
 
 # Numerous always-ignore extensions
 *~
@@ -27,12 +41,6 @@ npm-debug.log
 *.err
 *.orig
 *.log
-*.rej
-*.swo
-*.swp
-*.vi
-*~
-*.sass-cache
 
 # Ignore OS or Editor folders
 .DS_Store
@@ -42,10 +50,3 @@ npm-debug.log
 .tmproj
 nbproject
 Thumbs.db 
-
-# Ignore Sublime Text saved projects/workspaces 
-*.sublime-workspace
-*.sublime-project
-
-# Ignore JetBrains' IDEs
-.idea

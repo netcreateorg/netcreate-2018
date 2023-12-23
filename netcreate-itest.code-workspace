@@ -1,0 +1,105 @@
+{
+  // enable whitespace rendering by default
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    // configure glob patterns for excluding files and folders.
+    "files.exclude": {
+      "**/.git": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/package-lock.json": true
+    },
+    // highlight sri-style module comment separators
+    "highlight.regexes": {
+      "(/// [^/]+? ///+)\n": [
+        {
+          "color": "#a3bdff",
+          "backgroundColor": "#2E4AE06f"
+        }
+      ]
+    },
+    // make errors more obvious, de-emphasize warnings
+    "workbench.colorCustomizations": {
+      "editorError.border": "#ff0000"
+    },
+    // other theme overrides
+    "editor.tokenColorCustomizations": {},
+    // langauge specific overrides
+    "[javascript]": {
+      "editor.renderWhitespace": "all",
+      "editor.detectIndentation": true,
+      "editor.insertSpaces": true,
+      "editor.tabSize": 2
+    },
+    "[javascriptreact]": {
+      "editor.renderWhitespace": "all",
+      "editor.detectIndentation": true,
+      "editor.insertSpaces": true,
+      "editor.tabSize": 2
+    },
+    "[typescript]": {
+      "editor.renderWhitespace": "all",
+      "editor.detectIndentation": true,
+      "editor.insertSpaces": true,
+      "editor.tabSize": 2
+    },
+    "[typescriptreact]": {
+      "editor.renderWhitespace": "all",
+      "editor.detectIndentation": true,
+      "editor.insertSpaces": true,
+      "editor.tabSize": 2
+    },
+    "terminal.integrated.profiles.osx": {
+      "x86 macos": {
+        "path": "/usr/bin/arch",
+        "args": [
+          "-arch",
+          "x86_64",
+          "${env:SHELL}",
+          "-i",
+          "-c",
+          "export VSCODE_PROFILE='x86 shell';source .vscode/check_env; exec ${env:SHELL}"
+        ]
+      },
+      "arm64 macos": {
+        "path": "/usr/bin/arch",
+        "args": [
+          "-arch",
+          "arm64",
+          "${env:SHELL}",
+          "-i",
+          "-c",
+          "export VSCODE_PROFILE='arm64 shell'; source .vscode/check_env; exec ${env:SHELL}"
+        ]
+      },
+      "generic macos": {
+        "path": "${env:SHELL}",
+        "args": [
+          "-i",
+          "-c",
+          "export VSCODE_PROFILE='generic bash'; source .vscode/check_env; exec ${env:SHELL}"
+        ]
+      }
+    },
+    "terminal.integrated.profiles.linux": {
+      "generic linux": {
+        "path": "${env:SHELL}",
+        "args": [
+          "-i",
+          "-c",
+          "export VSCODE_PROFILE='generic bash'; source .vscode/check_env; exec ${env:SHELL}"
+        ]
+      }
+    },
+    // this line will force use of the selected profile
+    // it's only needed when running pre-v14 versions of NodeJS
+    // to force Intel386 on Apple Silicon processors
+    "terminal.integrated.defaultProfile.osx": "x86 macos",
+    "terminal.integrated.defaultProfile.linux": "generic linux"
+  }
+}

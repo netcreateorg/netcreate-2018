@@ -1,0 +1,304 @@
+.screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #0003;
+  z-index: 1;
+}
+
+.nccomponent {
+  background-color: #fff; /* knock out gray body bg */
+  border-radius: 15px;
+  position: relative;
+  font-size: 14px;
+  z-index: 10;
+}
+
+/* HTML Components */
+.nccomponent button {
+  background-color: #fff6;
+  border-radius: 5px;
+  border-color: #0006;
+  border-width: 1px;
+  border-style: solid;
+  color: #333;
+  margin-left: 15px;
+}
+.nccomponent button:hover,
+.nccomponent button.cancelbtn:hover {
+  background-color: #fff9;
+}
+.nccomponent button:disabled {
+  background-color: #fff3;
+  border-color: #0003;
+  color: #3333;
+  cursor: not-allowed;
+}
+.nccomponent input {
+  width: 100%;
+  border-radius: 2px;
+  border-color: #0006;
+  border-width: 1px;
+  border-style: solid;
+  background-color: #fff8;
+  margin-bottom: 5px;
+  padding: 0 5px;
+}
+.nccomponent input.invalid,
+.nccomponent input.invalid:focus {
+  outline: #f00;
+  border-color: #f00;
+}
+.nccomponent textarea {
+  width: 100%;
+  border-radius: 2px;
+  border-color: #0006;
+  border-width: 1px;
+  border-style: solid;
+  background-color: #fff8;
+  margin-bottom: 5px;
+  padding: 0 5px;
+  resize: none;
+}
+.nccomponent textarea.long {
+  padding: 0 5px;
+  resize: vertical;
+}
+.nccomponent select {
+  width: 100%;
+  border-radius: 5px;
+  border-color: #0006;
+  border-width: 1px;
+  border-style: solid;
+  background-color: #fff8;
+  margin-bottom: 5px;
+}
+/* HTML Component Subtypes */
+.nccomponent button.cancelbtn {
+  background-color: transparent;
+  border-color: #0004;
+  color: #0006;
+}
+.nccomponent button.sourcetargetbtn {
+  border-radius: 15px;
+  width: 100%;
+  margin-left: 0;
+  padding: 0 8px;
+  text-align: left;
+}
+.nccomponent button.sourcetargetbtn.selected {
+  outline: 1px solid blue;
+}
+.nccomponent button.sourcetargetbtn:disabled {
+  border: none;
+  color: #333;
+}
+.nccomponent button.swapbtn {
+  font-size: 18px;
+  line-height: 18px;
+  width: 25px;
+  margin: 7px 0 5px 0;
+  padding: 3px;
+}
+.nccomponent button.edgebutton {
+  background-color: #0003;
+  border-radius: 10px;
+  border-color: transparent;
+  width: 100%;
+  margin: 0 0 3px 0;
+  text-align: left;
+  overflow: hidden;
+}
+.nccomponent button.addedgebutton {
+  margin: 5px;
+}
+
+/* Text Style */
+.nccomponent .message {
+  font-size: 12px;
+}
+.nccomponent .nodelabel .message {
+  font-size: 10px;
+  font-style: italic;
+  font-weight: normal;
+  line-height: 12px;
+  margin-top: -6px;
+  opacity: 0.7;
+}
+.nccomponent .warning {
+  color: red;
+}
+.nccomponent .help {
+  font-size: 10px;
+  font-style: italic;
+  line-height: 18px;
+  opacity: 0.7;
+}
+
+/* Layout Components */
+.nccomponent.ncedge {
+  /* position: fixed;
+  left: 290px;
+  top: 130px; */
+  /* margin: 0 20px; */
+  margin: 10px 0;
+  height: 0;
+  overflow: hidden;
+  z-index: 15;
+}
+.nccomponent.ncedge.fullheight {
+  height: fit-content;
+  transition-property: height;
+  transition-duration: 4s;
+  transition-timing-function: ease-in-out;
+  transition-delay: 2s;
+  overflow: visible; /* show "click on node" help */
+}
+
+.nccomponent.ncedge,
+.nccomponent.ncedge .view,
+.nccomponent.ncedge .edit {
+  border-top-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.nccomponent .view,
+.nccomponent .edit {
+  border-radius: 15px;
+  padding: 8px;
+}
+
+.nccomponent .edit {
+  border: 2px;
+  border-style: solid;
+}
+
+.nccomponent .nodelabel {
+  padding: 5px 10px;
+  font-weight: bold;
+  text-align: left;
+  overflow: hidden;
+}
+
+.nccomponent .formview {
+  display: grid;
+  grid-template-columns: 70px auto;
+  column-gap: 10px;
+  margin-bottom: 10px;
+}
+.nccomponent .formview label {
+  font-size: 10px;
+  line-height: 12px;
+  padding-top: 2px;
+  opacity: 0.7;
+  text-align: right;
+}
+
+.nccomponent .formview .viewvalue {
+  padding-left: 10px;
+  text-align: left;
+  opacity: 1;
+  overflow: hidden;
+  overflow-wrap: anywhere; /* prevents form extending into graph */
+}
+.nccomponent .formview .viewvalue img {
+  max-width: 225px;
+}
+.nccomponent .formview div.targetarrow {
+  margin-top: -5px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+}
+.nccomponent .tabcontainer {
+  margin-top: 5px;
+}
+.nccomponent .tabcontainer .tabselectors {
+  display: grid;
+  grid-template-columns: 1fr; /* overriden */
+  padding-top: 3px;
+}
+.nccomponent .tabcontainer .tabselectors button {
+  border: none;
+  color: #0006;
+  background-color: transparent;
+  height: 25px;
+  font-size: 10px;
+  overflow: hidden;
+}
+.nccomponent .tabcontainer .tabselectors button:hover {
+  background-color: #fff2;
+}
+.nccomponent .tabcontainer .tabselectors button.selected {
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+  color: #666;
+  background-color: #fff8;
+}
+.nccomponent .tabcontainer .tabselectors button.selected:focus {
+  outline: none;
+}
+.nccomponent .tabcontainer .tabview {
+  padding: 10px 5px 5px 5px;
+  background-color: #fff8;
+}
+.nccomponent .provenance label {
+  line-height: 12px;
+  margin-bottom: 0.25rem; /* override bootstrap */
+}
+.nccomponent .provenance div {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.nccomponent .titlebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.nccomponent .titlebar .nodenumber {
+  font-size: 12px;
+  color: #0005;
+  padding-right: 2px;
+}
+
+.nccomponent .controlbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  padding: 10px 0 0 0;
+}
+
+.nccomponent .controlbar.deletenode {
+  justify-content: space-between;
+  background-color: #0003;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  margin-top: 10px;
+  padding: 10px;
+}
+.nccomponent .controlbar .deleteinput {
+  width: 7em;
+  margin: 0px;
+}
+.nccomponent .controlbar .deleteinput.invalid {
+  border: 5px double red;
+}
+
+.nccomponent .stylebutton {
+  border-radius: 2px;
+  font-size: 10px;
+  background-color: transparent;
+  margin-left: 0;
+}
+.nccomponent .citationbutton {
+  align-self: flex-start;
+  margin-left: 0;
+  border-color: #0002;
+  color: #0006;
+  background-color: transparent;
+}

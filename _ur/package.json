@@ -1,0 +1,38 @@
+{
+  "name": "@ursys/netcreate",
+  "version": "0.1",
+  "description": "modular system for enhancing NetCreate 2.0 (ITEST)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/netcreateorg/netcreate-itest"
+  },
+  "private": true,
+  "scripts": {
+    "build-libs": "node ../_ur_cli/@cli-build-lib.cjs",
+    "lint": "eslint .",
+    "clean": "rm -rf ./node_modules ./_dist"
+  },
+  "browser": "./_dist/client-cjs.js",
+  "main": "./_dist/server.cjs",
+  "exports": {
+    "node": {
+      "import": "./_dist/server-esm.mjs",
+      "require": "./_dist/server.cjs"
+    },
+    "browser": {
+      "import": "./_dist/client-esm.js",
+      "require": "./_dist/client-cjs.js",
+      "default": "./_dist/client-umd.js"
+    }
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.2",
+    "esbuild-plugin-copy": "^2.1.1",
+    "esbuild-plugin-umd-wrapper": "^1.0.7"
+  },
+  "dependencies": {
+    "fs-extra": "^11.1.1",
+    "node-dir": "^0.1.17",
+    "lokijs": "^1.5.12"
+  }
+}
