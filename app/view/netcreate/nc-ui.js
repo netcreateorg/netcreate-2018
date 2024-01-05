@@ -377,9 +377,7 @@ function RenderStringInput(key, value, cb, helpText, onFocus, onBlur) {
 function m_RenderNumberInput(key, value, cb, helpText) {
   return (
     <div key={`${key}div`}>
-      <div className="help">
-        {helpText} - {value}
-      </div>
+      <div className="help">{helpText}</div>
       <input
         id={key}
         key={`${key}input`}
