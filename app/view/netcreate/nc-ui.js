@@ -35,7 +35,8 @@ const UDATA = UNISYS.NewDataLink(MOD);
 function DateFormatted() {
   var today = new Date();
   var year = String(today.getFullYear());
-  var date = today.getMonth() + 1 + '/' + today.getDate() + '/' + year.substring(2, 4);
+  var date =
+    today.getMonth() + 1 + '/' + today.getDate() + '/' + year.substring(2, 4);
   var time = today.toTimeString().substring(0, 5);
   var dateTime = time + ' on ' + date;
   return dateTime;
@@ -380,7 +381,7 @@ function m_RenderNumberInput(key, value, cb, helpText) {
       <input
         id={key}
         key={`${key}input`}
-        value={value}
+        value={value ? value : 0}
         type="number"
         onChange={event => m_UINumberInputUpdate(event, cb)}
       />
