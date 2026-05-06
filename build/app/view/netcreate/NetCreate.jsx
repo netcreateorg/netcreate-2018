@@ -51,6 +51,7 @@ const Search       = require('./components/Search');
 const NodeSelector = require('./components/NodeSelector');
 const InfoPanel    = require('./components/InfoPanel');
 const FiltersPanel = require('./components/filter/FiltersPanel');
+const Tutorial     = require('./components/tutorial/Tutorial');
 const NCLOGIC      = require('./nc-logic'); // require to bootstrap data loading
 const FILTERLOGIC  = require('./filter-logic'); // handles filtering functions
 const EDGELOGIC = require('./edge-logic'); // handles edge synthesis
@@ -100,6 +101,7 @@ const FILTER = require('./components/filter/FilterEnums');
         this.OnAppStateChange('SESSION', this.onStateChange_SESSION);
 
         const UDATA = UNISYS.NewDataLink(this);
+        this.UDATA = UDATA; // expose for handlers like onFilterBtnClick
         UDATA.HandleMessage("DISCONNECT", this.onDisconnect);
       }
 
@@ -136,7 +138,11 @@ const FILTER = require('./components/filter/FilterEnums');
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       onFilterBtnClick(e) {
         this.setState(state => {
-          return {layoutFiltersOpen: !state.layoutFiltersOpen}
+          const next = !state.layoutFiltersOpen;
+          if (next && this.UDATA) {
+            this.UDATA.LocalSignal('TUT_EVENT', { kind: 'analysis-opened' });
+          }
+          return {layoutFiltersOpen: next};
         })
       }
 
@@ -187,6 +193,7 @@ const FILTER = require('./components/filter/FilterEnums');
                 request information contained on this website in an accessible
                 format.</div>
               </div>
+              <Tutorial />
               {layoutFiltersOpen
                 // OPEN
                 ? <div id="right" style={{
@@ -199,6 +206,7 @@ const FILTER = require('./components/filter/FilterEnums');
                       height: '100%', overflow: 'hidden'
                     }}>
                       <Button onClick={this.onFilterBtnClick}
+                        data-tut-id="btn-toggle-filters"
                         style={{ width: '90px' }}
                       >
                         {FILTER.PANEL_LABEL} &gt;
@@ -213,6 +221,7 @@ const FILTER = require('./components/filter/FilterEnums');
                   }}>
                     <Button
                       onClick={this.onFilterBtnClick}
+                      data-tut-id="btn-toggle-filters"
                       style={{ width: '90px', float: 'right' }}
                     >&lt; {FILTER.PANEL_LABEL}</Button>
                   </div>

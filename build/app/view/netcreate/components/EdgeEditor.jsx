@@ -845,6 +845,7 @@ class EdgeEditor extends UNISYS.Component {
         hasValidTarget: false,
         placeholder: this.state.targetNode.label
       });
+      UDATA.LocalSignal('TUT_EVENT', { kind: 'edge-target-picking' });
       this.AppCall('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'target'});
       // Whenever we set the autocomplete to target, we have to update the label
       // Clear the AutoComplete field so that onBlur does not select the same node
@@ -856,6 +857,7 @@ class EdgeEditor extends UNISYS.Component {
       let formData = this.state.formData;
       formData.type = event.target.value;
       this.setState({formData: formData});
+      UDATA.LocalSignal('TUT_EVENT', { kind: 'edge-type-changed' });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -909,6 +911,9 @@ class EdgeEditor extends UNISYS.Component {
       let formData = this.state.formData;
       formData.notes = event.target.value;
       this.setState({formData: formData});
+      if (event.target.value && event.target.value.length > 0) {
+        UDATA.LocalSignal('TUT_EVENT', { kind: 'edge-notes-typed' });
+      }
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -1078,6 +1083,7 @@ class EdgeEditor extends UNISYS.Component {
                 </Col>
                 <Col sm={9}>
                   <Input type="select" name="relationship"
+                    data-tut-id="edge-type-select"
                     value={formData.type}
                     onChange={this.onRelationshipChange}
                     disabled={!this.state.isBeingEdited}
@@ -1096,16 +1102,19 @@ class EdgeEditor extends UNISYS.Component {
                   </Label>
                 </Col>
                 <Col sm={9}>
-                  <AutoComplete
-                    identifier={'edge'+edgeID+'target'}
-                    disabledValue={targetNode.label}
-                    // eslint-disable-next-line no-nested-ternary
-                    inactiveMode={ ( parentNodeLabel===targetNode.label && !sameSourceAndTarget ) ? 'static' : this.state.isBeingEdited ? 'disabled' : 'link'}
-                    linkID={targetNode.id}
-                    shouldIgnoreSelection={!this.state.targetIsEditable}
-                    placeholder={this.state.placeholder}
-                  />
+                  <div data-tut-id="edge-target-input">
+                    <AutoComplete
+                      identifier={'edge'+edgeID+'target'}
+                      disabledValue={targetNode.label}
+                      // eslint-disable-next-line no-nested-ternary
+                      inactiveMode={ ( parentNodeLabel===targetNode.label && !sameSourceAndTarget ) ? 'static' : this.state.isBeingEdited ? 'disabled' : 'link'}
+                      linkID={targetNode.id}
+                      shouldIgnoreSelection={!this.state.targetIsEditable}
+                      placeholder={this.state.placeholder}
+                    />
+                  </div>
                   <Button outline size="sm" className="float-right"
+                    data-tut-id="btn-edge-target"
                     hidden={ !(this.state.isBeingEdited &&
                                this.state.hasValidTarget &&
                                ( (targetNode.label !== this.props.parentNodeLabel) ||
@@ -1160,6 +1169,7 @@ class EdgeEditor extends UNISYS.Component {
                 </Col>
                 <Col sm={9}>
                   <Input type="textarea" name="notes"
+                    data-tut-id="edge-notes-textarea"
                     style={{display: this.state.isBeingEdited ? 'block' : 'none'}}
                     value={formData.notes}
                     onChange={this.onNotesChange}
@@ -1256,6 +1266,7 @@ class EdgeEditor extends UNISYS.Component {
                   onClick={this.onEdgeClick}
                 >{this.state.isBeingEdited?'Cancel':'Close'}</Button>&nbsp;
                 <Button color="primary" size="sm"
+                  data-tut-id="btn-save-edge"
                   hidden={!this.state.isBeingEdited}
                   disabled={ !(this.state.isBeingEdited && this.state.hasValidTarget) }
                 >Save</Button>

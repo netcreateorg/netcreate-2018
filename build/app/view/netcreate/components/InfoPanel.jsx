@@ -77,6 +77,7 @@ class InfoPanel extends UNISYS.Component {
     window.event.stopPropagation();
     if (this.state.activeTab !== tab) {
       this.setState({ activeTab: tab });
+      UDATA.LocalSignal('TUT_EVENT', { kind: 'tab-opened', tab: tab });
       if ((tab === `1`) || (tab === '6')) { // graph or help
         this.setState({
           tabpanelHeight: `${defaultTabPanelHeight}px`, // show only tab buttons
@@ -184,6 +185,7 @@ class InfoPanel extends UNISYS.Component {
             </NavItem>
             <NavItem>
               <NavLink
+                data-tut-id="tab-nodes"
                 className={classnames({ active: activeTab === '3' })}
                 onClick={() => { this.toggle('3'); this.sendGA('Nodes Table', window.location); }}
               >
@@ -192,6 +194,7 @@ class InfoPanel extends UNISYS.Component {
             </NavItem>
             <NavItem>
               <NavLink
+                data-tut-id="tab-edges"
                 className={classnames({ active: activeTab === '4' })}
                 onClick={() => { this.toggle('4'); this.sendGA('Edges Table', window.location); }}
               >

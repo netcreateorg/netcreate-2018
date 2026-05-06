@@ -71,11 +71,13 @@ class Search extends UNISYS.Component {
       return (
         <FormGroup row>
           <Col>
-            <AutoComplete
-              identifier={thisIdentifier}
-              disabledValue={this.state.searchString}
-              inactiveMode={'disabled'}
-            />
+            <div data-tut-id="search-input">
+              <AutoComplete
+                identifier={thisIdentifier}
+                disabledValue={this.state.searchString}
+                inactiveMode={'disabled'}
+              />
+            </div>
             <Label className="small text-muted">Type to search or add a node:</Label>
           </Col>
         </FormGroup>

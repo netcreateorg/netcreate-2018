@@ -676,6 +676,7 @@ class NodeSelector extends UNISYS.Component {
       let node = this.state.formData;
       node.type = event.target.value;
       this.setState({ formData: node });
+      UDATA.LocalSignal('TUT_EVENT', { kind: 'node-type-changed' });
     } // onTypeChange
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -725,6 +726,7 @@ class NodeSelector extends UNISYS.Component {
 /*/
 /*/ onNewNodeButtonClick (event) {
       event.preventDefault();
+      UDATA.LocalSignal('TUT_EVENT', { kind: 'node-form-opened' });
 
       // Save the search label to re-insert into the new node
       let label = this.AppState('SEARCH').searchLabel;
@@ -896,6 +898,7 @@ class NodeSelector extends UNISYS.Component {
 /*/
 /*/ onAddNewEdgeButtonClick (event) {
       event.preventDefault();
+      UDATA.LocalSignal('TUT_EVENT', { kind: 'edge-form-opened' });
       /*
             When creating a new edge, we first
             1. Add a bare bones edge object with a new ID to the local state.edges
@@ -1042,6 +1045,7 @@ class NodeSelector extends UNISYS.Component {
         <div>
           <FormGroup className="text-right" style={{marginTop:'-20px',paddingRight:'5px'}}>
             <Button outline size="sm"
+              data-tut-id="btn-add-node"
               disabled={disableEdit}
               hidden={isLocked || isBeingEdited}
               onClick={this.onNewNodeButtonClick}
@@ -1058,12 +1062,14 @@ class NodeSelector extends UNISYS.Component {
                   </Label>
               </Col>
               <Col sm={9}>
-                <AutoComplete
-                  identifier={thisIdentifier}
-                  disabledValue={formData.label}
-                  inactiveMode={'disabled'}
-                  shouldIgnoreSelection={isBeingEdited}
-                />
+                <div data-tut-id="node-label-input">
+                  <AutoComplete
+                    identifier={thisIdentifier}
+                    disabledValue={formData.label}
+                    inactiveMode={'disabled'}
+                    shouldIgnoreSelection={isBeingEdited}
+                  />
+                </div>
               </Col>
               <div hidden={!this.state.isDuplicateNodeLabel}
                 style={{ width: '200px', height: '150px', backgroundColor: '#B8EDFF', position: 'fixed', left: '350px', zIndex: '1000', padding: '10px' }}>
@@ -1084,6 +1090,7 @@ class NodeSelector extends UNISYS.Component {
               </Col>
               <Col sm={9}>
                 <Input type="select" name="type" id="typeSelect"
+                  data-tut-id="node-type-select"
                   value={formData.type||''}
                   onChange={this.onTypeChange}
                   disabled={!isBeingEdited}
@@ -1189,6 +1196,7 @@ class NodeSelector extends UNISYS.Component {
                 onClick={this.onCancelButtonClick}
               >{isBeingEdited?'Cancel':'Close'}</Button>&nbsp;
               <Button color="primary" size="sm"
+                data-tut-id="btn-save-node"
                 disabled={!this.state.isValid}
                 hidden={!isBeingEdited}
               >Save</Button>
@@ -1234,6 +1242,7 @@ class NodeSelector extends UNISYS.Component {
             ))}
             <FormGroup className="text-right">
               <Button outline size="sm"
+                data-tut-id="btn-add-edge"
                 disabled={disableEdit}
                 hidden={isLocked || formData.id===''||isBeingEdited}
                 onClick={this.onAddNewEdgeButtonClick}
