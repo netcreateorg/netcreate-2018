@@ -707,6 +707,7 @@ class EdgeEditor extends UNISYS.Component {
                 }
               });
           }
+          UDATA.LocalSignal('TUT_EVENT', { kind: 'edge-form-cancelled' });
         }
       } else {
         // expand, but don't set the autocomplete field, since we're not editing
@@ -1078,6 +1079,7 @@ class EdgeEditor extends UNISYS.Component {
                 </Col>
                 <Col sm={9}>
                   <Input type="select" name="relationship"
+                    data-tut-id="edge-type-select"
                     value={formData.type}
                     onChange={this.onRelationshipChange}
                     disabled={!this.state.isBeingEdited}
@@ -1096,16 +1098,19 @@ class EdgeEditor extends UNISYS.Component {
                   </Label>
                 </Col>
                 <Col sm={9}>
-                  <AutoComplete
-                    identifier={'edge'+edgeID+'target'}
-                    disabledValue={targetNode.label}
-                    // eslint-disable-next-line no-nested-ternary
-                    inactiveMode={ ( parentNodeLabel===targetNode.label && !sameSourceAndTarget ) ? 'static' : this.state.isBeingEdited ? 'disabled' : 'link'}
-                    linkID={targetNode.id}
-                    shouldIgnoreSelection={!this.state.targetIsEditable}
-                    placeholder={this.state.placeholder}
-                  />
+                  <div data-tut-id="edge-target-input">
+                    <AutoComplete
+                      identifier={'edge'+edgeID+'target'}
+                      disabledValue={targetNode.label}
+                      // eslint-disable-next-line no-nested-ternary
+                      inactiveMode={ ( parentNodeLabel===targetNode.label && !sameSourceAndTarget ) ? 'static' : this.state.isBeingEdited ? 'disabled' : 'link'}
+                      linkID={targetNode.id}
+                      shouldIgnoreSelection={!this.state.targetIsEditable}
+                      placeholder={this.state.placeholder}
+                    />
+                  </div>
                   <Button outline size="sm" className="float-right"
+                    data-tut-id="btn-edge-target"
                     hidden={ !(this.state.isBeingEdited &&
                                this.state.hasValidTarget &&
                                ( (targetNode.label !== this.props.parentNodeLabel) ||
@@ -1160,6 +1165,7 @@ class EdgeEditor extends UNISYS.Component {
                 </Col>
                 <Col sm={9}>
                   <Input type="textarea" name="notes"
+                    data-tut-id="edge-notes-textarea"
                     style={{display: this.state.isBeingEdited ? 'block' : 'none'}}
                     value={formData.notes}
                     onChange={this.onNotesChange}
@@ -1256,6 +1262,7 @@ class EdgeEditor extends UNISYS.Component {
                   onClick={this.onEdgeClick}
                 >{this.state.isBeingEdited?'Cancel':'Close'}</Button>&nbsp;
                 <Button color="primary" size="sm"
+                  data-tut-id="btn-save-edge"
                   hidden={!this.state.isBeingEdited}
                   disabled={ !(this.state.isBeingEdited && this.state.hasValidTarget) }
                 >Save</Button>

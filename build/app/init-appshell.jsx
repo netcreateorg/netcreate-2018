@@ -30,6 +30,8 @@
     const { renderRoutes } = require('react-router-config');
     //
     const UNISYS = require('unisys/client');
+    // module-scope datalink for one-off LocalCall sends from the navbar
+    const UDATA = UNISYS.NewDataLink({});
 
 
 
@@ -185,6 +187,11 @@ class AppShell extends UNISYS.Component {
         <div style={{display:'flex', flexFlow:'column nowrap', width:'100%', height:'100vh'}}>
           <Navbar fixed="top" light expand="md" style={{ backgroundColor:'#f0f0f0', padding:'4px 10px'}}>
             <NavbarBrand href="#" style={{padding:'0'}}><img src='images/netcreate-logo.svg' height='26px'/></NavbarBrand>
+            <button
+              type="button"
+              className="tut-restart-link"
+              onClick={() => UDATA.LocalCall('TUTORIAL_RESTART')}
+            >Tutorial</button>
             <NavbarToggler onClick={this.toggle} />
               <Collapse isOpen={this.state.isOpen} navbar>
               {/*/ (1) add navigation links here /*/}
