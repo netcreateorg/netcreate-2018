@@ -676,7 +676,6 @@ class NodeSelector extends UNISYS.Component {
       let node = this.state.formData;
       node.type = event.target.value;
       this.setState({ formData: node });
-      UDATA.LocalSignal('TUT_EVENT', { kind: 'node-type-changed' });
     } // onTypeChange
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -949,6 +948,7 @@ class NodeSelector extends UNISYS.Component {
         }
         this.AppCall('AUTOCOMPLETE_SELECT', { id: 'search' });
         this.NetCall("SRV_RELEASE_EDIT_LOCK", { editor: EDITORTYPE.NODE });
+        UDATA.LocalSignal('TUT_EVENT', { kind: 'node-form-cancelled' });
       }
     } // onCancelButtonClick
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -25,7 +25,6 @@
   the path.
 
   Subscribed messages and how they're normalised:
-    SOURCE_SEARCH  -> {kind:'label-typed'}     (user typed in a label field)
     SOURCE_SELECT  -> {kind:'node-selected'}   (a node became selected)
     SOURCE_UPDATE  -> {kind:'node-saved'}      (a node was saved)
     EDGE_UPDATE    -> {kind:'edge-saved'}      (an edge was saved)
@@ -49,16 +48,10 @@ const STORAGE_KEY = 'netcreate.tutorialSeen';
 const DBG = false;
 
 // Map of UDATA message names to the {kind} event they translate into.
-// SOURCE_SEARCH gets a "has text?" guard since the message also fires on
-// every keystroke including backspace-to-empty.
 const MESSAGE_TO_EVENT = {
   'SOURCE_UPDATE': () => ({ kind: 'node-saved' }),
   'EDGE_UPDATE':   () => ({ kind: 'edge-saved' }),
-  'SOURCE_SELECT': () => ({ kind: 'node-selected' }),
-  'SOURCE_SEARCH': (data) => {
-    const s = data && (data.searchString || data.searchLabel);
-    return (s && s.length > 0) ? { kind: 'label-typed' } : null;
-  }
+  'SOURCE_SELECT': () => ({ kind: 'node-selected' })
 };
 
 let UDATA = null;
@@ -80,6 +73,15 @@ class Tutorial extends UNISYS.Component {
       running: false,
       stepIndex: 0
     };
+
+    // Synchronous mirror of state.stepIndex / state.running. handleTutEvent
+    // can fire multiple times in the same React tick (a save message can
+    // trigger downstream messages that translate to events), and setState
+    // is async — without this mirror, the second call would scan from the
+    // stale state.stepIndex and either re-match the same step or jump too
+    // far. Always update this BEFORE calling setState.
+    this._stepIndex = 0;
+    this._running = false;
 
     this.handleYes = this.handleYes.bind(this);
     this.handleNo = this.handleNo.bind(this);
@@ -167,27 +169,35 @@ class Tutorial extends UNISYS.Component {
 
   handleYes() {
     if (DBG) console.log('[TUT] handleYes — starting tutorial');
+    this._stepIndex = 0;
+    this._running = true;
     this.setState({ showWelcome: false, running: true, stepIndex: 0 });
   }
 
   handleNo() {
     this.persistSeen();
+    this._running = false;
     this.setState({ showWelcome: false, running: false });
   }
 
   handleSkip() {
     this.persistSeen();
+    this._running = false;
+    this._stepIndex = 0;
     this.setState({ running: false, stepIndex: 0 });
   }
 
   handleNext() {
-    const { stepIndex } = this.state;
+    const stepIndex = this._stepIndex;
     if (stepIndex >= STEPS.length - 1) {
       // END button on the final card
       this.persistSeen();
+      this._running = false;
+      this._stepIndex = 0;
       this.setState({ running: false, stepIndex: 0 });
       return;
     }
+    this._stepIndex = stepIndex + 1;
     this.setState({ stepIndex: stepIndex + 1 });
   }
 
@@ -196,13 +206,15 @@ class Tutorial extends UNISYS.Component {
     try {
       if (window.localStorage) window.localStorage.removeItem(STORAGE_KEY);
     } catch (e) { /* ignore */ }
+    this._running = false;
+    this._stepIndex = 0;
     this.setState({ showWelcome: true, running: false, stepIndex: 0 });
   }
 
   /// adaptive auto-advance: forward-only scan for the first matching step ///
   handleTutEvent(event) {
-    if (DBG) console.log('[TUT]', event, 'running=', this.state.running, 'step=', this.state.stepIndex, STEPS[this.state.stepIndex] && STEPS[this.state.stepIndex].id);
-    if (!this.state.running) return;
+    if (DBG) console.log('[TUT]', event, 'running=', this._running, 'step=', this._stepIndex, STEPS[this._stepIndex] && STEPS[this._stepIndex].id);
+    if (!this._running) return;
 
     // Suppress the spurious 'node-selected' that NodeSelector fires right
     // after a node/edge save (it re-broadcasts SOURCE_SELECT to refresh the
@@ -216,7 +228,9 @@ class Tutorial extends UNISYS.Component {
       return;
     }
 
-    const { stepIndex } = this.state;
+    // Read from the synchronous mirror, not state — multiple events can fire
+    // in the same React tick before setState has flushed.
+    const stepIndex = this._stepIndex;
     // start at stepIndex (NOT stepIndex+1) so the matcher on the *current*
     // step also gets a chance — that's the common case (the prompt asks
     // the user to do X, and X is what just happened).
@@ -242,7 +256,9 @@ class Tutorial extends UNISYS.Component {
         this.handleNext(); // matched current step — advance one
       } else {
         // matched a future step — jump there directly
-        this.setState({ stepIndex: i + 1 < STEPS.length ? i + 1 : i });
+        const next = i + 1 < STEPS.length ? i + 1 : i;
+        this._stepIndex = next;
+        this.setState({ stepIndex: next });
       }
       return;
     }

@@ -707,6 +707,7 @@ class EdgeEditor extends UNISYS.Component {
                 }
               });
           }
+          UDATA.LocalSignal('TUT_EVENT', { kind: 'edge-form-cancelled' });
         }
       } else {
         // expand, but don't set the autocomplete field, since we're not editing
@@ -845,7 +846,6 @@ class EdgeEditor extends UNISYS.Component {
         hasValidTarget: false,
         placeholder: this.state.targetNode.label
       });
-      UDATA.LocalSignal('TUT_EVENT', { kind: 'edge-target-picking' });
       this.AppCall('AUTOCOMPLETE_SELECT',{id:'edge'+this.props.edgeID+'target'});
       // Whenever we set the autocomplete to target, we have to update the label
       // Clear the AutoComplete field so that onBlur does not select the same node
@@ -857,7 +857,6 @@ class EdgeEditor extends UNISYS.Component {
       let formData = this.state.formData;
       formData.type = event.target.value;
       this.setState({formData: formData});
-      UDATA.LocalSignal('TUT_EVENT', { kind: 'edge-type-changed' });
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/
@@ -911,9 +910,6 @@ class EdgeEditor extends UNISYS.Component {
       let formData = this.state.formData;
       formData.notes = event.target.value;
       this.setState({formData: formData});
-      if (event.target.value && event.target.value.length > 0) {
-        UDATA.LocalSignal('TUT_EVENT', { kind: 'edge-notes-typed' });
-      }
     }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/

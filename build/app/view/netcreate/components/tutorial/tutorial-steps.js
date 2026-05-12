@@ -43,18 +43,15 @@
   EVENT KINDS the matchers can react to:
 
     Broadcast by Tutorial.jsx itself:
-      'label-typed'         - SOURCE_SEARCH fired (label has text)
       'node-selected'       - SOURCE_SELECT picked a node
       'node-saved'          - SOURCE_UPDATE (a node was just saved)
       'edge-saved'          - EDGE_UPDATE (an edge was just saved)
 
     Broadcast by instrumented components via TUT_EVENT:
       'node-form-opened'    - "Add New Node" clicked
-      'node-type-changed'   - node type dropdown changed
+      'node-form-cancelled' - Cancel pressed on an open node form
       'edge-form-opened'    - "Add New Edge" clicked
-      'edge-type-changed'   - edge relationship dropdown changed
-      'edge-target-picking' - user clicked the change-target control
-      'edge-notes-typed'    - edge description / notes input has text
+      'edge-form-cancelled' - Cancel/collapse pressed on an open edge form
       'tab-opened'          - InfoPanel tab clicked (event.tab is '3' for
                               Nodes Table, '4' for Edges Table)
       'analysis-opened'     - filter / analysis panel opened on the right
@@ -155,7 +152,9 @@ const STEPS = [
     id: 'select-type',
     position: 'right',
     nodim: true,
-    match: (e) => e.kind === 'node-saved',
+    // Accept Cancel as well as Save so the tutorial doesn't deadlock if the
+    // user backs out of the form. Same pattern on every form-wait step below.
+    match: (e) => e.kind === 'node-saved' || e.kind === 'node-form-cancelled',
     body: (
       <p>
         Fill in any fields you like (all optional), then click {HL('Save')}.
@@ -188,9 +187,7 @@ const STEPS = [
     id: 'second-node-save',
     position: 'right',
     nodim: true,
-    // No skipIf: same form-open race as select-type. User can click '>' to
-    // recover if they Cancel the form mid-step.
-    match: (e) => e.kind === 'node-saved',
+    match: (e) => e.kind === 'node-saved' || e.kind === 'node-form-cancelled',
     body: (
       <p>Click {HL('Save')} to add this node.</p>
     )
@@ -323,9 +320,7 @@ const STEPS = [
     id: 'edge-add-description',
     position: 'right',
     nodim: true,
-    // No skipIf: same form-open race — edge form is being mounted in the
-    // same React tick as this step becomes current.
-    match: (e) => e.kind === 'edge-saved',
+    match: (e) => e.kind === 'edge-saved' || e.kind === 'edge-form-cancelled',
     body: (
       <p>
         The {HL('target node')} is set. Fill in any fields you like
@@ -386,7 +381,7 @@ const STEPS = [
     id: 'third-node-desc',
     position: 'right',
     nodim: true,
-    match: (e) => e.kind === 'node-saved',
+    match: (e) => e.kind === 'node-saved' || e.kind === 'node-form-cancelled',
     body: (
       <p>Click {HL('Save')} to add this node.</p>
     )
@@ -451,8 +446,7 @@ const STEPS = [
     id: 'second-edge-save',
     position: 'right',
     nodim: true,
-    // No skipIf: same form-open race.
-    match: (e) => e.kind === 'edge-saved',
+    match: (e) => e.kind === 'edge-saved' || e.kind === 'edge-form-cancelled',
     body: (
       <p>
         Now the {HL('target node')} has been selected.<br />
